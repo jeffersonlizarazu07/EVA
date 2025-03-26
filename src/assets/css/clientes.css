@@ -1,0 +1,89 @@
+#clients-body {
+  background-image: url("../img/eva\ v8.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+nav {
+  border: 2px solid rgb(199, 14, 143);
+}
+.tooltip-container:hover {
+  visibility: visible;
+  opacity: 1;
+}
+button {
+  border: 0;
+  background-color: azure;
+}
+/* section {
+  height: 75vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-top: 25px;
+} */
+#navbarNav {
+  min-width: 50px;
+  max-width: 100px;
+  border-right: 2px solid rgb(199, 14, 143);
+  border-top: 2px solid rgb(199, 14, 143);
+  border-bottom: 2px solid rgb(199, 14, 143);
+}
+#div_ul {
+  align-items: baseline;
+  min-width: 50px;
+  max-width: 100px;
+}
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+/* .card-body {
+  align-content: center;
+} */
+#iconoDegradado {
+  font-size: 25px;
+  cursor: pointer;
+  background: -moz-linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  background: -webkit-linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  background: linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#icono {
+  font-size: 25px;
+  color: rgb(199, 14, 143);
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  body {
+    background-image: none;
+    background-color: rgb(255, 252, 245);
+  }
+
+  #container {
+    padding: 10px;
+  }
+
+  #card1,
+  #card2 {
+    margin-bottom: 10px;
+    width: 50vw !important;
+    height: 40vh !important;
+  }
+}

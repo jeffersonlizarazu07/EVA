@@ -1,0 +1,151 @@
+.card4, .card5, .card6 {
+    background-size: cover;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    height: 50vh !important;
+    border-radius: 35px !important;
+    width: 100% !important;
+    color: white !important;
+    border: 2px solid rgb(199, 14, 143) !important;
+    margin-bottom: 5%;
+}
+
+.card4 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen8 slide4.jpeg");
+    background-size: 100% 100%;
+    background-size: auto;
+    background-position: center;
+}
+
+.card4:hover {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen8 slide4.jpeg");
+    border: none !important;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.card5 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen9 slide4.jpg");
+    background-size: 100% 100%;
+    background-size: auto;
+    background-position: center;
+}
+
+.card5:hover {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen9 slide4.jpg");
+    border: none !important;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.card6 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen10 slide4.jpeg");
+    background-size: 100% 100%;
+    background-size: cover;
+}
+
+.card6:hover {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen10 slide4.jpeg");
+    border: none !important;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.outstanding-card2 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen7 slide4.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 35px !important;
+    margin-top: 15%;
+    margin-left: 15%;
+    width: 20vw !important;
+    height: 60vh !important;
+    color: white !important;
+    border: 2px solid rgb(199, 14, 143) !important;
+    text-align: center !important;
+}
+.outstanding-card2:hover{
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen7 slide4.jpg");
+    border: 1px;
+    box-shadow: rgba(255, 255, 255, 0.326) 0px 5px 15px;
+  }
+/* ------------------- Estilos de modo lista   ------------------- */
+
+
+.item-4 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen8 slide4.jpeg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.item-4:hover {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen8 slide4.jpeg");
+    border: none;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.item-5 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen9 slide4.jpg");
+    background-size: cover;
+}
+
+.item-5:hover {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.4)), url("../img/imagen9 slide4.jpg");
+    border: none;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+
+}
+
+.item-6 {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen10 slide4.jpeg");
+    background-size: cover;
+}
+
+.item-6:hover {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.4)), url("../img/imagen10 slide4.jpeg");
+    border: none;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+
+}
+
+#btn-send-survey{
+    background-color: rgb(199, 14, 143) ;
+    color: white;
+}
+#btn-send-survey:hover{
+    background-color: rgb(161, 42, 125) ;
+
+
+}
+/* .cont-survey{
+    border: 2px solid rgb(199, 14, 143) ;
+} */
+
+#f-control{
+  width: 95%;
+  margin-left: 3%;
+  height: 80%;
+  font-size: 74%;
+}
+
+.borderEVA{
+    border: 2px solid rgba(199, 14, 143) !important;
+    border-radius: 15px !important;
+}
+
+
+
+@media (max-width: 575.98px) {
+.outstanding-card2{
+      width: 100% !important; 
+      margin: 5% 0% !important;
+    }
+.body-responsive, #body-Oscuro{
+    height: 265vh !important;
+}
+section:has(> .cards-EVA) {
+    height: 255vh !important;
+}
+.cont-survey{
+    margin-left: 2%;
+}
+
+}

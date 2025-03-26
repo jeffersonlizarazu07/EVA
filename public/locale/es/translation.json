@@ -1,0 +1,78 @@
+{
+  "quality": {
+    "title": "Quality",
+    "description": "Agents / Users / Monitoring forms / Reports"
+  },
+  "satisfaction": {
+    "title": "Customer Experience",
+    "description": "Surveys / Charts / Reports"
+  },
+  "sidebarlt": {
+    "First name": "First name",
+    "Middle name": "Middle name",
+    "Last name": "Last name",
+    "Email": "Email",
+    "Password": "Password",
+    "Leave this blank if you don't want to change the password.": "Leave this blank if you don't want to change the password.",
+    "Confirm Password": "Confirm Password",
+    "Language": "Language",
+    "Spanish": "Spanish",
+    "English": "English",
+    "Italian": "Italian",
+    "Portuguese": "Portuguese",
+    "Manage account": "Manage account",
+    "Logout": "Logout",
+    "Save": "Save",
+    "Cancel": "Cancel"
+  },
+  "headerlt": {
+    "First name": "First name",
+    "Middle name": "Middle name",
+    "Last name": "Last name",
+    "Email": "Email",
+    "Password": "Password",
+    "Leave this blank if you don't want to change the password.": "Leave this blank if you don't want to change the password.",
+    "Confirm Password": "Confirm Password",
+    "Language": "Language",
+    "Spanish": "Spanish",
+    "English": "English",
+    "Italian": "Italian",
+    "Portuguese": "Portuguese",
+    "Manage account": "Manage account",
+    "Logout": "Logout",
+    "Save changes": "Save changes",
+    "Close": "Close"
+  },
+  "qualitySite": {
+    "Quality_system": "Sistema de calidad",
+    "Agents": "Agents",
+    "Monitoring_forms": "Monitoring forms",
+    "Users": "Users",
+    "Agents_list": "Agents list",
+    "Create_form": "Create form",
+    "Company_agents": "Company agents",
+    "Create_and/or_edit_form": "Create and/or edit form",
+    "Monitoring_forms_to_the_agent": "Monitoring forms to the agent",
+    "Generate_report": "Generate report",
+    "View_reports": "View reports",
+    "Monitoring_forms_report_to_the_agent": "Monitoring forms report to the agent",
+    "Quality_form_ABC_bank": "Quality form ABC bank",
+    "Rate_the_quality_of_customer_service_being_provided_by_the_agent": "Rate the quality of customer service being provided by the agent",
+    "Form_report":"Form Report"
+  },
+  "satisfactionSite": {
+    "Survey system": "Survey system",
+    "Grid mode": "Grid mode",
+    "List mode": "List mode",
+    "Surveys section": "Surveys section",
+    "Card sections": "Card sections",
+    "User surveys": "User surveys",
+    "Total Surveys": "Total Surveys",
+    "Create and/or edit survey": "Create and/or edit survey",
+    "Survey report": "Survey report",
+    "Generate report": "Generate report",
+    "Send survey": "Send survey",
+    "Title": "Title",
+    "Rate the quality of customer service being provided by the agent": "Rate the quality of customer service being provided by the agent"
+  }
+}

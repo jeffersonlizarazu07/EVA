@@ -1,0 +1,44 @@
+/* ManageUser.css */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-weight: bold;
+}
+
+.form-control {
+  border-radius: 0.25rem;
+  border: 1px solid #ced4da;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.btn-group {
+  width: 100%;
+  margin: 2px
+}
+
+.btn-check:checked + .btn {
+  background-color: #000000;
+  color: white;
+}
+
+.modal-footer .btn {
+  margin-left: 0.5rem;
+}
+
+.bg-gradient-guardar{
+  background: rgb(199, 14, 143);
+  color: white;
+}
+
+.bg-gradient-guardar:hover {
+  background: linear-gradient(210deg, rgb(199, 14, 143), #000000);
+}
+
+.modal {
+  z-index: 1050; /* Asegura que el modal esté por encima de otros elementos */
+  position: fixed; /* Ajusta el posicionamiento del modal */
+}
+

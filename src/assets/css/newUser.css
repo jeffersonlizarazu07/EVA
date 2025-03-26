@@ -1,0 +1,84 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+  
+.modal{
+    font-family: 'Inter', sans-serif;
+}
+#labelAnimation{
+ 
+    display: grid;
+    grid-template-areas: "input";
+}
+
+.input-new{
+    grid-area: input;
+    width: auto;
+    font: inherit;
+    border-radius: 5px;
+    border: 1px solid gray;
+    background-color: transparent;
+    color: black;
+}
+
+.labelName{
+    grid-area: input;
+    z-index: 100;
+    width: max-content;
+    margin-left: 1rem;
+    padding: 0.5rem;
+    height: 100%;
+    display: flex;
+    transition: transform .2s;
+    transform-origin: center left;
+
+}
+.input-new:focus +.labelName,
+.input-new:not(:placeholder-shown)+.labelName
+{
+    transform: translateY(-50%) scale(.7);
+    background-color: rgb(255, 255, 255);
+}
+
+.bg-gradient-guardar{
+    background: rgb(199, 14, 143);
+    color: white;
+  }
+  
+#client-select{
+    border: 1px solid gray;
+    padding-left: 1.5rem
+    ;
+}
+.btn-primary{
+    background-color:  rgb(199, 14, 143) !important;
+    border: none;
+}
+.btn-primary:hover{
+    background-color:  rgb(97, 7, 70) !important;
+    border: none;
+}
+
+.logoModal{
+   border-radius: 15px;
+}
+
+@media (max-width: 575.98px) {
+    #labelAnimation{
+        display: flex;
+        align-content: center;
+        flex-wrap: nowrap;
+        flex-direction: column;
+    }
+    .labelName{
+        margin-left: 0;
+        padding: 0;
+        width: 100%;
+        text-align: center;
+    }
+    .cont-newUser{
+        border: 1px solid red;
+        width: 100%;
+        margin: 0;
+    }
+
+}

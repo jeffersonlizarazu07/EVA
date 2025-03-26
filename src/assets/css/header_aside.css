@@ -1,0 +1,116 @@
+.body-Claro {
+  background-image: url("../img/eva v8.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+nav{
+  border: 2px solid rgb(199, 14, 143);
+  border-radius: 25px;
+  margin-bottom: 5px;
+}
+
+#nav-Claro {
+  background-color: white;
+}
+#nav-Oscuro {
+  background-color: rgb(33, 37, 41,1);
+}
+
+.nav-item {
+  text-align: center; /* Centra el contenido dentro de los ítems */
+  margin-bottom: 20px; /* Espaciado entre los ítems */
+}
+
+.tooltip-container:hover {
+  visibility: visible;
+  opacity: 1;
+}
+button {
+  border: 0;
+}
+section {
+  height: 75vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-top: 25px;
+}
+#navbarNav {
+  min-width: 50px;
+  max-width: 100px;
+  border-right: 2px solid rgb(199, 14, 143);
+  border-top: 2px solid rgb(199, 14, 143);
+  border-bottom: 2px solid rgb(199, 14, 143);
+  position: fixed;
+  max-height: 50%;
+}
+
+
+
+#div_ul {
+  min-width: 50px;
+  max-width: 100px;
+}
+
+ul {
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  padding-left: 0;
+}
+.ul-colapse{
+  margin-top: 70px;
+}
+#iconoDegradado {
+  font-size: 25px;
+  cursor: pointer;
+  background: -moz-linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  background: -webkit-linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  background: linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#icono {
+  font-size: 25px;
+  color: rgb(199, 14, 143);
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  body {
+    background-image: none;
+    background-color: rgb(255, 255, 255);
+    background-repeat: no-repeat;
+    height: auto;
+  }
+
+  #container {
+    padding: 10px;
+  }
+}
+
+/* Estilos modo oscuro */
+
+.body-Oscuro {
+  background-image: url("../img/eva v10.png");
+  background-size: cover;
+  background-repeat: repeat;
+}
+
+#logo{
+  width: 63px;
+}

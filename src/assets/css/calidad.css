@@ -1,0 +1,292 @@
+/* body{
+    margin:0;
+    padding:0;
+    font-family: sans-serif;
+    background-image: url("../img/fondo\ slide\ 2.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+} */
+
+section .container {
+  margin-top: 2%;
+}
+/* .container {
+  margin-left: 5%;
+  width: 100%;
+  height: 80vh;
+}
+ */
+.btn-option-view:hover,
+.active {
+  color: white !important;
+  background-color: black !important;
+}
+.cards-group {
+  /* background-color: white; */
+  border: 2px solid rgb(199, 14, 143);
+  border-radius: 35px;
+}
+.card1,
+.card2,
+.card3 {
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: 50vh !important;
+  border-radius: 35px !important;
+  width: 100% !important;
+  color: white !important;
+  border: 2px solid rgb(199, 14, 143) !important;
+  margin-bottom: 5%;
+}
+.card-blackshadow:hover {
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 5px 25px;
+}
+.card1 {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen4slide3.jpg");
+  background-size: 100% 100%;
+  background-size: cover;
+}
+.card1:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("../img/imagen4slide3.jpg");
+  border: none !important;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
+}
+.card2 {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen5 slide 3.jpg");
+  background-size: cover;
+}
+.card2:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("../img/imagen5 slide 3.jpg");
+  border: none !important;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
+}
+.card3 {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen6 slide 3.jpg");
+  background-size: 100% 100%;
+}
+.card3:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("../img/imagen6 slide 3.jpg");
+  background-size: 100% 100%;
+  border: none !important;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
+}
+.outstanding-card,
+.outstanding-card-black {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen3 slide 3.jpeg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 35px !important;
+  margin-top: 15%;
+  margin-left: 15%;
+  width: 20vw !important;
+  height: 60vh !important;
+  color: white !important;
+  border: 2px solid rgb(199, 14, 143) !important;
+}
+
+.outstanding-card:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("../img/imagen3 slide 3.jpeg");
+  border: none !important;
+  box-shadow: rgba(0, 0, 0, 0.705) 0px 5px 25px;
+}
+
+.outstanding-card-black:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("../img/imagen3 slide 3.jpeg");
+  border: none !important;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 5px 25px;
+}
+
+.card-title {
+  font-weight: 500;
+}
+.card-text {
+
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.div-title h5 {
+  font-weight: 600;
+  margin-bottom: 15% !important;
+  height: 10%;
+  border-bottom: 1px solid white;
+}
+.div-title p {
+  font-size: 0.8rem;
+  padding: 5%;
+}
+.container {
+  margin-top: 4%;
+}
+.button-container {
+  padding: 0% 7%;
+}
+.card-btn,
+.btn-plus {
+  border: 1px solid white;
+  background-color: transparent;
+  color: white;
+}
+.card-btn {
+  border-radius: 5px;
+}
+.check {
+  width: 100%;
+}
+.btn-plus {
+  border-radius: 49% 51% 50% 50% / 48% 48% 52% 52%;
+}
+.card-btn:hover {
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
+    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
+    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+.dropbtn {
+  background-color: transparent;
+  color: white;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #747474;
+  min-width: 120px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  border: 1px solid black;
+  z-index: 1;
+}
+.dropdown-content a {
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  display: block;
+}
+.dropdown-content a:hover {
+  background-color: transparent;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+/* ------------------- Estilos de modo lista   ------------------- */
+.list-item {
+  margin-left: 2%;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.list-item h5 {
+  margin-left: 5%;
+}
+.list div li {
+  list-style-type: none;
+}
+.list-item {
+  background-image: url("../img/fondo slide 2.png");
+  height: 12vh;
+  border-radius: 25px;
+}
+.item-1 {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen4slide3.jpg");
+}
+.item-1:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("../img/imagen4slide3.jpg");
+  border: none;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
+}
+.item-2 {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen5 slide 3.jpg");
+  background-size: cover;
+}
+.item-2:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.4)),
+    url("../img/imagen5 slide 3.jpg");
+  border: none;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
+}
+.item-3 {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen6 slide 3.jpg");
+  background-size: cover;
+}
+.item-3:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.4)),
+    url("../img/imagen6 slide 3.jpg");
+  border: none;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
+}
+#list-mode {
+  display: none;
+}
+#grid-mode {
+  display: block;
+}
+/* ------------------- Estilos de modo lista   ------------------- */
+@media (max-width: 575.98px) {
+ 
+
+  .outstanding-card,
+  .outstanding-card-black {
+    width: 100% !important;
+    margin: 5% 0% !important;
+  }
+  .cards-group {
+    padding: 5%;
+  }
+  .cards-group .date {
+    font-size: 100%;
+    width: 135%;
+  }
+  #navbarNav {
+    padding-left: 0;
+  }
+  .cont-row {
+    background-color: transparent !important;
+  }
+  .body-Oscuro {
+    background-repeat: repeat !important;
+  }
+}
+
+/* Modo oscuro */
+
+.body-Oscuro {
+  background-image: url("../img/eva v10.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: auto;
+  margin: 0;
+  padding: 0;
+}
+
+#nav-Oscuro {
+  background-color: rgba(0, 0, 0, 0.082);
+  border: 2px solid rgb(199, 14, 143);
+  border-radius: 25px;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1;
+}
+
+#logo {
+  width: 63px;
+}

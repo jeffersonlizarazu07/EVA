@@ -1,0 +1,77 @@
+{
+  "quality": {
+    "title": "Qualidade",
+    "description": "Agentes / Usuários / Formulários de monitoramento / Relatórios"
+  },
+  "satisfaction": {
+    "title": "Experiência do cliente",
+    "description": "Pesquisas / Gráficos / Relatórios"
+  },
+  "sidebarlt": {
+    "First name": "Primeiro nome",
+    "Middle name": "Nome do meio",
+    "Last name": "Sobrenome",
+    "Email": "Email",
+    "Password": "Senha",
+    "Leave this blank if you don't want to change the password.": "Deixe em branco se não deseja alterar a senha.",
+    "Confirm Password": "Confirmar senha",
+    "Language": "Idioma",
+    "Spanish": "Espanhol",
+    "English": "Inglês",
+    "Italian": "Italiano",
+    "Portuguese": "Português",
+    "Manage account": "Gerenciar conta",
+    "Logout": "Sair",
+    "Save": "Salvar",
+    "Cancel": "Cancelar"
+  },
+  "headerlt": {
+    "First name": "Primeiro nome",
+    "Middle name": "Nome do meio",
+    "Last name": "Sobrenome",
+    "Email": "Email",
+    "Password": "Senha",
+    "Leave this blank if you don't want to change the password.": "Deixe em branco se não deseja alterar a senha.",
+    "Confirm Password": "Confirmar senha",
+    "Language": "Idioma",
+    "Spanish": "Espanhol",
+    "English": "Inglês",
+    "Italian": "Italiano",
+    "Portuguese": "Português",
+    "Manage account": "Gerenciar conta",
+    "Logout": "Sair",
+    "Save changes": "Salvar alterações",
+    "Close": "Fechar"
+  },
+  "qualitySite": {
+    "Quality system": "Sistema de qualidade",
+    "Agents": "Agentes",
+    "Monitoring forms": "Formulários de monitoramento",
+    "Users": "Usuários",
+    "Agents list": "Lista de agentes",
+    "Create form": "Criar formulário",
+    "Company agents": "Agentes da empresa",
+    "Create and/or edit form": "Criar e/ou editar formulário",
+    "Monitoring forms to the agent": "Formulários de monitoramento para o agente",
+    "Generate report": "Gerar relatório",
+    "View reports": "Ver relatórios",
+    "Monitoring forms report to the agent": "Relatório de formulários de monitoramento para o agente",
+    "Quality form ABC bank": "Formulário de qualidade banco ABC",
+    "Rate the quality of customer service being provided by the agent": "Avalie a qualidade do atendimento ao cliente prestado pelo agente"
+  },
+  "satisfactionSite": {
+    "Survey system": "Sistema de pesquisa",
+    "Grid mode": "Modo de grade",
+    "List mode": "Modo de lista",
+    "Surveys section": "Seção de pesquisas",
+    "Card sections": "Seção de cartões",
+    "User surveys": "Pesquisas de usuários",
+    "Total Surveys": "Total de pesquisas",
+    "Create and/or edit survey": "Criar e/ou editar pesquisa",
+    "Survey report": "Relatório de pesquisa",
+    "Generate report": "Gerar relatório",
+    "Send survey": "Enviar pesquisa",
+    "Title": "Título",
+    "Rate the quality of customer service being provided by the agent": "Avalie a qualidade do atendimento ao cliente prestado pelo agente"
+  }
+}

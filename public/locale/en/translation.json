@@ -1,0 +1,29 @@
+{
+    "quality": {
+      "title": "Quality",
+      "description": "Agents / Users / Monitoring forms / Reports"
+    },
+    "satisfaction": {
+      "title": "Customer Experience",
+      "description": "Surveys / Charts / Reports"
+    },
+    "sidebarlt":{
+      "Primer nombre": "Primer nombre",
+      "Segundo nombre": "Segundo nombre",
+      "Apellidos": "Apellidos",
+      "Correo": "Correo",
+      "Contraseña": "Contraseña",
+      "Deje esto en blanco si no desea cambiar la contraseña.": "Deje esto en blanco si no desea cambiar la contraseña.",
+      "Confirmar Contraseña": "Confirmar Contraseña",
+      "Idioma": "Idioma",
+      "Español": "Español",
+      "Inglés": "Inglés",
+      "Italiano": "Italiano",
+      "Portugués": "Portugués",
+      "Gestionar cuenta": "Gestionar cuenta",
+      "Cerrar sesión": "Cerrar sesión",
+      "Guardar": "Guardar",
+      "Cancelar": "Cancelar"
+    }
+    
+  }

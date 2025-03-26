@@ -1,0 +1,77 @@
+{
+  "quality": {
+    "title": "Qualità",
+    "description": "Agenti / Utenti / Moduli di monitoraggio / Report"
+  },
+  "satisfaction": {
+    "title": "Esperienza del cliente",
+    "description": "Sondaggi / Grafici / Report"
+  },
+  "sidebarlt": {
+    "First name": "Nome",
+    "Middle name": "Secondo nome",
+    "Last name": "Cognome",
+    "Email": "Email",
+    "Password": "Password",
+    "Leave this blank if you don't want to change the password.": "Lascia vuoto se non vuoi cambiare la password.",
+    "Confirm Password": "Conferma password",
+    "Language": "Lingua",
+    "Spanish": "Spagnolo",
+    "English": "Inglese",
+    "Italian": "Italiano",
+    "Portuguese": "Portoghese",
+    "Manage account": "Gestisci account",
+    "Logout": "Esci",
+    "Save": "Salva",
+    "Cancel": "Annulla"
+  },
+  "headerlt": {
+    "First name": "Nome",
+    "Middle name": "Secondo nome",
+    "Last name": "Cognome",
+    "Email": "Email",
+    "Password": "Password",
+    "Leave this blank if you don't want to change the password.": "Lascia vuoto se non vuoi cambiare la password.",
+    "Confirm Password": "Conferma password",
+    "Language": "Lingua",
+    "Spanish": "Spagnolo",
+    "English": "Inglese",
+    "Italian": "Italiano",
+    "Portuguese": "Portoghese",
+    "Manage account": "Gestisci account",
+    "Logout": "Esci",
+    "Save changes": "Salva modifiche",
+    "Close": "Chiudi"
+  },
+  "qualitySite": {
+    "Quality system": "Sistema di qualità",
+    "Agents": "Agenti",
+    "Monitoring forms": "Moduli di monitoraggio",
+    "Users": "Utenti",
+    "Agents list": "Elenco agenti",
+    "Create form": "Crea modulo",
+    "Company agents": "Agenti aziendali",
+    "Create and/or edit form": "Crea e/o modifica modulo",
+    "Monitoring forms to the agent": "Moduli di monitoraggio per l'agente",
+    "Generate report": "Genera report",
+    "View reports": "Visualizza report",
+    "Monitoring forms report to the agent": "Report dei moduli di monitoraggio per l'agente",
+    "Quality form ABC bank": "Modulo di qualità banca ABC",
+    "Rate the quality of customer service being provided by the agent": "Valuta la qualità del servizio clienti fornito dall'agente"
+  },
+  "satisfactionSite": {
+    "Survey system": "Sistema di sondaggi",
+    "Grid mode": "Modalità griglia",
+    "List mode": "Modalità lista",
+    "Surveys section": "Sezione sondaggi",
+    "Card sections": "Sezione carte",
+    "User surveys": "Sondaggi utente",
+    "Total Surveys": "Sondaggi totali",
+    "Create and/or edit survey": "Crea e/o modifica sondaggio",
+    "Survey report": "Report sondaggio",
+    "Generate report": "Genera report",
+    "Send survey": "Invia sondaggio",
+    "Title": "Titolo",
+    "Rate the quality of customer service being provided by the agent": "Valuta la qualità del servizio clienti fornito dall'agente"
+  }
+}

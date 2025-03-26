@@ -1,0 +1,95 @@
+  nav {
+    background-color: white;
+    border: 2px solid rgb(199, 14, 143);
+    border-radius: 25px;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1;
+  }
+  .tooltip-container:hover {
+    visibility: visible;
+    opacity: 1;
+  }
+  button {
+    border: 0;
+  }
+  /* section {
+    height: 75vh;
+    width: 100%;
+    display: flex;
+   
+    padding-top: 25px;
+  } */
+  #navbarNav {
+    min-width: 50px;
+    max-width: 100px;
+    border-right: 2px solid rgb(199, 14, 143);
+    border-top: 2px solid rgb(199, 14, 143);
+    border-bottom: 2px solid rgb(199, 14, 143);
+  }
+  
+  #div_ul {
+    min-width: 50px;
+    max-width: 100px;
+  }
+  
+  ul {
+    display: flex;
+    flex-direction: column;
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  #iconoDegradado {
+    font-size: 25px;
+    cursor: pointer;
+    background: -moz-linear-gradient(
+      129deg,
+      rgba(199, 14, 143, 1) 37%,
+      rgba(95, 9, 121, 1) 69%
+    );
+    background: -webkit-linear-gradient(
+      129deg,
+      rgba(199, 14, 143, 1) 37%,
+      rgba(95, 9, 121, 1) 69%
+    );
+    background: linear-gradient(
+      129deg,
+      rgba(199, 14, 143, 1) 37%,
+      rgba(95, 9, 121, 1) 69%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  #icono {
+    font-size: 25px;
+    color: rgb(199, 14, 143);
+    cursor: pointer;
+  }
+  
+  @media (max-width: 767px) {
+    body {
+      background-image: none;
+      background-color: rgb(255, 255, 255);
+    }
+  
+    #container {
+      padding: 10px;
+    }
+  }
+  
+  nav {
+    background-color: transparent;
+    border: 2px solid rgb(199, 14, 143);
+    border-radius: 25px;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1;
+  }
+  
+  header p{
+    color: black;
+  }
+  
