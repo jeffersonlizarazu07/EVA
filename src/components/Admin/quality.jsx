@@ -5,15 +5,18 @@ import SidebarLT1 from "../aside/sidebarLT1";
 import HeaderLT1 from "../header/headerLT1";
 import SidebarLT2 from "../aside/sidebarLT2";
 import HeaderLT2 from "../header/headerLT2";
+import Agent_Monitoring from "../../pages/admin/agent_monitoring";
 import i18n from "../../assets/js/i18n";
 import { useTranslation } from "react-i18next";
-
-
 import { UserContext } from "../../context/UserContext";
+import { useNavigate } from "react-router-dom";
+
 const Quality = () => {
   const {userType,languageUser} = useContext(UserContext)
   const [isInitialized, setIsInitialized] = useState(false);
   const { t,i18n } = useTranslation();
+  const navigate = useNavigate();
+
 
   
   useEffect(() => {
@@ -183,7 +186,7 @@ const Quality = () => {
                         </div>
                         <div className="row button-container">
                           <div className="col-10">
-                            <button className="card-btn check">
+                            <button className="card-btn check" onClick={() => navigate("/agent_monitoring")}>
                               {t("qualitySite.Create_form")}
                             </button>
                           </div>

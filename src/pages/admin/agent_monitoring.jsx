@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../../assets/css/tabla.css";
 
-const TableUsers = ({
+const Agent_Monitoring = ({
   header,
   data,
   onCreate,
@@ -212,4 +212,4 @@ const TableUsers = ({
   );
 };
 
-export default TableUsers;
+export default Agent_Monitoring;
