@@ -10,7 +10,7 @@ const questionRoutes = require('./routes/questionRoutes');
 const endUserRoutes = require('./routes/endUserRoutes');
 const endUserClientRoutes = require('./routes/endUserClientRoutes');
 const clientsRoutes = require('./routes/clientRoute');
-const answersRoutes = require('./routes/answerRoute');
+const answersRoutes = require('./routes/answerRoutes');
 
 
 const app = express();
