@@ -29,15 +29,15 @@ app.use(cookieParser());
 
   
 // Rutas
-app.use('/auth', authRoutes);
+app.use('/api', authRoutes);
 app.use('/api', userRoutes);
-app.use('/user_clients', userClientRoutes); 
-app.use('/surveys', surveySetRoutes);
-app.use('/questions', questionRoutes); 
-app.use('/endUsers', endUserRoutes); 
-app.use('/endUserClients', endUserClientRoutes); 
-app.use('/clients', clientsRoutes);
-app.use('/answer', answersRoutes);
+app.use('/api', userClientRoutes); 
+app.use('/api', surveySetRoutes);
+app.use('/api', questionRoutes); 
+app.use('/api', endUserRoutes); 
+app.use('/api', endUserClientRoutes); 
+app.use('/api', clientsRoutes);
+app.use('/api', answersRoutes);
 
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
