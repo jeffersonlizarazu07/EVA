@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext,useMemo } from 'react';
 import HeaderLT1 from '../../components/header/headerLT1';
 import axios from "axios";
-import SidebarLT1 from '../../components/aside/sidebarLT1';
+// import SidebarLT1 from '../../components/aside/sidebarLT1';
 import useInput from '../../components/hooks/useInput';
 import { UserContext } from '../../context/UserContext';
 import { useParams } from 'react-router-dom';
@@ -244,7 +244,7 @@ const rangeOptions = useMemo(() => getRangeOptions(selectedRangeType.questionTyp
       <div id="body">
         <HeaderLT1/>
         <section style={{alignItems:"stretch", flexWrap:"nowrap", padding:0}}>
-        <SidebarLT1/>
+        {/* <SidebarLT1/> */}
         <div className="container mt-0">
           <div className="row">
             <div className="col-md-12">
