@@ -9,6 +9,6 @@ export default function encodeBase64(name, clientId) {
 export function generateRandomLink(name, clientId) {
     const encodedString = encodeBase64(name, clientId);
 /*     const baseUrl = 'https://eva.telpercormance.co/'; */
-    const baseUrl = 'http://localhost:5173/';
+    const baseUrl = 'http://localhost:3000/';
     return `${baseUrl}survey/${encodeURIComponent(encodedString)}`;
 }

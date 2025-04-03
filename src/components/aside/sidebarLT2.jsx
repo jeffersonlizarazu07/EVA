@@ -51,13 +51,11 @@ const SidebarLT2 = () => {
     localStorage.removeItem("accessToken");
     nav("/");
   };
-  const url = "http://localhost/API-EVA/userController/userbyId/";
-  const urlp = "http://localhost/API-EVA/userController/putUser/";
+  const url = "http://localhost/tpco_transversal_EvaBe/userController/userbyId/";
+  const urlp = "http://localhost/tpco_transversal_EvaBe/userController/putUser/";
 
   const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    withCredentials: true,
   };
 
   const getInfo = async () => {

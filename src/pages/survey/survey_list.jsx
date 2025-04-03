@@ -15,7 +15,7 @@ import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
-  const url = "http://localhost:8000/api/surveys";
+  const url = "http://localhost:3000/api/surveys";
   const headers = ["Title", "Start_date", "End_date", "state"];
   const [operation, setOperation] = useState([1]);
   const [idToEdit, setidToEdit] = useState(null);
@@ -61,9 +61,7 @@ const SurveyList = () => {
 
 
   const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    withCredentials: true,
   };
 
   const getSurveys = async () => {
@@ -78,7 +76,7 @@ const SurveyList = () => {
   const getClients = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/user_client/${id}`,
+        `http://localhost:3000/api/users_client/${id}`,
         config
       );
       console.log("clientes relacionados: ", response.data.data);
@@ -89,7 +87,7 @@ const SurveyList = () => {
   };
 
   const activeSurvey = (survey) => {
-    const url = `http://localhost:8000/api/survey`;
+    const url = `http://localhost:3000/api/survey`;
     const id = survey.id;
     const name = survey.title;
     const parametros = {
@@ -106,7 +104,7 @@ const SurveyList = () => {
         if (result.isConfirmed) {
           try {
             await axios.patch(`${url}/${id}`, parametros, {
-              headers: { Authorization: `Bearer ${accessToken}` },
+              withCredentials: true,
             });
 
             Toast.fire({
@@ -128,7 +126,7 @@ const SurveyList = () => {
   };
 
   const deactivateSurvey = (survey) => {
-    const url = `http://localhost:8000/api/survey`;
+    const url = `http://localhost:3000/api/survey`;
     const id = survey.id;
     const name = survey.title;
     const parametros = {
@@ -251,7 +249,7 @@ const SurveyList = () => {
           setLoading(true);
           try {
             const response = await axios.post(
-              "http://localhost:8000/api/surveys",
+              "http://localhost:3000/api/surveys",
               parametros,
               config
             );
@@ -274,7 +272,7 @@ const SurveyList = () => {
 
         handleCreateSurvey();
       } else if (metodo.toUpperCase() == "PUT") {
-        const url = `http://localhost:8000/api/survey`;
+        const url = `http://localhost:3000/api/survey`;
         const response = await axios.put(
           `${url}/${idToEdit}`,
           parametros,

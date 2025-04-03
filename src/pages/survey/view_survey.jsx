@@ -51,9 +51,7 @@ export default function View_survey() {
   }, [id, languageUser]);
 
   const config = {
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-    }
+    withCredentials: true,
   };
   const updateSurveyQuestions = () => {
     getSurveyQuestions(id, config)

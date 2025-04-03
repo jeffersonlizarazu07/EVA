@@ -78,15 +78,13 @@ const HeaderLT1 = () => {
   };
 
   const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    withCredentials: true,
   };
 
   const checkinfo = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/user/${userId}`,
+        `http://localhost:3000/api/users/${userId}`,
         config
       );
       setUserInfo(response.data.data);
@@ -95,7 +93,7 @@ const HeaderLT1 = () => {
       console.error(error);
     }
   };
-  const url = "http://localhost:8000/api/user/"; //mismo link para 2 acciones (put-post), cambia directamente en el metodo de axios"
+  const url = "http://localhost:3000/api/users/"; //mismo link para 2 acciones (put-post), cambia directamente en el metodo de axios"
 
   const getInfo = async () => {
     try {

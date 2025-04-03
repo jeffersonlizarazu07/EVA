@@ -22,8 +22,8 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 const AdminList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
-  const urlUsers = "http://localhost:8000/api/user";
-  const urlUsersClients = "http://localhost:8000/api/user_clients";
+  const urlUsers = "http://localhost:3000/api/users";
+  const urlUsersClients = "http://localhost:3000/api/users_clients";
   const [admins, setAdmins] = useState([]);
   const [clients, setClients] = useState([]);
   const [operation, setOperation] = useState([1]);
@@ -52,9 +52,7 @@ const AdminList = () => {
     getClients();
   }, [languageUser]);
   const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    withCredentials: true,
   };
 
   const selectedKeys = ["firstname", "lastname", "type", "state"];
@@ -85,8 +83,8 @@ const AdminList = () => {
   //REQUEST//
   const getAdmins = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/users`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+      const response = await axios.get(`http://localhost:3000/api/users`, {
+        withCredentials: true,
       });
       setAdmins(response.data.data);
     } catch (error) {
@@ -97,7 +95,7 @@ const AdminList = () => {
   const getClients = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/clients`,
+        `http://localhost:3000/api/clients`,
         config
       );
       setClients(response.data.data);
@@ -109,7 +107,7 @@ const AdminList = () => {
   const getUserClients = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/user_client/${id}`,
+        `http://localhost:3000/api/users_client/${id}`,
         config
       );
       const responseData = response.data.data;
@@ -192,7 +190,7 @@ const AdminList = () => {
   };
 
   const deactivateUser = (admin) => {
-    const url = `http://localhost:8000/api/user`;
+    const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
     const parametros = {
@@ -222,7 +220,7 @@ const AdminList = () => {
   };
 
   const activeUser = (admin) => {
-    const url = `http://localhost:8000/api/user`;
+    const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
     const parametros = {
@@ -241,7 +239,7 @@ const AdminList = () => {
         if (result.isConfirmed) {
           try {
             await axios.patch(`${url}/${id}`, parametros, {
-              headers: { Authorization: `Bearer ${accessToken}` },
+              withCredentials: true,
             });
             Toast.fire({
               icon: "success",
