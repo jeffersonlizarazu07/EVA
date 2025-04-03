@@ -1,5 +1,6 @@
 import { React, useEffect, useState } from "react";
-import { Modal, Box, Button, Typography } from "@mui/material";
+import { Modal, Box, Button, Typography, CircularProgress, Dialog, DialogContent } from "@mui/material";
+import { styled } from "@mui/system";
 import HeaderLT1 from "../../components/header/headerLT1";
 import ModalRegisterUser from "../../components/Tables/tableMonitoring";
 import "../../assets/css/agent_monitoring.css";
@@ -7,7 +8,28 @@ import "../../assets/css/agent_monitoring.css";
 const AdminList = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [recordsPerPage, setRecordsPerPage] = useState(10); // Estado del selector
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
+
+  const CustomCircularProgress = styled(CircularProgress)({
+    "&&": {
+      color: "transparent", 
+    },
+    "& .MuiCircularProgress-circle": {
+      strokeLinecap: "round",
+      strokeDasharray: "40, 160", // Controla el grosor y espacio vacío
+      strokeWidth: 5, 
+      stroke: "blue",
+    },
+  });
+  
+  const LoadingModal = ({ open }) => (
+    <Dialog open={open} maxWidth="xs" fullWidth>
+      <DialogContent sx={{ textAlign: "center", padding: "20px" }}>
+        <Typography variant="h6">Cargando...</Typography>
+        <CircularProgress sx={{ marginTop: "15px" }} />
+      </DialogContent>
+    </Dialog>
+  );
 
   useEffect(() => {
     setTimeout(() => {
@@ -40,10 +62,7 @@ const AdminList = () => {
   return (
     <div className="App">
       {loading ? (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <Typography variant="h4">Cargando...</Typography>
-        </div>
+        <LoadingModal open={true} />
       ) : (
         <div id="body">
           <HeaderLT1 />
