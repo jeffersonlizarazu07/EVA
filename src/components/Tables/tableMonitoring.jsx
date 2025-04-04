@@ -17,13 +17,11 @@ import {
 const ModalRegisterUser = ({ open, handleClose }) => {
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Formulario</DialogTitle>
+      <DialogTitle>Añadir Formulario</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
-
           {/* Datos de usuario */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6">Agregar Fromulario</Typography>
             <TextField fullWidth label="Nombre del formulario" margin="dense" />
             {/* <TextField fullWidth label="Segundo nombre" margin="dense" />
             <TextField fullWidth label="Apellidos" margin="dense" /> */}
@@ -38,7 +36,7 @@ const ModalRegisterUser = ({ open, handleClose }) => {
           </Grid>
 
           {/* Datos administrativos */}
-          
+
           <Grid item xs={12} md={6}>
             {/* <Typography variant="h6">Datos administrativos</Typography>
             <TextField fullWidth label="E-mail" type="email" margin="dense" />
@@ -55,16 +53,39 @@ const ModalRegisterUser = ({ open, handleClose }) => {
                 <MenuItem value="editor">Editor</MenuItem>
               </Select>
             </FormControl> */}
+
+            <div class="mb-3">
+              <label for="comentarios" class="form-label">
+                <h4>Descripción</h4>
+              </label>
+              <textarea
+                class="form-control"
+                id="comentarios"
+                name="comentarios"
+                placeholder="Descripción"
+                rows="3"
+                cols="50" 
+                height="38px"
+              ></textarea>
+            </div>
           </Grid>
         </Grid>
       </DialogContent>
 
       {/* Botones */}
       <DialogActions>
-        <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: "#6c757d" }}>
+        <Button
+          onClick={handleClose}
+          variant="contained"
+          sx={{ backgroundColor: "#6c757d" }}
+        >
           Cerrar
         </Button>
-        <Button onClick={handleClose} variant="contained" sx={{ backgroundColor: "#d1006c" }}>
+        <Button
+          onClick={handleClose}
+          variant="contained"
+          sx={{ backgroundColor: "#d1006c" }}
+        >
           Guardar
         </Button>
       </DialogActions>
