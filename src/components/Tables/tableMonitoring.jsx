@@ -17,16 +17,16 @@ import {
 const ModalRegisterUser = ({ open, handleClose }) => {
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Registrar Usuario</DialogTitle>
+      <DialogTitle>Formulario</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
 
           {/* Datos de usuario */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6">Datos de usuario</Typography>
-            <TextField fullWidth label="Primer nombre" margin="dense" />
-            <TextField fullWidth label="Segundo nombre" margin="dense" />
-            <TextField fullWidth label="Apellidos" margin="dense" />
+            <Typography variant="h6">Agregar Fromulario</Typography>
+            <TextField fullWidth label="Nombre del formulario" margin="dense" />
+            {/* <TextField fullWidth label="Segundo nombre" margin="dense" />
+            <TextField fullWidth label="Apellidos" margin="dense" /> */}
             <FormControl fullWidth margin="dense">
               <InputLabel>Clientes</InputLabel>
               <Select>
@@ -40,7 +40,7 @@ const ModalRegisterUser = ({ open, handleClose }) => {
           {/* Datos administrativos */}
           
           <Grid item xs={12} md={6}>
-            <Typography variant="h6">Datos administrativos</Typography>
+            {/* <Typography variant="h6">Datos administrativos</Typography>
             <TextField fullWidth label="E-mail" type="email" margin="dense" />
             <TextField fullWidth label="Contraseña" type="password" margin="dense" />
             <TextField fullWidth label="Confirmar contraseña" type="password" margin="dense" />
@@ -54,7 +54,7 @@ const ModalRegisterUser = ({ open, handleClose }) => {
                 <MenuItem value="admin">Administrador</MenuItem>
                 <MenuItem value="editor">Editor</MenuItem>
               </Select>
-            </FormControl>
+            </FormControl> */}
           </Grid>
         </Grid>
       </DialogContent>

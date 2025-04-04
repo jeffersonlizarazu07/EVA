@@ -1,5 +1,13 @@
 import { React, useEffect, useState } from "react";
-import { Modal, Box, Button, Typography, CircularProgress, Dialog, DialogContent } from "@mui/material";
+import {
+  Modal,
+  Box,
+  Button,
+  Typography,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+} from "@mui/material";
 import { styled } from "@mui/system";
 import HeaderLT1 from "../../components/header/headerLT1";
 import ModalRegisterUser from "../../components/Tables/tableMonitoring";
@@ -9,12 +17,15 @@ import "../../assets/css/agent_monitoring.css";
 
 const AdminList = () => {
   const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const loadPage = async () => {
-
       Swal.fire({
         title: "Cargando...",
         didOpen: () => {
@@ -34,9 +45,61 @@ const AdminList = () => {
   if (loading) {
     return <Loading />;
   }
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleRecordsPerPageChange = (num) => setRecordsPerPage(num); // Actualiza registros por página
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1); // Reset page to 1 on new search
+  };
+
+  const staticData = [
+    {
+      id_form: 1,
+      form_name: "Formulario A",
+      client: "Cliente 1",
+      created_at: "2023-01-01",
+      created_by: "Admin",
+      state: "Activo",
+      updated_at: "2023-01-10",
+      updated_by: "Admin",
+    },
+    {
+      id_form: 2,
+      form_name: "Formulario B",
+      client: "Cliente 2",
+      created_at: "2023-02-01",
+      created_by: "Editor",
+      state: "Inactivo",
+      updated_at: "2023-02-10",
+      updated_by: "Editor",
+    },
+    {
+      id_form: 3,
+      form_name: "Formulario C",
+      client: "Cliente 3",
+      created_at: "2023-03-01",
+      created_by: "Viewer",
+      state: "Activo",
+      updated_at: "2023-03-10",
+      updated_by: "Viewer",
+    },
+  ];
+
+  const filteredData = staticData.filter((row) => {
+    const parsedSearchTerm = parseInt(searchTerm, 10);
+
+    if (!isNaN(parsedSearchTerm)) {
+      return row.id_form === parsedSearchTerm;
+    }
+    return Object.values(row).some((value) =>
+      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
 
   const columnTitles = {
     id_form: "Form ID",
@@ -50,128 +113,167 @@ const AdminList = () => {
     actions: "Actions",
   };
 
-  const staticData = [
-    { id_form: 1, form_name: "Formulario A", client: "Cliente 1", created_at: "2023-01-01", created_by: "Admin", state: "Activo", updated_at: "2023-01-10", updated_by: "Admin" },
-    { id_form: 2, form_name: "Formulario B", client: "Cliente 2", created_at: "2023-02-01", created_by: "Editor", state: "Inactivo", updated_at: "2023-02-10", updated_by: "Editor" },
-    { id_form: 3, form_name: "Formulario C", client: "Cliente 3", created_at: "2023-03-01", created_by: "Viewer", state: "Activo", updated_at: "2023-03-10", updated_by: "Viewer" },
-  ];
+  const handleRecordsPerPageChange = (records) => {
+    setRecordsPerPage(records);
+    setCurrentPage(1); // Reset page to 1 on new records per page
+  };
+  
 
 
   return (
     <div className="App">
-        <div id="body">
-          <HeaderLT1 />
-          <div className="row">
-            <div className="col-12">
-              <div className="container">
-                <div className="row">
-                  <div className="col-6">
-                    <input className="form-control" placeholder="Buscar" type="text" />
-                  </div>
-                  <div className="col-6 text-end">
-                    <button className="btn btn-primary" onClick={handleOpen}>
-                      <i className="fa fa-plus"></i> Nuevo usuario
-                    </button>
-                  </div>
+      <div id="body">
+        <HeaderLT1 />
+        <div className="row">
+          <div className="col-12">
+            <div className="container">
+              <div className="row">
+                <div className="col-6">
+                  <input
+                    className="form-control"
+                    placeholder="Buscar"
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
-
-                <div className="table-container">
-                  <table className="table table-hover">
-                    <thead>
-                      <tr className="table-light">
-                        {Object.values(columnTitles).map((title, index) => (
-                          <th key={index} className="text-center">{title}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {staticData.map((row, rowIndex) => (
-                        <tr key={rowIndex}>
-                          {Object.keys(columnTitles).map((key, colIndex) => (
-                            <td key={colIndex} className="text-center">
-                              {key === "actions" ? (
-                                <div className="dropdown dropup">
-                                  <button
-                                    className="btn-rect btn-dropdown"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                  >
-                                    <div className="dropdown-toggle">
-                                      <i className="fa-solid fa-ellipsis-vertical"></i>
-                                    </div>
-                                  </button>
-                                  <ul className="dropdown-menu p-0">
-                                    <li className="text-start btn-rect">
-                                      <button className="btn btn-rect">
-                                        <i className="fa-solid fa-circle-question"></i> <span>Ver preguntas</span>
-                                      </button>
-                                    </li>
-                                    <li className="text-start btn-rect">
-                                      <button className="btn text-start" style={{ width: "100%" }}>
-                                        <i className="fa-solid fa-edit"></i> Editar
-                                      </button>
-                                    </li>
-                                    <li className="text-start btn-rect">
-                                      <button className="btn text-start" style={{ width: "100%" }}>
-                                        <i className="fa-solid fa-power-off"></i> <span>Deshabilitar</span>
-                                      </button>
-                                    </li>
-                                  </ul>
-                                </div>
-                              ) : (
-                                row[key]
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Selector de registros en la parte inferior izquierda */}
-                <div className="row mt-3">
-                  <div className="col-6 d-flex justify-content-start record-selector">
-                    <label>
-                      Mostrar{" "}
-                      <button
-                        className="dropdown-toggle inp-search"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        {recordsPerPage}
-                      </button>
-                      <ul className="dropdown-menu">
-                        {[10, 25, 50].map((num) => (
-                          <li key={num}>
-                            <a
-                              className="dropdown-item"
-                              href="#"
-                              onClick={() => handleRecordsPerPageChange(num)}
-                            >
-                              {num}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>{" "}
-                      registros
-                    </label>
-                  </div>
+                <div className="col-6 text-end">
+                  <button className="btn btn-primary" onClick={handleOpen}>
+                    <i className="fa fa-plus"></i> Nuevo usuario
+                  </button>
                 </div>
               </div>
-            </div>
+
+              <div className="table-container">
+                <table className="table table-hover">
+                  <thead>
+                    <tr className="table-light">
+                      {Object.values(columnTitles).map((title, index) => (
+                        <th key={index} className="text-center">
+                          {title}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredData.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {Object.keys(columnTitles).map((key, colIndex) => (
+                          <td key={colIndex} className="text-center">
+                            {key === "actions" ? (
+                              <div className="dropdown dropup">
+                                <button
+                                  className="btn-rect btn-dropdown"
+                                  type="button"
+                                  data-bs-toggle="dropdown"
+                                  aria-expanded="false"
+                                >
+                                  <div className="dropdown-toggle">
+                                    <i className="fa-solid fa-ellipsis-vertical"></i>
+                                  </div>
+                                </button>
+                                <ul className="dropdown-menu p-0">
+                                  <li className="text-start btn-rect">
+                                    <button className="btn btn-rect">
+                                      <i className="fa-solid fa-circle-question"></i>{" "}
+                                      <span>Ver bloques</span>
+                                    </button>
+                                  </li>
+                                  <li className="text-start btn-rect">
+                                    <button
+                                      className="btn text-start"
+                                      style={{ width: "100%" }}
+                                    >
+                                      <i className="fa-solid fa-edit"></i>{" "}
+                                      Editar
+                                    </button>
+                                  </li>
+                                  <li className="text-start btn-rect">
+                                    <button
+                                      className="btn text-start"
+                                      style={{ width: "100%" }}
+                                    >
+                                      <i className="fa-solid fa-power-off"></i>{" "}
+                                      <span>Deshabilitar</span>
+                                    </button>
+                                  </li>
+                                </ul>
+                              </div>
+                            ) : (
+                              row[key]
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Selector de registros en la parte inferior izquierda */}
+              <div className="row mt-3">
+  <div className="col-12 d-flex justify-content-between align-items-center">
+    {/* Selector de registros */}
+    <div className="record-selector d-flex align-items-center">
+      <label className="me-2">Mostrar</label>
+      <div className="dropdown">
+        <button
+          className="btn btn-outline-secondary dropdown-toggle"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          {recordsPerPage}
+        </button>
+        <ul className="dropdown-menu">
+          {[10, 25, 50].map((num) => (
+            <li key={num}>
+              <a
+                className="dropdown-item"
+                href="#"
+                onClick={() => handleRecordsPerPageChange(num)}
+              >
+                {num}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <label className="ms-2">registros</label>
+    </div>
+
+    {/* Paginador */}
+    <div className="page-selector btn-group" role="group">
+      <button
+        type="button"
+        className="btn btn-outline-secondary"
+        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        disabled={currentPage === 1}
+      >
+        &lt;
+      </button>
+      <span className="btn btn-outline-secondary">{currentPage}</span>
+      <button
+        type="button"
+        className="btn btn-outline-secondary"
+        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+        disabled={currentPage === totalPages}
+      >
+        &gt;
+      </button>
+    </div>
+  </div>
+</div>
+</div>
           </div>
         </div>
+      </div>
       <ModalRegisterUser open={open} handleClose={handleClose} />
     </div>
   );
 };
 
 export default AdminList;
-
-
 
 // import { useState } from "react";
 // import "../../assets/css/tabla.css";

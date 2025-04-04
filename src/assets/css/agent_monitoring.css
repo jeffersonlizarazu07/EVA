@@ -80,3 +80,28 @@
 .record-selector .dropdown-menu {
   min-width: 80px;
 }
+
+.record-selector {
+  display: flex;
+  align-items: center;
+}
+
+.record-selector .dropdown-toggle {
+  background-color: rgb(199, 14, 143);
+  color: white;
+}
+
+.page-selector .btn {
+  border: none !important;  /* Quita el borde */
+  box-shadow: none !important; /* Evita sombras adicionales */
+  
+}
+
+.btn-group {
+  margin-right: 10px;
+}
+
+.dropdown-toggle {
+  min-width: 50px;
+  text-align: center;
+}
