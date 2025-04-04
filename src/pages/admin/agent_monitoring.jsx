@@ -3,43 +3,40 @@ import { Modal, Box, Button, Typography, CircularProgress, Dialog, DialogContent
 import { styled } from "@mui/system";
 import HeaderLT1 from "../../components/header/headerLT1";
 import ModalRegisterUser from "../../components/Tables/tableMonitoring";
+import Loading from "../layout/loading";
+import Swal from "sweetalert2";
 import "../../assets/css/agent_monitoring.css";
 
 const AdminList = () => {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
-
-  const CustomCircularProgress = styled(CircularProgress)({
-    "&&": {
-      color: "transparent", 
-    },
-    "& .MuiCircularProgress-circle": {
-      strokeLinecap: "round",
-      strokeDasharray: "40, 160", // Controla el grosor y espacio vacío
-      strokeWidth: 5, 
-      stroke: "blue",
-    },
-  });
-  
-  const LoadingModal = ({ open }) => (
-    <Dialog open={open} maxWidth="xs" fullWidth>
-      <DialogContent sx={{ textAlign: "center", padding: "20px" }}>
-        <Typography variant="h6">Cargando...</Typography>
-        <CircularProgress sx={{ marginTop: "15px" }} />
-      </DialogContent>
-    </Dialog>
-  );
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => {
+    const loadPage = async () => {
+
+      Swal.fire({
+        title: "Cargando...",
+        didOpen: () => {
+          Swal.showLoading();
+        },
+        allowOutsideClick: false,
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      Swal.close();
       setLoading(false);
-    }, 2000);
+    };
+
+    loadPage();
   }, []);
 
+  if (loading) {
+    return <Loading />;
+  }
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const handleRecordsPerPageChange = (num) => setRecordsPerPage(num); // Función para actualizar registros por página
+  const handleRecordsPerPageChange = (num) => setRecordsPerPage(num); // Actualiza registros por página
 
   const columnTitles = {
     id_form: "Form ID",
@@ -59,11 +56,9 @@ const AdminList = () => {
     { id_form: 3, form_name: "Formulario C", client: "Cliente 3", created_at: "2023-03-01", created_by: "Viewer", state: "Activo", updated_at: "2023-03-10", updated_by: "Viewer" },
   ];
 
+
   return (
     <div className="App">
-      {loading ? (
-        <LoadingModal open={true} />
-      ) : (
         <div id="body">
           <HeaderLT1 />
           <div className="row">
@@ -169,7 +164,6 @@ const AdminList = () => {
             </div>
           </div>
         </div>
-      )}
       <ModalRegisterUser open={open} handleClose={handleClose} />
     </div>
   );
