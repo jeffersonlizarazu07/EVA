@@ -125,24 +125,23 @@ const AdminList = () => {
         <div className="row">
           <div className="col-12">
             <div className="container">
-              <div className="row">
-                <div className="col-6">
-                  <input
-                    className="form-control"
-                    placeholder="Buscar"
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+              <div className="table-container" >
+                <div className="row">
+                  <div className="col-6">
+                    <input
+                      className="form-control"
+                      placeholder="Buscar"
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-6 text-end">
+                    <button className="btn btn-primary" onClick={handleOpen}>
+                      <i className="fa fa-plus"></i> Nuevo usuario
+                    </button>
+                  </div>
                 </div>
-                <div className="col-6 text-end">
-                  <button className="btn btn-primary" onClick={handleOpen}>
-                    <i className="fa fa-plus"></i> Nuevo usuario
-                  </button>
-                </div>
-              </div>
-
-              <div className="table-container">
                 <table className="table table-hover">
                   <thead>
                     <tr className="table-light">
@@ -206,65 +205,66 @@ const AdminList = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
-
-              {/* Selector de registros en la parte inferior izquierda */}
-              <div className="row mt-3">
-                <div className="col-12 d-flex justify-content-between align-items-center">
-                  {/* Selector de registros */}
-                  <div className="record-selector d-flex align-items-center">
-                    <label className="me-2">Mostrar</label>
-                    <div className="dropdown">
-                      <button
-                        className="btn btn-outline-secondary dropdown-toggle"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        {recordsPerPage}
-                      </button>
-                      <ul className="dropdown-menu">
-                        {[10, 25, 50].map((num) => (
-                          <li key={num}>
-                            <a
-                              className="dropdown-item"
-                              href="#"
-                              onClick={() => handleRecordsPerPageChange(num)}
-                            >
-                              {num}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
+                {/* Selector de registros en la parte inferior izquierda */}
+                <div className="row mt-3">
+                  <div className="col-12 d-flex justify-content-between align-items-center">
+                    {/* Selector de registros */}
+                    <div className="record-selector d-flex align-items-center">
+                      <label className="me-2">Mostrar</label>
+                      <div className="dropdown">
+                        <button
+                          className="btn btn-outline-secondary dropdown-toggle"
+                          type="button"
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          {recordsPerPage}
+                        </button>
+                        <ul className="dropdown-menu">
+                          {[10, 25, 50].map((num) => (
+                            <li key={num}>
+                              <a
+                                className="dropdown-item"
+                                href="#"
+                                onClick={() => handleRecordsPerPageChange(num)}
+                              >
+                                {num}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <label className="ms-2">registros</label>
                     </div>
-                    <label className="ms-2">registros</label>
-                  </div>
 
-                  {/* Paginador */}
-                  <div className="page-selector btn-group" role="group">
-                    <button
-                      type="button"
-                      className="btn btn-outline-secondary"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      disabled={currentPage === 1}
-                    >
-                      &lt;
-                    </button>
-                    <span className="btn btn-outline-secondary">
-                      {currentPage}
-                    </span>
-                    <button
-                      type="button"
-                      className="btn btn-outline-secondary"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                      }
-                      disabled={currentPage === totalPages}
-                    >
-                      &gt;
-                    </button>
+                    {/* Paginador */}
+                    <div className="page-selector btn-group" role="group">
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
+                      >
+                        &lt;
+                      </button>
+                      <span className="btn btn-outline-secondary">
+                        {currentPage}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
+                        }
+                        disabled={currentPage === totalPages}
+                      >
+                        &gt;
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -278,6 +278,8 @@ const AdminList = () => {
 };
 
 export default AdminList;
+
+
 
 // import { useState } from "react";
 // import "../../assets/css/tabla.css";

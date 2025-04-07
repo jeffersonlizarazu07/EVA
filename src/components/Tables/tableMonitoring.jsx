@@ -16,7 +16,7 @@ import {
 
 const ModalRegisterUser = ({ open, handleClose }) => {
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle>Añadir Formulario</DialogTitle>
       <DialogContent dividers>
         {/* Datos de usuario */}

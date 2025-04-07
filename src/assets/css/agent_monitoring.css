@@ -9,9 +9,14 @@
   padding: 20px;
 }
 
+.container {
+  max-width: 95%;
+  margin: 0 auto;
+}
+
 /* Contenedor de la tabla */
 .table-container {
-  border: 1px solid rgba(175, 14, 110, 0.717);
+  border: 2px solid rgba(175, 14, 110, 0.717);
   background-color: white;
   border-radius: 8px;
   padding: 20px;
@@ -92,8 +97,8 @@
 }
 
 .page-selector .btn {
-  border: none !important;  /* Quita el borde */
-  box-shadow: none !important; /* Evita sombras adicionales */
+  border: none !important; 
+  box-shadow: none !important; 
   
 }
 

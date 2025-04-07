@@ -392,11 +392,11 @@ const AdminList = () => {
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
         <div className="row m-0">
-          <div className="col-1 d-none d-flex  align-items-center ms-0 p-0">
+          <div className="col-1 d-none d-flex  align-items-center ms-0 p-0" >
             {/* <SidebarLT1 /> */}
           </div>
           <div className="col-12">
-            <div className="container mt-0 ms-0">
+            <div className="container-fluid mt-0 mx-auto">
               {admins.length > 0 && (
                 <TableAdmin
                   header={selectedKeys}

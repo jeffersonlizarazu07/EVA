@@ -14,8 +14,6 @@ import { UserContext } from "../../context/UserContext";
 import LineStyleCharts from "../../components/charts/lineStyle";
 import HeaderLT1 from "../../components/header/headerLT1";
 import HeaderLT2 from "../../components/header/headerLT2";
-// import SidebarLT1 from "../../components/aside/sidebarLT1";
-// import SidebarLT2 from "../../components/aside/sidebarLT2";
 import dayjs from "dayjs";
 import { Box, ButtonGroup, Grid, IconButton, Skeleton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -136,156 +134,148 @@ const Reports = () => {
 
   return (
     <div className="App">
-      <div id="body">
-        {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
+  <div id="body">
+    {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
+    <div className="m-0 p-0">
+      <div className="row m-0">
+        <div className="col-12 px-2 d-flex justify-content-center">
+          <div className="w-100 px-3" style={{ maxWidth: "96%" }}>
+            <div className="col-md-12 mb-4">
+              <div className="card">
+                <div className="card-body" style={{ borderRadius: "50px" }}>
+                  {/* FILTROS */}
+                  <div className="input-group d-flex flex-wrap">
+                    <FormControl required sx={{ minWidth: "45%" }}>
+                      <InputLabel>Encuesta</InputLabel>
+                      <Select
+                        className="me-2"
+                        labelId="survey-select-label"
+                        id="survey-select"
+                        value={surveyId}
+                        onChange={(e) => {
+                          handleChange(e);
+                          console.log(e.target.value);
+                        }}
+                        input={<OutlinedInput label="Encuesta" />}
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {surveys.map((item, i) => (
+                          <MenuItem key={i} value={item.id}>
+                            {item.title}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
 
-        <div className="m-0 p-0">
-          <div className="row m-0">
-            {/* <div className="col" style={{ paddingLeft: 0 }}>
-              {userType === "1" || userType === "2" ? (
-                <SidebarLT1 />
-              ) : (
-                <SidebarLT2 />
-              )}
-            </div> */}
-            <div className="col-sm-12 col-md-11 col-lg-11">
-              <div className="row d-flex justify-content-center">
-                <div className="col-md-12 mb-4">
-                  <div className="card">
-                    <div className="card-body" style={{borderRadius: "50px"}}>
-                      <div className="input-group d-flex">
-                        <FormControl required sx={{ minWidth: "45%"}}>
-                          <InputLabel>Encuesta</InputLabel>
-                          <Select
-                            className="me-2"
-                            labelId="survey-select-label"
-                            id="survey-select"
-                            value={surveyId}
-                            onChange={(e) => {
-                              handleChange(e);
-                              console.log(e.target.value);
-                            }}
-                            input={<OutlinedInput label="Encuesta" />}
-                          >
-                            <MenuItem value="">
-                              <em>None</em>
-                            </MenuItem>
-                            {surveys.map((item, i) => {
-                              return (
-                                <MenuItem key={i} value={item.id}>
-                                  {item.title}
-                                </MenuItem>
-                              );
-                            })}
-                          </Select>
-                        </FormControl>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                          <DatePicker
-                            sx={{ width: "23%" }}
-                            className="me-2"
-                            label="Fecha de inicio"
-                            value={startDate}
-                            onChange={handleStartDateChange}
-                            renderInput={(params) => (
-                              <OutlinedInput {...params} />
-                            )}
-                          />
-                          <DatePicker
-                            sx={{ width: "23%" }}
-                            className="me-2"
-                            label="Fecha de fin"
-                            value={endDate}
-                            onChange={handleEndDateChange}
-                            renderInput={(params) => (
-                              <OutlinedInput {...params} />
-                            )}
-                          />
-                        </LocalizationProvider>
-                        <ButtonGroup variant="text">
-                          <IconButton
-                            variant="contained"
-                            color="secondary"
-                            onClick={getPercentages}
-                            sx={{ minWidth: "auto" }}
-                            disabled={!(surveyId && startDate && endDate)}
-                          >
-                            <SearchIcon />
-                          </IconButton>
-                          <IconButton
-                            disabled={data.length == 0}
-                            variant="contained"
-                            color="secondary"
-                            onClick={exportCharts}
-                            sx={{ minWidth: "auto" }}
-                          >
-                            <FileDownloadIcon />
-                          </IconButton>
-                        </ButtonGroup>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        sx={{ width: "23%" }}
+                        className="me-2"
+                        label="Fecha de inicio"
+                        value={startDate}
+                        onChange={handleStartDateChange}
+                      />
+                      <DatePicker
+                        sx={{ width: "23%" }}
+                        className="me-2"
+                        label="Fecha de fin"
+                        value={endDate}
+                        onChange={handleEndDateChange}
+                      />
+                    </LocalizationProvider>
+
+                    <ButtonGroup variant="text">
+                      <IconButton
+                        variant="contained"
+                        color="secondary"
+                        onClick={getPercentages}
+                        sx={{ minWidth: "auto" }}
+                        disabled={!(surveyId && startDate && endDate)}
+                      >
+                        <SearchIcon />
+                      </IconButton>
+                      <IconButton
+                        disabled={data.length === 0}
+                        variant="contained"
+                        color="secondary"
+                        onClick={exportCharts}
+                        sx={{ minWidth: "auto" }}
+                      >
+                        <FileDownloadIcon />
+                      </IconButton>
+                    </ButtonGroup>
+                  </div>
+
+                  {/* ALERTA DE LLENADO */}
+                  {!loading && data.length === 0 && (
+                    <div className="mt-3">
+                      <div className="alert alert-info text-center" role="alert">
+                        Llena los datos de la consulta
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
-              <div className="row">
-                {data.length > 0 ? (
-                  data.map((item, i) => (
-                    <div
-                      className="col-md-6 col-lg-4 p-2"
-                      key={i}
-                      ref={(el) => (chartRefs.current[i] = el)}
-                    >
-                      <div className="card shadowbox5">
-                        <div className="card-body">
-                          <LineStyleCharts
-                            label={item.label}
-                            dataChart={item.data}
-                            type={item.type}
-                            initialType="pie"
-                          />
-                        </div>
+            </div>
+
+            {/* GRÁFICAS O SKELETON */}
+            <div className="row">
+              {data.length > 0 ? (
+                data.map((item, i) => (
+                  <div
+                    className="col-md-6 col-lg-4 p-2"
+                    key={i}
+                    ref={(el) => (chartRefs.current[i] = el)}
+                  >
+                    <div className="card shadowbox5">
+                      <div className="card-body">
+                        <LineStyleCharts
+                          label={item.label}
+                          dataChart={item.data}
+                          type={item.type}
+                          initialType="pie"
+                        />
                       </div>
                     </div>
-                  ))
-                ) : !loading ? (
-                  <div className="col text-center">
-                    <div className="alert alert-info" role="alert">
-                      Llena los datos de la consulta
-                    </div>
                   </div>
-                ) : (
-                  <Grid container spacing={2}>
-                    {[...Array(4)].map((_, index) => (
-                      <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                ))
+              ) : loading ? (
+                <Grid container spacing={2}>
+                  {[...Array(4)].map((_, index) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                      <Skeleton
+                        variant="text"
+                        width="100%"
+                        sx={{ marginBottom: "8px" }}
+                      />
+                      <Skeleton
+                        animation="wave"
+                        variant="circular"
+                        width="100%"
+                        height={200}
+                        sx={{ borderRadius: "10px", marginBottom: "8px" }}
+                      />
+                      <Box className="d-flex">
                         <Skeleton
                           variant="text"
-                          width="100%"
-                          sx={{ marginBottom: "8px" }}
+                          width="50%"
+                          sx={{ marginRight: 5 }}
                         />
-                        <Skeleton
-                          animation="wave"
-                          variant="circular"
-                          width="100%"
-                          height={200}
-                          sx={{ borderRadius: "10px", marginBottom: "8px" }}
-                        />
-                        <Box className="d-flex">
-                          <Skeleton
-                            variant="text"
-                            width="50%"
-                            sx={{ marginRight: 5 }}
-                          />
-                          <Skeleton variant="text" width="50%" />
-                        </Box>
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
-              </div>
+                        <Skeleton variant="text" width="50%" />
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              ) : null}
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
   );
 };
 
