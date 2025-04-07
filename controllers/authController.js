@@ -34,11 +34,12 @@ const authenticate = async (req, res) => {
         );
 
         // Configurar cookie
-        res.cookie('token', token, { httpOnly: true, secure: false, maxAge: 3600000 });
+        res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'lax', path: '/',maxAge: 3600000 });
 
         return res.status(200).json({
             status: true,
             message: 'Autenticación exitosa.',
+            token: token,
             user: {
                 id: user.id,
                 state: user.state,
@@ -52,5 +53,29 @@ const authenticate = async (req, res) => {
     }
 };
 
+const checkToken = (req, res) => {
+    return res.status(200).json({
+        status: true,
+        message: 'Token válido.',
+        user: req.user
+    });
+};
 
-module.exports = { authenticate };
+const extendToken = (req, res) => {
+    // Generar un nuevo token
+    const newToken = jwt.sign(
+        { id: req.user.id, state: req.user.state, type: req.user.type, clients_id: req.user.clients_id },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+
+    // Configurar cookie con nuevo token
+    res.cookie('token', newToken, { httpOnly: true, secure: false, sameSite: 'lax', path: '/',maxAge: 3600000 });
+
+    return res.status(200).json({
+        status: true,
+        message: 'Token extendido.',
+    });
+};
+
+module.exports = { authenticate, checkToken, extendToken };
