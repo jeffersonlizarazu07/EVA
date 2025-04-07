@@ -12,4 +12,5 @@ router.put('/survey/:id', authMiddleware,surveySetController.putSurvey);
 router.patch('/survey/:id', authMiddleware,surveySetController.patchSurvey);
 router.delete('/survey/:id',authMiddleware, surveySetController.deleteSurvey);
 
+
 module.exports = router;

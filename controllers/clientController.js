@@ -1,3 +1,4 @@
+// controllers/clientController.js
 const ClientModel = require('../models/clientModel');
 <<<<<<< Updated upstream
 
@@ -73,6 +74,56 @@ const createClient = async (req, res) => {
             res.status(500).json({ error: error.message });
         }
     }
-}
+};
 
-module.exports = new ClientController(new ClientModel());
+// Cambiar el estado del cliente
+const toggleClientState = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('id recibido para actualizar el esatdo del cliente', id);
+        const updatedClient = await clientModel.toggleState(id);
+
+        return res.status(200).json({
+            message: 'Estado del cliente actualizado correctamente',
+            data: updatedClient
+        });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+// Eliminar cliente
+const deleteClient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('id recibido para eliminar un cliente', id);
+        const client = await clientModel.getById(id);
+
+        if (!client) {
+            return res.status(404).json({ message: 'Cliente no encontrado' });
+        }
+
+        // Eliminar el logo si existe
+        if (client.logo) {
+            const logoPath = path.join('C:/xampp/htdocs/tpco_transversal_EvaFe-main/public/clientes', client.logo);
+            if (fs.existsSync(logoPath)) {
+                fs.unlinkSync(logoPath);  // Eliminar archivo de imagen
+            }
+        }
+
+        await clientModel.delete(id);
+
+        return res.status(200).json({ message: 'Cliente eliminado correctamente' });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = {
+    createClient,
+    getClients,
+    getClientById,
+    updateClient,
+    toggleClientState,
+    deleteClient
+};

@@ -9,4 +9,5 @@ router.post('/users_client', authMiddleware, userClientController.postUserClient
 router.put('/users_client/:idUser', authMiddleware, userClientController.putUserClient);
 router.delete('/users_client/:id', authMiddleware, userClientController.deleteUserClient);
 
+
 module.exports = router;
