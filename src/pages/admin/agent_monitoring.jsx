@@ -117,8 +117,6 @@ const AdminList = () => {
     setRecordsPerPage(records);
     setCurrentPage(1); // Reset page to 1 on new records per page
   };
-  
-
 
   return (
     <div className="App">
@@ -212,59 +210,65 @@ const AdminList = () => {
 
               {/* Selector de registros en la parte inferior izquierda */}
               <div className="row mt-3">
-  <div className="col-12 d-flex justify-content-between align-items-center">
-    {/* Selector de registros */}
-    <div className="record-selector d-flex align-items-center">
-      <label className="me-2">Mostrar</label>
-      <div className="dropdown">
-        <button
-          className="btn btn-outline-secondary dropdown-toggle"
-          type="button"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
-          {recordsPerPage}
-        </button>
-        <ul className="dropdown-menu">
-          {[10, 25, 50].map((num) => (
-            <li key={num}>
-              <a
-                className="dropdown-item"
-                href="#"
-                onClick={() => handleRecordsPerPageChange(num)}
-              >
-                {num}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <label className="ms-2">registros</label>
-    </div>
+                <div className="col-12 d-flex justify-content-between align-items-center">
+                  {/* Selector de registros */}
+                  <div className="record-selector d-flex align-items-center">
+                    <label className="me-2">Mostrar</label>
+                    <div className="dropdown">
+                      <button
+                        className="btn btn-outline-secondary dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        {recordsPerPage}
+                      </button>
+                      <ul className="dropdown-menu">
+                        {[10, 25, 50].map((num) => (
+                          <li key={num}>
+                            <a
+                              className="dropdown-item"
+                              href="#"
+                              onClick={() => handleRecordsPerPageChange(num)}
+                            >
+                              {num}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <label className="ms-2">registros</label>
+                  </div>
 
-    {/* Paginador */}
-    <div className="page-selector btn-group" role="group">
-      <button
-        type="button"
-        className="btn btn-outline-secondary"
-        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-        disabled={currentPage === 1}
-      >
-        &lt;
-      </button>
-      <span className="btn btn-outline-secondary">{currentPage}</span>
-      <button
-        type="button"
-        className="btn btn-outline-secondary"
-        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-        disabled={currentPage === totalPages}
-      >
-        &gt;
-      </button>
-    </div>
-  </div>
-</div>
-</div>
+                  {/* Paginador */}
+                  <div className="page-selector btn-group" role="group">
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={currentPage === 1}
+                    >
+                      &lt;
+                    </button>
+                    <span className="btn btn-outline-secondary">
+                      {currentPage}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                    >
+                      &gt;
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
