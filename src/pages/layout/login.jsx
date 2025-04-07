@@ -37,6 +37,8 @@ const LogIn = () => {
           // Establecer las cookies del token 
           Cookies.set("accessToken", responseData.token, { expires: 1 / 24, path: '/' });
           Cookies.set("userType", responseData.user.type, { expires: 1 / 24, path: '/'});
+
+          
           setUserId(responseData.user.id);
           setUserType(responseData.user.type);
           setAccessToken(responseData.token);
