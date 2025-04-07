@@ -14,8 +14,8 @@ import { UserContext } from "../../context/UserContext";
 import LineStyleCharts from "../../components/charts/lineStyle";
 import HeaderLT1 from "../../components/header/headerLT1";
 import HeaderLT2 from "../../components/header/headerLT2";
-import SidebarLT1 from "../../components/aside/sidebarLT1";
-import SidebarLT2 from "../../components/aside/sidebarLT2";
+// import SidebarLT1 from "../../components/aside/sidebarLT1";
+// import SidebarLT2 from "../../components/aside/sidebarLT2";
 import dayjs from "dayjs";
 import { Box, ButtonGroup, Grid, IconButton, Skeleton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -139,13 +139,13 @@ const Reports = () => {
 
         <div className="m-0 p-0">
           <div className="row m-0">
-            <div className="col" style={{ paddingLeft: 0 }}>
+            {/* <div className="col" style={{ paddingLeft: 0 }}>
               {userType === "1" || userType === "2" ? (
                 <SidebarLT1 />
               ) : (
                 <SidebarLT2 />
               )}
-            </div>
+            </div> */}
             <div className="col-sm-12 col-md-11 col-lg-11">
               <div className="row d-flex justify-content-center">
                 <div className="col-md-12 mb-4">
