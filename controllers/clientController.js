@@ -1,15 +1,10 @@
 // controllers/clientController.js
 const ClientModel = require('../models/clientModel');
-<<<<<<< Updated upstream
-
-class ClientController {
-    constructor(clientModel) {
-        this.clientModel = clientModel;
-=======
 const path = require('path');
 const fs = require('fs');
 const knex = require('../config/db');
 const clientModel = new ClientModel(knex);
+
 
 // Método para crear un cliente
 const createClient = async (req, res) => {
@@ -40,39 +35,58 @@ const createClient = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({ message: error.message });
->>>>>>> Stashed changes
     }
+};
 
-    // Crear un nuevo cliente
-    async create(req, res) {
-        try {
-            // Validamos que los campos necesarios están presentes
-            if (!req.body.client || !req.body.state || !req.body.color_tag1 || !req.body.color_tag2) {
-                return res.status(400).json({ error: 'Datos faltantes en la solicitud' });
-            }
-
-            // Si se sube un logo, lo procesamos con Multer
-            let logo = null;
-            if (req.file) {
-                logo = req.file.path;  // La ruta del archivo que se sube
-            }
-
-            const newClientData = {
-                client: req.body.client,
-                state: req.body.state || 0,  // Si no se especifica, será inactivo por defecto
-                color_tag1: req.body.color_tag1,
-                color_tag2: req.body.color_tag2,
-                logo: logo  // Se incluye el logo si fue subido
-            };
-
-            // Usamos el modelo para crear el cliente
-            const newClient = await this.clientModel.create(newClientData);
-            res.status(201).json({ message: 'Cliente creado exitosamente', data: newClient });
-
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: error.message });
+// Obtener todos los clientes
+const getClients = async (req, res) => {
+    try {
+        const clients = await clientModel.getAll();
+        console.log('Clientes obtenidos:', clients);
+        if (clients.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron clientes' });
         }
+        return res.status(200).json({ data: clients });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+// Obtener un cliente por ID
+const getClientById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('cliente enconytrado', id)
+        const client = await clientModel.getById(id);
+        if (!client) {
+            return res.status(404).json({ message: 'Cliente no encontrado' });
+        }
+        return res.status(200).json({ data: client });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+// Actualizar cliente
+const updateClient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('id recibiedo para actualizar la informacion del cliente', id);
+                const { client, state, color_tag1, color_tag2 } = req.body;
+                console.log('Datos recibidos para actualizar el cliente:', { client, state, color_tag1, color_tag2 });
+
+        if (!client && !state && !color_tag1 && !color_tag2) {
+            return res.status(400).json({ message: 'No hay datos para actualizar' });
+        }
+
+        const updatedClient = await clientModel.update(id, { client, state, color_tag1, color_tag2 });
+
+        return res.status(200).json({
+            message: 'Cliente actualizado correctamente',
+            data: updatedClient
+        });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
     }
 };
 
