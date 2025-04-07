@@ -7,8 +7,15 @@ import Cookies from "js-cookie";
 import { Toast } from "../assets/js/alertConfig";
 
 const ProtectedRoute = ({ redirectPath = '/', allowedUserTypes = [] }) => {
-  // Lee el accessToken directamente desde las cookies
+  // Lee el accessToken directamente desde las cookies     
   const accessToken = Cookies.get('accessToken');
+if (!accessToken) {
+  console.log('El token está undefined');
+} else {
+  console.log('Token recibido:', accessToken);
+}
+
+
   const userType = Cookies.get('userType'); 
   const { setAccessToken } = useContext(UserContext);
   const [isAuthorized, setIsAuthorized] = useState(null);
