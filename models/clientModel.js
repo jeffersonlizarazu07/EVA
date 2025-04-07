@@ -1,6 +1,7 @@
 // models/clientModel.js
 const knex = require('../config/db');  // Traemos la configuración de Knex.js
 
+
 class ClientModel {
     constructor(knex) {
         this.knex = knex;

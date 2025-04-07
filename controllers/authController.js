@@ -39,6 +39,7 @@ const authenticate = async (req, res) => {
         return res.status(200).json({
             status: true,
             message: 'Autenticación exitosa.',
+            token: token,
             user: {
                 id: user.id,
                 state: user.state,
