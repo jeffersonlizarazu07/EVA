@@ -105,6 +105,10 @@ table {
   color: white;
 }
 
+.dropdown {
+  position: static !important;
+}
+
 .btn-dropdown{
   border-radius: 5px ;
 }
