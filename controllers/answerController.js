@@ -360,6 +360,7 @@ class AnswerController {
             for (const association of req.body) {
                 const { answer, question_id } = association;
 
+
                 // Insertar las respuestas en la base de datos usando el modelo
                 const newAnswer = await answerModel.createAnswer({
                     answer: answer,
@@ -427,6 +428,25 @@ class AnswerController {
             });
         }
     }
+
+        
+        async updateAnswer(req, res) {
+            const { id } = req.params; // Asumiendo que el id se pasa en los parámetros de la URL
+            const data = req.body; // Los nuevos datos que se deben actualizar
+        
+            try {
+                const result = await answerModel.update(id, data);
+                
+                if (result === 0) { // Si no se actualizó ninguna fila
+                    return res.status(404).json({ message: 'error al actualizar' });
+                }
+        
+                return res.status(200).json({ message: 'actualizada con exito' });
+            } catch (error) {
+                return res.status(500).json({ message: error.message });
+            }
+        }
+
 
     // Elimina una respuesta
     async deleteAnswer(req, res) {
