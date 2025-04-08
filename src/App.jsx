@@ -55,6 +55,7 @@ export const App = () => {
           <Route path="/survey/:link" element={<Survey/>}/>
           <Route path="/gratitude" element={<Gratitude/>}/>
           <Route path="/agent_monitoring" element={<Agent_Monitoring />} />
+          <Route path="/survey1" element={<View_survey />} />
           {/* Pruebas de barras */}
           {/*error views*/}
           <Route path="/auth/inactive" element={<Inactive />} />

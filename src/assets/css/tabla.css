@@ -114,7 +114,7 @@ table {
 }
 
 .btn-rect_delete{
-  background-color: transparent; /* Fondo transparente por defecto */
+  background-color: transparent; 
   color: rgb(199, 14, 143);
   padding: 5px 10px;
   margin: 2px;

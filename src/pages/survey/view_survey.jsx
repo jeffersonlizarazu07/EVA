@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext,useMemo } from 'react';
 import HeaderLT1 from '../../components/header/headerLT1';
 import axios from "axios";
-// import SidebarLT1 from '../../components/aside/sidebarLT1';
 import useInput from '../../components/hooks/useInput';
 import { UserContext } from '../../context/UserContext';
 import { useParams } from 'react-router-dom';
