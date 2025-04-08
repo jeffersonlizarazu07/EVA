@@ -351,13 +351,13 @@ const SurveyList = () => {
       <div id="body">
         {userType == "1" || userType == "2" ? <HeaderLT1 /> : <HeaderLT2 />}
      <div className="row m-0">
-      <div className="col-1 d-flex  align-items-center ms-0 p-0">
+      <div className="col-1 d-flex  align-items-center mx-auto p-0">
         
           {/* {userType == "1" || userType == "2" ? <SidebarLT1 /> : <SidebarLT2 />} */}
        
           </div>
-          <div className="col-10">
-          <div className="container mt-0 ms-0">
+          <div className="w-100 d-flex justify-content-center px-2">
+          <div className="w-100 px-3" style={{ maxWidth: "97%" }}>
             {survey.length > 0 && (
               <TableSurvey
                 header={headers}

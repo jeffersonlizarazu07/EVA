@@ -30,22 +30,15 @@ const TableUsers = ({
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const filteredData = data.filter((item) =>
-    Object.values(item).some(
-      (val) =>
-        typeof val == "string" &&
-        val.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+   const filteredData = data.filter((item) =>
+     Object.values(item).some(
+       (val) =>
+         typeof val == "string" &&
+         val.toLowerCase().includes(searchTerm.toLowerCase())
+     )
+   );
 
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = filteredData.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
-  );
 
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
   return (
     <div>
