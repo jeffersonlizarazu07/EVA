@@ -2,7 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const clientController = require('../controllers/clientController');
+<<<<<<< Updated upstream
 const upload = require('../middleware/multerMiddleware');  // Middleware de multer para cargar imágenes
+=======
+const upload = require('../middlewares/multerConfig');  
+>>>>>>> Stashed changes
 
 // Rutas para clientes
 router.post('/clients', upload.single('logo'), clientController.createClient);  // Cargar logo

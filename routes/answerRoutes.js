@@ -26,7 +26,11 @@ router.get('/survey/:id/percentages', answerController.percentagesXSurvey);
 router.post('/answers', AnswerController.postAnswer);
 
 // Ruta para actualizar una respuesta
+<<<<<<< Updated upstream
 router.put('/answers/:id', AnswerController.putAnswer);
+=======
+router.put('/answers/:id', answerController.updateAnswer);
+>>>>>>> Stashed changes
 
 // Ruta para eliminar una respuesta
 router.delete('/answers/:id', AnswerController.deleteAnswer);
