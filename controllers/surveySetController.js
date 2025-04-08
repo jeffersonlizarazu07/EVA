@@ -1,6 +1,18 @@
 const SurveySet = require('../models/surveySet');
 
 const surveySetController = {
+   /* async surveys(req, res) {
+        try {
+            const surveys = await SurveySet.getAll();
+            if (surveys.length === 0) {
+                return res.status(404).json({ status: '404', message: 'No se encontraron encuestas' });
+            }
+            res.json({ status: '200', message: 'Encuestas obtenidas correctamente', data: surveys });
+        } catch (error) {
+            res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
+        }
+    },*/
+
     async surveys(req, res) {
         try {
             console.log('Iniciando la consulta de encuestas...');
@@ -38,18 +50,6 @@ const surveySetController = {
 
     async surveyByID(req, res) {
         try {
-            const id = req.params.id;
-
-            // Verificar si el ID fue recibido correctamente
-            console.log(`ID recibido: ${id}`);
-            // Asegurarse de que el id es un valor válido
-        if (!id || isNaN(id)) {
-            return res.status(400).json({
-                status: '400',
-                message: 'ID no válido',
-            });
-        }
-
             //SurveySet.getById(29).then(data => console.log(data)).catch(err => console.error(err));
             const survey = await SurveySet.getById(id);
             if (!survey) {
@@ -100,33 +100,16 @@ const surveySetController = {
     },
 
     async putSurvey(req, res) {
-        const { id } = req.params;  // Desestructuramos el id de los parámetros de la URL
-    
-        console.log(`ID recibido para actualización: ${id}`);  // Log para ver qué id estamos recibiendo
-    
         try {
-            // Llamamos al modelo para actualizar la encuesta
-            const updated = await SurveySet.update(id, req.body);
-    
+            const updated = await SurveySet.update(req.params.id, req.body);
             if (!updated) {
-                console.log(`No se encontró encuesta con el ID: ${id}`);  // Agrega un log si no se encuentra la encuesta
-                return res.status(404).json({ status: '404', message: `Encuesta con ID ${id} no encontrada` });
+                return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
             }
-    
-            console.log(`Encuesta con ID ${id} actualizada correctamente`);  // Log de éxito
-            return res.json({ status: '200', message: `Encuesta con ID ${id} actualizada correctamente` });
+            res.json({ status: '200', message: 'Encuesta actualizada correctamente' });
         } catch (error) {
-            console.error(`Error al actualizar la encuesta con ID ${id}: ${error.message}`);  // Agregar el ID al log de error
-            console.error(error.stack);  // Muestra el stack trace para depuración más detallada
-    
-            return res.status(500).json({ 
-                status: '500', 
-                message: 'Error al actualizar la encuesta',
-                error: error.message || error  // Asegúrate de enviar detalles sobre el error en la respuesta
-            });
+            res.status(500).json({ status: '500', message: 'Error al actualizar la encuesta', error });
         }
     },
-    
 
     async patchSurvey(req, res) {
         try {

@@ -1,17 +1,10 @@
 const db = require('../config/db'); // Importa la conexión a la base de datos
 
 const SurveySet = {
-    getAll: async () => {
-        try {
-            const result = await db('survey_sets').select('*');
-            return result;
-        } catch (error) {
-            console.error('Error al ejecutar la consulta:', error);
-            throw new Error('Error al obtener las encuestas: ' + error.message);
-        }
-    },
 
-    getById: (id) => db('survey_sets').where({ id }).first(),
+    getAll: () => db('survey_set').select('*'),
+
+    getById: (id) => db('survey_set').where({ id }).first(),
 
     getByLink: (link) => {
         return db('survey_set')
@@ -27,9 +20,11 @@ const SurveySet = {
             .select('*');
     },
 
-    create: (data) => db('survey_sets').insert(data),
 
-    update: (id, data) => db('survey_sets').where({ id }).update(data),
+    create: (data) => db('survey_set').insert(data),
+
+    update: (id, data) => db('survey_set').where({ id }).update(data),
+
 
     toggleState: (id) => {
         return db('survey_set')
@@ -41,7 +36,9 @@ const SurveySet = {
             });
     },
 
-    delete: (id) => db('survey_sets').where({ id }).del()
+
+    delete: (id) => db('survey_set').where({ id }).del()
+
 };
 
 module.exports = SurveySet;
