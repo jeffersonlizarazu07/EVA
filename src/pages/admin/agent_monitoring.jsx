@@ -15,7 +15,7 @@ import ModalRegisterUser from "../../components/Tables/tableMonitoring";
 import Loading from "../layout/loading";
 import Swal from "sweetalert2";
 import "../../assets/css/agent_monitoring.css";
-import View_survey from "../survey/view_survey";
+import SurveyBlocks from "../survey/surveyBlocks";
 
 const AdminList = () => {
   const [open, setOpen] = useState(false);
@@ -25,7 +25,7 @@ const AdminList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  /* Modal - Ver Bloques*/
+  /* Ver Bloques*/
   const [showSurveyView, setShowSurveyView] = useState(false);
   const navigate = useNavigate();
 
@@ -176,7 +176,7 @@ const AdminList = () => {
                                 </button>
                                 <ul className="dropdown-menu p-0">
                                   <li className="text-start btn-rect">
-                                    <button className="btn btn-rect" onClick={() => navigate((`/survey/${row.id_form}`))}>
+                                    <button className="btn btn-rect" onClick={() => navigate((`/survey_blocks/${row.id_form}`))}>
                                       <i className="fa-solid fa-circle-question"></i>{" "}
                                       <span>Ver bloques</span>
                                     </button>
