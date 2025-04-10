@@ -12,6 +12,7 @@ import { smallAlertDelete, Toast, Toast2 } from "../../assets/js/alertConfig";
 import { generateRandomLink } from "../../components/survey/encrypt";
 import { useTranslation } from "react-i18next";
 import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
+import Cookies from "js-cookie"; 
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
@@ -61,30 +62,37 @@ const SurveyList = () => {
 
 
   const config = {
+    headers: {
+    },
     withCredentials: true,
   };
 
   const getSurveys = async () => {
     try {
       const response = await axios.get(url, config);
-      console.log("Encuestas: ", response.data);
-      setSurvey(response.data);
+      console.log("Encuestas: ", response.data.data);
+      setSurvey(response.data.data); // <-- ¡aquí está el fix!
     } catch (error) {
-      console.error(error);
+      console.error("Error al obtener encuestas:", error);
+      if (error.response) {
+        console.error("Detalles del error:", error.response.data);
+      }
     }
   };
   const getClients = async (id) => {
     try {
       const response = await axios.get(
         `http://localhost:3000/api/users_client/${id}`,
-        config
+        {
+          withCredentials: true, // esto es clave para enviar la cookie
+        }
       );
       console.log("clientes relacionados: ", response.data.data);
       setClients(response.data.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching data:", error.response?.data || error);
     }
-  };
+  };  
 
   const activeSurvey = (survey) => {
     const url = `http://localhost:3000/api/survey`;
@@ -358,22 +366,30 @@ const SurveyList = () => {
           </div>
           <div className="w-100 d-flex justify-content-center px-2">
           <div className="w-100 px-3" style={{ maxWidth: "97%" }}>
-            {survey.length > 0 && (
-              <TableSurvey
-                header={headers}
-                data={survey}
-                onCreate={() => openModal(1)}
-                onUpdate={(payload) => openModal(2, payload)}
-                modalId={"modalSurvey"}
-                modalId2={"modalViewSurvey"}
-                onView={(payload) => openModalCont(payload)}
-                onCheck={(payload) => openSurvey(payload)}
-                onRemove={(item) => deactivateSurvey(item)}
-                onActive={(payload) => activeSurvey(payload)}
-                onDuplicate={(item) => duplicateSurvey(item)}
-                onCopyLink={(item)=> copyLink(item)}
-              />
-            )}
+          {survey.length > 0 ? (
+                <TableSurvey
+                  header={headers}
+                  data={survey}
+                 
+                  // Acciones principales
+                  onCreate={() => openModal(1)}
+                  onUpdate={(payload) => openModal(2, payload)}
+                  onView={(payload) => openModalCont(payload)}
+                  onCheck={(payload) => openSurvey(payload)}
+                 
+                  // Acciones adicionales
+                  onRemove={(item) => deactivateSurvey(item)}
+                  onActive={(payload) => activeSurvey(payload)}
+                  onDuplicate={(item) => duplicateSurvey(item)}
+                  onCopyLink={(item) => copyLink(item)}
+                 
+                  // Identificadores de modales
+                  modalId="modalSurvey"
+                  modalId2="modalViewSurvey"
+                />
+              ) : (
+                <p>No hay encuestas disponibles.</p>
+              )}
           </div>
           </div>
           </div>

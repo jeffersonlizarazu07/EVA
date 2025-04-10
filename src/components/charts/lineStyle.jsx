@@ -45,6 +45,9 @@ Chart.register(
 );
 
 const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
+  console.log("Componente LineStyleCharts renderizado");
+  console.log("Datos recibidos por LineStyleCharts:", dataChart);
+
   const [chartType, setChartType] = useState(initialType);
   const [filters, setFilters] = useState({
     minValue: 0,
@@ -53,71 +56,88 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
   const chartRef = useRef(null);
 
   const applyFilters = (data) => {
-    return data.map((value) =>
-      value >= filters.minValue && value <= filters.maxValue ? value : null
-    );
-  };
+  return data.map((item) => {
+    // Verificamos si el item tiene una propiedad 'value'
+    const numericValue = item && item.value !== undefined ? Number(item.value) : NaN;
+
+    // Comprobamos si el valor es un número
+    if (isNaN(numericValue)) {
+      console.log("Valor no numérico encontrado:", item); // Mostramos todo el objeto
+      return null; // Filtramos los valores no numéricos
+    }
+
+    // Comprobamos si el valor está dentro del rango de filtros
+    console.log("Comprobando:", numericValue, "Rango:", filters.minValue, filters.maxValue);
+    if (numericValue >= filters.minValue && numericValue <= filters.maxValue) {
+      return numericValue; // Valor dentro del rango
+    } else {
+      // Si está fuera del rango, lo convertimos a null
+      return null;
+    }
+  });
+};
+
 
   // Determinar la escala antes de mapear colores
   const scale =
     dataChart.length === 2 ? "0-1" : dataChart.length === 11 ? "0-10" : "1-5";
 
-  const backgrounds =
+    const backgrounds =
     scale === "0-10"
       ? [
-          "rgba(246, 0, 0, 0.6)", // 0: Rojo oscuro
-          "rgba(246, 0, 0, 0.3)", // 1: Rojo claro
-          "rgba(246, 0, 0, 0.3)", // 2: Rojo claro
-          "rgba(246, 0, 0, 0.3)", // 3: Rojo claro
-          "rgba(246, 0, 0, 0.3)", // 4: Rojo claro
-          "rgba(246, 0, 0, 0.3)", // 5: Rojo claro
-          "rgba(246, 0, 0, 0.3)", // 6: Rojo claro
-          "rgba(229, 190, 1, 0.3)", // 7: Negro
-          "rgba(229, 190, 1, 0.3)", // 8: Negro
-          "rgba(57, 251, 137, 0.44)", // 9: Verde
-          "rgba(57, 251, 137, 0.6)", // 10: Verde
+          "rgba(255, 0, 255, 0.6)", // 0: Fucsia oscuro
+          "rgba(255, 0, 255, 0.3)", // 1: Fucsia claro
+          "rgba(255, 0, 255, 0.3)", // 2: Fucsia claro
+          "rgba(255, 0, 255, 0.3)", // 3: Fucsia claro
+          "rgba(255, 0, 255, 0.3)", // 4: Fucsia claro
+          "rgba(255, 0, 255, 0.3)", // 5: Fucsia claro
+          "rgba(255, 0, 255, 0.3)", // 6: Fucsia claro
+          "rgba(128, 0, 128, 0.3)", // 7: Morado
+          "rgba(128, 0, 128, 0.3)", // 8: Morado
+          "rgba(255, 105, 180, 0.44)", // 9: Rosa fuerte
+          "rgba(255, 105, 180, 0.6)", // 10: Rosa fuerte
         ]
       : scale === "1-5"
       ? [
-          "rgba(246, 0, 0, 0.6)", // 1: Rojo oscuro
-          "rgba(246, 0, 0, 0.3)", // 2: Rojo claro
-          "rgba(229, 190, 1, 0.3)", // 3: Negro
-          "rgba(57, 251, 137, 0.44)", // 4: Verde claro
-          "rgba(57, 251, 137, 0.6)", // 5: Verde oscuro
+          "rgba(255, 0, 255, 0.6)", // 1: Fucsia oscuro
+          "rgba(255, 0, 255, 0.3)", // 2: Fucsia claro
+          "rgba(128, 0, 128, 0.3)", // 3: Morado
+          "rgba(255, 105, 180, 0.44)", // 4: Rosa claro
+          "rgba(255, 105, 180, 0.6)", // 5: Rosa fuerte
         ]
       : [
-          "rgba(246, 0, 0, 0.6)", // 0: Rojo oscuro
-          "rgba(57, 251, 137, 0.6)", // 1: Verde oscuro
+          "rgba(255, 0, 255, 0.6)", // 0: Fucsia oscuro
+          "rgba(255, 105, 180, 0.6)", // 1: Rosa fuerte
         ];
-
+  
   const borders =
     scale === "0-10"
       ? [
-          "rgba(246, 0, 0, 0.7)", // 0: Rojo oscuro
-          "rgba(246, 0, 0, 0.5)", // 1: Rojo claro
-          "rgba(246, 0, 0, 0.5)", // 2: Rojo claro
-          "rgba(246, 0, 0, 0.5)", // 3: Rojo claro
-          "rgba(246, 0, 0, 0.5)", // 4: Rojo claro
-          "rgba(246, 0, 0, 0.5)", // 5: Rojo claro
-          "rgba(246, 0, 0, 0.5)", // 6: Rojo claro
-          "rgba(229, 190, 1, 0.7)", // 7: Negro
-          "rgba(229, 190, 1, 0.7)", // 8: Negro
-          "rgba(41, 168, 95, 1)", // 9: Verde
-          "rgba(41, 168, 95, 1)", // 10: Verde
+          "rgba(255, 0, 255, 0.7)", // 0: Fucsia oscuro
+          "rgba(255, 0, 255, 0.5)", // 1: Fucsia claro
+          "rgba(255, 0, 255, 0.5)", // 2: Fucsia claro
+          "rgba(255, 0, 255, 0.5)", // 3: Fucsia claro
+          "rgba(255, 0, 255, 0.5)", // 4: Fucsia claro
+          "rgba(255, 0, 255, 0.5)", // 5: Fucsia claro
+          "rgba(255, 0, 255, 0.5)", // 6: Fucsia claro
+          "rgba(128, 0, 128, 0.7)", // 7: Morado
+          "rgba(128, 0, 128, 0.7)", // 8: Morado
+          "rgba(255, 105, 180, 1)", // 9: Rosa fuerte
+          "rgba(255, 105, 180, 1)", // 10: Rosa fuerte
         ]
       : scale === "1-5"
       ? [
-          "rgba(246, 0, 0, 0.7)", // 1: Rojo oscuro
-          "rgba(246, 0, 0, 0.5)", // 2: Rojo claro
-          "rgba(229, 190, 1, 0.7)", // 3: Negro
-          "rgba(41, 168, 95, 1)", // 4: Verde claro
-          "rgba(41, 168, 95, 1)", // 5: Verde oscuro
+          "rgba(255, 0, 255, 0.7)", // 1: Fucsia oscuro
+          "rgba(255, 0, 255, 0.5)", // 2: Fucsia claro
+          "rgba(128, 0, 128, 0.7)", // 3: Morado
+          "rgba(255, 105, 180, 1)", // 4: Rosa claro
+          "rgba(255, 105, 180, 1)", // 5: Rosa fuerte
         ]
       : [
-          "rgba(246, 0, 0, 0.7)", // 0: Rojo oscuro
-          "rgba(41, 168, 95, 1)", // 1: Verde oscuro
+          "rgba(255, 0, 255, 0.7)", // 0: Fucsia oscuro
+          "rgba(255, 105, 180, 1)", // 1: Rosa fuerte
         ];
-
+  
   const labels =
     type === "range_zerototen"
       ? [
@@ -163,6 +183,7 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
       },
     ],
   };
+  console.log("Datos filtrados para el gráfico:", filteredData);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
