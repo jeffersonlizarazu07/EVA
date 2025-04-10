@@ -9,8 +9,8 @@ const authMiddleware = require('../middlewares/authMiddleware');
 router.post('/clients', authMiddleware,upload.single('logo'), clientController.createClient);  
 router.get('/clients',authMiddleware, clientController.getClients);
 router.get('/clients/:id', authMiddleware,clientController.getClientById);
-router.put('/clients/:id',authMiddleware, clientController.updateClient);
-router.patch('/clients/:id/state',authMiddleware, clientController.toggleClientState);
+router.put('/clients/:id', authMiddleware, upload.single('logo'), clientController.updateClient);
+router.patch('/clients/:id',authMiddleware, clientController.toggleClientState);
 router.delete('/clients/:id', authMiddleware,clientController.deleteClient);
 
 module.exports = router;

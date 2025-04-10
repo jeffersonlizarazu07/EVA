@@ -79,14 +79,21 @@ const updateUser = async (req, res) => {
     const { id } = req.params;
     const userData = req.body;
 
-    // Si se proporciona una nueva contraseña, encriptarla
-    if (userData.password) {
+    if (userData.password && userData.password.trim() !== "") {
         try {
             const hashedPassword = await bcrypt.hash(userData.password, 10);
-            userData.password = hashedPassword; 
+            userData.password = hashedPassword;
         } catch (error) {
             return res.status(500).json({ message: 'Error al encriptar la contraseña', error: error.message });
         }
+    } else {
+        delete userData.password;
+    }
+ 
+     if (userData.language) {
+        userData.language = userData.language.trim();
+    } else {
+        delete userData.language; 
     }
 
     try {

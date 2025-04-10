@@ -18,7 +18,7 @@ const UserClient = {
                 idClient: assoc.clientId
             }))
         );
-    },
+    }, 
 
     updateByUserId: (idUser, clientIds) => {
         return db.transaction(async trx => {
