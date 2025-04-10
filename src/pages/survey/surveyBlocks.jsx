@@ -25,11 +25,7 @@ import {
 } from "./singleChoiceQuestion";
 import "../../assets/css/survey.css";
 import {
-  Range_onetofive,
-  Range_zerototen,
-  Range_difficulty,
   Yes_no,
-  Range_emoji,
   Textfield_s,
   SingleChoiceView,
   MultipleChoiceView,
@@ -470,7 +466,9 @@ export default function SurveyBlocks() {
         >
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="text-start m-2 modal-title">{title || "Crear Bloque"}</h5>
+              <h5 className="text-start m-2 modal-title">
+                {title || "Crear Bloque"}
+              </h5>
             </div>
             <div className="modal-body">
               <div className="row">
@@ -496,7 +494,43 @@ export default function SurveyBlocks() {
                         }
                         required
                       />
-                      <span className="labelName">Pregunta:</span>
+                      <span className="labelName">Nombre de bloque</span>
+                    </label>
+                  </div>
+
+                  <div className="form-group m-2 mt-2 mb-4">
+                    <label id="labelAnimation" htmlFor="question">
+                      <input
+                        type="text"
+                        name="question"
+                        id="question"
+                        className="input-new"
+                        placeholder=" "
+                        value={description.input}
+                        onChange={(e) =>
+                          description.handleChange(e.target.value)
+                        }
+                        required
+                      />
+                      <span className="labelName">Ponderación</span>
+                    </label>
+                  </div>
+
+                  <div className="form-group m-2 mt-2 mb-4">
+                    <label id="labelAnimation" htmlFor="question">
+                      <input
+                        type="text"
+                        name="question"
+                        id="question"
+                        className="input-new"
+                        placeholder=" "
+                        value={description.input}
+                        onChange={(e) =>
+                          description.handleChange(e.target.value)
+                        }
+                        required
+                      />
+                      <span className="labelName">Posición del bloque</span>
                     </label>
                   </div>
 
@@ -512,10 +546,10 @@ export default function SurveyBlocks() {
                         value={questionType.input}
                       >
                         <option value="" disabled>
-                          Seleccione una pregunta
+                          Seleccione una opción
                         </option>
-                        <option value="yes_no">Si/No</option>
-                        <option value="radio_opt">Seleccion única</option>
+                        {/* <option value="yes_no">Si/No</option>
+                        <option value="radio_opt">Seleccion única</option> */}
                         <option value="check_opt">Seleccion múltiple</option>
                         <option value="textfield_s">Campo de texto</option>
                       </select>
@@ -523,13 +557,14 @@ export default function SurveyBlocks() {
                     </label>
                   </div>
 
-                  {questionType.input === "radio_opt" && operation == 1 ? (
+                  {/* {questionType.input === "radio_opt" && operation == 1 ? (
                     <SingleChoiceQuestion
                       options={singleChoiceData.options}
                       correctAnswer={singleChoiceData.correctAnswer}
-                      onChange={handleSingleChoiceChange}
-                    />
-                  ) : questionType.input == "check_opt" && operation == 1 ? (
+                      onChange={handleSingleChoiceChange )}
+                    /> */}
+
+                  {questionType.input == "check_opt" && operation == 1 ? (
                     <MultipleChoiceQuestion
                       options={multipleChoiceData.options}
                       correctAnswers={multipleChoiceData.correctAnswers}
@@ -542,14 +577,14 @@ export default function SurveyBlocks() {
                       correctAnswers={multipleChoiceData.correctAnswers}
                       onChange={handleMultipleChoiceChange}
                     />
-                  ) : questionType.input == "radio_opt" && operation == 2 ? (
-                    <SingleChoiceQuestionEdit
-                      options={singleChoiceData.options}
-                      correctAnswer={singleChoiceData.correctAnswer}
-                      idToEdit={idToEdit}
-                      onChange={handleSingleChoiceChange}
-                    />
                   ) : (
+                    // ) : questionType.input == "radio_opt" && operation == 2 ? (
+                    //   <SingleChoiceQuestionEdit
+                    //     options={singleChoiceData.options}
+                    //     correctAnswer={singleChoiceData.correctAnswer}
+                    //     idToEdit={idToEdit}
+                    //     onChange={handleSingleChoiceChange)}
+                    //   />
                     ""
                   )}
 
@@ -690,6 +725,40 @@ export default function SurveyBlocks() {
                       )}
                     </div>
                   ) : null}
+
+                  <div className="form-group mt-3 m-2">
+                    <label htmlFor="questionConditional" id="labelAnimation">
+                      <select
+                        className="input-new conditionalQuestionSelect"
+                        name="questionConditional"
+                        id="questionConditional"
+                      >
+                        <option value="0" hidden>
+                          {/* Puesto */}
+                        </option>
+                        <option>Antes</option>
+                        <option></option>
+                      </select>
+                      <span className="labelName">Puesto:</span>
+                    </label>
+                  </div>
+
+                  <div className="form-group mt-3 m-2">
+                    <label htmlFor="questionConditional" id="labelAnimation">
+                      <select
+                        className="input-new conditionalQuestionSelect"
+                        name="questionConditional"
+                        id="questionConditional"
+                      >
+                        <option value="0" hidden>
+                          {/* Puesto */}
+                        </option>
+                        <option>Antes</option>
+                        <option></option>
+                      </select>
+                      <span className="labelName">Comentarios</span>
+                    </label>
+                  </div>
 
                   <div className="form-group m-2 mt-4">
                     <label htmlFor="labelName" id="labelAnimation">
