@@ -12,7 +12,7 @@ import { smallAlertDelete, Toast, Toast2 } from "../../assets/js/alertConfig";
 import { generateRandomLink } from "../../components/survey/encrypt";
 import { useTranslation } from "react-i18next";
 import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
-import Cookies from "js-cookie"; 
+import Cookies from "js-cookie"; // si no lo has importado ya
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
@@ -47,30 +47,46 @@ const SurveyList = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  const { accessToken, userType, userId,languageUser} = useContext(UserContext);
+  const { userType, userId, languageUser } = useContext(UserContext);
+  const accessToken = Cookies.get('accessToken');
+
+  useEffect(() => {
+    getSurveys();
+    const today = new Date();
+    const formattedDater = formatDate(today);
+    const formattedDaterTomorrow = getTomorrowDate(today);
+    setFormattedDate({
+      dateToday: formattedDater,
+      dateTomorrow: formattedDaterTomorrow,
+    });
+  }, []);
+  
+
+  useEffect(() => {
+    if (userId && accessToken) {
+      getClients(userId);
+    }
+  }, [userId, accessToken]);
+  
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
-    getSurveys();
-    getClients(userId);
-    const today=new Date()
-    const formattedDater = formatDate(today)
-   
-    const formattedDaterTomorrow = getTomorrowDate(today)
-    setFormattedDate({dateToday:formattedDater,dateTomorrow:formattedDaterTomorrow});
   }, [languageUser]);
-
+  
 
   const config = {
     headers: {
     },
     withCredentials: true,
   };
+  
 
   const getSurveys = async () => {
     try {
       const response = await axios.get(url, config);
-      console.log("Encuestas: ", response.data.data);
+
+      console.log("Encuestas: ", response.data);
+
       setSurvey(response.data.data); // <-- ¡aquí está el fix!
     } catch (error) {
       console.error("Error al obtener encuestas:", error);
@@ -79,18 +95,33 @@ const SurveyList = () => {
       }
     }
   };
+  
   const getClients = async (id) => {
+    const token = accessToken || Cookies.get("accessToken"); // fallback si accessToken está vacío
+
+    if (!token) {
+      console.warn("⚠️ Token no disponible aún.");
+      return;
+    }
+
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/users_client/${id}`,
-        {
-          withCredentials: true, // esto es clave para enviar la cookie
-        }
-      );
-      console.log("clientes relacionados: ", response.data.data);
+
+      const authConfig = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      };
+      //console.log("📡 Enviando token en headers:", authConfig.headers);
+      const response = await axios.get(`http://localhost:3000/api/users_client/${id}`, authConfig);
+      console.log("Clientes relacionados: ", response.data);
       setClients(response.data.data);
     } catch (error) {
-      console.error("Error fetching data:", error.response?.data || error);
+      console.error("❌ Error al obtener clientes:", error);
+      if (error.response) {
+        console.error("Detalles del error:", error.response.data);
+      }
+
     }
   };  
 
@@ -354,6 +385,8 @@ const SurveyList = () => {
     });
   }
 
+  console.log("encuestas a mostrar:", survey);
+
   return (
     <div className="App">
       <div id="body">
@@ -364,25 +397,31 @@ const SurveyList = () => {
           {/* {userType == "1" || userType == "2" ? <SidebarLT1 /> : <SidebarLT2 />} */}
        
           </div>
-          <div className="w-100 d-flex justify-content-center px-2">
-          <div className="w-100 px-3" style={{ maxWidth: "97%" }}>
-          {survey.length > 0 ? (
+
+            <div className="col-10">
+              <div className="container mt-0 ms-0">
+              {survey.length > 0 ? (
                 <TableSurvey
                   header={headers}
                   data={survey}
-                 
+                  
+
                   // Acciones principales
                   onCreate={() => openModal(1)}
                   onUpdate={(payload) => openModal(2, payload)}
                   onView={(payload) => openModalCont(payload)}
                   onCheck={(payload) => openSurvey(payload)}
-                 
+
+                  
+
                   // Acciones adicionales
                   onRemove={(item) => deactivateSurvey(item)}
                   onActive={(payload) => activeSurvey(payload)}
                   onDuplicate={(item) => duplicateSurvey(item)}
                   onCopyLink={(item) => copyLink(item)}
-                 
+
+                  
+
                   // Identificadores de modales
                   modalId="modalSurvey"
                   modalId2="modalViewSurvey"
@@ -390,8 +429,11 @@ const SurveyList = () => {
               ) : (
                 <p>No hay encuestas disponibles.</p>
               )}
-          </div>
-          </div>
+
+
+              </div>
+            </div>
+
           </div>
       </div>
       <div id="modalViewSurvey" className="modal fade" aria-hidden="true">

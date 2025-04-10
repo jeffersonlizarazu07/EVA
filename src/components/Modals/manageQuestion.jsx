@@ -1,4 +1,4 @@
-/* import React from 'react'
+import React from 'react'
 
 export default function ManageQuestion({id}) {
   return (
@@ -26,7 +26,6 @@ export default function ManageQuestion({id}) {
                   id="firstname"
                   className="form-control"
                   placeholder=" "
-                  value={data.}
                   required
                 />
               </div>
@@ -179,4 +178,3 @@ export default function ManageQuestion({id}) {
     </div>
   )
 }
- */

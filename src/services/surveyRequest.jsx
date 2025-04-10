@@ -12,13 +12,13 @@ export const getSurveys = async (urlSurveys, config) => {
   };
 
 export const getSurvey = async (id, config, setSurveyData) => {
-  const url = "http://localhost:3000/api/survey/";
+  const url = "http://localhost:3000/api/surveys/";
   const response = await axios.get(`${url}${id}`, config);
   setSurveyData(response.data);
 };
 
 export const getSurveyQuestions = async (id, config) => {
-  const url = "http://localhost:3000/api/survey/";
+  const url = "http://localhost:3000/api/surveys/";
   const response = await axios.get(`${url}${id}/question`, config);
   const responseData = response.data.data;
   return responseData;
