@@ -11,7 +11,12 @@ import {
   Toast,
 } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
-// import { sendData, deleteQuestion, getSurvey, getSurveyQuestions } from '../../services/surveyRequest';
+import {
+  sendData,
+  deleteQuestion,
+  getSurvey,
+  getSurveyQuestions,
+} from "../../services/surveyRequest";
 import {
   SingleChoiceQuestion,
   MultipleChoiceQuestion,
@@ -19,42 +24,109 @@ import {
   SingleChoiceQuestionEdit,
 } from "./singleChoiceQuestion";
 import "../../assets/css/survey.css";
-// import {Range_onetofive,Range_zerototen,Range_difficulty,Yes_no, Range_emoji, Textfield_s,SingleChoiceView, MultipleChoiceView} from './questions';
+import {
+  Range_onetofive,
+  Range_zerototen,
+  Range_difficulty,
+  Yes_no,
+  Range_emoji,
+  Textfield_s,
+  SingleChoiceView,
+  MultipleChoiceView,
+} from "./questions";
 import getRangeOptions from "./conditional";
 
 export default function SurveyBlocks() {
-
+  const { id } = useParams();
+  const [data, setData] = useState([]);
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
-  // const [valueConditional, setValueConditional] = useState(false);
-  // const [isChecked, setIsChecked] = useState(false);
-  // const [idToEdit, setidToEdit] = useState(null);
+  const [surveyData, setSurveyData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [idToEdit, setidToEdit] = useState(null);
+  const [error, setError] = useState("");
+  const [listConditional, setListConditional] = useState(false);
+  const [valueConditional, setValueConditional] = useState(null);
+  const [singleChoiceData, setSingleChoiceData] = useState({
+    options: [],
+    correctAnswer: null,
+  });
+  const [multipleChoiceData, setMultipleChoiceData] = useState({
+    options: [],
+    correctAnswers: [],
+  });
+  const [isChecked, setIsChecked] = useState(false);
+  const [selectedRangeType, setSelectedRangeType] = useState({
+    questionTypeRange: "",
+    answersRange: "",
+  });
 
-  // const description = useInput("");
-  // const questionType = useInput("");
-  // const section = useInput("");
-  // const percentage = useInput("");
-  // const frm_option = useInput("");
-  // const conditional = useInput("NO");
-  // const id_conditional = useInput(0);
-  // const conditional_answer = useInput("NO");
-  // const survey_id = useInput(id_form);
+  const question = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const questionType = useInput({ defaultValue: "", validate: /^[A-Za-z_]+$/ });
+  const section = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const percentage = useInput({
+    defaultValue: "",
+    validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
+  });
+  const frm_option = useInput({
+    defaultValue: "",
+    validate:
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+  });
+  const conditional = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const id_conditional = useInput({ defaultValue: "0", validate: /^[0-9]*$/ });
+  const survey_id = useInput({ defaultValue: "", validate: /^[0-9]*$/ });
+  const conditional_answer = useInput({
+    defaultValue: "",
+    validate: /^[A-Za-z0-9]*$/,
+  });
 
-  // const [singleChoiceData, setSingleChoiceData] = useState({
-  //   options: [],
-  //   correctAnswer: null,
-  // });
-  // const [multipleChoiceData, setMultipleChoiceData] = useState({
-  //   options: [],
-  //   correctAnswers: [],
-  // });
-
-  const { id_form } = useParams();
+  const { t, i18n } = useTranslation();
+  const { accessToken, languageUser } = useContext(UserContext);
 
   useEffect(() => {
-    console.log("id_form recibido por URL:", id_form);
-  }, [id_form]);
+    i18n.changeLanguage(languageUser);
+    getSurvey(id, config, setSurveyData);
+    updateSurveyQuestions();
+  }, [id, languageUser]);
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  const updateSurveyQuestions = () => {
+    getSurveyQuestions(id, config)
+      .then(setData)
+      .catch((error) => {
+        console.error("Error fetching survey questions", error);
+      });
+  };
+
+  const handleCancel = () => {
+    setValueConditional(false);
+    setIsChecked(false);
+    setSingleChoiceData({ options: [], correctAnswer: null });
+    setMultipleChoiceData({ options: [], correctAnswers: [] });
+    setidToEdit(null);
+  };
+
+  const conditionalHandleChange = (e) => {
+    const conditional = e;
+    setIsChecked(conditional);
+    setValueConditional(conditional);
+  };
+
+  useEffect(() => {
+    if (!valueConditional) {
+      setListConditional(false);
+      setSingleChoiceData({ options: [], correctAnswer: null });
+      setMultipleChoiceData({ options: [], correctAnswers: [] });
+    }
+    setListConditional(true);
+  }, [valueConditional]);
 
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
@@ -117,19 +189,132 @@ export default function SurveyBlocks() {
     }
   };
 
-  const handleCancel = () => {
-    setValueConditional(false);
-    setIsChecked(false);
-    setSingleChoiceData({ options: [], correctAnswer: null });
-    setMultipleChoiceData({ options: [], correctAnswers: [] });
-    setidToEdit(null);
+  const validar = (id, survey_idt) => {
+    var parametros;
+    var metodo;
+    console.log("??  ", singleChoiceData.correctAnswer);
+    if (questionType.input.trim() === "" || description.input.trim() === "") {
+      setError("Ingresa una pregunta valida.");
+    } else {
+      // Asegúrate de que selectedAnswer sea un índice (número) para radio_opt
+      const selectedAnswer =
+        questionType.input === "radio_opt"
+          ? singleChoiceData.correctAnswer
+          : multipleChoiceData.correctAnswers;
+
+      const options =
+        questionType.input === "radio_opt"
+          ? singleChoiceData.options
+          : multipleChoiceData.options;
+
+      // Para "radio_opt" debería ser solo un número, no un array
+      const selectedAnswerToString =
+        questionType.input === "radio_opt"
+          ? selectedAnswer.toString() // Convierte a string para guardarlo
+          : selectedAnswer.join(", "); // Para check_opt, une los valores
+
+      const optionsToSave = options.map((option) => option.text).join(", ");
+
+      if (operation === 1) {
+        parametros = {
+          type: questionType.input,
+          percentage: 0,
+          conditional: valueConditional ? "SI" : "NO",
+          question: description.input,
+          survey_id: survey_idt,
+          frm_option: frm_option.input,
+          id_conditional: id_conditional.input,
+          conditional_answer: conditional_answer.input,
+          section: section.input,
+          selected_answer:
+            questionType.input === "check_opt" ||
+            questionType.input === "radio_opt"
+              ? selectedAnswerToString
+              : " ",
+          select_option:
+            questionType.input === "check_opt" ||
+            questionType.input === "radio_opt"
+              ? optionsToSave
+              : "",
+        };
+        metodo = "post";
+        console.log("parametros: ", parametros);
+      } else if (operation === 2) {
+        parametros = {
+          type: questionType.input,
+          percentage: 0,
+          conditional: valueConditional ? "SI" : "NO",
+          question: description.input,
+          survey_id: survey_idt,
+          conditional_answer: conditional_answer.input,
+          id_conditional: id_conditional.input,
+          selected_answer:
+            questionType.input === "check_opt" ||
+            questionType.input === "radio_opt"
+              ? selectedAnswerToString.length > 1
+                ? selectedAnswerToString
+                : selectedAnswerToString
+              : null,
+          select_option:
+            questionType.input === "check_opt" ||
+            questionType.input === "radio_opt"
+              ? optionsToSave
+              : null,
+        };
+        console.log("parametros", parametros);
+        metodo = "put";
+      }
+
+      sendData(
+        metodo,
+        parametros,
+        config,
+        id,
+        setLoading,
+        setError,
+        updateSurveyQuestions,
+        t
+      )
+        .then(() => {
+          // Actualizar preguntas después de la llamada a sendData
+          updateSurveyQuestions();
+          document.getElementById("btnClose").click();
+          setValueConditional(false);
+        })
+        .catch((error) => {
+          console.error("Error en la actualización de preguntas:", error);
+        });
+    }
   };
 
-  const conditionalHandleChange = (e) => {
-    const conditional = e;
-    setIsChecked(conditional);
-    setValueConditional(conditional);
+  const handleSingleChoiceChange = (updatedData) => {
+    setSingleChoiceData(updatedData);
+    console.log("updated Data:", singleChoiceData.correctAnswer);
   };
+
+  const handleMultipleChoiceChange = (data) => {
+    setMultipleChoiceData(data);
+  };
+  const handleSelectConditionalQuestionChange = (e) => {
+    const selectedId = e.target.value; // Captura el value (question.id)
+    const selectedType = e.target.selectedOptions[0].getAttribute("data-type");
+    const selectedAnswers =
+      e.target.selectedOptions[0].getAttribute("data-answers"); // Convertimos de vuelta a un array u objeto
+    setSelectedRangeType({
+      questionTypeRange: selectedType,
+      answersRange: selectedAnswers,
+    });
+    id_conditional.handleChange(selectedId);
+  };
+
+  const rangeOptions = useMemo(
+    () =>
+      getRangeOptions(
+        selectedRangeType.questionTypeRange,
+        selectedRangeType.answersRange
+      ),
+    [selectedRangeType]
+  );
 
   return (
     <div className="App">
@@ -179,42 +364,90 @@ export default function SurveyBlocks() {
                   </div>
 
                   <div className="card-body ui-sorteable">
-                    {/* Aquí irían las preguntas renderizadas */}
-                    <div className="callout callout info shadowbox5 p-3 m-3">
-                      <div className="d-flex justify-content-between">
-                        <h5 className="mt-2">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing
-                          elit, sed do eiusmod tempor incididunt ut labore et
-                          dolore magna aliqua.
-                        </h5>
-                        <div className="dropdown">
-                          <a
-                            className="btn dropdown-toggle"
-                            href="#"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                          >
-                            <i className="fa-solid fa-ellipsis-vertical"></i>
-                          </a>
-                          <ul className="dropdown-menu">
-                            <li>
-                              <button className="dropdown-item" type="button">
-                                Editar
-                              </button>
-                            </li>
-                            <li>
-                              <button className="dropdown-item" type="button">
-                                Eliminar
-                              </button>
-                            </li>
-                          </ul>
+                    {data.map((question) => (
+                      <div
+                        key={question.id}
+                        className="callout callout info shadowbox5 p-3 m-3"
+                      >
+                        <div className="row ">
+                          <div className="col-md-12 col-12"></div>
+                        </div>
+
+                        <div className="d-flex justify-content-between">
+                          <h5 className="mt-2">{question.question}</h5>
+                          <div className="dropdown">
+                            <a
+                              className="btn dropdown-toggle"
+                              href="#"
+                              role="button"
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false"
+                            >
+                              <i className="fa-solid fa-ellipsis-vertical"></i>
+                            </a>
+                            <ul className="dropdown-menu">
+                              <li>
+                                <button
+                                  className="dropdown-item"
+                                  type="button"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#modalManageQuestion"
+                                  onClick={() => openModal(2, id, question)}
+                                >
+                                  Editar
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  className="dropdown-item"
+                                  type="button"
+                                  onClick={() =>
+                                    deleteQuestion(
+                                      question,
+                                      config,
+                                      updateSurveyQuestions,
+                                      t
+                                    )
+                                  }
+                                >
+                                  Eliminar
+                                </button>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        {question.type == "yes_no" ? (
+                          <Yes_no />
+                        ) : question.type == "textfield_s" ? (
+                          <Textfield_s />
+                        ) : question.type == "radio_opt" ? (
+                          <SingleChoiceView
+                            options={question.select_option}
+                            correctOption={question.selected_answer}
+                          />
+                        ) : (
+                          <MultipleChoiceView
+                            options={question.select_option}
+                            correctOption={question.selected_answer}
+                          />
+                        )}
+
+                        <div className="text-end me-3">
+                          {question.conditional === "SI" ? (
+                            <i
+                              className="fa-solid fa-question text-primary"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="top"
+                              data-bs-custom-class="custom-tooltip"
+                              data-bs-title="This top tooltip is themed via CSS variables."
+                            ></i>
+                          ) : (
+                            ""
+                          )}
                         </div>
                       </div>
-                      <div className="text-end me-3">
-                        <i className="fa-solid fa-question text-primary"></i>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -230,15 +463,18 @@ export default function SurveyBlocks() {
         aria-labelledby="staticBackdropLabel"
         aria-hidden="true"
       >
-        <div className={`${operation===1 ? "modal-dialog modal-xl" : ""} modal-dialog-centered modal-dialog-scrollable`}>
+        <div
+          className={`${
+            operation === 1 ? "modal-dialog modal-xl" : ""
+          } modal-dialog-centered modal-dialog-scrollable`}
+        >
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="text-start m-2 modal-title">{title}</h5>
+              <h5 className="text-start m-2 modal-title">{title || "Crear Bloque"}</h5>
             </div>
             <div className="modal-body">
               <div className="row">
                 {/* Columna izquierda */}
-                
                 <div className="col-md-6 p-3">
                   <small>
                     <p className="text-start ms-2 text-secondary">
@@ -254,33 +490,206 @@ export default function SurveyBlocks() {
                         id="question"
                         className="input-new"
                         placeholder=" "
-                        // value={description.value}
-                        // onChange={description.onChange}
+                        value={description.input}
+                        onChange={(e) =>
+                          description.handleChange(e.target.value)
+                        }
+                        required
                       />
                       <span className="labelName">Pregunta:</span>
                     </label>
                   </div>
 
                   <div className="form-group m-2">
-                    <label htmlFor="questionType" id="labelAnimation">
+                    <label htmlFor="middlename" id="labelAnimation">
                       <select
                         className="input-new text-center"
+                        placeholder=" "
                         name="questionType"
-                        id="questionType"
+                        onChange={(e) =>
+                          questionType.handleChange(e.target.value)
+                        }
+                        value={questionType.input}
                       >
-                        {/* <option value="" disabled>Seleccione una pregunta</option>
-                  <option value="yes_no">Si/No</option>
-                  <option value="range_emoji">Rango de emojis</option>
-                  <option value="range_onetofive">Rango de 1/5</option>
-                  <option value="range_zerototen">Rango de 0/10</option>
-                  <option value="range_difficulty">Rango de dificultad</option> */}
-                        <option value="textfield_s">Campo de texto</option>
+                        <option value="" disabled>
+                          Seleccione una pregunta
+                        </option>
+                        <option value="yes_no">Si/No</option>
                         <option value="radio_opt">Seleccion única</option>
                         <option value="check_opt">Seleccion múltiple</option>
+                        <option value="textfield_s">Campo de texto</option>
                       </select>
                       <span className="labelName">Tipo de pregunta:</span>
                     </label>
                   </div>
+
+                  {questionType.input === "radio_opt" && operation == 1 ? (
+                    <SingleChoiceQuestion
+                      options={singleChoiceData.options}
+                      correctAnswer={singleChoiceData.correctAnswer}
+                      onChange={handleSingleChoiceChange}
+                    />
+                  ) : questionType.input == "check_opt" && operation == 1 ? (
+                    <MultipleChoiceQuestion
+                      options={multipleChoiceData.options}
+                      correctAnswers={multipleChoiceData.correctAnswers}
+                      onChange={handleMultipleChoiceChange}
+                    />
+                  ) : questionType.input == "check_opt" && operation == 2 ? (
+                    <MultipleChoiceQuestionEdit
+                      idToEdit={idToEdit}
+                      options={multipleChoiceData.options}
+                      correctAnswers={multipleChoiceData.correctAnswers}
+                      onChange={handleMultipleChoiceChange}
+                    />
+                  ) : questionType.input == "radio_opt" && operation == 2 ? (
+                    <SingleChoiceQuestionEdit
+                      options={singleChoiceData.options}
+                      correctAnswer={singleChoiceData.correctAnswer}
+                      idToEdit={idToEdit}
+                      onChange={handleSingleChoiceChange}
+                    />
+                  ) : (
+                    ""
+                  )}
+
+                  {operation === 1 ? (
+                    <div className="mt-2 mb-2">
+                      {questionType.input == "yes_no" ? (
+                        <Yes_no />
+                      ) : questionType.input == "textfield_s" ? (
+                        <Textfield_s />
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  ) : null}
+
+                  {questionType.input && operation === 2 ? (
+                    <>
+                      <div
+                        className="col-6 p-2 shadowbox5"
+                        style={{ borderLeft: "5px solid gray" }}
+                      >
+                        {operation === 2 && data.length >= 1 ? (
+                          <div className="form-check form-switch m-2">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="flexSwitchCheckChecked"
+                              checked={isChecked}
+                              onChange={(e) =>
+                                conditionalHandleChange(e.target.checked)
+                              }
+                            />
+                            <label
+                              className="form-check-label"
+                              htmlFor="flexSwitchCheckChecked"
+                            >
+                              Añadir como pregunta condicional
+                            </label>
+                          </div>
+                        ) : (
+                          " "
+                        )}
+
+                        {isChecked && listConditional && valueConditional && (
+                          <>
+                            <div className="text ms-2 p-0">
+                              <span> Si la respuesta de la pregunta: </span>
+                            </div>
+
+                            <div className="form-group mt-3 m-2">
+                              <label htmlFor="middlename" id="labelAnimation">
+                                <select
+                                  className="input-new conditionalQuestionSelect"
+                                  name="questionConditional"
+                                  placeholder=" "
+                                  onChange={(e) =>
+                                    handleSelectConditionalQuestionChange(e)
+                                  }
+                                  value={id_conditional.input}
+                                >
+                                  <option value="0" selected hidden>
+                                    Seleccionar:
+                                  </option>
+                                  {data.map((question) =>
+                                    question.type == "textfield_s" ||
+                                    question.id === idToEdit ? null : (
+                                      <option
+                                        key={question.id}
+                                        value={question.id}
+                                        data-type={question.type}
+                                        data-answers={question.select_option}
+                                      >
+                                        {question.question.length > 55
+                                          ? question.question.substring(0, 55) +
+                                            "..."
+                                          : question.question}
+                                      </option>
+                                    )
+                                  )}
+                                </select>
+                                <span className="labelName">Pregunta:</span>
+                              </label>
+                            </div>
+
+                            {id_conditional.input && (
+                              <div className="mt-2">
+                                <div className="text ms-2 mt-2 p-0">
+                                  <span> Es: </span>
+                                </div>
+                                <div className="form-group mt-3 m-2">
+                                  <label id="labelAnimation">
+                                    <select
+                                      name="optionConditionalSelector"
+                                      className="input-new"
+                                      placeholder=" "
+                                      onChange={(e) =>
+                                        conditional_answer.handleChange(
+                                          e.target.value
+                                        )
+                                      }
+                                      value={conditional_answer.input}
+                                    >
+                                      <option value="0" selected hidden>
+                                        Seleccionar opcion
+                                      </option>
+                                      {rangeOptions.map((option, index) => (
+                                        <option
+                                          key={index}
+                                          value={option.value}
+                                        >
+                                          {option.optionText}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <span className="labelName">
+                                      Respuesta:
+                                    </span>
+                                  </label>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </>
+                  ) : null}
+
+                  {error && <p className="text-danger text-center">{error}</p>}
+
+                  {operation === 2 ? (
+                    <div className="mt-2 mb-2">
+                      {questionType.input == "yes_no" ? (
+                        <Yes_no />
+                      ) : questionType.input == "textfield_s" ? (
+                        <Textfield_s />
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  ) : null}
 
                   <div className="form-group m-2 mt-4">
                     <label htmlFor="labelName" id="labelAnimation">
@@ -349,7 +758,9 @@ export default function SurveyBlocks() {
                     <input
                       className="form-check-input"
                       type="checkbox"
-                      id="flexSwitchCheckChecked"
+                      id={"flexSwitchCheckChecked"}
+                      checked={isChecked}
+                      onChange={(e) => setIsChecked(e.target.checked)}
                     />
                     <label
                       className="form-check-label"
@@ -359,88 +770,106 @@ export default function SurveyBlocks() {
                     </label>
                   </div>
 
-                  <div className="form-group mt-3 m-2">
-                    <label htmlFor="questionConditional" id="labelAnimation">
-                      <select
-                        className="input-new conditionalQuestionSelect"
-                        name="questionConditional"
-                        id="questionConditional"
-                      >
-                        <option value="0" hidden>
-                          Seleccionar:
-                        </option>
-                        <option>Pregunta 1</option>
-                        <option>Pregunta 2</option>
-                      </select>
-                      <span className="labelName">Pregunta:</span>
-                    </label>
-                  </div>
+                  {isChecked && (
+                    <>
+                      <div className="form-group mt-3 m-2">
+                        <label
+                          htmlFor="questionConditional"
+                          id="labelAnimation"
+                        >
+                          <select
+                            className="input-new conditionalQuestionSelect"
+                            name="questionConditional"
+                            id="questionConditional"
+                          >
+                            <option value="0" hidden>
+                              Seleccionar:
+                            </option>
+                            <option>Pregunta 1</option>
+                            <option>Pregunta 2</option>
+                          </select>
+                          <span className="labelName">Pregunta:</span>
+                        </label>
+                      </div>
 
-                  <div className="form-group mt-3 m-2">
-                    <label
-                      htmlFor="optionConditionalSelector"
-                      id="labelAnimation"
-                    >
-                      <select
-                        name="optionConditionalSelector"
-                        id="optionConditionalSelector"
-                        className="input-new"
-                      >
-                        <option value="0" hidden>
-                          Seleccionar opción
-                        </option>
-                        <option>Opción A</option>
-                        <option>Opción B</option>
-                      </select>
-                      <span className="labelName">Respuesta:</span>
-                    </label>
-                  </div>
+                      <div className="form-group mt-3 m-2">
+                        <label
+                          htmlFor="optionConditionalSelector"
+                          id="labelAnimation"
+                        >
+                          <select
+                            name="optionConditionalSelector"
+                            id="optionConditionalSelector"
+                            className="input-new"
+                          >
+                            <option value="0" hidden>
+                              Seleccionar opción
+                            </option>
+                            <option>Opción A</option>
+                            <option>Opción B</option>
+                          </select>
+                          <span className="labelName">Respuesta:</span>
+                        </label>
+                      </div>
 
-                  <div className="form-group m-2 mt-4">
-                    <label htmlFor="copcScore" id="labelAnimation">
-                      <select
-                        className="input-new"
-                        name="copcScore"
-                        id="copcScore"
-                      >
-                        <option value="">Seleccionar</option>
-                        <option value="business">Business Fatal</option>
-                        <option value="compliance">Compliance Fatal</option>
-                        <option value="enduser">End-User Fatal</option>
-                      </select>
-                      <span className="labelName">
-                        Tipo de puntuación COPC:
-                      </span>
-                    </label>
-                  </div>
+                      <div className="form-group m-2 mt-4">
+                        <label htmlFor="copcScore" id="labelAnimation">
+                          <select
+                            className="input-new"
+                            name="copcScore"
+                            id="copcScore"
+                          >
+                            <option value="">Seleccionar</option>
+                            <option value="business">Business Fatal</option>
+                            <option value="compliance">Compliance Fatal</option>
+                            <option value="enduser">End-User Fatal</option>
+                          </select>
+                          <span className="labelName">
+                            Tipo de puntuación COPC:
+                          </span>
+                        </label>
+                      </div>
 
-                  <div className="form-group m-2 mt-4">
-                    <label htmlFor="jobPosition" id="labelAnimation">
-                      <select
-                        className="input-new"
-                        name="jobPosition"
-                        id="jobPosition"
-                      >
-                        <option value="">Seleccionar</option>
-                        <option value="agent">Agente</option>
-                        <option value="supervisor">Supervisor</option>
-                      </select>
-                      <span className="labelName">Puesto:</span>
-                    </label>
-                  </div>
+                      <div className="form-group m-2 mt-4">
+                        <label htmlFor="jobPosition" id="labelAnimation">
+                          <select
+                            className="input-new"
+                            name="jobPosition"
+                            id="jobPosition"
+                          >
+                            <option value="">Seleccionar</option>
+                            <option value="agent">Agente</option>
+                            <option value="supervisor">Supervisor</option>
+                          </select>
+                          <span className="labelName">Puesto:</span>
+                        </label>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-            </div>
 
-            <div className="modal-footer">
-              <button className="btn bg-gradient-guardar mr-2">Guardar</button>
-              <button
-                className="btn btn-secondary"
-                type="button"
-                data-bs-dismiss="modal"
-              >
-                Cancelar
-              </button>
+              {/* Footer del modal */}
+              <div className="modal-footer">
+                {questionType.input && (
+                  <button
+                    className="btn bg-gradient-guardar mr-2"
+                    id="btn-send-survey"
+                    onClick={() => validar(idToEdit, id)}
+                  >
+                    Guardar
+                  </button>
+                )}
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  data-bs-dismiss="modal"
+                  id="btnClose"
+                  onClick={handleCancel}
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         </div>

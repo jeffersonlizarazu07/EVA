@@ -1,5 +1,5 @@
 import React from 'react';
-import { SingleChoiceQuestion } from './SingleChoiceQuestion';
+import SingleChoiceQuestion from './singleChoiceQuestion';
 
 export const Question = ({ question, onUpdate, openModal, deleteQuestion, config, updateSurveyQuestions, t }) => {
   const renderQuestionContent = () => {
