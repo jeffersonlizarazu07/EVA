@@ -8,8 +8,9 @@ const UserProvider = ({ children }) => {
   const [userId, setUserId] = useState(() => Cookies.get('userId') || ''); 
   const [userType, setUserType] = useState(() => Cookies.get('userType') || ''); 
   const [accessToken, setAccessToken] = useState(() => Cookies.get('accessToken') || ''); 
-  const [languageUser, setLanguageUser] = useState(() => Cookies.get('languageUser') || '');
   const [clients, setClients] = useState(() => Cookies.get('clients') || '');
+  const [languageUser, setLanguageUser] = useState(() => localStorage.getItem('languageUser') || 'es'); 
+
 
   useEffect(() => {
     const tabCount = sessionStorage.getItem('tabCount');
@@ -29,7 +30,7 @@ const UserProvider = ({ children }) => {
     }
 
     if (languageUser) {
-      Cookies.set('languageUser', languageUser, { expires: 1 / 24, path: '/' });
+      localStorage.setItem('languageUser', languageUser);
     }
 
     if (clients) {
@@ -48,7 +49,6 @@ const UserProvider = ({ children }) => {
           Cookies.remove('userId');
           Cookies.remove('userType');
           Cookies.remove('accessToken');
-          Cookies.remove('languageUser');
           Cookies.remove('clients');
         }
       }

@@ -23,7 +23,7 @@ const AdminList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
   const urlUsers = "http://localhost:3000/api/users";
-  const urlUsersClients = "http://localhost:3000/api/users_clients";
+  const urlUsersClients = "http://localhost:3000/api/users_client";
   const [admins, setAdmins] = useState([]);
   const [clients, setClients] = useState([]);
   const [operation, setOperation] = useState([1]);
@@ -63,11 +63,16 @@ const AdminList = () => {
     defaultValue: "",
     validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
   });
+  const cPassword = useInput({ defaultValue: "" });
   const password = useInput({
     defaultValue: "",
-    validate:
-      /^(?=.[A-Z])(?=.[a-z])(?=.\d)(?=.[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/,
+    validate: (value) =>
+      value === "" ||
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/.test(
+        value
+      ),
   });
+
   const type = useInput({ defaultValue: "", validate: /^[1-4]+$/ });
   const state = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
   const language = useInput({ defaultValue: "", validate: /^(es|en|it|pt)$/ });
@@ -94,10 +99,9 @@ const AdminList = () => {
 
   const getClients = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/clients`,
-        config
-      );
+      const response = await axios.get(`http://localhost:3000/api/clients`, {
+        withCredentials: true,
+      });
       setClients(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -108,10 +112,10 @@ const AdminList = () => {
     try {
       const response = await axios.get(
         `http://localhost:3000/api/users_client/${id}`,
-        config
+        { withCredentials: true }
       );
       const responseData = response.data.data;
-      console.log(responseData);
+      console.log("respues",response.data.data); 
       setSelectedClients(responseData.map((client) => client.idClient));
       console.log({ selectedClients });
     } catch (error) {
@@ -119,47 +123,66 @@ const AdminList = () => {
     }
   };
 
-
-  const sendData2 = async (metodo, parametros1) => {
+  const sendData2 = async (metodo, { password, cPassword, ...rest }) => {
+    if (selectedClients.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Cliente requerido",
+        text: "Debes asignar al menos un cliente al usuario.",
+      });
+      return;
+    }
+  
+    console.log("Password:", password);
+    console.log("Confirm Password:", cPassword);
+  
+    if (password && cPassword !== password) {
+      Swal.fire({
+        icon: "error",
+        title: "Contraseñas no coinciden",
+        text: "La contraseña y su confirmación deben ser iguales.",
+      });
+      return;
+    }
+  
+    // Elimina password si está vacío antes de enviar
+    if (metodo.toUpperCase() === "PUT") {
+      if (!password || password.trim() === "") {
+        delete rest.password;
+      } else {
+        rest.password = password;
+      }
+    }
+  
+    // POST
     if (metodo.toUpperCase() === "POST") {
-      const duplicados = admins.find((u) => u.email === parametros1.email);
+      const duplicados = admins.find((u) => u.email === rest.email);
       if (duplicados) {
         alert("Este administrador ya existe");
         return;
       }
       try {
-        await axios
-          .post(`${urlUsers}s`, parametros1, config)
-          .then(function (respuesta) {
-            console.log("Response: ", respuesta);
-            sendClients(respuesta.data.data.id, 1)
-            document.getElementById("btnCerrar").click();
-            getAdmins();
-          })
-          .catch(function (error) {
-            console.log("Error: ", error);
-          });
-      } catch {
-        console.error("Error:", error);
+        const respuesta = await axios.post(`${urlUsers}`, { ...rest, password }, config);
+        console.log("Response: ", respuesta);
+        sendClients(respuesta.data.data.id, 1);
+        document.getElementById("btnCerrar").click();
+        getAdmins();
+      } catch (error) {
+        console.log("Error: ", error);
       }
-    } else if (metodo.toUpperCase() == "PUT") {
+    } else if (metodo.toUpperCase() === "PUT") {
       try {
-        await axios
-          .put(`${urlUsers}/${idToEdit}`, parametros1, config)
-          .then(function (respuesta) {
-            console.log("Respuesta: ", respuesta);
-            sendClients(respuesta.data.data.id, 2);
-            document.getElementById("btnCerrar").click();
-            getAdmins();
-          })
-          .catch(function (error) {
-            console.log("Error: ", error);
-          });
-      } catch {
+        const respuesta = await axios.put(`${urlUsers}/${idToEdit}`, rest, config);
+        console.log("Respuesta: ", respuesta);
+        sendClients(respuesta.data.data.id, 2);
+        document.getElementById("btnCerrar").click();
+        getAdmins();
+      } catch (error) {
         console.log("Error:", error);
       }
     }
   };
+  
 
   const sendClients = async (id, metodo) => {
     if (metodo == 1) {
@@ -168,25 +191,30 @@ const AdminList = () => {
         clientId: client,
       }));
       try {
-        const respuesta = await axios.post(`${urlUsersClients}`, parametros, config);
+        const respuesta = await axios.post(
+          `${urlUsersClients}`,
+          parametros,
+          config
+        );
         console.log("Response: ", respuesta);
       } catch (error) {
         console.log("Error: ", error);
       }
     } else if (metodo == 2) {
       const parametros = {
-        "clientIds": selectedClients.map((client) => (
-          client
-        ))
+        clientIds: selectedClients.map((client) => client),
       };
       try {
-        const respuesta = await axios.put(`${urlUsersClients}/${id}`, parametros, config);
+        const respuesta = await axios.put(
+          `${urlUsersClients}/${id}`,
+          parametros,
+          config
+        );
         console.log("Response: ", respuesta);
       } catch (error) {
         console.log("Error: ", error);
       }
     }
-
   };
 
   const deactivateUser = (admin) => {
@@ -266,7 +294,6 @@ const AdminList = () => {
   //REQUEST//
 
   //MODALS//
-
   const openModal = (op, admin) => {
     setOperation(op);
     if (op == 1) {
@@ -281,7 +308,6 @@ const AdminList = () => {
       state.handleChange(1);
       registration_date.handleChange(formattedDate);
       last_visit_date.handleChange(formattedDate);
-      /* userxClients.handleChange(clientes) */
     } else if (op == 2) {
       getUserClients(admin.id);
       setTitle(t("UserModal.EditUser"));
@@ -289,32 +315,39 @@ const AdminList = () => {
       firstName.handleChange(admin?.firstname || "");
       middleName.handleChange(admin?.middlename || "");
       email.handleChange(admin?.email || "");
-      password.handleChange(admin?.password || "");
+      password.handleChange("");
       type.handleChange(admin?.type || "");
       state.handleChange(admin?.state || "");
       language.handleChange(admin?.language || "en");
+      registration_date.handleChange(admin?.registration_date || "");
+      
       setidToEdit(admin?.id);
     }
   };
+  
 
   const openModalCont = async (admin) => {
+    console.log("admin completo:", admin);
+    console.log("fecha:", admin.registration_date);
+   
     await getUserClients(admin.id);
     setTitle("Información");
     lastName.handleChange(admin?.lastname || "");
     firstName.handleChange(admin?.firstname || "");
     middleName.handleChange(admin?.middlename || "");
     email.handleChange(admin?.email || "");
-    password.handleChange(admin?.password || "");
+    password.handleChange("");
     type.handleChange(admin?.type || "");
     state.handleChange(admin?.state || "");
     language.handleChange(admin?.language || "en");
     registration_date.handleChange(admin?.created_at || "");
-    last_visit_date.handleChange(admin?.updated_at || "Nunca");
+
+    last_visit_date.handleChange(admin?.last_visit_date || "Nunca");
     setidToEdit(admin?.id);
   };
 
   const formatDate = (dateTimeString) => {
-    const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/;
+    const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{1,6}Z$/;
     if (regex.test(dateTimeString)) {
       const dateTime = new Date(dateTimeString);
       const day = dateTime.getDate().toString().padStart(2, "0");
@@ -347,10 +380,10 @@ const AdminList = () => {
           middlename: middleName.input,
           email: email.input,
           password: password.input,
+          cPassword: cPassword.input,
           type: type.input,
           language: "es",
-          registration_date: formattedDate,
-          last_visit_date: "0000-00-00 00:00:00",
+      
         };
         metodo = "post";
       } else if (operation === 2) {
@@ -359,14 +392,18 @@ const AdminList = () => {
           firstname: firstName.input,
           middlename: middleName.input,
           email: email.input,
-          password: password.input,
           type: type.input,
-          language: "es",
-          registration_date: "0000-00-00",
-          last_visit_date: "0000-00-00 00:00:00",
+          cPassword: cPassword.input,
+          language: "es"
+          
         };
+        if (password.input.trim() !== "") {
+          parametros.password = password.input;
+        }
+
         metodo = "put";
       }
+
       console.log(parametros);
 
       sendData2(metodo, parametros);
@@ -434,7 +471,7 @@ const AdminList = () => {
                 <div className="col mb-3">
                   <label id="labelAnimation">
                     <input
-                      placeholder=" "
+                      placeholder=""
                       className="input-new"
                       type="text"
                       name="firstname"
@@ -450,7 +487,7 @@ const AdminList = () => {
                   <label id="labelAnimation">
                     <input
                       className="input-new"
-                      placeholder=" "
+                      placeholder=""
                       type="text"
                       name="middleName"
                       value={middleName.input}
@@ -465,7 +502,7 @@ const AdminList = () => {
                   <label id="labelAnimation">
                     <input
                       className="input-new"
-                      placeholder=" "
+                      placeholder=""
                       type="text"
                       name="lastname"
                       value={lastName.input}
@@ -518,7 +555,7 @@ const AdminList = () => {
                   <label id="labelAnimation">
                     <input
                       className="input-new"
-                      placeholder=" "
+                      placeholder=""
                       type="text"
                       name="email"
                       value={email.input}
@@ -531,10 +568,11 @@ const AdminList = () => {
                   <label id="labelAnimation">
                     <input
                       className="input-new"
-                      placeholder=" "
+                      placeholder=""
                       type="password"
                       name="password"
                       onChange={(e) => password.handleChange(e.target.value)}
+                      value={password.value}
                     />
                     <span className="labelName">
                       {t("UserModal.Password")}:
@@ -545,9 +583,11 @@ const AdminList = () => {
                   <label id="labelAnimation">
                     <input
                       className="input-new"
-                      placeholder=" "
+                      placeholder=""
                       type="password"
                       name="cPassword"
+                      onChange={(e) => cPassword.handleChange(e.target.value)}
+                      value={cPassword.value}
                     />
                     <span className="labelName">
                       {t("UserModal.ConfirmPassword")}:
@@ -568,7 +608,7 @@ const AdminList = () => {
                       value={type.input}
                     >
                       <option value="0" disabled selected>
-                      {t("UserModal.SelectRole")}
+                        {t("UserModal.SelectRole")}
                       </option>
                       <option value="1">{t("UserModal.SuperAdmin")}</option>
                       <option value="2">{t("UserModal.Admin")}</option>
