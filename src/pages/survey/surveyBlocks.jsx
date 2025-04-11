@@ -31,6 +31,7 @@ import {
   MultipleChoiceView,
 } from "./questions";
 import getRangeOptions from "./conditional";
+import "../../assets/css/surveyBlocks.css";
 
 export default function SurveyBlocks() {
   const { id } = useParams();
@@ -534,6 +535,124 @@ export default function SurveyBlocks() {
                     </label>
                   </div>
 
+                  {/* {questionType.input === "radio_opt" && operation == 1 ? (
+                    <SingleChoiceQuestion
+                      options={singleChoiceData.options}
+                      correctAnswer={singleChoiceData.correctAnswer}
+                      onChange={handleSingleChoiceChange )}
+                    /> */}
+
+                  {/* //  : questionType.input == "radio_opt" && operation == 2 ? (
+                    //   <SingleChoiceQuestionEdit
+                    //     options={singleChoiceData.options}
+                    //     correctAnswer={singleChoiceData.correctAnswer}
+                    //     idToEdit={idToEdit}
+                    //     onChange={handleSingleChoiceChange)}
+                    //   /> */}
+
+                  <div className="block-position">
+                    <h5>Puesto</h5>
+                    <div className="d-flex gap-3 m-2">
+                      <div className="form-group flex-fill">
+                        <label htmlFor="select1" className="w-100">
+                          <select>
+                            <option value="0" hidden>
+                              Antes
+                            </option>
+                            <option>Antes</option>
+                            <option>Después</option>
+                          </select>
+                        </label>
+                      </div>
+                      <div className="form-group flex-fill">
+                        <label htmlFor="select2" className="w-100">
+                          <select>
+                            <option value="0" hidden>
+                              Comentarios
+                            </option>
+                            <option>Comentarios</option>
+                            <option>Notas</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* <div className="form-group m-2 mt-4">
+                    <label htmlFor="labelName" id="labelAnimation">
+                      <input
+                        type="text"
+                        name="labelName"
+                        id="labelName"
+                        className="input-new"
+                        placeholder=" "
+                      />
+                      <span className="labelName">
+                        Calificativo del nombre:
+                      </span>
+                    </label>
+                  </div> */}
+
+                  {/* <div className="form-group m-2 mt-4">
+                    <label htmlFor="score" id="labelAnimation">
+                      <input
+                        type="number"
+                        name="score"
+                        id="score"
+                        className="input-new"
+                        placeholder=" "
+                        min="0"
+                      />
+                      <span className="labelName">Posible puntuación:</span>
+                    </label>
+                  </div> */}
+
+                  {/* <div className="form-group m-2 mt-4">
+                    <label htmlFor="applicable" id="labelAnimation">
+                      <select
+                        className="input-new"
+                        name="applicable"
+                        id="applicable"
+                      >
+                        <option value="no">No</option>
+                        <option value="yes">Sí</option>
+                      </select>
+                      <span className="labelName">Aplicable:</span>
+                    </label>
+                  </div> */}
+
+                  {/* <div className="form-group m-2 mt-4">
+                    <label htmlFor="required" id="labelAnimation">
+                      <select
+                        className="input-new"
+                        name="required"
+                        id="required"
+                      >
+                        <option value="no">No</option>
+                        <option value="yes">Sí</option>
+                      </select>
+                      <span className="labelName">Requerido:</span>
+                    </label>
+                  </div> */}
+                </div>
+
+                {/* Columna derecha */}
+                <div
+                  className="col-md-6 p-3 shadowbox5"
+                  style={{ borderLeft: "5px solid gray" }}
+                >
+                  <div className="form-group mt-3 m-2">
+                    <label htmlFor="questionConditional" id="labelAnimation">
+                      <input
+                        type="text"
+                        className="input-new conditionalQuestionSelect"
+                        name="questionConditional"
+                        id="questionConditional"
+                      />
+                      <span className="labelName">Pregunta:</span>
+                    </label>
+                  </div>
+
                   <div className="form-group m-2">
                     <label htmlFor="middlename" id="labelAnimation">
                       <select
@@ -546,7 +665,7 @@ export default function SurveyBlocks() {
                         value={questionType.input}
                       >
                         <option value="" disabled>
-                          Seleccione una opción
+                          Seleccione opción
                         </option>
                         {/* <option value="yes_no">Si/No</option>
                         <option value="radio_opt">Seleccion única</option> */}
@@ -556,14 +675,6 @@ export default function SurveyBlocks() {
                       <span className="labelName">Tipo de pregunta:</span>
                     </label>
                   </div>
-
-                  {/* {questionType.input === "radio_opt" && operation == 1 ? (
-                    <SingleChoiceQuestion
-                      options={singleChoiceData.options}
-                      correctAnswer={singleChoiceData.correctAnswer}
-                      onChange={handleSingleChoiceChange )}
-                    /> */}
-
                   {questionType.input == "check_opt" && operation == 1 ? (
                     <MultipleChoiceQuestion
                       options={multipleChoiceData.options}
@@ -578,13 +689,6 @@ export default function SurveyBlocks() {
                       onChange={handleMultipleChoiceChange}
                     />
                   ) : (
-                    // ) : questionType.input == "radio_opt" && operation == 2 ? (
-                    //   <SingleChoiceQuestionEdit
-                    //     options={singleChoiceData.options}
-                    //     correctAnswer={singleChoiceData.correctAnswer}
-                    //     idToEdit={idToEdit}
-                    //     onChange={handleSingleChoiceChange)}
-                    //   />
                     ""
                   )}
 
@@ -617,12 +721,6 @@ export default function SurveyBlocks() {
                                 conditionalHandleChange(e.target.checked)
                               }
                             />
-                            <label
-                              className="form-check-label"
-                              htmlFor="flexSwitchCheckChecked"
-                            >
-                              Añadir como pregunta condicional
-                            </label>
                           </div>
                         ) : (
                           " "
@@ -630,10 +728,6 @@ export default function SurveyBlocks() {
 
                         {isChecked && listConditional && valueConditional && (
                           <>
-                            <div className="text ms-2 p-0">
-                              <span> Si la respuesta de la pregunta: </span>
-                            </div>
-
                             <div className="form-group mt-3 m-2">
                               <label htmlFor="middlename" id="labelAnimation">
                                 <select
@@ -665,7 +759,8 @@ export default function SurveyBlocks() {
                                     )
                                   )}
                                 </select>
-                                <span className="labelName">Pregunta:</span>
+                                <input className="labelName">Pregunta:</input>
+                                <label></label>
                               </label>
                             </div>
 
@@ -727,194 +822,52 @@ export default function SurveyBlocks() {
                   ) : null}
 
                   <div className="form-group mt-3 m-2">
-                    <label htmlFor="questionConditional" id="labelAnimation">
+                    <label
+                      htmlFor="optionConditionalSelector"
+                      id="labelAnimation"
+                    >
                       <select
-                        className="input-new conditionalQuestionSelect"
-                        name="questionConditional"
-                        id="questionConditional"
+                        name="optionConditionalSelector"
+                        id="optionConditionalSelector"
+                        className="input-new"
                       >
                         <option value="0" hidden>
-                          {/* Puesto */}
+                          Seleccionar opción
                         </option>
-                        <option>Antes</option>
-                        <option></option>
+                        <option>Si</option>
+                        <option>No</option>
                       </select>
-                      <span className="labelName">Puesto:</span>
+                      <span className="labelName">Respuesta:</span>
                     </label>
                   </div>
 
                   <div className="form-group mt-3 m-2">
                     <label htmlFor="questionConditional" id="labelAnimation">
-                      <select
+                      <input
+                        type="text"
                         className="input-new conditionalQuestionSelect"
                         name="questionConditional"
                         id="questionConditional"
-                      >
-                        <option value="0" hidden>
-                          {/* Puesto */}
-                        </option>
-                        <option>Antes</option>
-                        <option></option>
-                      </select>
-                      <span className="labelName">Comentarios</span>
-                    </label>
-                  </div>
-
-                  <div className="form-group m-2 mt-4">
-                    <label htmlFor="labelName" id="labelAnimation">
-                      <input
-                        type="text"
-                        name="labelName"
-                        id="labelName"
-                        className="input-new"
-                        placeholder=" "
                       />
-                      <span className="labelName">
-                        Calificativo del nombre:
-                      </span>
+                      <span className="labelName">Número de preguntas</span>
                     </label>
                   </div>
 
-                  <div className="form-group m-2 mt-4">
-                    <label htmlFor="score" id="labelAnimation">
-                      <input
-                        type="number"
-                        name="score"
-                        id="score"
-                        className="input-new"
-                        placeholder=" "
-                        min="0"
-                      />
-                      <span className="labelName">Posible puntuación:</span>
-                    </label>
-                  </div>
-
-                  <div className="form-group m-2 mt-4">
-                    <label htmlFor="applicable" id="labelAnimation">
-                      <select
-                        className="input-new"
-                        name="applicable"
-                        id="applicable"
+                  <div>
+                    <div className="card-tools">
+                      <button
+                        className="btn fw-bold btn-sm acces-tabla"
+                        onClick={() => openModal(1, id_form)}
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalManageQuestion"
                       >
-                        <option value="no">No</option>
-                        <option value="yes">Sí</option>
-                      </select>
-                      <span className="labelName">Aplicable:</span>
-                    </label>
+                        + Pregunta
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="form-group m-2 mt-4">
-                    <label htmlFor="required" id="labelAnimation">
-                      <select
-                        className="input-new"
-                        name="required"
-                        id="required"
-                      >
-                        <option value="no">No</option>
-                        <option value="yes">Sí</option>
-                      </select>
-                      <span className="labelName">Requerido:</span>
-                    </label>
+                  <div className="col-md-6 p-3">
+                    <hr className="section-divider" />
                   </div>
-                </div>
-
-                {/* Columna derecha */}
-                <div
-                  className="col-md-6 p-3 shadowbox5"
-                  style={{ borderLeft: "5px solid gray" }}
-                >
-                  <div className="form-check form-switch m-2">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id={"flexSwitchCheckChecked"}
-                      checked={isChecked}
-                      onChange={(e) => setIsChecked(e.target.checked)}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor="flexSwitchCheckChecked"
-                    >
-                      Añadir como pregunta condicional
-                    </label>
-                  </div>
-
-                  {isChecked && (
-                    <>
-                      <div className="form-group mt-3 m-2">
-                        <label
-                          htmlFor="questionConditional"
-                          id="labelAnimation"
-                        >
-                          <select
-                            className="input-new conditionalQuestionSelect"
-                            name="questionConditional"
-                            id="questionConditional"
-                          >
-                            <option value="0" hidden>
-                              Seleccionar:
-                            </option>
-                            <option>Pregunta 1</option>
-                            <option>Pregunta 2</option>
-                          </select>
-                          <span className="labelName">Pregunta:</span>
-                        </label>
-                      </div>
-
-                      <div className="form-group mt-3 m-2">
-                        <label
-                          htmlFor="optionConditionalSelector"
-                          id="labelAnimation"
-                        >
-                          <select
-                            name="optionConditionalSelector"
-                            id="optionConditionalSelector"
-                            className="input-new"
-                          >
-                            <option value="0" hidden>
-                              Seleccionar opción
-                            </option>
-                            <option>Opción A</option>
-                            <option>Opción B</option>
-                          </select>
-                          <span className="labelName">Respuesta:</span>
-                        </label>
-                      </div>
-
-                      <div className="form-group m-2 mt-4">
-                        <label htmlFor="copcScore" id="labelAnimation">
-                          <select
-                            className="input-new"
-                            name="copcScore"
-                            id="copcScore"
-                          >
-                            <option value="">Seleccionar</option>
-                            <option value="business">Business Fatal</option>
-                            <option value="compliance">Compliance Fatal</option>
-                            <option value="enduser">End-User Fatal</option>
-                          </select>
-                          <span className="labelName">
-                            Tipo de puntuación COPC:
-                          </span>
-                        </label>
-                      </div>
-
-                      <div className="form-group m-2 mt-4">
-                        <label htmlFor="jobPosition" id="labelAnimation">
-                          <select
-                            className="input-new"
-                            name="jobPosition"
-                            id="jobPosition"
-                          >
-                            <option value="">Seleccionar</option>
-                            <option value="agent">Agente</option>
-                            <option value="supervisor">Supervisor</option>
-                          </select>
-                          <span className="labelName">Puesto:</span>
-                        </label>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
 
