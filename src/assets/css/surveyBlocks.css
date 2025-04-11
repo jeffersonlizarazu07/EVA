@@ -22,3 +22,14 @@ div .block-position {
     margin: 20px 0;
     border-top: 1px solid #ccc;
 }
+
+.add-question-btn {
+    border: 1px solid rgb(199, 14, 143) !important;
+    border-radius: 20px;
+    margin-left: 15px;
+}
+
+.add-question-btn:hover {
+    background-color: rgba(175, 14, 110, 0.717);
+    color: white;
+}
