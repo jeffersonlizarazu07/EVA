@@ -15,12 +15,26 @@ div .block-position {
     height: 40px;
     min-width: 150px; /* Asegura que no se comprima demasiado */
     font-size: 14px;
-    
 }
 
-.section-divider {
+.vertical-divider {
+    position: absolute;
+    top: -3.125rem;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px solid rgb(187, 185, 185);
+    pointer-events: none;
+}
+
+
+/* .section-divider {
     margin: 20px 0;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid rgb(156, 153, 155);
+} */
+
+
+.shadowbox5 {
+    border: 1px solid #aaa7a7;
 }
 
 .add-question-btn {

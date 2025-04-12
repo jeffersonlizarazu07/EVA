@@ -84,7 +84,21 @@ export default function SurveyBlocks() {
   const { accessToken, languageUser } = useContext(UserContext);
 
   /* Estado de listas de preguntas del botón + Pregunta */
-  const [questionsList, setQuestionsList] = useState([]);
+  const [questionsList, setQuestionsList] = useState([
+    {
+      text: "",
+      type: "",
+      options: [],
+      correctAnswers: [],
+    },
+  ]);
+
+  /* Contador de número de encuestas segun input */
+  const [questionCountInput, setQuestionCountInput] = useState("");
+
+  /* ***********************************************************************************************************/
+  /* UseEffect */
+  /* ***********************************************************************************************************/
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
@@ -207,7 +221,6 @@ export default function SurveyBlocks() {
           ? singleChoiceData.options
           : multipleChoiceData.options;
 
-
       const selectedAnswerToString =
         questionType.input === "radio_opt"
           ? selectedAnswer.toString() // Convierte a string para guardarlo
@@ -228,12 +241,12 @@ export default function SurveyBlocks() {
           section: section.input,
           selected_answer:
             questionType.input === "check_opt" ||
-              questionType.input === "radio_opt"
+            questionType.input === "radio_opt"
               ? selectedAnswerToString
               : " ",
           select_option:
             questionType.input === "check_opt" ||
-              questionType.input === "radio_opt"
+            questionType.input === "radio_opt"
               ? optionsToSave
               : "",
         };
@@ -250,14 +263,14 @@ export default function SurveyBlocks() {
           id_conditional: id_conditional.input,
           selected_answer:
             questionType.input === "check_opt" ||
-              questionType.input === "radio_opt"
+            questionType.input === "radio_opt"
               ? selectedAnswerToString.length > 1
                 ? selectedAnswerToString
                 : selectedAnswerToString
               : null,
           select_option:
             questionType.input === "check_opt" ||
-              questionType.input === "radio_opt"
+            questionType.input === "radio_opt"
               ? optionsToSave
               : null,
         };
@@ -316,9 +329,27 @@ export default function SurveyBlocks() {
     [selectedRangeType]
   );
 
-  /*Agregar nueva pregunta botón +Pregunta*/
+  /*Agregar preguntas botón +Pregunta. Si el valor es 0 el botón por defecto crea una encuesta*/
   const addNewQuestion = () => {
-    setQuestionsList([...questionsList, { type: "", value: "" }]);
+    let count = parseInt(questionCountInput);
+
+    // Validar que sea un número válido mayor o igual a 1
+    if (isNaN(count) || count < 1) {
+      count = 1;
+    }
+
+    const newQuestions = Array.from({ length: count }, () => ({
+      text: "",
+      type: "",
+      // Puedes inicializar otros campos que uses en componentes condicionales
+      options: [], // Para preguntas de selección múltiple
+      correctAnswers: [], // Para respuestas correctas en opción múltiple
+      // Agrega otros campos por defecto si son necesarios
+    }));
+
+  
+    setQuestionsList((prev) => [...prev, ...newQuestions]);
+    setQuestionCountInput(""); // Limpiar input si deseas
   };
 
   const handleInputChange = (index, field, value) => {
@@ -475,8 +506,9 @@ export default function SurveyBlocks() {
         aria-hidden="true"
       >
         <div
-          className={`${operation === 1 ? "modal-dialog modal-xl" : ""
-            } modal-dialog-centered modal-dialog-scrollable`}
+          className={`${
+            operation === 1 ? "modal-dialog modal-xl" : ""
+          } modal-dialog-centered modal-dialog-scrollable`}
         >
           <div className="modal-content">
             <div className="modal-header">
@@ -485,7 +517,7 @@ export default function SurveyBlocks() {
               </h5>
             </div>
             <div className="modal-body">
-              <div className="row">
+              <div className="row position-relative">
                 {/* Columna izquierda */}
                 <div className="col-md-6 p-3">
                   <small>
@@ -577,142 +609,189 @@ export default function SurveyBlocks() {
                   </div>
                 </div>
 
+                {/* Línea divisoria */}
+                <div className="vertical-divider"></div>
+
                 {/* Columna derecha */}
-                <div className="col-md-6 p-3">
-                {questionsList.map((q, index) => (
-                  <div key={index} className="shadowbox5 p-2 m-3">
-                    {/* Input para escribir el texto de la pregunta */}
-                    <div className="form-group m-2">
-                      <label htmlFor={`questionText_${index}`} id="labelAnimation">
-                        <input
-                          type="text"
-                          className="input-new"
-                          placeholder=" "
-                          value={q.text || ""}
-                          onChange={(e) => handleInputChange(index, "text", e.target.value)}
-                        />
-                        <span className="labelName">Texto de la pregunta:</span>
-                      </label>
-                    </div>
-                    {/* Tipo de pregunta */}
-                    <div className="form-group m-2">
-                      <label htmlFor={`questionType_${index}`} id="labelAnimation">
-                        <select
-                          className="input-new text-center"
-                          placeholder=" "
-                          name={`questionType_${index}`}
-                          id={`questionType_${index}`}
-                          value={q.type}
-                          onChange={(e) => handleInputChange(index, "type", e.target.value)}
-                        >
-                          <option value="" disabled>Seleccione opción</option>
-                          <option value="radio_opt">Seleccionador</option>
-                          <option value="check_opt">Selección múltiple</option>
-                          <option value="textfield_s">Campo de texto</option>
-                        </select>
-                        <span className="labelName">Tipo de pregunta:</span>
-                      </label>
-                    </div>
-
-                    <div className="form-group mt-3 m-2">
-                  <label htmlFor="questionConditional" id="labelAnimation">
-                    <input
-                      type="text"
-                      className="input-new conditionalQuestionSelect"
-                      name="questionConditional"
-                      id="questionConditional"
-                    />
-                    <span className="labelName">Número de preguntas</span>
-                  </label>
-                </div>
-
-                    {/* Lógica para diferentes tipos de preguntas */}
-                    {q.type === "check_opt" && operation === 1 && (
-                      <MultipleChoiceQuestion
-                        options={multipleChoiceData.options}
-                        correctAnswers={multipleChoiceData.correctAnswers}
-                        onChange={handleMultipleChoiceChange}
-                      />
-                    )}
-
-                    {operation === 1 && (
-                      <div className="mt-2 mb-2">
-                        {q.type === "yes_no" ? <Yes_no /> : null}
-                        {q.type === "textfield_s" ? <Textfield_s /> : null}
-                      </div>
-                    )}
-
-                    {operation === 2 && (
-                      <>
-                        <div className="form-check form-switch m-2">
+                <div className="col-md-6">
+                  {questionsList.map((q, index) => (
+                    <div key={index} className="shadowbox5 p-2 m-3">
+                      {/* Input para escribir el texto de la pregunta */}
+                      <div className="form-group m-2">
+                        <label id="labelAnimation">
                           <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={`flexSwitchCheckChecked_${index}`}
-                            checked={isChecked}
-                            onChange={(e) => conditionalHandleChange(e.target.checked)}
+                            type="text"
+                            className="input-new"
+                            placeholder=""
+                            value={q.text || ""}
+                            onChange={(e) =>
+                              handleInputChange(index, "text", e.target.value)
+                            }
                           />
-                        </div>
-
-                        {isChecked && listConditional && valueConditional && (
-                          <div className="col-6 p-2 shadowbox5" style={{ borderLeft: "5px solid gray" }}>
-                            {/* ... contenido condicional ... */}
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {error && <p className="text-danger text-center">{error}</p>}
-
-                    {operation === 2 && (
-                      <div className="mt-2 mb-2">
-                        {q.type === "yes_no" ? <Yes_no /> : null}
-                        {q.type === "textfield_s" ? <Textfield_s /> : null}
+                          <span className="labelName">
+                            Texto de la pregunta:
+                          </span>
+                        </label>
                       </div>
-                    )}
-                  </div>
-                ))}
 
-                <div>
+                      {/* Tipo de pregunta */}
+                      <div className="form-group m-2">
+                        <label
+                          htmlFor={`questionType_${index}`}
+                          id="labelAnimation"
+                        >
+                          <select
+                            className="input-new text-center"
+                            name={`questionType_${index}`}
+                            id={`questionType_${index}`}
+                            value={q.type}
+                            onChange={(e) =>
+                              handleInputChange(index, "type", e.target.value)
+                            }
+                          >
+                            <option value="" disabled>
+                              Seleccione opción
+                            </option>
+                            <option value="radio_opt">Seleccionador</option>
+                            <option value="check_opt">
+                              Selección múltiple
+                            </option>
+                            <option value="textfield_s">Campo de texto</option>
+                          </select>
+                          <span className="labelName">Tipo de pregunta:</span>
+                        </label>
+                      </div>
+
+                      {/* Lógica para diferentes tipos de preguntas */}
+                      {q.type === "check_opt" && operation === 1 && (
+                        <MultipleChoiceQuestion
+                          options={multipleChoiceData.options}
+                          correctAnswers={multipleChoiceData.correctAnswers}
+                          onChange={handleMultipleChoiceChange}
+                        />
+                      )}
+
+                      {operation === 1 && (
+                        <div className="mt-2 mb-2">
+                          {q.type === "yes_no" ? <Yes_no /> : null}
+                          {q.type === "textfield_s" ? <Textfield_s /> : null}
+                        </div>
+                      )}
+
+                      {operation === 2 && (
+                        <>
+                          <div className="form-check form-switch m-2">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`flexSwitchCheckChecked_${index}`}
+                              checked={isChecked}
+                              onChange={(e) =>
+                                conditionalHandleChange(e.target.checked)
+                              }
+                            />
+                          </div>
+
+                          {isChecked && listConditional && valueConditional && (
+                            <div
+                              className="col-6 p-2 shadowbox5"
+                              style={{ borderLeft: "5px solid gray" }}
+                            >
+                              {/* ... contenido condicional ... */}
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {error && (
+                        <p className="text-danger text-center">{error}</p>
+                      )}
+
+                      {operation === 2 && (
+                        <div className="mt-2 mb-2">
+                          {q.type === "yes_no" ? <Yes_no /> : null}
+                          {q.type === "textfield_s" ? <Textfield_s /> : null}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Input para cantidad de preguntas */}
+                  <div className="form-group mt-3 m-2">
+                    <label htmlFor="questionConditional" id="labelAnimation">
+                      <input
+                        type="text"
+                        className="input-new conditionalQuestionSelect"
+                        name="questionConditional"
+                        id="questionConditional"
+                        value={questionCountInput}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Solo permitir números o vacío
+                          if (/^\d*$/.test(value)) {
+                            setQuestionCountInput(value);
+                          }
+                        }}
+                      />
+                      <span className="labelName">Número de preguntas</span>
+                    </label>
+                  </div>
+
+                  {/* Botón para agregar preguntas */}
                   <div className="card-tools">
                     <button
                       className="btn fw-bold btn-sm add-question-btn"
-                      onClick={addNewQuestion}>
+                      onClick={() => {
+                        const num = parseInt(questionCountInput); // Valor que toma el input
+                        const validCount = isNaN(num) || num < 1 ? 1 : num; // Validamos que el número sea al menos 1
+
+                        // Verificamos el valor antes de ejecutar el ciclo
+                        console.log(
+                          "Número de preguntas a agregar:",
+                          validCount
+                        );
+
+                        // Añadir preguntas basadas en el valor de `validCount`
+                        for (let i = 0; i < validCount; i++) {
+                          addNewQuestion();
+                        }
+                      }}
+                    >
                       + Pregunta
                     </button>
                   </div>
-                </div>
-                <div className="col-md-6 p-3">
-                  <hr className="section-divider" />
+
+                  <div className="col-md-6 p-3">
+                    <hr className="section-divider" />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Footer del modal */}
-            <div className="modal-footer">
-              {questionType.input && (
+              {/* Footer del modal */}
+              <div className="modal-footer">
+                {questionType.input && (
+                  <button
+                    className="btn bg-gradient-guardar mr-2"
+                    id="btn-send-survey"
+                    onClick={() => validar(idToEdit, id)}
+                  >
+                    Guardar
+                  </button>
+                )}
                 <button
-                  className="btn bg-gradient-guardar mr-2"
-                  id="btn-send-survey"
-                  onClick={() => validar(idToEdit, id)}
+                  className="btn btn-secondary"
+                  type="button"
+                  data-bs-dismiss="modal"
+                  id="btnClose"
+                  onClick={handleCancel}
                 >
-                  Guardar
+                  Cancelar
                 </button>
-              )}
-              <button
-                className="btn btn-secondary"
-                type="button"
-                data-bs-dismiss="modal"
-                id="btnClose"
-                onClick={handleCancel}
-              >
-                Cancelar
-              </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-      </div>
-      );
+  );
 }
