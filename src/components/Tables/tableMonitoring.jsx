@@ -16,13 +16,11 @@ import {
 
 const ModalRegisterUser = ({ open, handleClose }) => {
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle>Añadir Formulario</DialogTitle>
       <DialogContent dividers>
         {/* Datos de usuario */}
         <TextField fullWidth label="Nombre del formulario" margin="dense" />
-        {/* <TextField fullWidth label="Segundo nombre" margin="dense" />
-            <TextField fullWidth label="Apellidos" margin="dense" /> */}
         <FormControl fullWidth margin="dense" sx={{ mt: 2 }}>
           <InputLabel id="clientes-label">Clientes</InputLabel>
           <Select labelId="clientes-label" id="clientes" label="Clientes">

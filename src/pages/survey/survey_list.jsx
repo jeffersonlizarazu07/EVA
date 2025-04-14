@@ -388,40 +388,31 @@ const SurveyList = () => {
       <div id="body">
         {userType == "1" || userType == "2" ? <HeaderLT1 /> : <HeaderLT2 />}
      <div className="row m-0">
-      <div className="col-1 d-flex  align-items-center ms-0 p-0">
+      <div className="col-1 d-flex  align-items-center mx-auto p-0">
         
           {/* {userType == "1" || userType == "2" ? <SidebarLT1 /> : <SidebarLT2 />} */}
        
           </div>
-            <div className="col-10">
-              <div className="container mt-0 ms-0">
-              {survey.length > 0 ? (
-                <TableSurvey
-                  header={headers}
-                  data={survey}
-                  
-                  // Acciones principales
-                  onCreate={() => openModal(1)}
-                  onUpdate={(payload) => openModal(2, payload)}
-                  onView={(payload) => openModalCont(payload)}
-                  onCheck={(payload) => openSurvey(payload)}
-                  
-                  // Acciones adicionales
-                  onRemove={(item) => deactivateSurvey(item)}
-                  onActive={(payload) => activeSurvey(payload)}
-                  onDuplicate={(item) => duplicateSurvey(item)}
-                  onCopyLink={(item) => copyLink(item)}
-                  
-                  // Identificadores de modales
-                  modalId="modalSurvey"
-                  modalId2="modalViewSurvey"
-                />
-              ) : (
-                <p>No hay encuestas disponibles.</p>
-              )}
-
-              </div>
-            </div>
+          <div className="w-100 d-flex justify-content-center px-2">
+          <div className="w-100 px-3" style={{ maxWidth: "97%" }}>
+            {survey.length > 0 && (
+              <TableSurvey
+                header={headers}
+                data={survey}
+                onCreate={() => openModal(1)}
+                onUpdate={(payload) => openModal(2, payload)}
+                modalId={"modalSurvey"}
+                modalId2={"modalViewSurvey"}
+                onView={(payload) => openModalCont(payload)}
+                onCheck={(payload) => openSurvey(payload)}
+                onRemove={(item) => deactivateSurvey(item)}
+                onActive={(payload) => activeSurvey(payload)}
+                onDuplicate={(item) => duplicateSurvey(item)}
+                onCopyLink={(item)=> copyLink(item)}
+              />
+            )}
+          </div>
+          </div>
           </div>
       </div>
       <div id="modalViewSurvey" className="modal fade" aria-hidden="true">

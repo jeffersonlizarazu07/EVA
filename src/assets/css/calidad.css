@@ -138,6 +138,10 @@ section .container {
 .card-btn {
   border-radius: 5px;
 }
+
+#card-btn-1{
+  margin-top: 50px;
+}
 .check {
   width: 100%;
 }
