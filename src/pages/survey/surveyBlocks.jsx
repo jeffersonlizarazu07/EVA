@@ -522,7 +522,7 @@ export default function SurveyBlocks() {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="text-start m-2 modal-title">
-                {title || "Crear Bloque"}
+                {title || "Crear Bloque de Formulario"}
               </h5>
             </div>
             <div className="modal-body">
@@ -568,6 +568,15 @@ export default function SurveyBlocks() {
                         required
                       />
                       <span className="labelName">Ponderación</span>
+                    </label>
+                  </div>
+
+                  <div className="form-group m-2 mt-2 mb-4">
+                    <label id="labelAnimation" htmlFor="question">
+                      <select name="client" id="client" className="input-new ps-2" required>
+                        <option value="0">Seleccionar cliente:</option>
+                      </select>
+                      <span className="labelName">Cliente</span>
                     </label>
                   </div>
 
@@ -624,35 +633,37 @@ export default function SurveyBlocks() {
                 {/* Columna derecha */}
                 <div className="col-md-6">
                   {/* Botón para agregar preguntas */}
-                  <div className="card-tools">
-                    <button
-                      className="btn fw-bold btn-sm add-question-btn"
-                        onClick = { addNewQuestion }
-                          >
-                          + Pregunta
-                    </button>
-                </div>
+                  <div className="card-tools row ms-2">
+                    {/* Input para cantidad de preguntas */}
+                      <div class="col-sm-5">
+                        <div className="form-group">
+                          <label htmlFor="questionConditional" id="labelAnimation">
+                            <input
+                              type="number"
+                              className="input-new conditionalQuestionSelect"
+                              name="questionConditional"
+                              id="questionConditional"
+                              value={questionCountInput}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                // Solo permitir números o vacío
+                                if (/^\d*$/.test(value)) {
+                                  setQuestionCountInput(value);
+                                }
+                              }}
+                            />
+                            <span className="labelName">Número de preguntas</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div class="col-auto">
+                        <button className="btn fw-bold btn-sm add-question-btn p-2" onClick = { addNewQuestion }>
+                              + Pregunta
+                        </button>
+                      </div>
+                      
+                  </div>
 
-                {/* Input para cantidad de preguntas */}
-                <div className="form-group mt-3 m-2">
-                  <label htmlFor="questionConditional" id="labelAnimation">
-                    <input
-                      type="text"
-                      className="input-new conditionalQuestionSelect"
-                      name="questionConditional"
-                      id="questionConditional"
-                      value={questionCountInput}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        // Solo permitir números o vacío
-                        if (/^\d*$/.test(value)) {
-                          setQuestionCountInput(value);
-                        }
-                      }}
-                    />
-                    <span className="labelName">Número de preguntas</span>
-                  </label>
-                </div>
 
                 {questionsList.map((q, index) => (
                   <div key={index} className="shadowbox5 p-2 m-3">
@@ -765,15 +776,11 @@ export default function SurveyBlocks() {
                     )}
                   </div>
                 ))}
-
-                <div className="col-md-6 p-3">
-                  <hr className="section-divider" />
-                </div>
               </div>
             </div>
-
-            {/* Footer del modal */}
-            <div className="modal-footer">
+          </div>
+          {/* Footer del modal */}
+          <div className="modal-footer">
               {questionType.input && (
                 <button
                   className="btn bg-gradient-guardar mr-2"
@@ -793,7 +800,6 @@ export default function SurveyBlocks() {
                 Cancelar
               </button>
             </div>
-          </div>
         </div>
       </div>
     </div>

@@ -5,3 +5,6 @@
 .redIncorrect{
     color: rgb(201, 23, 23);
 }
+textarea.form-control {
+    width: 95%;
+}
