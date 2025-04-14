@@ -2,16 +2,16 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import "../../assets/css/login.css";
+import Cookies from "js-cookie"; 
 import LogoEVA from "../../assets/img/logo EVA2.0.png";
-
 import axios from "axios";
+
 const LogIn = () => {
   const nav = useNavigate();
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [error, Seterror] = useState("");
-  const { setUserId, setUserType, setAccessToken, setClients } =
-    useContext(UserContext);
+  const { setUserId, setUserType, setAccessToken, setClients } = useContext(UserContext);
 
   const log = async (event) => {
     event.preventDefault();
@@ -21,25 +21,41 @@ const LogIn = () => {
         password: password,
       };
       const response = await axios.post(
-        `http://localhost:8000/api/login`,
-        parameters
+        `http://localhost:3000/api/login`,
+        parameters,
+        { withCredentials: true }
       );
       const responseData = response.data;
       console.log({ responseData });
+
       if (responseData.status == true) {
+        console.log('Estado de respuesta:', responseData.status);
+
         if (responseData.user.state == 1) {
           console.log(responseData);
+
+          // Establecer las cookies del token 
+          Cookies.set("accessToken", responseData.token, { expires: 1 / 24, path: '/' });
+          Cookies.set("userType", responseData.user.type, { expires: 1 / 24, path: '/'});
+
+          
           setUserId(responseData.user.id);
           setUserType(responseData.user.type);
           setAccessToken(responseData.token);
           setClients(responseData.user.clients_id);
+
           if (responseData.user.type == 1 || responseData.user.type == 2) {
+            console.log("Tipo de usuario:", responseData.user.type);
+            console.log("Redirigiendo a /admin");
             nav("/admin");
           } else if (responseData.user.type == 3) {
+            console.log("Redirigiendo a /editor");
             nav("/editor");
           } else if (responseData.user.type == 4) {
+            console.log("Redirigiendo a /indecx=quality");
             nav("/index=Quality");
           } else {
+            console.log("Redirigiendo a /inactive");
             nav("/inactive");
           }
         } else {
@@ -49,15 +65,13 @@ const LogIn = () => {
         Seterror("");
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error:', error.response ? error.response : error.message);
       if (error.response && error.response.status === 404) {
         Seterror("Usuario no encontrado");
       } else if (error.response && error.response.status === 401) {
         Seterror("Usuario o contraseña incorrecto");
       } else {
-        Seterror(
-          "Error en el servidor, por favor intentalo de nuevo mas tarde"
-        );
+        Seterror("Error en el servidor, por favor intentalo de nuevo mas tarde");
       }
     }
   };
@@ -81,7 +95,7 @@ const LogIn = () => {
                 value={username}
                 onChange={(e) => setUserName(e.target.value)}
               />
-              <i className=" fa-sharp fa-solid fa-envelope"></i>
+              <i className="fa-sharp fa-solid fa-envelope"></i>
               <label> Correo</label>
               <p>loremipsum@gmail.com</p>
             </div>

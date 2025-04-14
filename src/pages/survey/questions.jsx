@@ -165,7 +165,7 @@ function Range_emoji(){
 function Textfield_s(){
   return(
   <div className="form-group">
-    <textarea name="" id="" cols="30" rows="4" width= "100%" className="form-control" placeholder="Escriba su respuesta aquí..."></textarea>
+    <textarea name="" id="" cols="30" rows="3" className="form-control" placeholder="Escriba su respuesta aquí..."></textarea>
   </div>)
 }
 

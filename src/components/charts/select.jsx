@@ -15,9 +15,7 @@ const SelectMulti = () => {
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
   const config = {
-    headers: {
-      Authorization: `Bearer 276|lrLxUHNwiaHPrpPge6VxIU1FGOFnNu7MbNj7pw6Y2af39bd0`,
-    },
+     withCredentials: true,
   };
 
   useEffect(() => {
@@ -28,7 +26,7 @@ const SelectMulti = () => {
   const getClients = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/clients`,
+        `http://localhost:3000/api/clients`,
         config
       );
       setClients(response.data.data);
@@ -40,7 +38,7 @@ const SelectMulti = () => {
   const getUsers = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/users`,
+        `http://localhost:3000/api/users`,
         config
       );
       setUsers(response.data.data);
@@ -52,7 +50,7 @@ const SelectMulti = () => {
   const getUserClients = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/user_client/${id}`,
+        `http://localhost:3000/api/users_client/${id}`,
         config
       );
       const responseData = response.data.data;

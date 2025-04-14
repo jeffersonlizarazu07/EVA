@@ -12,10 +12,11 @@ import { smallAlertDelete, Toast, Toast2 } from "../../assets/js/alertConfig";
 import { generateRandomLink } from "../../components/survey/encrypt";
 import { useTranslation } from "react-i18next";
 import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
+import Cookies from "js-cookie"; // si no lo has importado ya
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
-  const url = "http://localhost:8000/api/surveys";
+  const url = "http://localhost:3000/api/surveys";
   const headers = ["Title", "Start_date", "End_date", "state"];
   const [operation, setOperation] = useState([1]);
   const [idToEdit, setidToEdit] = useState(null);
@@ -46,50 +47,82 @@ const SurveyList = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  const { accessToken, userType, userId,languageUser} = useContext(UserContext);
+  const { userType, userId, languageUser } = useContext(UserContext);
+  const accessToken = Cookies.get('accessToken');
+
+  useEffect(() => {
+    getSurveys();
+    const today = new Date();
+    const formattedDater = formatDate(today);
+    const formattedDaterTomorrow = getTomorrowDate(today);
+    setFormattedDate({
+      dateToday: formattedDater,
+      dateTomorrow: formattedDaterTomorrow,
+    });
+  }, []);
+  
+
+  useEffect(() => {
+    if (userId && accessToken) {
+      getClients(userId);
+    }
+  }, [userId, accessToken]);
+  
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
-    getSurveys();
-    getClients(userId);
-    const today=new Date()
-    const formattedDater = formatDate(today)
-   
-    const formattedDaterTomorrow = getTomorrowDate(today)
-    setFormattedDate({dateToday:formattedDater,dateTomorrow:formattedDaterTomorrow});
   }, [languageUser]);
-
+  
 
   const config = {
     headers: {
-      Authorization: `Bearer ${accessToken}`,
     },
+    withCredentials: true,
   };
+  
 
   const getSurveys = async () => {
     try {
       const response = await axios.get(url, config);
       console.log("Encuestas: ", response.data);
-      setSurvey(response.data);
+      setSurvey(response.data.data); // <-- ¡aquí está el fix!
     } catch (error) {
-      console.error(error);
+      console.error("Error al obtener encuestas:", error);
+      if (error.response) {
+        console.error("Detalles del error:", error.response.data);
+      }
     }
   };
+  
   const getClients = async (id) => {
+    const token = accessToken || Cookies.get("accessToken"); // fallback si accessToken está vacío
+
+    if (!token) {
+      console.warn("⚠️ Token no disponible aún.");
+      return;
+    }
+
     try {
-      const response = await axios.get(
-        `http://localhost:8000/api/user_client/${id}`,
-        config
-      );
-      console.log("clientes relacionados: ", response.data.data);
+      const authConfig = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      };
+      //console.log("📡 Enviando token en headers:", authConfig.headers);
+      const response = await axios.get(`http://localhost:3000/api/users_client/${id}`, authConfig);
+      console.log("Clientes relacionados: ", response.data);
       setClients(response.data.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("❌ Error al obtener clientes:", error);
+      if (error.response) {
+        console.error("Detalles del error:", error.response.data);
+      }
     }
   };
 
   const activeSurvey = (survey) => {
-    const url = `http://localhost:8000/api/survey`;
+    const url = `http://localhost:3000/api/survey`;
     const id = survey.id;
     const name = survey.title;
     const parametros = {
@@ -106,7 +139,7 @@ const SurveyList = () => {
         if (result.isConfirmed) {
           try {
             await axios.patch(`${url}/${id}`, parametros, {
-              headers: { Authorization: `Bearer ${accessToken}` },
+              withCredentials: true,
             });
 
             Toast.fire({
@@ -128,7 +161,7 @@ const SurveyList = () => {
   };
 
   const deactivateSurvey = (survey) => {
-    const url = `http://localhost:8000/api/survey`;
+    const url = `http://localhost:3000/api/survey`;
     const id = survey.id;
     const name = survey.title;
     const parametros = {
@@ -251,7 +284,7 @@ const SurveyList = () => {
           setLoading(true);
           try {
             const response = await axios.post(
-              "http://localhost:8000/api/surveys",
+              "http://localhost:3000/api/surveys",
               parametros,
               config
             );
@@ -274,7 +307,7 @@ const SurveyList = () => {
 
         handleCreateSurvey();
       } else if (metodo.toUpperCase() == "PUT") {
-        const url = `http://localhost:8000/api/survey`;
+        const url = `http://localhost:3000/api/survey`;
         const response = await axios.put(
           `${url}/${idToEdit}`,
           parametros,
@@ -347,6 +380,8 @@ const SurveyList = () => {
       title: `Link copiado al portapapeles`,
     });
   }
+
+  console.log("encuestas a mostrar:", survey);
 
   return (
     <div className="App">

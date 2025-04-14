@@ -24,15 +24,13 @@ const ManageUser = ({ closeModal }) => {
   }, []);
 
   const config = {
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-    }
+    
   };
 
   const getInfo = async () => {
     try {
       console.log(userId);
-      const response = await axios.get(`http://localhost/API-EVA/userController/userbyId/${userId}`, config);
+      const response = await axios.get(`http://localhost/tpco_transversal_EvaBe/userController/userbyId/${userId}`, config);
       setUserInfo(response.data);
       console.log(response.data);
     } catch (error) {

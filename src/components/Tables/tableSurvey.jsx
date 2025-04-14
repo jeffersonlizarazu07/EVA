@@ -37,18 +37,21 @@ const TableSurvey = ({
 
 
   const getUserClients = async (id) => {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      withCredentials: true
+    };
+  
     try {
-      const response = await axios.get(`http://localhost:8000/api/user_client/${id}`,config);
+      const response = await axios.get(`http://localhost:3000/api/users_client/${id}`, config);
       setUserClients(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-  const config = {
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-    }
-  };
+  
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
     setCurrentPage(1); // Reset page to 1 on new search

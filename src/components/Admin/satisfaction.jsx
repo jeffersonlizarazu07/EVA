@@ -16,7 +16,7 @@ const Satisfaction = () => {
   const { t, i18n } = useTranslation();
   const { userType, languageUser, clients } = useContext(UserContext);
   const { accessToken } = useContext(UserContext);
-  const urlSurveys = `http://localhost:8000/api/client/surveys?clientIds=${clients}`;
+  const urlSurveys = `http://localhost:3000/api/client/surveys?clientIds=${clients}`;
   const [surveys, setSurveys] = useState("");
 
   useEffect(() => {
@@ -40,9 +40,7 @@ const Satisfaction = () => {
   //     .removeEventListener("click", toggleListMode);
   // };
   const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    withCredentials: true,
   };
 
   const cSurveys = function () {
