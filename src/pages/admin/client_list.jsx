@@ -292,7 +292,7 @@ export default function Client_list() {
     color: {
       width: "36px",
       height: "24px",
-      borderRadius: "8px",
+      borderRadius: "2px",
       background: `${colors1}`,
       border: "1px solid  gray",
     },
@@ -318,7 +318,7 @@ export default function Client_list() {
     color: {
       width: "36px",
       height: "24px",
-      borderRadius: "8px",
+      borderRadius: "2px",
       background: `${colors2}`,
       border: "1px solid gray",
     },

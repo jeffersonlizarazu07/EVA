@@ -20,7 +20,7 @@ import Swal from "sweetalert2";
 import HomeIcon from "@mui/icons-material/Home";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import PersonIcon from "@mui/icons-material/Person";
-
+import { ThemeContext } from '../../assets/js/ThemeContext';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
@@ -99,6 +99,7 @@ const [confirmError, setConfirmError] = useState("");
     withCredentials: true,
   };
   
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   const checkinfo = async () => {
     try {
@@ -340,7 +341,11 @@ const [confirmError, setConfirmError] = useState("");
             <div className="col-1 col-sm-6 col-md-1 col-lg-1 d-flex align-items-center justify-content-end">
               <Tooltip title="Cambiar a modo oscuro" placement="top">
                 <FormControlLabel
-                  control={<MaterialUISwitch defaultChecked />}
+                  control={<MaterialUISwitch
+                    checked={theme === 'dark'}
+                    onChange={toggleTheme}
+                  />
+                  }
                   label=""
                 />
               </Tooltip>

@@ -115,7 +115,7 @@ const AdminList = () => {
         { withCredentials: true }
       );
       const responseData = response.data.data;
-      console.log("respues",response.data.data); 
+      console.log("respues", response.data.data);
       setSelectedClients(responseData.map((client) => client.idClient));
       console.log({ selectedClients });
     } catch (error) {
@@ -132,10 +132,10 @@ const AdminList = () => {
       });
       return;
     }
-  
+
     console.log("Password:", password);
     console.log("Confirm Password:", cPassword);
-  
+
     if (password && cPassword !== password) {
       Swal.fire({
         icon: "error",
@@ -144,7 +144,7 @@ const AdminList = () => {
       });
       return;
     }
-  
+
     // Elimina password si está vacío antes de enviar
     if (metodo.toUpperCase() === "PUT") {
       if (!password || password.trim() === "") {
@@ -153,7 +153,7 @@ const AdminList = () => {
         rest.password = password;
       }
     }
-  
+
     // POST
     if (metodo.toUpperCase() === "POST") {
       const duplicados = admins.find((u) => u.email === rest.email);
@@ -162,7 +162,11 @@ const AdminList = () => {
         return;
       }
       try {
-        const respuesta = await axios.post(`${urlUsers}`, { ...rest, password }, config);
+        const respuesta = await axios.post(
+          `${urlUsers}`,
+          { ...rest, password },
+          config
+        );
         console.log("Response: ", respuesta);
         sendClients(respuesta.data.data.id, 1);
         document.getElementById("btnCerrar").click();
@@ -172,7 +176,11 @@ const AdminList = () => {
       }
     } else if (metodo.toUpperCase() === "PUT") {
       try {
-        const respuesta = await axios.put(`${urlUsers}/${idToEdit}`, rest, config);
+        const respuesta = await axios.put(
+          `${urlUsers}/${idToEdit}`,
+          rest,
+          config
+        );
         console.log("Respuesta: ", respuesta);
         sendClients(respuesta.data.data.id, 2);
         document.getElementById("btnCerrar").click();
@@ -182,7 +190,6 @@ const AdminList = () => {
       }
     }
   };
-  
 
   const sendClients = async (id, metodo) => {
     if (metodo == 1) {
@@ -320,16 +327,15 @@ const AdminList = () => {
       state.handleChange(admin?.state || "");
       language.handleChange(admin?.language || "en");
       registration_date.handleChange(admin?.registration_date || "");
-      
+
       setidToEdit(admin?.id);
     }
   };
-  
 
   const openModalCont = async (admin) => {
     console.log("admin completo:", admin);
     console.log("fecha:", admin.registration_date);
-   
+
     await getUserClients(admin.id);
     setTitle("Información");
     lastName.handleChange(admin?.lastname || "");
@@ -383,7 +389,6 @@ const AdminList = () => {
           cPassword: cPassword.input,
           type: type.input,
           language: "es",
-      
         };
         metodo = "post";
       } else if (operation === 2) {
@@ -394,8 +399,7 @@ const AdminList = () => {
           email: email.input,
           type: type.input,
           cPassword: cPassword.input,
-          language: "es"
-          
+          language: "es",
         };
         if (password.input.trim() !== "") {
           parametros.password = password.input;
@@ -602,18 +606,31 @@ const AdminList = () => {
                 <div className="col mb-3">
                   <label id="labelAnimation">
                     <select
-                      className="input-new text-center"
+                      className="input-new input-optttt text-center"
                       name="type"
                       onChange={(e) => type.handleChange(e.target.value)}
                       value={type.input}
                     >
-                      <option value="0" disabled selected>
+                      <option
+                        value="0"
+                        disabled
+                        selected
+                        className="opt-default"
+                      >
                         {t("UserModal.SelectRole")}
                       </option>
-                      <option value="1">{t("UserModal.SuperAdmin")}</option>
-                      <option value="2">{t("UserModal.Admin")}</option>
-                      <option value="3">{t("UserModal.Editor")}</option>
-                      <option value="4">{t("UserModal.Viwer")}</option>
+                      <option value="1" className="opt-superadmin">
+                        {t("UserModal.SuperAdmin")}
+                      </option>
+                      <option value="2" className="opt-admin">
+                        {t("UserModal.Admin")}
+                      </option>
+                      <option value="3" className="opt-editor">
+                        {t("UserModal.Editor")}
+                      </option>
+                      <option value="4" className="opt-viewer">
+                        {t("UserModal.Viwer")}
+                      </option>
                     </select>
                     <span className="labelName">{t("UserModal.Type")}</span>
                   </label>
@@ -739,7 +756,7 @@ const AdminList = () => {
                   <span className="fw-semibold ">
                     {t("viewUserModal.Role")}
                   </span>
-                  <p type="text" className="form-control mt-1">
+                  <p type="text" className="form-control mt-1 role-option">
                     {" "}
                     {` ${
                       type.input === 1
