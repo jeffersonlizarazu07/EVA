@@ -9,7 +9,7 @@ const surveySetRoutes = require('./routes/surveyRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const endUserRoutes = require('./routes/endUserRoutes');
 const endUserClientRoutes = require('./routes/endUserClientRoutes');
-const clientsRoutes = require('./routes/clientRoute');
+const clientsRoutes = require('./routes/clientRoutes');
 const answersRoutes = require('./routes/answerRoutes');
 
 

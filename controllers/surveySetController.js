@@ -15,13 +15,29 @@ const surveySetController = {
 
     async surveyByID(req, res) {
         try {
-            //SurveySet.getById(29).then(data => console.log(data)).catch(err => console.error(err));
+            // Imprimir el ID recibido para verificar que es correcto
+            console.log('Recibiendo solicitud para obtener encuesta con ID:', req.params.id);
+    
+            const id = req.params.id;  // Asegúrate de que el ID se pase desde los parámetros de la solicitud
+            console.log('ID de encuesta:', id);
+    
             const survey = await SurveySet.getById(id);
+    
+            // Verificar si la encuesta fue encontrada
             if (!survey) {
+                console.log('Encuesta no encontrada con ID:', id);  // Si no se encuentra la encuesta, imprime el ID
                 return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
             }
+    
+            // Si la encuesta fue encontrada, imprimir los datos
+            console.log('Encuesta encontrada:', survey);
+    
+            // Responder con los datos de la encuesta
             res.json({ status: '200', message: 'Encuesta obtenida correctamente', data: survey });
+    
         } catch (error) {
+            // Si hay un error en la ejecución, imprimirlo
+            console.error('Error al obtener la encuesta:', error);
             res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
         }
     },
@@ -57,10 +73,13 @@ const surveySetController = {
     async postSurvey(req, res) {
         try {
             const data = req.body;
+            console.log('datos recibidos',data)
             await SurveySet.create(data);
             res.status(201).json({ status: '201', message: 'Encuesta creada correctamente' });
+            console.log('encuesta creada exitosamente',res)
         } catch (error) {
             res.status(500).json({ status: '500', message: 'Error al crear la encuesta', error });
+            console.log('error al crear la enceesta,', error,error)
         }
     },
 

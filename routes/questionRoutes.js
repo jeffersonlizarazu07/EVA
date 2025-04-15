@@ -6,7 +6,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 router.get('/questions',authMiddleware, questionController.questions);
 router.get('/question/:id', authMiddleware,questionController.questionByID);
-router.get('/survey/:id/question',authMiddleware, questionController.questionsxSurvey);
+router.get('/surveys/:id/question',authMiddleware, questionController.questionsxSurvey);
 router.post('/question',authMiddleware, questionController.postQuestion);
 router.put('/question/:id',authMiddleware, questionController.putQuestion);
 router.delete('/question/:id',authMiddleware, questionController.deleteQuestion);
