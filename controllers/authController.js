@@ -77,5 +77,26 @@ const extendToken = (req, res) => {
         message: 'Token extendido.',
     });
 };
+const logout = async (req, res) => {
+    try {
+        
+        await User.updateLastVisit(req.user.id);
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+        });
 
-module.exports = { authenticate, checkToken, extendToken };
+        return res.status(200).json({ status: true, message: 'Sesión cerrada exitosamente.' });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: 'Error al cerrar sesión',
+            error: error.message,
+        });
+    }
+};
+
+
+module.exports = { authenticate, checkToken, extendToken , logout};
