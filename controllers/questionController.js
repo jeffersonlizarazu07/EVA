@@ -37,26 +37,107 @@ const questionController = {
         }
     },
 
-    async postQuestion(req, res) {
-        try {
-            const newQuestion = await Question.create(req.body);
-            res.status(201).json({ status: 201, message: 'Pregunta creada exitosamente', question: newQuestion });
-        } catch (error) {
-            res.status(500).json({ status: 500, message: 'Error al crear la pregunta', error });
-        }
-    },
+    // Controlador postQuestion (backend)
+async postQuestion(req, res) {
+  console.log('Datos recibidos en postQuestion:', req.body);
 
-    async putQuestion(req, res) {
-        try {
-            const updatedQuestion = await Question.update(req.params.id, req.body);
-            if (!updatedQuestion.length) {
-                return res.status(404).json({ status: 404, message: 'La pregunta no existe' });
-            }
-            res.json({ status: 200, message: 'Pregunta actualizada exitosamente', question: updatedQuestion });
-        } catch (error) {
-            res.status(500).json({ status: 500, message: 'Error al actualizar la pregunta', error });
-        }
-    },
+    try {
+        const {
+            conditional,
+            conditional_answer,
+            frm_option,
+            id_conditional,
+            percentage,
+            question,
+            section,
+            survey_id,
+            type,
+            select_option,
+            selected_answer
+          } = req.body;
+          
+          const newQuestion = await Question.create({
+            conditional,
+            conditional_answer,
+            frm_option,
+            id_conditional,
+            percentage,
+            question,
+            section,
+            survey_id,
+            type,
+            select_option,
+            selected_answer
+          });
+      res.status(201).json({
+        status: 201,
+        message: 'Pregunta creada exitosamente',
+        question: newQuestion
+      });
+    } catch (error) {
+      console.error('Error al crear la pregunta:', error);
+      res.status(500).json({
+        status: 500,
+        message: 'Error al crear la pregunta',
+        error: error.message
+      });
+    }
+  },
+  
+    
+
+  async putQuestion(req, res) {
+    try {
+      const { id } = req.params;
+  
+      // Solo los campos válidos de la tabla
+      const {
+        conditional,
+        conditional_answer,
+        frm_option,
+        id_conditional,
+        percentage,
+        question,
+        section,
+        survey_id,
+        type
+      } = req.body;
+  
+      const updatedQuestion = await Question.update(id, {
+        conditional,
+        conditional_answer,
+        frm_option,
+        id_conditional,
+        percentage,
+        question,
+        section,
+        survey_id,
+        type
+      });
+  
+      if (!updatedQuestion || updatedQuestion.length === 0) {
+        return res.status(404).json({ status: 404, message: 'La pregunta no existe' });
+      }
+  
+      res.status(200).json({
+        status: 200,
+        message: 'Pregunta actualizada exitosamente',
+        question: updatedQuestion
+      });
+    } catch (error) {
+      console.error('Error al actualizar la pregunta:', error);
+      res.status(500).json({
+        status: 500,
+        message: 'Error al actualizar la pregunta',
+        error: error.message
+      });
+    }
+  },
+  
+  
+  
+
+
 
     async deleteQuestion(req, res) {
         try {

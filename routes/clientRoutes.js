@@ -13,4 +13,6 @@ router.put('/clients/:id',authMiddleware, clientController.updateClient);
 router.patch('/clients/:id/state',authMiddleware, clientController.toggleClientState);
 router.delete('/clients/:id', authMiddleware,clientController.deleteClient);
 
+
 module.exports = router;
+

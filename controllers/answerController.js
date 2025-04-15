@@ -1,5 +1,11 @@
-const AnswerModel = require('../models/answerModel');  // Importamos el modelo
-const knex = require('../config/db');
+
+const AnswerModel = require('../models/answerModel');
+const { createAnswer } =  require('../models/answerModel')
+const answerModel = new AnswerModel();  // Importamos el modelo
+const db = require('../config/db');
+//const { check, validationResult } = require('express-validator');
+const { body, validationResult } = require('express-validator');
+
 
 class AnswerController {
 
@@ -253,85 +259,114 @@ class AnswerController {
 
 
         // Controlador para obtener los porcentajes de respuestas por encuesta
-    async  percentagesXSurvey(req, res) {
-        const { id } = req.params;
-        const { startDate, endDate } = req.query; // Obtenemos las fechas del query params
+        async percentagesXSurvey(req, res) {
+            const { id } = req.params;
+            const { startDate, endDate } = req.query; // Obtenemos las fechas del query params
         
-        try {
-            console.log(`Iniciando cálculo de porcentajes para la encuesta con ID: ${id}`);
-            console.log(`Rango de fechas: Desde ${startDate} hasta ${endDate}`);
-            
-            const answerModel = new AnswerModel();  // Instanciamos el modelo
-            const answers = await answerModel.getAnswersBySurvey(id, startDate, endDate); // Obtenemos las respuestas
-            
-            if (answers.length === 0) {
-                console.log('No se encontraron respuestas para la encuesta con ID:', id);
-                return res.status(404).json({
-                    status: 404,
-                    message: "No hay respuestas asociadas a la encuesta consultada"
+            try {
+                console.log(`Iniciando cálculo de porcentajes para la encuesta con ID: ${id}`);
+                console.log(`Rango de fechas: Desde ${startDate} hasta ${endDate}`);
+                
+                const answerModel = new AnswerModel();  // Instanciamos el modelo
+                const answers = await answerModel.getAnswersBySurvey(id, startDate, endDate); // Obtenemos las respuestas
+        
+                if (answers.length === 0) {
+                    console.log('No se encontraron respuestas para la encuesta con ID:', id);
+                    return res.status(404).json({
+                        status: 404,
+                        message: "No hay respuestas asociadas a la encuesta consultada"
+                    });
+                }
+        
+                console.log(`Total de respuestas obtenidas: ${answers.length}`);
+        
+                // Filtramos para obtener solo preguntas válidas basándonos en 'question_id'
+                const questions = [...new Set(answers.filter(answer => answer.question_id).map(answer => answer.question_id))];
+                console.log('Preguntas encontradas:', questions);
+        
+                if (questions.length === 0) {
+                    console.log('No se encontraron preguntas válidas');
+                    return res.status(404).json({
+                        status: 404,
+                        message: "No hay preguntas válidas asociadas a las respuestas"
+                    });
+                }
+        
+                const groupedResults = {};
+        
+                // Aquí, suponiendo que tienes una tabla de preguntas, buscamos los detalles de la pregunta
+               // Consulta para obtener los detalles de las preguntas
+                const questionDetails = await db('questions').whereIn('id', questions).select('id', 'question', 'type');
+
+        
+                // Convertimos el array de detalles de preguntas en un objeto para acceso rápido
+                const questionDetailsMap = questionDetails.reduce((acc, question) => {
+                    acc[question.id] = question;
+                    return acc;
+                }, {});
+        
+                // Agrupamos y calculamos los porcentajes por tipo de respuesta
+                for (const question_id of questions) {
+                    console.log(`Procesando la pregunta con ID: ${question_id}`);
+                    
+                    const percentageZeroToTen = answerModel.groupAnswersByType(answers, 'range_zerototen', question_id);
+                    const percentageYesNo = answerModel.groupAnswersByType(answers, 'yes_no', question_id);
+                    const percentageRangeDifficulty = answerModel.groupAnswersByType(answers, 'range_difficulty', question_id);
+                    const percentageOneToFive = answerModel.groupAnswersByType(answers, 'range_onetofive', question_id);
+
+                                        // Verifica los resultados de cada agrupación de tipo
+                        console.log('percentageZeroToTen:', percentageZeroToTen);
+                        console.log('percentageYesNo:', percentageYesNo);
+                        console.log('percentageRangeDifficulty:', percentageRangeDifficulty);
+                        console.log('percentageOneToFive:', percentageOneToFive);
+                            
+                                        const data = [];
+                    const labels = [];
+        
+                    // Consolidar los datos y las etiquetas
+                    if (Object.keys(percentageZeroToTen).length > 0) {
+                        data.push(percentageZeroToTen);
+                        labels.push(...Object.keys(percentageZeroToTen));
+                    }
+                    if (Object.keys(percentageYesNo).length > 0) {
+                        data.push(percentageYesNo);
+                        labels.push(...Object.keys(percentageYesNo));
+                    }
+                    if (Object.keys(percentageRangeDifficulty).length > 0) {
+                        data.push(percentageRangeDifficulty);
+                        labels.push(...Object.keys(percentageRangeDifficulty));
+                    }
+                    if (Object.keys(percentageOneToFive).length > 0) {
+                        data.push(percentageOneToFive);
+                        labels.push(...Object.keys(percentageOneToFive));
+                    }
+        
+                    // Aquí ahora accedemos a los detalles de la pregunta utilizando el `question_id`
+                    const questionDetail = questionDetailsMap[question_id];
+                    if (questionDetail) {
+                        groupedResults[question_id] = {
+                            label: questionDetail.text,  // Ahora tienes el texto de la pregunta
+                            type: questionDetail.type,   // Ahora tienes el tipo de la pregunta
+                            data: data,
+                            labels: labels
+                        };
+                    }
+                }
+        
+                // Enviamos la respuesta
+                return res.status(200).json({
+                    status: 200,
+                    message: "Porcentaje de respuestas obtenido correctamente.",
+                    data: groupedResults
+                });
+            } catch (error) {
+                console.error('Error al calcular los porcentajes de la encuesta:', error.message);
+                return res.status(500).json({
+                    status: 500,
+                    message: "Error al obtener los porcentajes de las respuestas."
                 });
             }
-            
-            console.log(`Total de respuestas obtenidas: ${answers.length}`);
-            
-            const questions = [...new Set(answers.map(answer => answer.question))]; // Extraemos las preguntas únicas
-            console.log('Preguntas encontradas:', questions);
-
-            const groupedResults = {};
-
-            // Agrupamos y calculamos los porcentajes por tipo de respuesta
-            for (const question of questions) {
-                console.log(`Procesando la pregunta: ${question}`);
-                
-                const percentageZeroToTen = answerModel.groupAnswersByType(answers, 'range_zerototen', question);
-                const percentageYesNo = answerModel.groupAnswersByType(answers, 'yes_no', question);
-                const percentageRangeDifficulty = answerModel.groupAnswersByType(answers, 'range_difficulty', question);
-                const percentageOneToFive = answerModel.groupAnswersByType(answers, 'range_onetofive', question);
-
-                const data = [];
-                const labels = [];
-
-                // Consolidar los datos y las etiquetas
-                if (Object.keys(percentageZeroToTen).length > 0) {
-                    data.push(percentageZeroToTen);
-                    labels.push(...Object.keys(percentageZeroToTen));
-                }
-                if (Object.keys(percentageYesNo).length > 0) {
-                    data.push(percentageYesNo);
-                    labels.push(...Object.keys(percentageYesNo));
-                }
-                if (Object.keys(percentageRangeDifficulty).length > 0) {
-                    data.push(percentageRangeDifficulty);
-                    labels.push(...Object.keys(percentageRangeDifficulty));
-                }
-                if (Object.keys(percentageOneToFive).length > 0) {
-                    data.push(percentageOneToFive);
-                    labels.push(...Object.keys(percentageOneToFive));
-                }
-
-                // Asignamos la pregunta con sus datos y etiquetas
-                groupedResults[question] = {
-                    label: question,
-                    type: answers.find(answer => answer.question === question).type,
-                    data: data,
-                    labels: labels
-                };
-            }
-
-            // Enviamos la respuesta
-            return res.status(200).json({
-                status: 200,
-                message: "Porcentaje de respuestas obtenido correctamente.",
-                data: groupedResults
-            });
-        } catch (error) {
-            console.error('Error al calcular los porcentajes de la encuesta:', error.message);
-            return res.status(500).json({
-                status: 500,
-                message: "Error al obtener los porcentajes de las respuestas."
-            });
         }
-    }
 
     // Controlador para manejar el post de respuestas
     async  postAnswer(req, res) {

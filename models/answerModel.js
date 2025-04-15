@@ -1,171 +1,121 @@
-const knex = require('../config/db'); // Aquí importa la configuración de Knex.js
+const db = require('../config/db');
+//console.log('estas essssssssssssdb:', db);
 
 class AnswerModel {
-    constructor(knex) {
-        this.knex = knex;
-        this.table = 'answers';  // Nombre de la tabla de respuestas
-    }
-
-    // Método para obtener todas las respuestas
-    async getAllAnswers() {
-        try {
-            console.log('obteniendo respueas de answers') //debugg
-            const answers = await this.knex(this.table).select('*');
-            console.log('respuestas obtenidas', answers) // debugg
-            return answers;
-        } catch (error) {
-            console.error(`Error al obtener las respuestas: ${error.message}`);
-            throw error;
-        }
-    }
-
-
-    // metodo para obtener porcentajes 
-    // Obtener todas las respuestas con los detalles de las preguntas
-    async getAnswersWithQuestions() {
-        return knex('answers')
-            .join('questions', 'questions.id', '=', 'answers.question_id')
-            .select('answers.*', 'questions.type');
-    }
-
-    // Método para obtener una respuesta por su ID
-    async getAnswerById(id) {
-        try {
-            const answer = await this.knex(this.table).where('id', id).first();
-            return answer;
-        } catch (error) {
-            console.error(`Error al obtener la respuesta con ID ${id}: ${error.message}`);
-            throw error;
-        }
-    }
-
-    // Método para obtener respuestas por ID de pregunta (question_id)
-    async getAnswersByQuestionId(questionId) {
-        try {
-            const answers = await this.knex(this.table)
-                .where('question_id', questionId)  // Filtra las respuestas por question_id
-                .select('*');  // Selecciona todas las columnas de la tabla de respuestas
-            
-            return answers;  // Devuelve las respuestas encontradas
-        } catch (error) {
-            console.error(`Error al obtener las respuestas para la pregunta con ID ${questionId}: ${error.message}`);
-            throw error;  // Lanza el error para ser capturado por el controlador
-        }
-    }
-
-     // Método para obtener las respuestas de una pregunta específica por ID
-     async getAnswersWithQuestionDetails(questionId) {
-        try {
-            // Obtenemos las respuestas relacionadas con la pregunta mediante un JOIN con la tabla 'questions'
-            const answers = await this.knex(this.table)
-                .join('questions as q', 'q.id', '=', 'answers.question_id') // Realiza el JOIN
-                .select('answers.*', 'q.type', 'q.question') // Seleccionamos las columnas necesarias
-                .where('q.id', questionId); // Filtramos por el ID de la pregunta
-
-            return answers;
-        } catch (error) {
-            console.error(`Error al obtener respuestas de la pregunta con ID ${questionId}: ${error.message}`);
-            throw error; // Lanza el error para manejarlo en el controlador
-        }
-    }
-
-
-
-
-
-
-
-    // Método para obtener las respuestas por encuesta con fechas y tipo de pregunta
-    async getAnswersBySurvey(id, startDate, endDate) {
-        try {
-            console.log('Consultando respuestas para la encuesta con ID:', id);
-            console.log('Fecha de inicio:', startDate, 'Fecha de fin:', endDate);
-            
-            const answers = await this.knex('answers')
-                .join('questions as q1', 'q1.id', '=', 'answers.question_id')
-                .join('survey_sets', 'survey_sets.id', '=', 'q1.survey_id')
-                .select('answers.*', 'q1.type', 'q1.question')
-                .where('survey_sets.id', id)
-                .whereBetween('answers.created_at', [startDate, endDate])
-                .orderByRaw('CAST(answers.answer AS UNSIGNED) ASC');
-
-            console.log('Respuestas obtenidas:', answers);
-            return answers;
-        } catch (error) {
-            console.error(`Error al obtener respuestas para la encuesta ${id}:`, error.message);
-            throw error;
-        }
-    }
-
-    // Función para calcular el porcentaje
-    calculatePercentage(collection, total) {
-        console.log(`Calculando porcentaje para ${collection.length} respuestas de un total de ${total}`);
-        return total > 0 ? (collection.length / total) * 100 : 0;
-    }
-
-    // Método para agrupar respuestas por tipo y calcular el porcentaje
-    groupAnswersByType(answers, type, question) {
-        console.log(`Agrupando respuestas por tipo: ${type} y pregunta: ${question}`);
+    createAnswer(data) {
+        // Solo incluir los campos que existen en tu tabla
+        const validData = {
+            survey_id: data.survey_id,
+            answer: data.answer,  // Parece que en la base de datos se llama "answer", aunque en tu objeto lo llamas "answers"
+            question_id: data.question_id,
+            date: data.date || new Date().toISOString()
+        };
         
-        const groupAnswers = answers.filter(answer => answer.type === type && answer.question === question);
-        const total = groupAnswers.length;
-
-        const groupedPercentages = groupAnswers.reduce((acc, answer) => {
-            const key = answer.answer;
-            acc[key] = (acc[key] || 0) + 1;
-            return acc;
-        }, {});
-
-        // Convertir los conteos a porcentajes
-        for (const key in groupedPercentages) {
-            groupedPercentages[key] = this.calculatePercentage([groupedPercentages[key]], total);
+        return db('answers').insert(validData);
+    }
+    async getAll() {
+        try {
+            const answers = await db('answers').select('*');
+            return answers;  // Retorna todas las respuestas
+        } catch (error) {
+            console.error('Error en getAll:', error.message);
+            throw error;
         }
-
-        console.log(`Porcentajes para el tipo ${type}:`, groupedPercentages);
-        return groupedPercentages;
     }
 
+    async getById(id) {
+        try {
+            const answer = await db('answers').where({ id }).first();
+            return answer;  // Retorna la respuesta por ID
+        } catch (error) {
+            console.error('Error en getById:', error.message);
+            throw error;
+        }
+    }
 
-
-
-
-
+    async update(id, data) {
+        try {
+            const answer = await db('answers')
+                .where({ id }) // Encuentra la fila que corresponde con el id
+                .update(data); // Actualiza los valores que se pasan en 'data'
     
-
-   
-    // Método para insertar respuestas
-    async createAnswer(answerData) {
-        try {
-            // Insertar los datos en la tabla 'answers' y devolver el registro insertado
-            const [newAnswer] = await this.knex(this.table).insert(answerData).returning('*');
-            return newAnswer;
+            return answer; // Devuelve el resultado de la actualización (número de filas afectadas)
         } catch (error) {
-            console.error(`Error al insertar la respuesta: ${error.message}`);
+            throw new Error('Error updating answer: ' + error.message);
+        }
+    }
+
+    async delete(id) {
+        try {
+            // Intentamos eliminar la respuesta con el id específico
+            const result = await db('answers')
+                .where({ id })  // Encontramos la fila que corresponde al id
+                .del(); // Eliminamos la fila
+    
+            return result;  // Devuelve el número de filas eliminadas (0 si no se encuentra ninguna fila)
+        } catch (error) {
+            throw new Error('Error eliminando la respuesta: ' + error.message);
+        }
+    }
+
+    // Obtener respuestas por encuesta y fechas
+    async getAnswersBySurvey(surveyId, startDate, endDate) {
+        try {
+            const answers = await db('answers')
+                .join('questions', 'answers.question_id', '=', 'questions.id')  // Hacemos el join con 'questions'
+                .where('answers.survey_id', surveyId)
+                .andWhere('answers.date', '>=', startDate)
+                .andWhere('answers.date', '<=', endDate)
+                .select('answers.question_id', 'questions.type', 'answers.answer');  // Seleccionamos 'type' de 'questions'
+    
+            return answers;
+        } catch (error) {
+            console.error('Error en getAnswersBySurvey:', error.message);
+            throw error;
+        }
+    }
+    
+    // Agrupar respuestas por tipo (por ejemplo, rango de 0 a 10, sí/no, etc.)
+    groupAnswersByType(answers, answerType, questionId) {
+        try {
+            //console.log(`Filtrando respuestas para la pregunta ID: ${questionId}, tipo de respuesta: ${answerType}`);
+            const grouped = answers.filter(answer => answer.question_id === questionId);
+            
+            //cconsole.log('Respuestas agrupadas:', grouped);
+    
+            // Si no hay respuestas, retornamos un objeto vacío
+            if (grouped.length === 0) {
+                return {};
+            }
+    
+            const result = grouped.reduce((acc, answer) => {
+                const value = answer.answer;
+    
+                //console.log('Valor de respuesta:', value); // Verifica cada valor de respuesta
+    
+                if (!acc[value]) {
+                    acc[value] = 0;
+                }
+                acc[value]++;
+                return acc;
+            }, {});
+    
+            //console.log('Respuestas contadas:', result);
+    
+            const totalResponses = grouped.length;
+            const percentageResult = {};
+            for (const [key, count] of Object.entries(result)) {
+                percentageResult[key] = ((count / totalResponses) * 100).toFixed(2);
+            }
+    
+            //console.log('Resultado de porcentajes:', percentageResult);
+            return percentageResult;
+        } catch (error) {
+            console.error('Error en groupAnswersByType:', error.message);
             throw error;
         }
     }
 
-    // Método para actualizar una respuesta
-    async updateAnswer(id, data) {
-        try {
-            const updated = await this.knex(this.table).where('id', id).update(data);
-            return updated;
-        } catch (error) {
-            console.error(`Error al actualizar la respuesta con ID ${id}: ${error.message}`);
-            throw error;
-        }
-    }
-
-    // Método para eliminar una respuesta
-    async deleteAnswer(id) {
-        try {
-            const deleted = await this.knex(this.table).where('id', id).del();
-            return deleted;
-        } catch (error) {
-            console.error(`Error al eliminar la respuesta con ID ${id}: ${error.message}`);
-            throw error;
-        }
-    }
 }
 
 module.exports = AnswerModel;
