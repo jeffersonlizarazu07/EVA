@@ -11,6 +11,7 @@ const endUserRoutes = require('./routes/endUserRoutes');
 const endUserClientRoutes = require('./routes/endUserClientRoutes');
 const clientsRoutes = require('./routes/clientRoutes');
 const answersRoutes = require('./routes/answerRoutes');
+const agentRoutes = require('./routes/agentRoutes')
 
 
 const app = express();
@@ -38,6 +39,7 @@ app.use('/api', endUserRoutes);
 app.use('/api', endUserClientRoutes); 
 app.use('/api', clientsRoutes);
 app.use('/api', answersRoutes);
+app.use('/api', agentRoutes);
 
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
