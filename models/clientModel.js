@@ -5,25 +5,29 @@ const knex = require('../config/db');  // Traemos la configuración de Knex.js
 class ClientModel {
     constructor(knex) {
         this.knex = knex;
-        this.table = 'clients';  // Nombre de la tabla
+        this.table = 'clients';  
     }
 
     // Método para crear un cliente
-    async create(data) {
-        try {
-            const [id] = await this.knex(this.table).insert({
-                client: data.client,
-                state: data.state,
-                color_tag1: data.color_tag1,
-                color_tag2: data.color_tag2,
-                logo: data.logo,  // El logo también se inserta si está presente
-            }).returning('id');
+async create(data) {
+    try {
+        // Insertamos el nuevo cliente en la base de datos
+        await this.knex(this.table).insert({
+            client: data.client,
+            state: data.state,
+            color_tag1: data.color_tag1,
+            color_tag2: data.color_tag2,
+            logo: data.logo,
+        });
 
-            return { id, ...data };  // Devuelve el cliente con el id generado
-        } catch (error) {
-            throw new Error(`Error al crear el cliente: ${error.message}`);
-        }
+        // Obtenemos el id del último cliente insertado
+        const [id] = await this.knex.raw('SELECT LAST_INSERT_ID() as id');
+
+        return { id: id[0].id, ...data }; 
+    } catch (error) {
+        throw new Error(`Error al crear el cliente: ${error.message}`);
     }
+}
 
     // Método para obtener todos los clientes
     async getAll() {
@@ -51,7 +55,7 @@ class ClientModel {
             return { id, ...data };
         } catch (error) {
             throw new Error(`Error al actualizar el cliente: ${error.message}`);
-        }
+        } 
     }
 
     // Método para eliminar un cliente

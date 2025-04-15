@@ -1,7 +1,7 @@
 const SurveySet = require('../models/surveySet');
 
 const surveySetController = {
-    async surveys(req, res) {
+   /* async surveys(req, res) {
         try {
             const surveys = await SurveySet.getAll();
             if (surveys.length === 0) {
@@ -10,6 +10,41 @@ const surveySetController = {
             res.json({ status: '200', message: 'Encuestas obtenidas correctamente', data: surveys });
         } catch (error) {
             res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
+        }
+    },*/
+
+    async surveys(req, res) {
+        try {
+            console.log('Iniciando la consulta de encuestas...');
+            const surveys = await SurveySet.getAll();
+            console.log('Encuestas obtenidas:', surveys);
+    
+            if (surveys.length === 0) {
+                return res.status(404).json({ status: '404', message: 'No se encontraron encuestas' });
+            }
+    
+            // Transformar las fechas y otros posibles valores antes de enviarlos
+            const formattedSurveys = surveys.map(survey => ({
+                survey_id: survey.survey_id,
+                title: survey.title,
+                start_date: survey.start_date === '0000-00-00' ? null : survey.start_date,  // Convertir fechas inválidas a null
+                end_date: survey.end_date === '0000-00-00' ? null : survey.end_date,  // Lo mismo para end_date
+                description: survey.description,
+                link: survey.link,
+                type: survey.type,
+                idClient: survey.idClient,
+                state: survey.state
+            }));
+    
+            res.json({
+                status: '200',
+                message: 'Encuestas obtenidas correctamente',
+                data: formattedSurveys,
+            });
+    
+        } catch (error) {
+            console.error('Error interno en la consulta de encuestas:', error); // Detalles del error
+            res.status(500).json({ status: '500', message: 'Error interno del servidor', error: error.message });
         }
     },
 
