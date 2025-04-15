@@ -1,6 +1,7 @@
 const db = require('../config/db'); // Importa la conexión a la base de datos
 
 const SurveySet = {
+
     getAll: () => db('survey_set').select('*'),
 
     getById: (id) => db('survey_set').where({ id }).first(),
@@ -19,9 +20,11 @@ const SurveySet = {
             .select('*');
     },
 
+
     create: (data) => db('survey_set').insert(data),
 
     update: (id, data) => db('survey_set').where({ id }).update(data),
+
 
     toggleState: (id) => {
         return db('survey_set')
@@ -33,7 +36,9 @@ const SurveySet = {
             });
     },
 
+
     delete: (id) => db('survey_set').where({ id }).del()
+
 };
 
 module.exports = SurveySet;

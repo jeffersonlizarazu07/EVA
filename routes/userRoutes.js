@@ -10,13 +10,13 @@ router.get('/users', authMiddleware, userController.getUsers);
 router.get('/users/:id', authMiddleware, userController.getUserById);
 
 // Crear un nuevo usuario
-router.post('/users/create', authMiddleware, userController.createUser);
+router.post('/users', authMiddleware, userController.createUser);
 
 // Actualizar un usuario por ID
 router.put('/users/:id', authMiddleware, userController.updateUser);
 
-// Cambiar el estado de un usuario (activo/inactivo)
-router.patch('/users/:id/state', authMiddleware, userController.toggleUserState);
+// Cambiar el estado de un usuario 
+router.patch('/users/:id', authMiddleware, userController.toggleUserState);
 
 // Eliminar un usuario por ID
 router.delete('/users/:id', authMiddleware, userController.deleteUser);

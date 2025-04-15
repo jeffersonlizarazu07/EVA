@@ -22,13 +22,13 @@ const User = {
      findById: async (id) => {
         return await db('users')
             .where({ id })
-            .select('id', 'firstname', 'middlename', 'lastname', 'email', 'password', 'state', 'type')
+            .select('id', 'firstname', 'middlename', 'lastname', 'email', 'password', 'state', 'type','language')
             .first();
     },
 
     // Obtener todos los usuarios
     getAllUsers: async () => {
-        return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type');
+        return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type','created_at','last_visit_date','language');
     },
 
     // Crear un nuevo usuario
@@ -41,6 +41,7 @@ const User = {
 
     // Actualizar un usuario por ID
     updateUser: async (id, userData) => {
+        userData.updated_at = new Date();
         await db('users').where({ id }).update(userData);
         const updatedUser = await db('users').where({ id }).first();
         
@@ -74,7 +75,16 @@ toggleUserState: async (id) => {
 
         await db('users').where({ id }).del();
         return user;
-    }
+    },
+
+    //update user last visit
+    updateLastVisit: async (id) => {
+        return await db('users')
+            .where({ id })
+            .update({ last_visit_date: new Date() }); 
+    },
+    
+
 };
 
 module.exports = User;
