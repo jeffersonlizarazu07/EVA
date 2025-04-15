@@ -192,27 +192,49 @@ function SingleChoiceView({options,correctOption}){
   </div>
   )
 }
-function MultipleChoiceView({options, correctOption}){
-  const optionsArray= options.split(",")
-  const correctOptions = correctOption.split(",").map(option => parseInt(option, 10));
-  return(
+function MultipleChoiceView({ options, correctOption }) {
+  // Asegurar que 'options' sea un array
+  const optionsArray = Array.isArray(options)
+    ? options
+    : (options || "").split(",");
+
+  // Asegurar que 'correctOption' también se maneje seguro
+  const correctOptions = Array.isArray(correctOption)
+    ? correctOption.map((opt) => parseInt(opt, 10))
+    : (correctOption || "")
+        .split(",")
+        .map((opt) => parseInt(opt, 10));
+
+  return (
     <div className="mt-4 mb-4">
-    {optionsArray.map((option, index) => {
-      return (
-        <div key={index} className="row mb-3">
-        <div className="col">
-          <div className="form-check">
-            <input type="radio" className="form-check-input" autoComplete="off" readOnly value={option} id={`optionMultiple-${index}`}  checked={correctOptions.includes(index)} 
-             />
-            <label className="form-check-label" htmlFor={`optionMultiple-${index}`}>{option}</label>
+      {optionsArray.map((option, index) => {
+        return (
+          <div key={index} className="row mb-3">
+            <div className="col">
+              <div className="form-check">
+                <input
+                  type="radio"
+                  className="form-check-input"
+                  autoComplete="off"
+                  readOnly
+                  value={option}
+                  id={`optionMultiple-${index}`}
+                  checked={correctOptions.includes(index)}
+                />
+                <label
+                  className="form-check-label"
+                  htmlFor={`optionMultiple-${index}`}
+                >
+                  {option}
+                </label>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      
-      );
-    })}
-  </div>
-  )
+        );
+      })}
+    </div>
+  );
 }
+
 
 export  {Range_onetofive, Range_zerototen, Range_difficulty,Yes_no,Range_emoji,Textfield_s,SingleChoiceView,MultipleChoiceView}

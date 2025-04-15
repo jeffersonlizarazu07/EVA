@@ -19,7 +19,7 @@ export default function View_survey() {
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
-  const [surveyData, setSurveyData] = useState([]);
+  const [surveyData, setSurveyData] = useState({ sampleCount: 0 });
   const [loading, setLoading] = useState(false);
   const [idToEdit, setidToEdit] = useState(null);
   const [error, setError] = useState('');
@@ -50,15 +50,27 @@ export default function View_survey() {
     updateSurveyQuestions();
   }, [id, languageUser]);
 
+
+useEffect(() => {
+  const fetchData = async () => {
+    const questions = await getSurveyQuestions(id, config);
+    setSurveyData({ sampleCount: questions.length });
+  };
+
+  fetchData();
+}, []);
+
   const config = {
     withCredentials: true,
   };
-  const updateSurveyQuestions = () => {
-    getSurveyQuestions(id, config)
-      .then(setData)
-      .catch(error => {
-        console.error('Error fetching survey questions', error);
-      });
+  const updateSurveyQuestions = async () => {
+    try {
+      const result = await getSurveyQuestions(id, config);
+      setData(result || []); // Si no viene nada, al menos dejamos un array vacío
+    } catch (error) {
+      console.error("Error fetching survey questions", error);
+      setData([]); // evita que quede undefined y cause crash
+    }
   };
 
   const handleCancel = () => {
@@ -258,8 +270,9 @@ const rangeOptions = useMemo(() => getRangeOptions(selectedRangeType.questionTyp
                         <p className="fs-6">{surveyData.description}</p>
                       </div>
                       <div className="col-6 text-end">
-                        <p className="fs-6">{surveyData.start_date} / {surveyData.end_date}</p>
-                        <p className="fs-6">Cantidad de muestras:   </p>
+                      {surveyData.start_date ? formatDate(surveyData.start_date) : "Sin fecha"} / 
+                      {surveyData.end_date ? formatDate(surveyData.end_date) : "Sin fecha"}
+                        <p className="fs-6">Cantidad de muestras: {surveyData.sampleCount || 0}</p>
                       </div>
                     </div>
                   </div>
@@ -330,7 +343,7 @@ const rangeOptions = useMemo(() => getRangeOptions(selectedRangeType.questionTyp
           </div>
         </div>
         </section>
-        </div>
+      </div>
     <div
       className="modal fade" id="modalManageQuestion" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" >
       <div className={`${operation===1? "modal-lg":"modal-xl"} modal-dialog modal-dialog-centered modal-dialog-scrollable"`} >
