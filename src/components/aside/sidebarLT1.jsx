@@ -54,7 +54,7 @@ const SidebarLT1 = () => {
     localStorage.removeItem("accessToken");
     nav("/");
   };
-  const url = "http://localhost:3000/api/users/";
+  const url = "http://localhost:8000/api/users/";
   //Es el mismo link para metodo put y post, cambia el verbo
 
   const config = {

@@ -30,7 +30,7 @@ const HeaderLT2 = () => {
  
   const checkinfo= async() =>{
     try{
-    const response=await axios.get (`http://localhost:3000/api/users/${userId}`,config)
+    const response=await axios.get (`http://localhost:8000/api/users/${userId}`,config)
     SetUserInfo(response.data)
     setLanguageUser(response.data.language)
   } catch(error){

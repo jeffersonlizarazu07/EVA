@@ -28,7 +28,7 @@ export default function Client_list() {
   const [previewUrl,setPreviewUrl]=useState(null)
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showColorPicker2, setShowColorPicker2] = useState(false);
-  const url = "http://localhost:3000/api/clients";
+  const url = "http://localhost:8000/api/clients";
   const { t, i18n } = useTranslation();
 
   const client = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -65,7 +65,7 @@ export default function Client_list() {
 
 
   const activation = (clientData) => {
-    const url = `http://localhost:3000/api/client`;
+    const url = `http://localhost:8000/api/client`;
     const id = clientData.id;
     const name = clientData.client;
     console.log(name);
@@ -106,7 +106,7 @@ export default function Client_list() {
       });
   };
   const deactivation = (clientData) => {
-    const url = `http://localhost:3000/api/client`;
+    const url = `http://localhost:8000/api/client`;
     const id = clientData.id;
     const name = clientData.client;
     const parametros = {
@@ -204,7 +204,7 @@ export default function Client_list() {
   };
 
   const validar = async (id) => {
-    const urlpost = `http://localhost:3000/api/clients`;
+    const urlpost = `http://localhost:8000/api/clients`;
     const formData = new FormData();
     console.log("Archivo seleccionado:", selectedFile);
     console.log("Cliente:", client.input);
@@ -246,7 +246,7 @@ export default function Client_list() {
         console.error("Error subiendo el archivo:", error);
       }
     } else {
-      const urlput = "http://localhost:3000/api/client";
+      const urlput = "http://localhost:8000/api/client";
       
       try {
         const response = await axios.post(`${urlput}/${id}`, formData, {

@@ -27,7 +27,7 @@ export default function Survey() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const url = "http://localhost:3000/api/answer";
+        const url = "http://localhost:8000/api/answer";
         try {
             console.log(answers);
             const response = await axios.post(url, answers);
@@ -52,7 +52,7 @@ export default function Survey() {
     };
 
     const getSurvey = async () => {
-        const response = await axios.get(`http://localhost:3000/api/survey?link=http://localhost:3000/survey/${link}`);
+        const response = await axios.get(`http://localhost:8000/api/survey?link=http://localhost:8000/survey/${link}`);
         const survey = {
             id: response.data.data.survey_set.id,
             logo: response.data.data.survey_set.logo,

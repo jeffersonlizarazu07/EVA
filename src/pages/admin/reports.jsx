@@ -58,7 +58,7 @@ const Reports = () => {
         : "";
 
       const response = await axios.get(
-        `http://localhost:3000/api/answers/survey/${surveyId}/percentage?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+        `http://localhost:8000/api/answers/survey/${surveyId}/percentage?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
         config
       );
       setLoading(false);
@@ -72,7 +72,7 @@ const Reports = () => {
     try {
       console.log(clients)
       const response = await axios.get(
-        `http://localhost:3000/api/clients/surveys?clientIds=${clients}`,
+        `http://localhost:8000/api/clients/surveys?clientIds=${clients}`,
         config
       );
       setSurveys(response.data.data);

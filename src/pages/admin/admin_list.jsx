@@ -22,8 +22,8 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 const AdminList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
-  const urlUsers = "http://localhost:3000/api/users";
-  const urlUsersClients = "http://localhost:3000/api/users_clients";
+  const urlUsers = "http://localhost:8000/api/users";
+  const urlUsersClients = "http://localhost:8000/api/users_clients";
   const [admins, setAdmins] = useState([]);
   const [clients, setClients] = useState([]);
   const [operation, setOperation] = useState([1]);
@@ -83,7 +83,7 @@ const AdminList = () => {
   //REQUEST//
   const getAdmins = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/users`, {
+      const response = await axios.get(`http://localhost:8000/api/users`, {
         withCredentials: true,
       });
       setAdmins(response.data.data);
@@ -95,7 +95,7 @@ const AdminList = () => {
   const getClients = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/clients`,
+        `http://localhost:8000/api/clients`,
         config
       );
       setClients(response.data.data);
@@ -107,7 +107,7 @@ const AdminList = () => {
   const getUserClients = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/users_client/${id}`,
+        `http://localhost:8000/api/users_client/${id}`,
         config
       );
       const responseData = response.data.data;
@@ -190,7 +190,7 @@ const AdminList = () => {
   };
 
   const deactivateUser = (admin) => {
-    const url = `http://localhost:3000/api/users`;
+    const url = `http://localhost:8000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
     const parametros = {
@@ -220,7 +220,7 @@ const AdminList = () => {
   };
 
   const activeUser = (admin) => {
-    const url = `http://localhost:3000/api/users`;
+    const url = `http://localhost:8000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
     const parametros = {

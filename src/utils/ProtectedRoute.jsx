@@ -32,14 +32,14 @@ if (!accessToken) {
       });
 
       try {
-       const check = await axios.get('http://localhost:3000/api/check-token', {
+       const check = await axios.get('http://localhost:8000/api/check-token', {
       withCredentials: true
       });
 
         if (check.data.status) {
           try {
             const renew = await axios.post(
-              'http://localhost:3000/api/extend-token', {}, 
+              'http://localhost:8000/api/extend-token', {}, 
               { headers: { 'Authorization': `Bearer ${accessToken}` } ,withCredentials: true }
             );
 

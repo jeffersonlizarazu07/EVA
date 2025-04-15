@@ -16,7 +16,7 @@ import Cookies from "js-cookie"; // si no lo has importado ya
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
-  const url = "http://localhost:3000/api/surveys";
+  const url = "http://localhost:8000/api/surveys";
   const headers = ["Title", "Start_date", "End_date", "state"];
   const [operation, setOperation] = useState([1]);
   const [idToEdit, setidToEdit] = useState(null);
@@ -110,7 +110,7 @@ const SurveyList = () => {
         withCredentials: true,
       };
       //console.log("📡 Enviando token en headers:", authConfig.headers);
-      const response = await axios.get(`http://localhost:3000/api/users_client/${id}`, authConfig);
+      const response = await axios.get(`http://localhost:8000/api/users_client/${id}`, authConfig);
       console.log("Clientes relacionados: ", response.data);
       setClients(response.data.data);
     } catch (error) {
@@ -122,7 +122,7 @@ const SurveyList = () => {
   };
 
   const activeSurvey = (survey) => {
-    const url = `http://localhost:3000/api/survey`;
+    const url = `http://localhost:8000/api/survey`;
     const id = survey.id;
     const name = survey.title;
     const parametros = {
@@ -161,7 +161,7 @@ const SurveyList = () => {
   };
 
   const deactivateSurvey = (survey) => {
-    const url = `http://localhost:3000/api/survey`;
+    const url = `http://localhost:8000/api/survey`;
     const id = survey.id;
     const name = survey.title;
     const parametros = {
@@ -284,7 +284,7 @@ const SurveyList = () => {
           setLoading(true);
           try {
             const response = await axios.post(
-              "http://localhost:3000/api/surveys",
+              "http://localhost:8000/api/surveys",
               parametros,
               config
             );
@@ -307,7 +307,7 @@ const SurveyList = () => {
 
         handleCreateSurvey();
       } else if (metodo.toUpperCase() == "PUT") {
-        const url = `http://localhost:3000/api/survey`;
+        const url = `http://localhost:8000/api/survey`;
         const response = await axios.put(
           `${url}/${idToEdit}`,
           parametros,
