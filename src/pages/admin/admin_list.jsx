@@ -88,7 +88,7 @@ const AdminList = () => {
   //REQUEST//
   const getAdmins = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/users`, {
+      const response = await axios.get(`http://localhost:3000/api/users`, {
         withCredentials: true,
       });
       setAdmins(response.data.data);
@@ -225,7 +225,7 @@ const AdminList = () => {
   };
 
   const deactivateUser = (admin) => {
-    const url = `http://localhost:8000/api/users`;
+    const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
     const parametros = {
@@ -255,7 +255,7 @@ const AdminList = () => {
   };
 
   const activeUser = (admin) => {
-    const url = `http://localhost:8000/api/users`;
+    const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
     const parametros = {

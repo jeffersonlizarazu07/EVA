@@ -571,15 +571,6 @@ export default function SurveyBlocks() {
                     </label>
                   </div>
 
-                  {/* <div className="form-group m-2 mt-2 mb-4">
-                    <label id="labelAnimation" htmlFor="question">
-                      <select name="client" id="client" className="input-new ps-2" required>
-                        <option value="0">Seleccionar cliente:</option>
-                      </select>
-                      <span className="labelName">Cliente</span>
-                    </label>
-                  </div> */}
-
                   <div className="form-group m-2 mt-2 mb-4">
                     <label id="labelAnimation" htmlFor="question">
                       <input

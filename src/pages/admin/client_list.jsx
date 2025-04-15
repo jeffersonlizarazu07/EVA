@@ -28,7 +28,7 @@ export default function Client_list() {
   const [previewUrl,setPreviewUrl]=useState(null)
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showColorPicker2, setShowColorPicker2] = useState(false);
-  const url = "http://localhost:8000/api/clients";
+  const url = "http://localhost:3000/api/clients";
   const { t, i18n } = useTranslation();
 
   const client = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -204,7 +204,7 @@ export default function Client_list() {
   };
 
   const validar = async (id) => {
-    const urlpost = `http://localhost:8000/api/clients`;
+    const urlpost = `http://localhost:3000/api/clients`;
     const formData = new FormData();
     console.log("Archivo seleccionado:", selectedFile);
     console.log("Cliente:", client.input);
