@@ -270,6 +270,7 @@ const [confirmError, setConfirmError] = useState("");
   };
 
   return (
+    
     <header className="sticky-top">
       <nav className="navbar navbar-expand-lg m-2 mb-3" id="nav-Claro">
         <div className="container-fluid">

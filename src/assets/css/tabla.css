@@ -47,10 +47,13 @@ table {
 
 
 #table {
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+              rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
   border: 2px solid rgb(199, 14, 143);
   overflow-y: auto;
   width: 100%;
+  max-width: 97%;  /* ✅ Limita el ancho */
+  margin: 0 auto;     /* ✅ Centra horizontalmente */
   border-radius: 15px;
   height: 100%;
 }
@@ -102,12 +105,16 @@ table {
   color: white;
 }
 
+.dropdown {
+  position: static !important;
+}
+
 .btn-dropdown{
   border-radius: 5px ;
 }
 
 .btn-rect_delete{
-  background-color: transparent; /* Fondo transparente por defecto */
+  background-color: transparent; 
   color: rgb(199, 14, 143);
   padding: 5px 10px;
   margin: 2px;
