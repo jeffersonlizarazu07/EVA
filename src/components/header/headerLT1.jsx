@@ -6,19 +6,21 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { Modal, ModalBody, ModalHeader, Button, ModalFooter } from "reactstrap";
 import { useTranslation } from "react-i18next";
+import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import Avatar from "@mui/material/Avatar";
 import { Button as MUIButton } from "@mui/material";
+import Cookies from 'js-cookie';
 import { styled } from "@mui/material/styles";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import Tooltip from "@mui/material/Tooltip";
 import useInput from "../../components/hooks/useInput";
 import "../../assets/css/header_aside.css";
-
+import Swal from "sweetalert2";
 import HomeIcon from "@mui/icons-material/Home";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import PersonIcon from "@mui/icons-material/Person";
-
+import { ThemeContext } from '../../assets/js/ThemeContext';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
@@ -32,7 +34,7 @@ const HeaderLT1 = () => {
   useEffect(() => {
     checkinfo();
     i18n.changeLanguage(languageUser);
-  }, []);
+  }, [languageUser]);
   const [userLanguage, setUserLanguaje] = useState({ language: "" });
   const [userInfo, setUserInfo] = useState({
     firstname: "",
@@ -58,33 +60,51 @@ const HeaderLT1 = () => {
     defaultValue: "",
     validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
   });
-  const language = useInput({ defaultValue: "", validate: /^(es|en|it|pt)$/ });
+  const language = useInput({ defaultValue: languageUser, validate: /^(es|en|it|pt)$/ });
+
   const password = useInput({
     defaultValue: "",
     validate:
       /^(?=.[A-Z])(?=.[a-z])(?=.\d)(?=.[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/,
   });
+  const [confirmPassword, setConfirmPassword] = useState("");
+const [confirmError, setConfirmError] = useState("");
+
 
   const nav = useNavigate();
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
-  const logout = () => {
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userType");
-    localStorage.removeItem("accessToken");
-    nav("/");
+  const logout = async () => {
+    try {
+      await axios.post('http://localhost:3000/api/logout', {}, {
+        withCredentials: true,
+      });
+      Cookies.remove("userId");
+      Cookies.remove("userType");
+      Cookies.remove("accessToken");
+      Cookies.remove("clients");
+  
+      localStorage.removeItem("languageUser");
+      nav("/");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
   };
+  
+  
 
   const config = {
     withCredentials: true,
   };
+  
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   const checkinfo = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/users/${userId}`,
+        `http://localhost:3000/api/users/${userId}`,
         config
       );
       setUserInfo(response.data.data);
@@ -93,7 +113,7 @@ const HeaderLT1 = () => {
       console.error(error);
     }
   };
-  const url = "http://localhost:8000/api/users/"; //mismo link para 2 acciones (put-post), cambia directamente en el metodo de axios"
+  const url = "http://localhost:3000/api/users/"; 
 
   const getInfo = async () => {
     try {
@@ -104,8 +124,8 @@ const HeaderLT1 = () => {
       middleName.handleChange(userInfo.middlename || "");
       lastName.handleChange(userInfo.lastname || "");
       email.handleChange(userInfo.email || "");
-      password.handleChange(userInfo.password || "");
-      language.handleChange(userInfo.language || "en");
+      language.handleChange(userInfo.language || "es");
+      password.handleChange("");
     } catch (error) {
       console.error(error);
     }
@@ -120,38 +140,56 @@ const HeaderLT1 = () => {
 
   const updateInfo = async (event) => {
     event.preventDefault();
-    var parameters;
-    console.log(userInfo);
-    if (
-      lastName.input.trim() === "" ||
-      firstName.input.trim() === "" ||
-      email.input.trim() === "" ||
-      userLanguage == ""
-    ) {
-      alert("Informacion no diligenciada");
-    } else {
-      try {
-        parameters = {
-          firstname: firstName.input,
-          middlename: middleName.input,
-          lastname: lastName.input,
-          email: email.input,
-          language: userLanguage.language,
-          last_visit_date: "",
-        };
-        password.input.length > 8
-          ? (parameters["password"] = password.input)
-          : null;
-        const response = await axios.put(`${url}${userId}`, parameters, config);
-        if (response.data.status) {
-          //hacer un timeout alert 3s y si le da aceptar antes que se reloguee instantaneamente
-          window.location.reload();
-        }
-      } catch (error) {
-        console.error(error);
+    let parameters;
+  
+    if (password.input.trim() !== "") {
+      if (password.input !== confirmPassword) {
+        setConfirmError("");
+        Swal.fire({
+          icon: "error",
+          title: "Contraseñas no coinciden",
+          text: "La contraseña y su confirmación deben ser iguales.",
+        });
+        return;
       }
     }
+  
+    try {
+      parameters = {
+        firstname: firstName.input,
+        middlename: middleName.input,
+        lastname: lastName.input,
+        email: email.input,
+        language: userLanguage.language,
+        last_visit_date: "",
+      };
+  
+      if (password.input.trim() !== "") {
+        parameters["password"] = password.input;
+      }
+  
+      const response = await axios.put(`${url}${userId}`, parameters, config);
+  
+      if (response.data.status) {
+        Toast.fire({
+          icon: "success",
+          title: "Perfil actualizado correctamente",
+        }),setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Error al actualizar",
+        text: "Ocurrió un problema al guardar los cambios.",
+      });
+    }
   };
+  
+  
+  
 
   function stringAvatar(name) {
     return {
@@ -304,7 +342,11 @@ const HeaderLT1 = () => {
             <div className="col-1 col-sm-6 col-md-1 col-lg-1 d-flex align-items-center justify-content-end">
               <Tooltip title="Cambiar a modo oscuro" placement="top">
                 <FormControlLabel
-                  control={<MaterialUISwitch defaultChecked />}
+                  control={<MaterialUISwitch
+                    checked={theme === 'dark'}
+                    onChange={toggleTheme}
+                  />
+                  }
                   label=""
                 />
               </Tooltip>
@@ -523,13 +565,24 @@ const HeaderLT1 = () => {
               id="cpass"
               className="form-control"
               placeholder=" "
+              value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setConfirmError("");
+                }}
             />
+             {confirmError && (
+    <div className="text-danger mt-1" style={{ fontSize: "14px" }}>
+      {confirmError}
+    </div>
+  )}
             <small id="pass_match" data-status=""></small>
           </div>
 
           <p className="lang m-2" key="titulo26">
             {t("headerlt.Language")}
           </p>
+          {/* IDIOMAAAAAAA */}
           <div
             className="btn-group flex-wrap m-2"
             role="group"
@@ -543,7 +596,22 @@ const HeaderLT1 = () => {
               name="language"
               autoComplete="off"
               checked={language.input === "es"}
-              onChange={(e) => language.handleChange(e.target.value)}
+              onChange={async (e) => {
+                language.handleChange(e.target.value);
+                i18n.changeLanguage(e.target.value);
+                setLanguageUser(e.target.value);
+                const parameters = {
+                  language: e.target.value,     
+                };
+            
+                try {
+                  await axios.put(`${url}${userId}`, parameters, config);
+        
+                } catch (error) {
+                  console.error("Error al actualizar el idioma:", error);
+                }
+              }}
+             
             />
             <label
               className="btn btn-outline-dark lang"
@@ -561,7 +629,22 @@ const HeaderLT1 = () => {
               name="language"
               autoComplete="off"
               checked={language.input === "en"}
-              onChange={(e) => language.handleChange(e.target.value)}
+              onChange={async (e) => {
+                language.handleChange(e.target.value);
+                i18n.changeLanguage(e.target.value);
+                setLanguageUser(e.target.value);
+                const parameters = {
+                  language: e.target.value,     
+                };
+            
+                try {
+                  await axios.put(`${url}${userId}`, parameters, config);
+        
+                } catch (error) {
+                  console.error("Error al actualizar el idioma:", error);
+                }
+              }}
+             
             />
             <label
               className="btn btn-outline-dark lang"
@@ -579,7 +662,22 @@ const HeaderLT1 = () => {
               name="language"
               autoComplete="off"
               checked={language.input === "it"}
-              onChange={(e) => language.handleChange(e.target.value)}
+              onChange={async (e) => {
+                language.handleChange(e.target.value);
+                i18n.changeLanguage(e.target.value);
+                setLanguageUser(e.target.value);
+                const parameters = {
+                  language: e.target.value,     
+                };
+            
+                try {
+                  await axios.put(`${url}${userId}`, parameters, config);
+        
+                } catch (error) {
+                  console.error("Error al actualizar el idioma:", error);
+                }
+              }}
+             
             />
             <label
               className="btn btn-outline-dark lang"
@@ -597,7 +695,22 @@ const HeaderLT1 = () => {
               name="language"
               autoComplete="off"
               checked={language.input === "pt"}
-              onChange={(e) => language.handleChange(e.target.value)}
+              onChange={async (e) => {
+                language.handleChange(e.target.value);
+                i18n.changeLanguage(e.target.value);
+                setLanguageUser(e.target.value);
+                const parameters = {
+                  language: e.target.value,     
+                };
+            
+                try {
+                  await axios.put(`${url}${userId}`, parameters, config);
+        
+                } catch (error) {
+                  console.error("Error al actualizar el idioma:", error);
+                }
+              }}
+             
             />
             <label
               className="btn btn-outline-dark lang"

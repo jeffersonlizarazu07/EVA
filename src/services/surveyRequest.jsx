@@ -12,13 +12,13 @@ export const getSurveys = async (urlSurveys, config) => {
   };
 
 export const getSurvey = async (id, config, setSurveyData) => {
-  const url = "http://localhost:8000/api/surveys/";
+  const url = "http://localhost:3000/api/surveys/";
   const response = await axios.get(`${url}${id}`, config);
   setSurveyData(response.data);
 };
 
 export const getSurveyQuestions = async (id, config) => {
-  const url = "http://localhost:8000/api/surveys/";
+  const url = "http://localhost:3000/api/surveys/";
   const response = await axios.get(`${url}${id}/question`, config);
   const responseData = response.data.data;
   return responseData;
@@ -46,7 +46,7 @@ export const deleteQuestion = async (
       if (result.isConfirmed) {
         try {
           const url =
-            "http://localhost:8000/api/question/";
+            "http://localhost:3000/api/question/";
           const { data } = await axios.delete(`${url}${idquestion}`, config);
           if (data.status) {
             Toast.fire({
@@ -81,7 +81,7 @@ export const sendData = async (
         setLoading(true);
         try {
           const url =
-            "http://localhost:8000/api/question";
+            "http://localhost:3000/api/question";
           const response = await axios.post(url, parametros, config);
           const responseData = response.data;
           console.log("Respuesta solicitud Post:", responseData);
@@ -101,7 +101,7 @@ export const sendData = async (
       };
       handleCreateQuestion();
     } else if (metodo.toUpperCase() === "PUT") {
-      const url = `http://localhost:8000/api/question/`;
+      const url = `http://localhost:3000/api/question/`;
       const response = await axios.put(
         `${url}${idToEdit}`,
         parametros,

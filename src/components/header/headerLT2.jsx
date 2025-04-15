@@ -2,6 +2,7 @@ import Logo from "../../assets/img/logo EVA.webp";
 import "../../assets/css/header_aside.css"
 import { toggleBlackMode } from "../../assets/js/toggleBlackMode";
 import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie';
 import { useState,useContext,useEffect} from "react";
 import { UserContext } from "../../context/UserContext";
 import axios from 'axios'
@@ -15,12 +16,22 @@ const HeaderLT2 = () => {
   const { accessToken,userId,setLanguageUser,languageUser} = useContext(UserContext);
   const { t,i18n } = useTranslation();
   const nav = useNavigate();
-  const logout=()=>{
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userType');
-    localStorage.removeItem('accessToken');
-    nav("/")
-  }
+   const logout = async () => {
+     try {
+       await axios.post('http://localhost:3000/api/logout', {}, {
+         withCredentials: true,
+       });
+       Cookies.remove("userId");
+       Cookies.remove("userType");
+       Cookies.remove("accessToken");
+       Cookies.remove("clients");
+   
+       localStorage.removeItem("languageUser");
+       nav("/");
+     } catch (error) {
+       console.error("Error al cerrar sesión:", error);
+     }
+   };
 
 
   
@@ -30,7 +41,7 @@ const HeaderLT2 = () => {
  
   const checkinfo= async() =>{
     try{
-    const response=await axios.get (`http://localhost:8000/api/users/${userId}`,config)
+    const response=await axios.get (`http://localhost:3000/api/users/${userId}`,config)
     SetUserInfo(response.data)
     setLanguageUser(response.data.language)
   } catch(error){

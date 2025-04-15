@@ -54,7 +54,7 @@ const TableUsers = ({
           </div>
           <div className="d-grid col-6 col-sm-6 col-md-6 col-lg-6 justify-content-end">
             <button
-              className="btn btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-2"
+              className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-2"
               data-bs-toggle="modal"
               data-bs-target={`#${modalId}`}
               onClick={onCreate}

@@ -35,7 +35,6 @@ export default function Client_list() {
   const logo = useInput({ defaultValue: "", validate: "" });
   const estado = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
 
-
   const { accessToken, languageUser } = useContext(UserContext);
   useEffect(() => {
     fetchData();
@@ -44,6 +43,7 @@ export default function Client_list() {
 
   const config = {
     withCredentials: true,
+    'Content-Type': 'multipart/form-data',
   };
 
   const fetchData = async () => {
@@ -65,7 +65,7 @@ export default function Client_list() {
 
 
   const activation = (clientData) => {
-    const url = `http://localhost:8000/api/client`;
+    const url = `http://localhost:3000/api/clients`;
     const id = clientData.id;
     const name = clientData.client;
     console.log(name);
@@ -106,7 +106,7 @@ export default function Client_list() {
       });
   };
   const deactivation = (clientData) => {
-    const url = `http://localhost:8000/api/client`;
+    const url = `http://localhost:3000/api/clients`;
     const id = clientData.id;
     const name = clientData.client;
     const parametros = {
@@ -210,67 +210,67 @@ export default function Client_list() {
     console.log("Cliente:", client.input);
     console.log("Color 1:", colors1);
     console.log("Color 2:", colors2);
-    selectedFile? formData.append("logo", selectedFile): null;
+    selectedFile ? formData.append("logo", selectedFile) : null;
     formData.append("client", client.input);
     formData.append("color_tag1", colors1);
     formData.append("color_tag2", colors2);
     formData.append("state", 1);
-   
+
     if (id == null) {
-   
-      try {
-        const clientExists = data.some(item => item.client === client.input);
-        if (clientExists){
-          setError("El nombre del cliente ya existe");
-          return
+        // Aquí se crea un nuevo cliente
+        try {
+            const clientExists = data.some(item => item.client === client.input);
+            if (clientExists) {
+                setError("El nombre del cliente ya existe");
+                return;
+            }
+            const response = await axios.post(`${urlpost}`, formData, {
+                withCredentials: true,  
+            });
+            console.log("Respuesta del servidor:", response.data);
+            if (response.data.status) {
+                setColors1("#FFFFFF");
+                setColors2("#FFFFFF");
+                setSelectedFile(null);
+                setError('');
+                fetchData();
+                document.getElementById("btnCerrar").click();
+                Toast.fire({
+                    icon: "success",
+                    title: `${t("alertActivate.TheClient")} ${client.input} ${t("alertActivate.Created")}`
+                });
+            }
+        } catch (error) {
+            console.error("Error subiendo el archivo:", error);
         }
-        const response = await axios.post(`${urlpost}`, formData, {
-          withCredentials: true,
-        });
-        console.log("Respuesta del servidor:", response.data);
-        if (response.data.status) {
-          setColors1("#FFFFFF");
-          setColors2("#FFFFFF");
-          setSelectedFile(null);
-          setError('')
-          fetchData();
-          document.getElementById("btnCerrar").click();
-          Toast.fire({
-            icon: "success",
-            title: `${t("alertActivate.TheClient")} ${client.input} ${t(
-              "alertActivate.Created"
-            )} `,
-          });
-        }
-      } catch (error) {
-        console.error("Error subiendo el archivo:", error);
-      }
     } else {
-      const urlput = "http://localhost:8000/api/client";
-      
-      try {
-        const response = await axios.post(`${urlput}/${id}`, formData, {
-         
-        });
-        console.log("Respuesta del servidor:", response);
-        if (!response.data.status) {
-          alert("No se realizo la edición del usuario");
-          document.getElementById("btnCerrar").click();
-          console.log(response.data)
+        // Aquí se realiza una actualización del cliente con PUT
+        const urlput = `http://localhost:3000/api/clients/${id}`;
         
+        try {
+            const response = await axios.put(urlput, formData, {
+                    'Content-Type': 'multipart/form-data', 
+                    withCredentials: true
+            });
+            console.log("Respuesta del servidor:", response);
+            if (!response.data.status) {
+                alert("No se realizó la edición del cliente");
+                document.getElementById("btnCerrar").click();
+                console.log(response.data);
+            }
+            Toast.fire({
+                icon: "success",
+                title: `El cliente ${client.input} se ha editado exitosamente`,
+            });
+            fetchData();
+            document.getElementById("btnCerrar").click();
+        } catch (error) {
+            console.error("Error actualizando el cliente:", error);
         }
-        Toast.fire({
-          icon: "success",
-          title: `El cliente ${client.input} se ha editado exitosamente`,
-        });
-      
-        fetchData();
-        document.getElementById("btnCerrar").click();
-      } catch (error) {
-        console.error(error);
-      }
     }
-  };
+};
+
+ 
   const handleClose = () => {
     setDisplayColorPicker(false);
   };
@@ -292,7 +292,7 @@ export default function Client_list() {
     color: {
       width: "36px",
       height: "24px",
-      borderRadius: "8px",
+      borderRadius: "2px",
       background: `${colors1}`,
       border: "1px solid  gray",
     },
@@ -318,7 +318,7 @@ export default function Client_list() {
     color: {
       width: "36px",
       height: "24px",
-      borderRadius: "8px",
+      borderRadius: "2px",
       background: `${colors2}`,
       border: "1px solid gray",
     },

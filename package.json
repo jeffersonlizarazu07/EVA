@@ -40,7 +40,7 @@
     "react-select": "^5.8.0",
     "reactstrap": "^9.2.2",
     "solid-toast": "^0.5.0",
-    "sweetalert2": "^11.12.4"
+    "sweetalert2": "^11.17.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

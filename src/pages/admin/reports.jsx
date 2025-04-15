@@ -18,6 +18,8 @@ import dayjs from "dayjs";
 import { Box, ButtonGroup, Grid, IconButton, Skeleton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import Cookies from "js-cookie"; 
+import Swal from 'sweetalert2';
 
 const Reports = () => {
   const { accessToken, userType, clients } = useContext(UserContext);
@@ -48,33 +50,88 @@ const Reports = () => {
       alert("Please select a Survey ID");
       return;
     }
+    
     setLoading(true);
+    
     try {
-      const formattedStartDate = startDate
-        ? dayjs(startDate).format("YYYY-MM-DD")
-        : "";
-      const formattedEndDate = endDate
-        ? dayjs(endDate).format("YYYY-MM-DD")
-        : "";
-
+      const formattedStartDate = startDate ? dayjs(startDate).format("YYYY-MM-DD") : "";
+      const formattedEndDate = endDate ? dayjs(endDate).format("YYYY-MM-DD") : "";
+  
       const response = await axios.get(
-        `http://localhost:8000/api/answers/survey/${surveyId}/percentage?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+        `http://localhost:3000/api/answers/survey/${surveyId}/percentage?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
         config
       );
-      setLoading(false);
-      setData(response.data.data);
-    } catch (error) {
-      console.error("Error fetching data", error);
-    }
+  
+      // Verificar si no hay datos
+      if (!response.data.data || Object.keys(response.data.data).length === 0) {
+        console.log("No hay datos o los datos están vacíos.");
+        
+        if (startDate || endDate) {
+          alert("No se encontraron datos para las fechas proporcionadas.");
+        } else {
+          alert("No se encontraron datos para la encuesta con el ID proporcionado.");
+        }
+        
+        setLoading(false);
+        return;
+      }
+      
+      // Transformar los datos para que sean compatibles con LineStyleCharts
+      const dataArray = Object.entries(response.data.data).map(([questionId, questionData]) => {
+        // Preparar los datos en el formato adecuado para la gráfica
+        const chartData = [];
+        
+        // Si tenemos datos y labels
+        if (questionData.data && questionData.data.length > 0 && questionData.labels) {
+          // Usar solo el primer elemento de data ya que parece contener porcentajes
+          const firstDataItem = questionData.data[0];
+          
+          // Convertir el objeto de respuestas a un array
+          Object.entries(firstDataItem).forEach(([key, value]) => {
+            chartData.push({
+              name: key, // La etiqueta (por ejemplo "SI", "NO", "1", "5", etc)
+              value: parseFloat(value) // El porcentaje como número
+            });
+          });
+        }
+        
+        return {
+          id: questionId,
+          label: `Pregunta ${questionId}`,
+          data: chartData,
+          type: questionData.type
+        };
+      });
+      
+      console.log("Datos transformados para las gráficas:", dataArray);
+setData(dataArray);
+setLoading(false);
+} catch (error) {
+  console.error("Error al obtener los datos:", error);
+  
+  // Muestra un mensaje de error usando SweetAlert
+  Swal.fire({
+    title: 'Error',
+    text: 'Hubo un error al obtener los datos.',
+    icon: 'error',
+    confirmButtonText: 'Aceptar',
+    confirmButtonColor: '#FF66B2',
+  });
+
+  setLoading(false);
+}
+
   };
+    
 
   const getSurveys = async () => {
     try {
       console.log(clients)
       const response = await axios.get(
-        `http://localhost:8000/api/clients/surveys?clientIds=${clients}`,
+        `http://localhost:3000/api/clients/surveys?clientIds=${clients}`,
         config
       );
+      console.log("Datos de Encuestas:", response.data.data);
       setSurveys(response.data.data);
     } catch (error) {
       console.error("Error fetching data", error);
@@ -220,8 +277,10 @@ const Reports = () => {
 
             {/* GRÁFICAS O SKELETON */}
             <div className="row">
-              {data.length > 0 ? (
-                data.map((item, i) => (
+            {data.length > 0 ? (
+              data.map((item, i) => {
+                console.log("Datos para gráfico REACT jsx", item);
+                return (
                   <div
                     className="col-md-6 col-lg-4 p-2"
                     key={i}
@@ -229,45 +288,48 @@ const Reports = () => {
                   >
                     <div className="card shadowbox5">
                       <div className="card-body">
+                        <h5 className="card-title">{item.label}</h5>
                         <LineStyleCharts
                           label={item.label}
                           dataChart={item.data}
                           type={item.type}
                           initialType="pie"
+                          labels={item.labels}
                         />
                       </div>
                     </div>
                   </div>
-                ))
-              ) : loading ? (
-                <Grid container spacing={2}>
-                  {[...Array(4)].map((_, index) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                );
+              })
+            ) : loading ? (
+              <Grid container spacing={2}>
+                {[...Array(4)].map((_, index) => (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                    <Skeleton
+                      variant="text"
+                      width="100%"
+                      sx={{ marginBottom: "8px" }}
+                    />
+                    <Skeleton
+                      animation="wave"
+                      variant="circular"
+                      width="100%"
+                      height={200}
+                      sx={{ borderRadius: "10px", marginBottom: "8px" }}
+                    />
+                    <Box className="d-flex">
                       <Skeleton
                         variant="text"
-                        width="100%"
-                        sx={{ marginBottom: "8px" }}
+                        width="50%"
+                        sx={{ marginRight: 5 }}
                       />
-                      <Skeleton
-                        animation="wave"
-                        variant="circular"
-                        width="100%"
-                        height={200}
-                        sx={{ borderRadius: "10px", marginBottom: "8px" }}
-                      />
-                      <Box className="d-flex">
-                        <Skeleton
-                          variant="text"
-                          width="50%"
-                          sx={{ marginRight: 5 }}
-                        />
-                        <Skeleton variant="text" width="50%" />
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              ) : null}
-            </div>
+                      <Skeleton variant="text" width="50%" />
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : null}
+                        </div>
           </div>
         </div>
       </div>

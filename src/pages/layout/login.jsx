@@ -21,7 +21,7 @@ const LogIn = () => {
         password: password,
       };
       const response = await axios.post(
-        `http://localhost:8000/api/login`,
+        `http://localhost:3000/api/login`,
         parameters,
         { withCredentials: true }
       );
