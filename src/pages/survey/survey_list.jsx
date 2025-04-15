@@ -84,9 +84,7 @@ const SurveyList = () => {
   const getSurveys = async () => {
     try {
       const response = await axios.get(url, config);
-
       console.log("Encuestas: ", response.data);
-
       setSurvey(response.data.data); // <-- ¡aquí está el fix!
     } catch (error) {
       console.error("Error al obtener encuestas:", error);
@@ -105,7 +103,6 @@ const SurveyList = () => {
     }
 
     try {
-
       const authConfig = {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -121,9 +118,8 @@ const SurveyList = () => {
       if (error.response) {
         console.error("Detalles del error:", error.response.data);
       }
-
     }
-  };  
+  };
 
   const activeSurvey = (survey) => {
     const url = `http://localhost:3000/api/survey`;
