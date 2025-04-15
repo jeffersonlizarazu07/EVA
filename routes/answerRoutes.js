@@ -27,7 +27,13 @@ router.get('/survey/:id/percentages',authMiddleware, answerController.percentage
 router.post('/answers',authMiddleware, AnswerController.postAnswer);
 
 // Ruta para actualizar una respuesta
-router.put('/answers/:id', authMiddleware, AnswerController.putAnswer);
+
+//router.put('/answers/:id', AnswerController.putAnswer);
+
+router.put('/answers/:id', answerController.updateAnswer);
+
+//router.put('/answers/:id', answerController.putAnswer);
+
 
 // Ruta para eliminar una respuesta
 router.delete('/answers/:id',authMiddleware, AnswerController.deleteAnswer);
