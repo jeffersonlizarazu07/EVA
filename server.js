@@ -9,7 +9,7 @@ const surveySetRoutes = require('./routes/surveyRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const endUserRoutes = require('./routes/endUserRoutes');
 const endUserClientRoutes = require('./routes/endUserClientRoutes');
-const clientsRoutes = require('./routes/clientRoute');
+const clientsRoutes = require('./routes/clientRoutes');
 const answersRoutes = require('./routes/answerRoutes');
 
 
@@ -17,7 +17,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
-    origin: 'http://localhost:5173', 
+    origin: 'http://localhost:5174', 
     methods: ['GET', 'POST', 'PUT', 'DELETE'], 
     allowedHeaders: ['Content-Type', 'Authorization'], 
     credentials: true, 

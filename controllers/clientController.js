@@ -2,9 +2,9 @@
 const ClientModel = require('../models/clientModel');
 const path = require('path');
 const fs = require('fs');
+const knex = require('../config/db');
+const clientModel = new ClientModel(knex);
 
-// Crear una instancia de ClientModel
-const clientModel = new ClientModel();
 
 // Método para crear un cliente
 const createClient = async (req, res) => {
