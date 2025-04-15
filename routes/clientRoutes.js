@@ -13,4 +13,6 @@ router.put('/clients/:id', authMiddleware, upload.single('logo'), clientControll
 router.patch('/clients/:id',authMiddleware, clientController.toggleClientState);
 router.delete('/clients/:id', authMiddleware,clientController.deleteClient);
 
+
 module.exports = router;
+

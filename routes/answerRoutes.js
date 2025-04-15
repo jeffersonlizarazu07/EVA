@@ -21,7 +21,9 @@ router.get('/answers/:id', authMiddleware, AnswerController.answersByQuestion);
 router.get('/answers/percentage/:id',authMiddleware,  AnswerController.answersByQuestionPercentage);
 
 // Ruta para obtener los porcentajes de respuestas de una encuesta
-router.get('/survey/:id/percentages',authMiddleware, answerController.percentagesXSurvey);
+
+router.get('/answers/survey/:id/percentage', answerController.percentagesXSurvey);
+
 
 // Ruta para crear una nueva respuesta
 router.post('/answers',authMiddleware, AnswerController.postAnswer);
@@ -30,7 +32,7 @@ router.post('/answers',authMiddleware, AnswerController.postAnswer);
 
 //router.put('/answers/:id', AnswerController.putAnswer);
 
-router.put('/answers/:id', answerController.updateAnswer);
+router.put('/answers/:id', authMiddleware, answerController.updateAnswer);
 
 //router.put('/answers/:id', answerController.putAnswer);
 
