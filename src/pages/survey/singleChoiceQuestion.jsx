@@ -427,114 +427,144 @@ function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
   );
 }
 
-const SelectorQuestion = ({ question, onUpdate }) => {
-  const [options, setOptions] = useState([
-    { id: 1, text: "Seleccione una opción" },
-    { id: 2, text: "Opción 1" },
-    { id: 3, text: "Opción 2" },
-  ]);
-
-  // Estado para la opción seleccionada
-  const [selectedOption, setSelectedOption] = useState(1);
-
-  // Estado para la nueva opción que se está creando
-  const [newOption, setNewOption] = useState("");
-
-  // Estado para mostrar/ocultar el formulario de nueva opción
+const SelectorQuestion = () => {
+  const [question, setQuestion] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [newAnswer, setNewAnswer] = useState("");
+  const [answers, setAnswers] = useState([]);
+  const [questionPrinted, setQuestionPrinted] = useState(false);
 
-  // Maneja el cambio en el selector
-  const handleSelectChange = (e) => {
-    setSelectedOption(parseInt(e.target.value));
+  const handleAddAnswer = () => {
+    if (newAnswer.trim() === "") return;
+    const nuevaRespuesta = {
+      id: Date.now(),
+      text: newAnswer,
+      condition: "Sí",
+    };
+    setAnswers([...answers, nuevaRespuesta]);
+    setNewAnswer("");
+    setShowForm(false);
+    setQuestionPrinted(true);
   };
 
-  // Maneja el cambio en el input de nueva opción
-  const handleNewOptionChange = (e) => {
-    setNewOption(e.target.value);
+  const handleDeleteAnswer = (id) => {
+    const updatedAnswers = answers.filter((a) => a.id !== id);
+    setAnswers(updatedAnswers);
+    if (updatedAnswers.length === 0) setQuestionPrinted(false);
   };
 
-  // Agrega una nueva opción al selector
-  const addNewOption = () => {
-    if (newOption.trim() !== "") {
-      const newId =
-        options.length > 0 ? Math.max(...options.map((o) => o.id)) + 1 : 1;
-      setOptions([...options, { id: newId, text: newOption }]);
-      setNewOption("");
-      setShowForm(false);
-    }
+  const handleConditionChange = (id, value) => {
+    const updatedAnswers = answers.map((a) =>
+      a.id === id ? { ...a, condition: value } : a
+    );
+    setAnswers(updatedAnswers);
   };
 
   return (
-    <div className="p-4 border rounded shadow-sm m-auto" style={{ width: '96%' }}>
-      <div className="mt-4">
-        {showForm ? (
-          <div className="flex flex-col items-start gap-2 mt-0">
+    <div
+      className="p-4 border rounded shadow-sm"
+      style={{ width: "94%", margin: "auto" }}
+    >
+      <div className="mb-3">
+        {!showForm ? (
+          <button
+            className="btn btn-link text-decoration-none p-0"
+            onClick={() => setShowForm(true)}
+          >
+            + Agregar opción personalizada
+          </button>
+        ) : (
+          <div className="d-flex flex-column gap-2">
             <input
               type="text"
-              className="p-2 border rounded w-100"
-              placeholder="Escriba su nueva opción"
-              value={newOption}
-              onChange={handleNewOptionChange}
+              className="form-control"
+              placeholder="Escribe la nueva respuesta"
+              value={newAnswer}
+              onChange={(e) => setNewAnswer(e.target.value)}
             />
-            <div className="d-flex gap-2 mt-2 justify-content-center">
-              {newOption.trim() !== "" && (
-                <button
-                  className="px-2 py-2 rounded m-1"
-                  style={{ backgroundColor: 'rgba(175, 14, 110, 0.717)', color: 'white' }}
-                  onClick={addNewOption}
-                >
-                  Agregar
-                </button>
-              )}
+            <div className="d-flex justify-content-center gap-2">
               <button
-                className="bg-gray-300 text-gray-700 px-2 py-2 rounded m-1"
-                style={{ backgroundColor: '#6c757d', color: 'white' }}
+                className="btn"
+                style={{
+                  backgroundColor: "rgba(175, 14, 110, 0.717)",
+                  color: "white",
+                }}
+                onClick={handleAddAnswer}
+              >
+                Guardar
+              </button>
+              <button
+                className="btn btn-secondary"
                 onClick={() => {
                   setShowForm(false);
-                  setNewOption("");
+                  setNewAnswer("");
                 }}
               >
                 Cancelar
               </button>
             </div>
           </div>
-        ) : (
-          <button
-            className="text-blue-500 underline"
-            onClick={() => setShowForm(true)}
-          >
-            + Agregar opción personalizada
-          </button>
         )}
       </div>
 
-      <div className="flex mt-4 my-3">
-        <div className="w-1/2 pr-2">
-          <select className="w-full p-2 border rounded text-blue-500">
-            <option>Seleccione una opción</option>
-            <option>Si</option>
-            <option>No</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1 px-2">
-          Lista de respuestas:
-        </label>
-        <br />
-        <select
-          className="w-full p-2 border rounded"
-          value={selectedOption}
-          onChange={handleSelectChange}
-        >
-          {options.map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.text}
-            </option>
-          ))}
-        </select>
-      </div>
+      {questionPrinted && (
+        <>
+          <hr />
+          <h5 className="fw-bold">{question}</h5>
+          <div className="mt-3">
+            <label className="form-label">Respuestas guardadas:</label>
+            {answers.map((ans) => (
+              <div
+                key={ans.id}
+                className="d-flex align-items-center gap-2 mb-2"
+              >
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDeleteAnswer(ans.id)}
+                >
+                  ✕
+                </button>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={ans.text}
+                  onChange={(e) =>
+                    setAnswers(
+                      answers.map((a) =>
+                        a.id === ans.id ? { ...a, text: e.target.value } : a
+                      )
+                    )
+                  }
+                />
+                <select
+                  className="form-select w-auto"
+                  value={ans.condition}
+                  onChange={(e) =>
+                    handleConditionChange(ans.id, e.target.value)
+                  }
+                >
+                  <option>Sí</option>
+                  <option>No</option>
+                </select>
+              </div>
+            ))}
+            {answers.length > 0 && (
+              <div className="mt-4">
+                <label className="form-label">
+                  Selecciona una respuesta guardada:
+                </label>
+                <select className="form-select">
+                  {answers.map((ans) => (
+                    <option key={ans.id} value={ans.text}>
+                      {ans.text} ({ans.condition})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
