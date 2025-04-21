@@ -110,3 +110,15 @@
   min-width: 50px;
   text-align: center;
 }
+
+/* Centrado horizontal y vertical de los títulos (th) */
+th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Centrado horizontal y vertical de las celdas (td) */
+td {
+  text-align: center;
+  vertical-align: middle;
+}
