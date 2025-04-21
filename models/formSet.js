@@ -1,0 +1,50 @@
+const db = require('../config/db');
+
+const FormSet = {
+    getAll: () => {
+        return db('form_set')
+          .join('clients', 'form_set.idClient', '=', 'clients.id') // Relacionamos con la tabla de clientes
+          .join('users as creator', 'form_set.created_by', '=', 'creator.id') // Relacionamos con el creador
+          .join('users as updater', 'form_set.updated_by', '=', 'updater.id') // Relacionamos con el editor
+          .select(
+            'form_set.id',
+            'form_set.title', // Usamos 'title' en lugar de 'form_name'
+            'form_set.description', // Usamos 'description'
+            'form_set.creation_date', // Usamos 'creation_date'
+            'form_set.updated_date', // Usamos 'updated_date'
+            // Usamos la expresión CASE para transformar el valor de 'state' en texto
+            db.raw(`CASE WHEN form_set.state = 1 THEN 'Activo' WHEN form_set.state = 0 THEN 'Inactivo' ELSE 'Desconocido' END as state`),
+            'clients.client as client_name', // Nombre del cliente
+            // Concatenamos el primer nombre y apellido del creador
+            db.raw('CONCAT(creator.firstname, " ", creator.lastname) as created_by_name'),
+            // Concatenamos el primer nombre y apellido del editor
+            db.raw('CONCAT(updater.firstname, " ", updater.lastname) as updated_by_name')
+          );
+    },          
+
+    getById: (id) => db('form_set').where({ id }).first(),
+
+    getByClients: (clientIdsArray) => {
+        return db('form_set')
+            .whereIn('idClient', clientIdsArray)
+            .select('*');
+    },
+
+    create: (data) => db('form_set').insert(data),
+
+    update: (id, data) => db('form_set').where({ id }).update(data),
+
+    toggleState: (id) => {
+        return db('form_set')
+            .where({ id })
+            .first()
+            .then(form => {
+                if (!form) return null;
+                return db('form_set').where({ id }).update({ state: !form.state });
+            });
+    },
+
+    delete: (id) => db('form_set').where({ id }).del()
+};
+
+module.exports = FormSet;
