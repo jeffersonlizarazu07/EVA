@@ -428,22 +428,31 @@ function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
 }
 
 const SelectorQuestion = () => {
-  const [question, setQuestion] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [newAnswer, setNewAnswer] = useState("");
+  const [activeTab, setActiveTab] = useState("multiple_responses");
+
+  // Para multiple_responses
+  const [responses, setResponses] = useState([]);
+  const [showFormMultiple, setShowFormMultiple] = useState(false);
+  const [newMultipleAnswer, setNewMultipleAnswer] = useState("");
+
+  // Para boolean_select
   const [answers, setAnswers] = useState([]);
   const [questionPrinted, setQuestionPrinted] = useState(false);
+  const [showFormBoolean, setShowFormBoolean] = useState(false);
+  const [newBooleanAnswer, setNewBooleanAnswer] = useState("");
+  const [question, setQuestion] = useState("");
 
+  // Boolean_select functions
   const handleAddAnswer = () => {
-    if (newAnswer.trim() === "") return;
+    if (newBooleanAnswer.trim() === "") return;
     const nuevaRespuesta = {
       id: Date.now(),
-      text: newAnswer,
+      text: newBooleanAnswer,
       condition: "Sí",
     };
     setAnswers([...answers, nuevaRespuesta]);
-    setNewAnswer("");
-    setShowForm(false);
+    setNewBooleanAnswer("");
+    setShowFormBoolean(false);
     setQuestionPrinted(true);
   };
 
@@ -460,109 +469,240 @@ const SelectorQuestion = () => {
     setAnswers(updatedAnswers);
   };
 
+  // Multiple_responses functions
+  const handleAddMultipleResponse = () => {
+    if (newMultipleAnswer.trim() === "") return;
+    setResponses([...responses, newMultipleAnswer.trim()]);
+    setNewMultipleAnswer("");
+    setShowFormMultiple(false);
+  };
+
+  const handleRemoveResponse = (index) => {
+    const updated = responses.filter((_, i) => i !== index);
+    setResponses(updated);
+  };
+
   return (
     <div
       className="p-4 border rounded shadow-sm"
       style={{ width: "94%", margin: "auto" }}
     >
-      <div className="mb-3">
-        {!showForm ? (
+      {/* Tabs */}
+      <ul
+        className="nav nav-tabs mb-3 border-0"
+        style={{ flexDirection: "row" }}
+      >
+        <li className="nav-item">
           <button
-            className="btn btn-link text-decoration-none p-0"
-            onClick={() => setShowForm(true)}
+            className="nav-link border-0"
+            style={{
+              backgroundColor:
+                activeTab === "boolean_select" ? "#495057" : "#adb5bd",
+              color: "white",
+              borderRadius: "0.375rem 0.375rem 0 0", // Bordes redondeados arriba
+            }}
+            onClick={() => setActiveTab("boolean_select")}
           >
-            + Agregar opción personalizada
+            Respuesta única
           </button>
-        ) : (
-          <div className="d-flex flex-column gap-2">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Escribe la nueva respuesta"
-              value={newAnswer}
-              onChange={(e) => setNewAnswer(e.target.value)}
-            />
-            <div className="d-flex justify-content-center gap-2">
-              <button
-                className="btn"
-                style={{
-                  backgroundColor: "rgba(175, 14, 110, 0.717)",
-                  color: "white",
-                }}
-                onClick={handleAddAnswer}
-              >
-                Guardar
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowForm(false);
-                  setNewAnswer("");
-                }}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+        </li>
+        <li className="nav-item">
+          <button
+            className="nav-link border-0"
+            style={{
+              backgroundColor: activeTab === "multiple_responses" ? "#495057" : "#adb5bd",
+              color: "white",
+              borderRadius: "0.375rem 0.375rem 0 0",
+              border: "none",
+              boxShadow: "none",
+              backgroundImage: "none",
+              background: `${activeTab === "multiple_responses" ? "#495057" : "#adb5bd"} !important`,
+            }} 
+            onClick={() => setActiveTab("multiple_responses")}
+          >
+            Respuestas Abiertas
+          </button>
+        </li>
+      </ul>
 
-      {questionPrinted && (
+      {/* Multiple Responses */}
+      {activeTab === "multiple_responses" && (
         <>
-          <hr />
-          <h5 className="fw-bold">{question}</h5>
-          <div className="mt-3">
-            <label className="form-label">Respuestas guardadas:</label>
-            {answers.map((ans) => (
-              <div
-                key={ans.id}
-                className="d-flex align-items-center gap-2 mb-2"
+          <label className="form-label"></label>
+          <ul className="list-group">
+            {responses.map((res, index) => (
+              <li
+                key={index}
+                className="list-group-item d-flex justify-content-between align-items-center"
               >
+                {res}
                 <button
-                  className="btn btn-danger btn-sm"
-                  onClick={() => handleDeleteAnswer(ans.id)}
+                  className="btn btn-sm btn-danger"
+                  onClick={() => handleRemoveResponse(index)}
                 >
-                  ✕
+                  Eliminar
                 </button>
+              </li>
+            ))}
+          </ul>
+
+          {!showFormMultiple ? (
+            <button
+              className="btn btn-link text-decoration-none p-0"
+              onClick={() => setShowFormMultiple(true)}
+            >
+              + Agregar opción personalizada
+            </button>
+          ) : (
+            <div className="d-flex flex-column gap-2">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Escribe la nueva respuesta"
+                value={newMultipleAnswer}
+                onChange={(e) => setNewMultipleAnswer(e.target.value)}
+              />
+              <div className="d-flex justify-content-center gap-2">
+                <button
+                  className="btn btn-success"
+                  onClick={handleAddMultipleResponse}
+                >
+                  Guardar
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowFormMultiple(false);
+                    setNewMultipleAnswer("");
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Select con respuestas creadas */}
+          {responses.length > 0 && (
+            <div className="mt-4">
+              <label className="form-label">
+                Selecciona una respuesta guardada:
+              </label>
+              <select className="form-select">
+                {responses.map((res, idx) => (
+                  <option key={idx} value={res}>
+                    {res}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Boolean Select */}
+      {activeTab === "boolean_select" && (
+        <>
+          <div className="mb-3">
+            {!showFormBoolean ? (
+              <button
+                className="btn btn-link text-decoration-none p-0"
+                onClick={() => setShowFormBoolean(true)}
+              >
+                + Agregar opción personalizada
+              </button>
+            ) : (
+              <div className="d-flex flex-column gap-2">
                 <input
                   type="text"
                   className="form-control"
-                  value={ans.text}
-                  onChange={(e) =>
-                    setAnswers(
-                      answers.map((a) =>
-                        a.id === ans.id ? { ...a, text: e.target.value } : a
-                      )
-                    )
-                  }
+                  placeholder="Escribe la nueva respuesta"
+                  value={newBooleanAnswer}
+                  onChange={(e) => setNewBooleanAnswer(e.target.value)}
                 />
-                <select
-                  className="form-select w-auto"
-                  value={ans.condition}
-                  onChange={(e) =>
-                    handleConditionChange(ans.id, e.target.value)
-                  }
-                >
-                  <option>Sí</option>
-                  <option>No</option>
-                </select>
-              </div>
-            ))}
-            {answers.length > 0 && (
-              <div className="mt-4">
-                <label className="form-label">
-                  Selecciona una respuesta guardada:
-                </label>
-                <select className="form-select">
-                  {answers.map((ans) => (
-                    <option key={ans.id} value={ans.text}>
-                      {ans.text} ({ans.condition})
-                    </option>
-                  ))}
-                </select>
+                <div className="d-flex justify-content-center gap-2">
+                  <button
+                    className="btn"
+                    style={{
+                      backgroundColor: "rgba(175, 14, 110, 0.717)",
+                      color: "white",
+                    }}
+                    onClick={handleAddAnswer}
+                  >
+                    Guardar
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setShowFormBoolean(false);
+                      setNewBooleanAnswer("");
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </div>
             )}
           </div>
+
+          {questionPrinted && (
+            <>
+              <hr />
+              <h5 className="fw-bold">{question}</h5>
+              <div className="mt-3">
+                <label className="form-label">Respuestas guardadas:</label>
+                {answers.map((ans) => (
+                  <div
+                    key={ans.id}
+                    className="d-flex align-items-center gap-2 mb-2"
+                  >
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDeleteAnswer(ans.id)}
+                    >
+                      ✕
+                    </button>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={ans.text}
+                      onChange={(e) =>
+                        setAnswers(
+                          answers.map((a) =>
+                            a.id === ans.id ? { ...a, text: e.target.value } : a
+                          )
+                        )
+                      }
+                    />
+                    <select
+                      className="form-select w-auto"
+                      value={ans.condition}
+                      onChange={(e) =>
+                        handleConditionChange(ans.id, e.target.value)
+                      }
+                    >
+                      <option>Sí</option>
+                      <option>No</option>
+                    </select>
+                  </div>
+                ))}
+                {answers.length > 0 && (
+                  <div className="mt-4">
+                    <label className="form-label">
+                      Selecciona una respuesta guardada:
+                    </label>
+                    <select className="form-select">
+                      {answers.map((ans) => (
+                        <option key={ans.id} value={ans.text}>
+                          {ans.text} ({ans.condition})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

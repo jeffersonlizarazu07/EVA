@@ -63,6 +63,9 @@ export default function SurveyBlocks() {
 
   const question = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const nombreInput = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const ponderacionInput = useInput({ defaultValue: "", validate: /^[0-9]*$/ });
+  const posicionInput = useInput({ defaultValue: "", validate: /^[0-9]*$/ });
   const questionType = useInput({ defaultValue: "", validate: /^[A-Za-z_]+$/ });
   const section = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const percentage = useInput({
@@ -543,9 +546,9 @@ export default function SurveyBlocks() {
                         id="question"
                         className="input-new"
                         placeholder=" "
-                        value={description.input}
+                        value={nombreInput.input}
                         onChange={(e) =>
-                          description.handleChange(e.target.value)
+                          nombreInput.handleChange(e.target.value)
                         }
                         required
                       />
@@ -561,9 +564,9 @@ export default function SurveyBlocks() {
                         id="question"
                         className="input-new"
                         placeholder=" "
-                        value={description.input}
+                        value={ponderacionInput.input}
                         onChange={(e) =>
-                          description.handleChange(e.target.value)
+                          ponderacionInput.handleChange(e.target.value)
                         }
                         required
                       />
@@ -579,9 +582,9 @@ export default function SurveyBlocks() {
                         id="question"
                         className="input-new"
                         placeholder=" "
-                        value={description.input}
+                        value={posicionInput.input}
                         onChange={(e) =>
-                          description.handleChange(e.target.value)
+                          posicionInput.handleChange(e.target.value)
                         }
                         required
                       />
