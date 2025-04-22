@@ -1,6 +1,4 @@
 const db = require('../config/db');
-//console.log('estas essssssssssssdb:', db);
-
 class AnswerModel {
     createAnswer(data) {  // crear la respuesta que envian desde el link 
         const validData = {
@@ -41,6 +39,7 @@ class AnswerModel {
             return answer; // Devuelve el resultado de la actualización (número de filas afectadas)
         } catch (error) {
             throw new Error('Error updating answer: ' + error.message);
+
         }
     }
 
@@ -114,7 +113,6 @@ class AnswerModel {
             throw error;
         }
     }
-
 }
 
 module.exports = AnswerModel;

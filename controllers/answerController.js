@@ -1,4 +1,5 @@
 
+
 const AnswerModel = require('../models/answerModel');
 const { createAnswer } =  require('../models/answerModel')
 const answerModel = new AnswerModel();  // Importamos el modelo
@@ -8,22 +9,27 @@ const { body, validationResult } = require('express-validator');
 const { check } = require('express-validator');
 
 
-
 class AnswerController {
 
     // Obtiene todas las respuestas
-    async getAllAnswers(req, res) {
+    async  getAllAnswers(req, res) {
         try {
-            const answers = await AnswerModel.getAllAnswers();
-            if (!answers || answers.length === 0) {
-                return res.status(404).json({ status: 404, message: "No hay respuestas registradas." });
-            }
-            return res.status(200).json({ status: 200, message: "Respuestas obtenidas correctamente.", data: answers });
+            // Llamamos al método getAll del modelo para obtener todas las respuestas
+            const answers = await answerModel.getAll();
+            // Enviamos la respuesta con los datos obtenidos
+            res.status(200).json({
+                success: true,
+                data: answers
+            });
         } catch (error) {
-            console.error(`Error en getAllAnswers: ${error.message}`);
-            return res.status(500).json({ status: 500, message: "Error al obtener las respuestas." });
+            console.error('Error al obtener respuestas:', error.message);
+            res.status(500).json({
+                success: false,
+                message: 'Hubo un error al obtener las respuestas'
+            });
         }
     }
+    
 
 
     // Función para calcular el porcentaje
@@ -96,7 +102,7 @@ class AnswerController {
         const { id } = req.params;
         console.log(`id recibido: ${id}`);
         try {
-            const answer = await AnswerModel.getAnswerById(id);
+            const answer = await answerModel.getById(id);
             if (!answer) {
                 console.log('respuest encontrada', answer)
                 return res.status(404).json({ status: 404, message: `La respuesta con el ID: ${id} no fue encontrada.` });
@@ -370,53 +376,57 @@ class AnswerController {
             }
         }
 
-    // Controlador para manejar el post de respuestas
-    async postAnswer(req, res) {
-        console.log("Req.body recibido:", req.body);
+
+    
+        // Controlador para manejar el post de respuestas
+        async postAnswer(req, res) {
+            try {
+                console.log("Datos recibidos en req.body:", req.body);
         
-        try {
-            const answers = [];
-    
-            for (const association of req.body) {
-                const { answer, question_id, survey_id } = association; // ← Extraer survey_id
-    
-                // Verificar todos los datos requeridos
-                if (!answer || !question_id || !survey_id) {
+                // Asegúrate de que el campo "answer" esté presente (no "answers")
+                if (!req.body.answer) {
                     return res.status(400).json({
                         status: 400,
-                        message: 'Faltan datos necesarios (respuesta, ID de pregunta o ID de encuesta).'
+                        message: 'El campo "answer" es requerido'
                     });
                 }
-    
-                // Incluir survey_id en los datos que se pasan al modelo
-                const newAnswer = await answerModel.createAnswer({
-                    answer: answer,
-                    question_id: question_id,
-                    survey_id: survey_id  // ← Pasar el survey_id al modelo
+        
+                // Crear una nueva respuesta
+                const result = await answerModel.createAnswer(req.body);
+                
+                console.log("Resultado de la inserción:", result);
+                const date = req.body.date || new Date().toISOString();
+                
+                const newAnswer = {
+                    id: result,
+                    survey_id: req.body.survey_id,
+                    answer: req.body.answer,
+                    question_id: req.body.question_id,
+                    date: date
+                };
+                
+                console.log("Respuesta creada exitosamente:", newAnswer);
+        
+                res.status(201).json({
+                    status: 201,
+                    message: 'Respuesta creada exitosamente',
+                    answer: newAnswer
                 });
-    
-                answers.push(newAnswer);
+            } catch (error) {
+                console.error("Error al crear la respuesta:", error);
+                res.status(500).json({
+                    status: 500,
+                    message: 'Error al crear la respuesta',
+                    error: error.message
+                });
             }
-            console.log("Respuestas creadas exitosamente:", answers);
-    
-            return res.status(201).json({
-                status: 201,
-                message: 'Respuesta creada correctamente.',
-                data: answers
-            });
-        } catch (error) {
-            console.error(`Error al guardar las respuestas: ${error.message}`);
-            return res.status(500).json({
-                status: 500,
-                message: 'Error interno del servidor.',
-                error: error.message
-            });
         }
-    }
-    
-    
 
-    async putAnswer(req, res) {
+
+
+
+        
+    /*async putAnswer(req, res) {
         const id = req.params.id; // Obtenemos el ID desde los parámetros de la URL
         const { answer, question_id } = req.body;
 
@@ -456,13 +466,29 @@ class AnswerController {
                 message: `Error al actualizar la respuesta: ${error.message}`,
             });
         }
-    }
+    }*/
+        async updateAnswer(req, res) {
+            const { id } = req.params; // Asumiendo que el id se pasa en los parámetros de la URL
+            const data = req.body; // Los nuevos datos que se deben actualizar
+        
+            try {
+                const result = await answerModel.update(id, data);
+                
+                if (result === 0) { // Si no se actualizó ninguna fila
+                    return res.status(404).json({ message: 'error al actualizar' });
+                }
+        
+                return res.status(200).json({ message: 'actualizada con exito' });
+            } catch (error) {
+                return res.status(500).json({ message: error.message });
+            }
+        }
 
     // Elimina una respuesta
     async deleteAnswer(req, res) {
         const { id } = req.params;
         try {
-            const deleted = await AnswerModel.deleteAnswer(id);
+            const deleted = await answerModel.delete(id);
             if (deleted === 0) {
                 return res.status(404).json({ status: 404, message: `La respuesta con el ID: ${id} no fue encontrada.` });
             }
