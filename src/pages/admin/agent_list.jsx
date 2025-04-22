@@ -191,7 +191,7 @@ const AdminList = () => {
 
   // MODALS //
 
-  // Esta función abre el modal ya sea para registrar o editar un usuario
+  // abrir el modal para seguir con el monitoreo
   const openModal = (op, admin) => {
     setOperation(op);
 
