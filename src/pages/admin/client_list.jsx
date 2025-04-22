@@ -13,39 +13,62 @@ import { SketchPicker } from "react-color";
 import { useStateManager } from "react-select";
 
 export default function Client_list() {
+  // Estado para saber si estoy creando (1) o editando (2)
   const [operation, setOperation] = useState([1]);
+  // Guarda el ID del cliente que se está editando
   const [idToEdit, setidToEdit] = useState(null);
+  // Guarda el logo actual del cliente a editar
   const [logoEdit, setLogoToEdit] = useState("");
+  // Título del modal que se muestra (crear/editar)
   const [title, setTitle] = useState();
+  // Campos seleccionados en la tabla (solo ciertos campos)
   const selectedKeys = ["id", "client", "state"];
+  // Datos de los clientes traídos de la API
   const [data, setData] = useState([]);
+  // Archivo del logo que selecciona el usuario
   const [selectedFile, setSelectedFile] = useState(null);
+  // Mostrar u ocultar el picker de color principal
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
+  // Mostrar u ocultar el picker de color secundario
   const [displayColorPicker2, setDisplayColorPicker2] = useState(false);
-  const [error,setError]=useState('')
+  // Mostrar error en validación
+  const [error, setError] = useState("");
+  // Color principal del cliente
   const [colors1, setColors1] = useState("#FFFFFF");
+  // Color secundario del cliente
   const [colors2, setColors2] = useState("#FFFFFF");
-  const [previewUrl,setPreviewUrl]=useState(null)
+  // Vista previa del logo cargado
+  const [previewUrl, setPreviewUrl] = useState(null);
+  // Mostrar/Ocultar el color picker 1
   const [showColorPicker, setShowColorPicker] = useState(false);
+  // Mostrar/Ocultar el color picker 2
   const [showColorPicker2, setShowColorPicker2] = useState(false);
+  // URL base de la API para clientes
   const url = "http://localhost:3000/api/clients";
+  // Hook para traducciones
   const { t, i18n } = useTranslation();
 
+  // Estados del formulario
   const client = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const logo = useInput({ defaultValue: "", validate: "" });
   const estado = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
 
+  // Trae el token y el idioma desde el contexto del usuario logueado
   const { accessToken, languageUser } = useContext(UserContext);
-  useEffect(() => {
-    fetchData();
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]); // Arreglo dependiente de que se tenga languageUser para carga de idioma
 
+  // Efecto que se ejecuta al montar o cuando cambia el idioma del usuario
+  useEffect(() => {
+    fetchData(); // Trae todos los clientes
+    i18n.changeLanguage(languageUser); // Cambia el idioma
+  }, [languageUser]); // Dependencia del idioma
+
+  // Configuración para enviar formularios con archivos y cookies
   const config = {
     withCredentials: true,
-    'Content-Type': 'multipart/form-data',
+    "Content-Type": "multipart/form-data",
   };
 
+  // Función para obtener los datos de clientes desde la API
   const fetchData = async () => {
     try {
       const response = await axios.get(url, config);
@@ -55,15 +78,17 @@ export default function Client_list() {
       console.error("Error fetching data:", error);
     }
   };
+
+  // Abre el modal y carga los datos del cliente seleccionado
   const openModalCont = (clientData) => {
     client.handleChange(clientData?.client || "");
     estado.handleChange(clientData?.state || "");
     logo.handleChange(clientData?.logo || "");
-    setColors1(clientData?.color_tag1|| "");
-    setColors2(clientData?.color_tag2|| "");
+    setColors1(clientData?.color_tag1 || "");
+    setColors2(clientData?.color_tag2 || "");
   };
 
-
+  // Activa un cliente (estado = 1)
   const activation = (clientData) => {
     const url = `http://localhost:3000/api/clients`;
     const id = clientData.id;
@@ -72,6 +97,7 @@ export default function Client_list() {
     const parametros = {
       state: 1,
     };
+
     smallAlertDelete
       .fire({
         text: `${t("alertActivate.TheClient")} ${name} ${t(
@@ -102,9 +128,11 @@ export default function Client_list() {
             console.error(error);
           }
         }
-        fetchData();
+        fetchData(); // Recarga los datos después de activar
       });
   };
+
+  // Desactiva un cliente (estado = 0)
   const deactivation = (clientData) => {
     const url = `http://localhost:3000/api/clients`;
     const id = clientData.id;
@@ -112,6 +140,7 @@ export default function Client_list() {
     const parametros = {
       state: 0,
     };
+
     smallAlertDelete
       .fire({
         text: `${t("alertActivate.TheClient")} ${name} ${t(
@@ -131,7 +160,7 @@ export default function Client_list() {
                 "alertActivate.SuccessAlert"
               )}`,
             });
-            fetchData();
+            fetchData(); // Recarga los datos después de desactivar
           } catch (error) {
             Toast.fire({
               icon: "error",
@@ -142,30 +171,38 @@ export default function Client_list() {
             console.error(error);
           }
         }
-        fetchData();
+        fetchData(); // Se vuelve a llamar por si no se confirma pero igual refrescamos
       });
   };
 
+  // Manejo del cambio de archivo (solo acepta JPEG y PNG)
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    // Verificar que el archivo seleccionado sea JPEG o PNG
+
+    // Verifica el tipo de archivo
     if (
       selectedFile &&
       (selectedFile.type === "image/jpeg" || selectedFile.type === "image/png")
     ) {
       setSelectedFile(selectedFile);
-      if (selectedFile){
-          console.log("Si se subio un archivo")
+
+      if (selectedFile) {
+        console.log("Si se subio un archivo");
       }
 
-      operation ===2 ? document.getElementById("logoToEditOriginal").style.display="none":null
-      const reader = new FileReader()
-      reader.onloadend=()=>{
-          setPreviewUrl(reader.result);
-      }
+      // Si está en modo editar, oculta la imagen original
+      operation === 2
+        ? (document.getElementById("logoToEditOriginal").style.display = "none")
+        : null;
+
+      // Crea una vista previa del archivo subido
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result);
+      };
       reader.readAsDataURL(selectedFile);
     } else {
-      // Mostrar un mensaje de error o realizar alguna acción en caso de no ser un archivo JPEG o PNG
+      // Si el archivo no es válido
       console.log("Por favor selecciona un archivo JPEG o PNG.");
     }
   };
@@ -182,10 +219,10 @@ export default function Client_list() {
 
   const openModal = (op, clientData) => {
     setOperation(op);
-    setError('')
+    setError("");
     if (op == 1) {
       setSelectedFile(null);
-      setPreviewUrl(null)
+      setPreviewUrl(null);
       setColors1("#FFFFFF");
       setColors2("#FFFFFF");
       setTitle(t("clientModal.NewClient"));
@@ -197,9 +234,9 @@ export default function Client_list() {
       client.handleChange(clientData?.client || "");
       setLogoToEdit(clientData?.logo || "");
       setidToEdit(clientData?.id);
-      setColors1(clientData?.color_tag1|| "")
-      setColors2(clientData?.color_tag2|| "")
-      console.log(idToEdit)
+      setColors1(clientData?.color_tag1 || "");
+      setColors2(clientData?.color_tag2 || "");
+      console.log(idToEdit);
     }
   };
 
@@ -217,60 +254,61 @@ export default function Client_list() {
     formData.append("state", 1);
 
     if (id == null) {
-        // Aquí se crea un nuevo cliente
-        try {
-            const clientExists = data.some(item => item.client === client.input);
-            if (clientExists) {
-                setError("El nombre del cliente ya existe");
-                return;
-            }
-            const response = await axios.post(`${urlpost}`, formData, {
-                withCredentials: true,  
-            });
-            console.log("Respuesta del servidor:", response.data);
-            if (response.data.status) {
-                setColors1("#FFFFFF");
-                setColors2("#FFFFFF");
-                setSelectedFile(null);
-                setError('');
-                fetchData();
-                document.getElementById("btnCerrar").click();
-                Toast.fire({
-                    icon: "success",
-                    title: `${t("alertActivate.TheClient")} ${client.input} ${t("alertActivate.Created")}`
-                });
-            }
-        } catch (error) {
-            console.error("Error subiendo el archivo:", error);
+      // Aquí se crea un nuevo cliente
+      try {
+        const clientExists = data.some((item) => item.client === client.input);
+        if (clientExists) {
+          setError("El nombre del cliente ya existe");
+          return;
         }
+        const response = await axios.post(`${urlpost}`, formData, {
+          withCredentials: true,
+        });
+        console.log("Respuesta del servidor:", response.data);
+        if (response.data.status) {
+          setColors1("#FFFFFF");
+          setColors2("#FFFFFF");
+          setSelectedFile(null);
+          setError("");
+          fetchData();
+          document.getElementById("btnCerrar").click();
+          Toast.fire({
+            icon: "success",
+            title: `${t("alertActivate.TheClient")} ${client.input} ${t(
+              "alertActivate.Created"
+            )}`,
+          });
+        }
+      } catch (error) {
+        console.error("Error subiendo el archivo:", error);
+      }
     } else {
-        // Aquí se realiza una actualización del cliente con PUT
-        const urlput = `http://localhost:3000/api/clients/${id}`;
-        
-        try {
-            const response = await axios.put(urlput, formData, {
-                    'Content-Type': 'multipart/form-data', 
-                    withCredentials: true
-            });
-            console.log("Respuesta del servidor:", response);
-            if (!response.data.status) {
-                alert("No se realizó la edición del cliente");
-                document.getElementById("btnCerrar").click();
-                console.log(response.data);
-            }
-            Toast.fire({
-                icon: "success",
-                title: `El cliente ${client.input} se ha editado exitosamente`,
-            });
-            fetchData();
-            document.getElementById("btnCerrar").click();
-        } catch (error) {
-            console.error("Error actualizando el cliente:", error);
-        }
-    }
-};
+      // Aquí se realiza una actualización del cliente con PUT
+      const urlput = `http://localhost:3000/api/clients/${id}`;
 
- 
+      try {
+        const response = await axios.put(urlput, formData, {
+          "Content-Type": "multipart/form-data",
+          withCredentials: true,
+        });
+        console.log("Respuesta del servidor:", response);
+        if (!response.data.status) {
+          alert("No se realizó la edición del cliente");
+          document.getElementById("btnCerrar").click();
+          console.log(response.data);
+        }
+        Toast.fire({
+          icon: "success",
+          title: `El cliente ${client.input} se ha editado exitosamente`,
+        });
+        fetchData();
+        document.getElementById("btnCerrar").click();
+      } catch (error) {
+        console.error("Error actualizando el cliente:", error);
+      }
+    }
+  };
+
   const handleClose = () => {
     setDisplayColorPicker(false);
   };
@@ -284,9 +322,9 @@ export default function Client_list() {
     setDisplayColorPicker2(!displayColorPicker);
   };
 
-  const triggerFileInput=()=>{
+  const triggerFileInput = () => {
     document.getElementById("imagenLogo").click();
-  }
+  };
 
   const styles = {
     color: {
@@ -296,7 +334,7 @@ export default function Client_list() {
       background: `${colors1}`,
       border: "1px solid  gray",
     },
-    
+
     swatch: {
       background: "#fff",
       borderRadius: "1px",
@@ -404,10 +442,11 @@ export default function Client_list() {
                 <div className="col m-2">
                   <div className="col m-2 text-center">
                     <img
-                      src={`clientes/${logo.input}`}  
+                      src={`clientes/${logo.input}`}
                       alt="Logo"
                       className="logoModal"
-                      width={100} height={100} 
+                      width={100}
+                      height={100}
                     />
                   </div>
                 </div>
@@ -427,40 +466,42 @@ export default function Client_list() {
               </div>
               <div className="col-12">
                 <div className="row d-flex justify-content-between">
-                <div className="col-6 m-2">
-                  <p>{t("clientTable.selectedColor")}:</p>
-                </div>
-                <div className="col-5">
-                  <div className="row">
-                <div className="col-3 m-2">
-                      <div style={styles.swatch} onClick={handleClick}>
-                      <div style={styles.color}/>
-                    </div>
-                    {displayColorPicker && (
-                      <div style={styles.popover}>
-                        <div style={styles.cover} onClick={handleClose} />
-                        <div className="cuadro" style={{background:colors1}}>
+                  <div className="col-6 m-2">
+                    <p>{t("clientTable.selectedColor")}:</p>
+                  </div>
+                  <div className="col-5">
+                    <div className="row">
+                      <div className="col-3 m-2">
+                        <div style={styles.swatch} onClick={handleClick}>
+                          <div style={styles.color} />
                         </div>
-                      </div>
-                    )}
+                        {displayColorPicker && (
+                          <div style={styles.popover}>
+                            <div style={styles.cover} onClick={handleClose} />
+                            <div
+                              className="cuadro"
+                              style={{ background: colors1 }}
+                            ></div>
+                          </div>
+                        )}
                       </div>
                       <div className="col-1 m-2">
-                      <div style={styles2.swatch} onClick={handle2Click}>
-                      <div style={styles2.color} />
+                        <div style={styles2.swatch} onClick={handle2Click}>
+                          <div style={styles2.color} />
                         </div>
-                      {displayColorPicker2 && (
-                      <div style={styles2.popover}>
-                        <div style={styles2.cover} onClick={handle2Close} />
-                        <div className="cuadro" style={{background:colors2}}>
-                        </div>
+                        {displayColorPicker2 && (
+                          <div style={styles2.popover}>
+                            <div style={styles2.cover} onClick={handle2Close} />
+                            <div
+                              className="cuadro"
+                              style={{ background: colors2 }}
+                            ></div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                      </div>
-                      </div>
+                    </div>
+                  </div>
                 </div>
-                      
-                </div>
-                
               </div>
             </div>
           </div>
@@ -487,25 +528,46 @@ export default function Client_list() {
               <div className="modal-body">
                 <div className="row text-center"></div>
                 <div className="row">
-                 <div className="col-5 m-2 ms-5 text-center ">
-                    {logoEdit && operation===2? (
-                    <img src={`clientes/${logoEdit}`} alt="Logo"  width={150} height={150} id="logoToEditOriginal" className="logoModal m-2"/>
-                    ):null}
-                    {selectedFile? (<img src={previewUrl} alt="Logo"  width={150} height={150}  className="logoModal m-2"/>):null}
-                  </div>      
-                     <div className="col-5 ms-2 mt-5 ">
-                      <div className="mt-4"></div>
-                     <button type="button" className="btn btn-primary" onClick={triggerFileInput}>
-                   <i className="fa-solid fa-arrow-up-from-bracket"></i>
-                  </button>
-                  <input
-                    type="file"
-                    id="imagenLogo"
-                    accept=".jpg, .jpeg, .png"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }} // Ocultar el input
-                  />
-                 <span className="ms-1 text-center" >{operation===2? "Modificar logo":"Añadir un logo "}</span>
+                  <div className="col-5 m-2 ms-5 text-center ">
+                    {logoEdit && operation === 2 ? (
+                      <img
+                        src={`clientes/${logoEdit}`}
+                        alt="Logo"
+                        width={150}
+                        height={150}
+                        id="logoToEditOriginal"
+                        className="logoModal m-2"
+                      />
+                    ) : null}
+                    {selectedFile ? (
+                      <img
+                        src={previewUrl}
+                        alt="Logo"
+                        width={150}
+                        height={150}
+                        className="logoModal m-2"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="col-5 ms-2 mt-5 ">
+                    <div className="mt-4"></div>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={triggerFileInput}
+                    >
+                      <i className="fa-solid fa-arrow-up-from-bracket"></i>
+                    </button>
+                    <input
+                      type="file"
+                      id="imagenLogo"
+                      accept=".jpg, .jpeg, .png"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }} // Ocultar el input
+                    />
+                    <span className="ms-1 text-center">
+                      {operation === 2 ? "Modificar logo" : "Añadir un logo "}
+                    </span>
                   </div>
                   <div className="col m-2 ">
                     <label id="labelAnimation" className="text-center">
@@ -522,9 +584,7 @@ export default function Client_list() {
                       </span>
                     </label>
                   </div>
-                  <div className="row">
-                  
-                  </div>
+                  <div className="row"></div>
                 </div>
                 <div className="row d-flex justify-content-between">
                   <small className="mt-4 ms-3">
@@ -563,7 +623,7 @@ export default function Client_list() {
                     )}
                   </div>
                 </div>
-                {error && <p className='text-danger text-center'>{error}</p>}
+                {error && <p className="text-danger text-center">{error}</p>}
               </div>
               <div className="modal-footer">
                 <button

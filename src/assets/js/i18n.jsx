@@ -63,7 +63,7 @@ import { initReactI18next } from "react-i18next";
               "Admin":"Administrador",
               "Editor":"Editor",
               "SuperAdmin":"SuperAdmin",
-              "Viwer":"Visualizador",
+              "Viwer":"Agente",
               "selectedColor":"Colores seleccionados",
               "colorSelect":"Selecciona dos colores representativos del cliente",
             },
@@ -122,7 +122,7 @@ import { initReactI18next } from "react-i18next";
               "SuperAdmin":"Super Administrador",
               "Admin":"Administrador",
               "Editor":"Editor",
-              "Viwer":"Visualizador",
+              "Viwer":"Agente",
               "Close":"Cerrar",
               "Save":"Guardar",
               "SelectRole":"Seleccione un rol"
@@ -550,7 +550,7 @@ import { initReactI18next } from "react-i18next";
               "Admin": "Administrador",
               "Editor": "Editor",
               "SuperAdmin": "SuperAdmin",
-              "Viwer": "Visualizador"
+              "Viwer": "Agente"
             },
             UserModal: {
               "RegisterUser": "Registrar usuário",
@@ -567,7 +567,7 @@ import { initReactI18next } from "react-i18next";
               "SuperAdmin": "Super Administrador",
               "Admin": "Administrador",
               "Editor": "Editor",
-              "Viwer": "Visualizador",
+              "Viwer": "Agente",
               "Close": "Fechar",
               "Save": "Salvar",
                "SelectRole":"Selecione um papel"

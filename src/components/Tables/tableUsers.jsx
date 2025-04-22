@@ -91,7 +91,7 @@ const TableUsers = ({
                           ? "Administrador"
                           : item.type == 3
                           ? "Editor"
-                          : "Visualizador"
+                          : "Agente"
                         : item[key]}
                     </td>
                   ))}
