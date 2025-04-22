@@ -272,6 +272,7 @@ const SurveyList = () => {
           type: "survey",
           state: 1,
         };
+        console.log("datos del link a crear:", parametros);
         metodo = "post";
       } else if (operation == 2) {
         const titleExists = survey.some(item => item.title === title.input  );
@@ -483,7 +484,7 @@ const SurveyList = () => {
                     disabled={clients.length === 0} // Deshabilitar si no hay clientes
                   >
                     <option value="" disabled>
-                      Seleccione un clientesssssssssssssss
+                      Seleccione un cliente
                     </option>
                     {clients.length > 0 ? (
                       clients.map((client) => (
