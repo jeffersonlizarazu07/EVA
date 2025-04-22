@@ -37,7 +37,14 @@ import "../../assets/css/surveyBlocks.css";
 
 export default function SurveyBlocks() {
   const { id } = useParams();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([{
+    id: 1,
+    nombreBloque: "Bloque 1",
+    question: "¿Cuál es tu nombre?",
+    // type: "textfield_s",
+    select_option: "",
+    selected_answer: ""
+  },]);
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
@@ -157,13 +164,25 @@ export default function SurveyBlocks() {
   };
 
   useEffect(() => {
-    if (!valueConditional) {
+    if (valueConditional && !listConditional) {
+      setListConditional(true);
+    } else if (!valueConditional && listConditional) {
       setListConditional(false);
-      setSingleChoiceData({ options: [], correctAnswer: null });
-      setMultipleChoiceData({ options: [], correctAnswers: [] });
+      if (
+        singleChoiceData.options.length > 0 ||
+        singleChoiceData.correctAnswer !== null
+      ) {
+        setSingleChoiceData({ options: [], correctAnswer: null });
+      }
+      if (
+        multipleChoiceData.options.length > 0 ||
+        multipleChoiceData.correctAnswers.length > 0
+      ) {
+        setMultipleChoiceData({ options: [], correctAnswers: [] });
+      }
     }
-    setListConditional(true);
-  }, [valueConditional]);
+  }, [valueConditional, listConditional, singleChoiceData, multipleChoiceData]);
+  
 
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
@@ -222,10 +241,13 @@ export default function SurveyBlocks() {
         const optionsData = questionDetails?.select_option;
         const optionsDataArray = optionsData.split(",");
         const selectedOption = questionDetails?.selected_answer;
-        
+
         setSelectorData({
-          options: optionsDataArray.map(text => ({ text: text.trim(), checked: false })),
-          selectedOption: selectedOption
+          options: optionsDataArray.map((text) => ({
+            text: text.trim(),
+            checked: false,
+          })),
+          selectedOption: selectedOption,
         });
       }
       id_conditional.handleChange(questionDetails?.id_conditional || null);
@@ -433,6 +455,10 @@ export default function SurveyBlocks() {
       // Aquí puedes manejar el envío de los datos
       console.log("Pregunta válida. Enviar datos...");
     }
+  };
+
+  const handleSelectorChange = (data) => {
+    setSelectorData(data);
   };
 
   return (
@@ -752,7 +778,6 @@ export default function SurveyBlocks() {
                             value={questionCountInput}
                             onChange={(e) => {
                               const value = e.target.value;
-                              // Solo permitir números o vacío
                               if (/^\d*$/.test(value)) {
                                 setQuestionCountInput(value);
                               }
@@ -824,17 +849,9 @@ export default function SurveyBlocks() {
                       {/* Lógica para diferentes tipos de preguntas */}
                       {q.type === "selector_opt" && operation === 1 && (
                         <SelectorQuestion
-                        options={selectorData.options}
-                        selectedOption={selectorData.selectedOption}
-                        onChange={handleSelectorChange}
-                        />
-                      )}
-
-                      {q.type === "check_opt" && operation === 1 && (
-                        <MultipleChoiceQuestion
-                          options={multipleChoiceData.options}
-                          correctAnswers={multipleChoiceData.correctAnswers}
-                          onChange={handleMultipleChoiceChange}
+                          options={selectorData.options}
+                          selectedOption={selectorData.selectedOption}
+                          onChange={handleSelectorChange}
                         />
                       )}
 
@@ -884,7 +901,6 @@ export default function SurveyBlocks() {
                   ))}
                 </div>
               </div>
-              {console.log("questionType.input: ", questionType.input)};
             </div>
             {/* Footer del modal */}
             <div className="modal-footer">

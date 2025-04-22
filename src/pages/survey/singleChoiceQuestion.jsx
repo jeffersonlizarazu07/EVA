@@ -428,33 +428,29 @@ function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
 }
 
 const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
-  const [activeTab, setActiveTab] = useState("multiple_responses");
-  
-  // For multiple_responses - initialize from props if available
+  // Inicializar desde props si están disponibles
   const [responses, setResponses] = useState(
-    options.map(option => option.text) || []
+    options.map((option) => option.text) || []
   );
   const [showFormMultiple, setShowFormMultiple] = useState(false);
   const [newMultipleAnswer, setNewMultipleAnswer] = useState("");
 
-  // Update parent component whenever responses change
+  // Actualizar componente padre cuando responses cambie
   useEffect(() => {
-    // Convert responses to the format expected by the parent
-    const formattedOptions = responses.map(response => ({
+    const formattedOptions = responses.map((response) => ({
       text: response,
-      checked: false
+      checked: false,
     }));
-    
-    // Call the onChange prop to update the parent
+
     if (onChange) {
-      onChange({ 
-        options: formattedOptions, 
-        correctAnswers: [] // Default to no correct answers
+      onChange({
+        options: formattedOptions,
+        correctAnswers: [], // Default a sin respuestas correctas
       });
     }
   }, [responses, onChange]);
 
-  // Multiple_responses functions
+  // Funciones para respuestas múltiples
   const handleAddMultipleResponse = () => {
     if (newMultipleAnswer.trim() === "") return;
     const updatedResponses = [...responses, newMultipleAnswer.trim()];
@@ -473,7 +469,7 @@ const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
       className="p-4 border rounded shadow-sm"
       style={{ width: "94%", margin: "auto" }}
     >
-      <label className="form-label"></label>
+      {/* Lista de respuestas existentes */}
       <ul className="list-group">
         {responses.map((res, index) => (
           <li
@@ -491,15 +487,16 @@ const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
         ))}
       </ul>
 
+      {/* Solo un bloque para agregar opciones */}
       {!showFormMultiple ? (
         <button
-          className="btn btn-link text-decoration-none p-0"
+          className="btn btn-link text-decoration-none p-0 mt-3"
           onClick={() => setShowFormMultiple(true)}
         >
           + Agregar opción personalizada
         </button>
       ) : (
-        <div className="d-flex flex-column gap-2">
+        <div className="d-flex flex-column gap-2 mt-3">
           <input
             type="text"
             className="form-control"
@@ -531,7 +528,7 @@ const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
         </div>
       )}
 
-      {/* Select con respuestas creadas */}
+      {/* Select con respuestas creadas - solo mostrarlo si hay respuestas */}
       {responses.length > 0 && (
         <div className="mt-4">
           <label className="form-label">
@@ -555,20 +552,27 @@ function SelectorQuestionEdit({ options, correctAnswer, onChange }) {
   const [localCorrectAnswer, setLocalCorrectAnswer] = useState(correctAnswer);
 
   useEffect(() => {
-    setLocalOptions(options);
-    setLocalCorrectAnswer(correctAnswer);
+    if (
+      JSON.stringify(localOptions) !== JSON.stringify(options) ||
+      localCorrectAnswer !== correctAnswer
+    ) {
+      setLocalOptions(options);
+      setLocalCorrectAnswer(correctAnswer);
+    }
   }, [options, correctAnswer]);
 
   const removeOption = (index) => {
     const newOptions = localOptions.filter((_, i) => i !== index);
-    setLocalOptions(newOptions);
-
-    const newCorrectAnswers = newOptions
-      .map((option, i) => (option.checked ? i : -1))
-      .filter((index) => index !== -1);
-
-    setLocalCorrectAnswer(newCorrectAnswers);
-    onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
+    if (JSON.stringify(newOptions) !== JSON.stringify(localOptions)) {
+      setLocalOptions(newOptions);
+  
+      const newCorrectAnswers = newOptions
+        .map((option, i) => (option.checked ? i : -1))
+        .filter((index) => index !== -1);
+  
+      setLocalCorrectAnswer(newCorrectAnswers);
+      onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
+    }
   };
 
   // Añadir una nueva opción
@@ -590,13 +594,24 @@ function SelectorQuestionEdit({ options, correctAnswer, onChange }) {
   const handleCheckboxChange = (index) => {
     const newOptions = localOptions.map((option, i) => ({
       ...option,
-      checked: i === index ? !option.checked : option.checked,
+      checked: i === index ? !option.checked : false, // Solo permite una opción seleccionada
     }));
-    setLocalOptions(newOptions);
-
+  
     const newCorrectAnswer = newOptions[index].checked ? index : null;
-    setLocalCorrectAnswer(newCorrectAnswer);
-    onChange({ options: newOptions, correctAnswer: newCorrectAnswer });
+  
+    // Solo actualiza el estado si hay un cambio real
+    if (
+      JSON.stringify(newOptions) !== JSON.stringify(localOptions) ||
+      newCorrectAnswer !== localCorrectAnswer
+    ) {
+      setLocalOptions(newOptions);
+      setLocalCorrectAnswer(newCorrectAnswer);
+  
+      // Llama a onChange solo si hay un cambio
+      if (onChange) {
+        onChange({ options: newOptions, correctAnswer: newCorrectAnswer });
+      }
+    }
   };
 
   return (
