@@ -5,6 +5,8 @@ const answerModel = new AnswerModel();  // Importamos el modelo
 const db = require('../config/db');
 //const { check, validationResult } = require('express-validator');
 const { body, validationResult } = require('express-validator');
+const { check } = require('express-validator');
+
 
 
 class AnswerController {
@@ -369,43 +371,34 @@ class AnswerController {
         }
 
     // Controlador para manejar el post de respuestas
-    async  postAnswer(req, res) {
+    async postAnswer(req, res) {
         console.log("Req.body recibido:", req.body);
-
-        // Validación de los datos usando express-validator
-        await check('*.answer', 'La respuesta es obligatoria').notEmpty().isString().run(req);
-        await check('*.question_id', 'El ID de la pregunta es obligatorio y debe ser un número').isInt().exists().run(req);
-
-        // Obtener los errores de validación
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            console.log("Errores de validación:", errors.array());
-            return res.status(400).json({
-                status: 400,
-                message: 'Error en los datos proporcionados.',
-                errors: errors.array()
-            });
-        }
-
-        // Si la validación es exitosa, procesamos las respuestas
+        
         try {
             const answers = [];
-
-            // Asumiendo que en req.body se envían varias respuestas, por ejemplo, [{ answer, question_id }]
+    
             for (const association of req.body) {
-                const { answer, question_id } = association;
-
-                // Insertar las respuestas en la base de datos usando el modelo
+                const { answer, question_id, survey_id } = association; // ← Extraer survey_id
+    
+                // Verificar todos los datos requeridos
+                if (!answer || !question_id || !survey_id) {
+                    return res.status(400).json({
+                        status: 400,
+                        message: 'Faltan datos necesarios (respuesta, ID de pregunta o ID de encuesta).'
+                    });
+                }
+    
+                // Incluir survey_id en los datos que se pasan al modelo
                 const newAnswer = await answerModel.createAnswer({
                     answer: answer,
-                    question_id: question_id
+                    question_id: question_id,
+                    survey_id: survey_id  // ← Pasar el survey_id al modelo
                 });
-
+    
                 answers.push(newAnswer);
             }
             console.log("Respuestas creadas exitosamente:", answers);
-
-            // Respuesta exitosa
+    
             return res.status(201).json({
                 status: 201,
                 message: 'Respuesta creada correctamente.',
@@ -420,6 +413,8 @@ class AnswerController {
             });
         }
     }
+    
+    
 
     async putAnswer(req, res) {
         const id = req.params.id; // Obtenemos el ID desde los parámetros de la URL

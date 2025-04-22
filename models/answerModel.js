@@ -2,11 +2,10 @@ const db = require('../config/db');
 //console.log('estas essssssssssssdb:', db);
 
 class AnswerModel {
-    createAnswer(data) {
-        // Solo incluir los campos que existen en tu tabla
+    createAnswer(data) {  // crear la respuesta que envian desde el link 
         const validData = {
             survey_id: data.survey_id,
-            answer: data.answer,  // Parece que en la base de datos se llama "answer", aunque en tu objeto lo llamas "answers"
+            answer: data.answer,  
             question_id: data.question_id,
             date: data.date || new Date().toISOString()
         };
