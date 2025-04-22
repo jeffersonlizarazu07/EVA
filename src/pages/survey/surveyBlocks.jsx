@@ -103,14 +103,24 @@ export default function SurveyBlocks() {
 
   /* Selector option */
 
+  const [selectorData, setSelectorData] = useState({
+    options: [],
+    selectedOption: null,
+  });
   const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [options, setOptions] = useState([]);
   const [correctAnswers, setCorrectAnswers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Validar el input de preguntas del modal
+
+  // const [questionType, setQuestionType] = useState("");
+  // const [description, setDescription] = useState("");
+  // const [error, setError] = useState("");
+
   /* ***********************************************************************************************************/
-  /* UseEffect */
+  /* Component Logic*/
   /* ***********************************************************************************************************/
 
   useEffect(() => {
@@ -173,6 +183,9 @@ export default function SurveyBlocks() {
       survey_id.handleChange(idsurvey);
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
+      setSingleChoiceData({ options: [], correctAnswer: null });
+      setMultipleChoiceData({ options: [], correctAnswers: [] });
+      setSelectorData({ options: [], selectedOption: null });
     } else if (op === 2) {
       console.log({ questionDetails });
       setSingleChoiceData({ options: [], correctAnswer: null });
@@ -205,6 +218,16 @@ export default function SurveyBlocks() {
           correctAnswer: answerSelected,
         });
       }
+      if (questionDetails.type == "selector_opt") {
+        const optionsData = questionDetails?.select_option;
+        const optionsDataArray = optionsData.split(",");
+        const selectedOption = questionDetails?.selected_answer;
+        
+        setSelectorData({
+          options: optionsDataArray.map(text => ({ text: text.trim(), checked: false })),
+          selectedOption: selectedOption
+        });
+      }
       id_conditional.handleChange(questionDetails?.id_conditional || null);
       conditional.handleChange(questionDetails?.conditional || "");
       description.handleChange(questionDetails?.question || "");
@@ -220,28 +243,36 @@ export default function SurveyBlocks() {
     var parametros;
     var metodo;
     console.log("??  ", singleChoiceData.correctAnswer);
+
     if (questionType.input.trim() === "" || description.input.trim() === "") {
       setError("Ingresa una pregunta valida.");
     } else {
-      // Asegúrate de que selectedAnswer sea un índice (número) para radio_opt
-      const selectedAnswer =
-        questionType.input === "radio_opt"
-          ? singleChoiceData.correctAnswer
-          : multipleChoiceData.correctAnswers;
+      // Determinar los datos específicos según el tipo de pregunta
+      let selectedAnswer, options, selectedAnswerToString, optionsToSave;
 
-      const options =
-        questionType.input === "radio_opt"
-          ? singleChoiceData.options
-          : multipleChoiceData.options;
-
-      const selectedAnswerToString =
-        questionType.input === "radio_opt"
-          ? selectedAnswer.toString() // Convierte a string para guardarlo
-          : selectedAnswer.join(", "); // Para check_opt, une los valores
-
-      const optionsToSave = options.map((option) => option.text).join(", ");
+      if (questionType.input === "radio_opt") {
+        selectedAnswer = singleChoiceData.correctAnswer;
+        options = singleChoiceData.options;
+        selectedAnswerToString = selectedAnswer
+          ? selectedAnswer.toString()
+          : "";
+        optionsToSave = options.map((option) => option.text).join(", ");
+      } else if (questionType.input === "check_opt") {
+        selectedAnswer = multipleChoiceData.correctAnswers;
+        options = multipleChoiceData.options;
+        selectedAnswerToString = selectedAnswer.join(", ");
+        optionsToSave = options.map((option) => option.text).join(", ");
+      } else if (questionType.input === "selector_opt") {
+        selectedAnswer = selectorData.selectedOption;
+        options = selectorData.options;
+        selectedAnswerToString = selectedAnswer
+          ? selectedAnswer.toString()
+          : "";
+        optionsToSave = options.map((option) => option.text).join(", ");
+      }
 
       if (operation === 1) {
+        // Código para crear nueva pregunta
         parametros = {
           type: questionType.input,
           percentage: 0,
@@ -254,17 +285,18 @@ export default function SurveyBlocks() {
           section: section.input,
           selected_answer:
             questionType.input === "check_opt" ||
-            questionType.input === "radio_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
               ? selectedAnswerToString
               : " ",
           select_option:
             questionType.input === "check_opt" ||
-            questionType.input === "radio_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
               ? optionsToSave
               : "",
         };
         metodo = "post";
-        console.log("parametros: ", parametros);
       } else if (operation === 2) {
         parametros = {
           type: questionType.input,
@@ -276,14 +308,16 @@ export default function SurveyBlocks() {
           id_conditional: id_conditional.input,
           selected_answer:
             questionType.input === "check_opt" ||
-            questionType.input === "radio_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
               ? selectedAnswerToString.length > 1
                 ? selectedAnswerToString
                 : selectedAnswerToString
               : null,
           select_option:
             questionType.input === "check_opt" ||
-            questionType.input === "radio_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
               ? optionsToSave
               : null,
         };
@@ -333,6 +367,7 @@ export default function SurveyBlocks() {
     id_conditional.handleChange(selectedId);
   };
 
+  /* Selector Option */
   const rangeOptions = useMemo(
     () =>
       getRangeOptions(
@@ -368,7 +403,37 @@ export default function SurveyBlocks() {
     setQuestionsList(updatedQuestions);
   };
 
-  /* Selector Option */
+  // Validar el input de preguntas del modal
+
+  const validateInputs = () => {
+    // Validación de questionType: solo letras y guiones bajos
+    const questionTypeValid = /^[A-Za-z_]+$/.test(questionType);
+    const descriptionValid = description.trim() !== "";
+
+    if (!questionTypeValid) {
+      setError(
+        "El tipo de pregunta no es válido. Solo se permiten letras y guiones bajos."
+      );
+      return false;
+    }
+
+    if (!descriptionValid) {
+      setError("La descripción de la pregunta es obligatoria.");
+      return false;
+    }
+
+    // Si pasa todas las validaciones
+    setError(""); // Limpiar cualquier error previo
+    return true;
+  };
+
+  // Función para manejar el envío de la pregunta
+  const handleSubmit = () => {
+    if (validateInputs()) {
+      // Aquí puedes manejar el envío de los datos
+      console.log("Pregunta válida. Enviar datos...");
+    }
+  };
 
   return (
     <div className="App">
@@ -408,7 +473,7 @@ export default function SurveyBlocks() {
                     <div className="card-tools">
                       <button
                         className="btn fw-bold btn-sm acces-tabla"
-                        onClick={() => openModal(1, id_form)}
+                        onClick={() => openModal(1)}
                         data-bs-toggle="modal"
                         data-bs-target="#modalManageQuestion"
                       >
@@ -418,6 +483,50 @@ export default function SurveyBlocks() {
                   </div>
 
                   <div className="card-body ui-sorteable">
+                    {/* Código para traer datos del formulario Crear Bloque */}
+                    {data.map((bloque) => (
+                      <div key={bloque.id} className="shadowbox5 p-3 m-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <h5 className="m-0">
+                            {bloque.nombreBloque || "Bloque sin nombre"}
+                          </h5>
+                          <div className="dropdown">
+                            <button
+                              className="btn btn-outline-dark btn-sm dropdown-toggle"
+                              type="button"
+                              data-bs-toggle="dropdown"
+                            >
+                              ⋮
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end">
+                              <li>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() =>
+                                    console.log("Editar bloque", bloque)
+                                  }
+                                >
+                                  Editar
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() =>
+                                    console.log("Eliminar bloque", bloque)
+                                  }
+                                >
+                                  Eliminar
+                                </button>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        <p className="mb-1">{bloque.question}</p>
+                      </div>
+                    ))}
+
                     {data.map((question) => (
                       <div
                         key={question.id}
@@ -715,10 +824,9 @@ export default function SurveyBlocks() {
                       {/* Lógica para diferentes tipos de preguntas */}
                       {q.type === "selector_opt" && operation === 1 && (
                         <SelectorQuestion
-                          question={q}
-                          onUpdate={(id, updatedData) =>
-                            handleUpdateFromChild(index, updatedData)
-                          }
+                        options={selectorData.options}
+                        selectedOption={selectorData.selectedOption}
+                        onChange={handleSelectorChange}
                         />
                       )}
 
@@ -776,6 +884,7 @@ export default function SurveyBlocks() {
                   ))}
                 </div>
               </div>
+              {console.log("questionType.input: ", questionType.input)};
             </div>
             {/* Footer del modal */}
             <div className="modal-footer">
