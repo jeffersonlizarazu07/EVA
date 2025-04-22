@@ -1,45 +1,38 @@
-const db = require('../config/db');
+const db = require("../config/db"); // Importo la configuración de la base de datos
 
 const Agent = {
-    getAllAgents: async () => {
-        return await db('users')
-            .where({ type: 5 })
-            .select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type', 'created_at', 'last_visit_date', 'language');
-    },
-    getAgentById: async (id) => {
-        return await db('users')
-            .where({ id, type: 5 })
-            .first();
-    },
+  // Obtener todos los agentes de la base de datos
+  getAllAgents: async (clientIds) => {
+    return await db("users as u")
+      // Unimos la tabla 'users' con 'user_clients' para obtener los usuarios vinculados a clientes
+      .join("user_clients as uc", "u.id", "uc.idUser")
+      // Filtramos solo los usuarios de tipo 4 (agentes)
+      .where("u.type", 4)
+      // Filtramos solo los que estén asociados con los IDs de clientes recibidos como parámetro
+      .whereIn("uc.idClient", clientIds)
+      // Seleccionamos los campos relevantes del usuario
+      .select(
+        "u.id",
+        "u.firstname",
+        "u.middlename",
+        "u.lastname",
+        "u.email",
+        "u.state",
+        "u.type",
+        "u.created_at",
+        "u.last_visit_date",
+        "u.language"
+      )
 
-    createAgent: async (agentData) => {
-        const [newAgentId] = await db('users').insert(agentData);
-        return await db('users').where({ id: newAgentId }).first();
-    },
-
-    updateAgent: async (id, data) => {
-        data.updated_at = new Date();
-        await db('users').where({ id, type: 5 }).update(data);
-        return await db('users').where({ id }).first();
-    },
-
-    toggleAgentState: async (id) => {
-        const agent = await db('users').where({ id, type: 5 }).first();
-        if (!agent) return null;
-    
-        const newState = !agent.state;
-        await db('users').where({ id }).update({ state: newState });
-    
-        return await db('users').where({ id }).first();
-    },
-
-    deleteAgent: async (id) => {
-        const agent = await db('users').where({ id, type: 5 }).first();
-        if (!agent) return null;
-    
-        await db('users').where({ id }).del();
-        return agent;
-    }
+      // Agrupamos por ID para evitar duplicados si un usuario está asociado a varios clientes
+      .groupBy("u.id");
+  },
+  // Buscar un agente específico por ID
+  getAgentById: async (id) => {
+    return await db("users")
+      .where({ id, type: 4 }) // Valido que sea agente
+      .first();
+  },
 };
 
-module.exports = Agent;
+module.exports = Agent; // Exporto el objeto para poder usarlo desde el controlador
