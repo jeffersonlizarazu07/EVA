@@ -42,7 +42,7 @@ export default function View_survey() {
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
-  const [surveyData, setSurveyData] = useState({ sampleCount: 0 });
+  const [surveyData, setSurveyData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [idToEdit, setidToEdit] = useState(null);
   const [error, setError] = useState("");
