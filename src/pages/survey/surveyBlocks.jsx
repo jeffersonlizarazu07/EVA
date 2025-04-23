@@ -114,6 +114,7 @@ export default function SurveyBlocks() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // State para manejo de preguntas validas
   const [hasValidQuestions, setHasValidQuestions] = useState(false);
+  const [textFieldAnswer, setTextFieldAnswer] = useState("");
 
   // Validar el input de preguntas del modal
 
@@ -586,7 +587,7 @@ export default function SurveyBlocks() {
     id_conditional.handleChange("0");
     survey_id.handleChange("");
     conditional_answer.handleChange("");
-  
+
     setQuestionCountInput("");
     setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
     setSelectorData({ options: [], selectedOption: null });
@@ -595,6 +596,46 @@ export default function SurveyBlocks() {
     setIsChecked(false);
     setValueConditional(false);
     setHasValidQuestions(false);
+  };
+
+  const renderRespuesta = (question) => {
+    const tipo = question.type;
+    const respuesta = question.selected_answer || "Sin respuesta";
+
+    switch (tipo) {
+      case "textfield_s":
+      case "yes_no":
+        return (
+          <p>
+            <strong>Respuesta:</strong> {respuesta}
+          </p>
+        );
+
+      case "radio_opt":
+      case "check_opt":
+      case "selector_opt":
+        return (
+          <div>
+            <p>
+              <strong>Respuesta:</strong> {respuesta}
+            </p>
+            {question.select_option && (
+              <p>
+                <small>
+                  <strong>Opciones:</strong> {question.select_option}
+                </small>
+              </p>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <p>
+            <em>Tipo de pregunta no soportado</em>
+          </p>
+        );
+    }
   };
 
   return (
@@ -648,11 +689,26 @@ export default function SurveyBlocks() {
                     {/* Código para traer datos del formulario Crear Bloque */}
                     {data.map((bloque) => (
                       <div key={bloque.id} className="shadowbox5 p-3 m-3">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <h5 className="m-0">
+                        <div className="d-flex justify-content-between mb-2">
+                          <div>
+                          <h3 className="m-0 pb-3">
                             {bloque.nombreBloque || "Bloque sin nombre"}
-                          </h5>
-                          <div className="dropdown">
+                          </h3>
+                          <p className="mb-1">
+                            <strong>Descripción:</strong> {bloque.question}
+                          </p>
+                          <p className="mb-1">
+                            <strong>Ponderación:</strong> {bloque.ponderacion}
+                          </p>
+                          <p className="mb-1">
+                            <strong>Posición:</strong> {bloque.posicion}
+                          </p>
+                          <p className="mb-1">
+                            <strong>Pregunta:</strong> {bloque.question}
+                          </p>
+                          </div>
+                          
+                          <div className="dropdown justify-content-between">
                             <button
                               className="btn btn-sm dropdown-toggle"
                               style={{ color: "rgba(175, 14, 110, 0.717)" }}
@@ -744,7 +800,9 @@ export default function SurveyBlocks() {
                           </div>
                         </div>
 
-                        {question.type == "yes_no" ? (
+                        {renderRespuesta(question)}
+
+                        {/* {question.type == "yes_no" ? (
                           <Yes_no />
                         ) : question.type == "textfield_s" ? (
                           <Textfield_s />
@@ -758,7 +816,7 @@ export default function SurveyBlocks() {
                             options={question.select_option}
                             correctOption={question.selected_answer}
                           />
-                        )}
+                        )} */}
 
                         <div className="text-end me-3">
                           {question.conditional === "SI" ? (
