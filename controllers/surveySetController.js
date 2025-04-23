@@ -25,7 +25,7 @@ const surveySetController = {
     
             // Transformar las fechas y otros posibles valores antes de enviarlos
             const formattedSurveys = surveys.map(survey => ({
-                survey_id: survey.survey_id,
+                id: survey.id,
                 title: survey.title,
                 start_date: survey.start_date === '0000-00-00' ? null : survey.start_date,  // Convertir fechas inválidas a null
                 end_date: survey.end_date === '0000-00-00' ? null : survey.end_date,  // Lo mismo para end_date
