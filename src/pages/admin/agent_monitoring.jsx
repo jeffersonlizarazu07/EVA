@@ -17,6 +17,8 @@ import Loading from "../layout/loading";
 import Swal from "sweetalert2";
 import "../../assets/css/agent_monitoring.css";
 import SurveyBlocks from "../survey/surveyBlocks";
+import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
+import { useTranslation } from "react-i18next";
 
 const AdminList = () => {
   const [open, setOpen] = useState(false);
@@ -26,7 +28,7 @@ const AdminList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [survey, setSurvey] = useState([]);
-
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const config = {
@@ -128,23 +130,15 @@ const AdminList = () => {
     const name = form.title;
     const parametros = { state: 0 };
   
-    Swal.fire({
-      title: `¿Seguro que desea cambiar el estado del formulario "${name}"?`,
+    smallAlertDelete.fire({
+      text: `${t("alertDeactivate.InitialPhrase")}${name} ${t(
+        "alertDeactivate.FinalPhrase"
+      )}`,
       showCancelButton: true,
-      confirmButtonText: "Confirmar",
-      cancelButtonText: "Cancelar",
-      customClass: {
-        popup: 'swal-small',  // Clase personalizada para el popup
-        title: 'swal-title',  // Clase personalizada para el título
-        html: 'swal-html',    // Clase personalizada para el contenido HTML
-        confirmButton: 'swal-confirm-btn',  // Clase personalizada para el botón confirmar
-        cancelButton: 'swal-cancel-btn',    // Clase personalizada para el botón cancelar
-      },
-      showClass: {
-        popup: 'swal2-show' // Clase de animación
-      },
-      padding: '10px', // Reducir el padding general
-    }).then(async (result) => {
+      confirmButtonText: `${t("alertDeactivate.Confirm")}`,
+      cancelButtonText: `${t("alertDeactivate.Cancel")}`,
+    })   
+    .then(async (result) => {
       if (result.isConfirmed) {
         try {
           await axios.patch(`${url}/${id}`, parametros, config);
@@ -181,7 +175,6 @@ const AdminList = () => {
               toast.onmouseleave = Swal.resumeTimer;
             },
           });
-  
           Toast.fire({
             icon: "error",
             title: `No se pudo desactivar el formulario`,
