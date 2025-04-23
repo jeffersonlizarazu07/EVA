@@ -53,6 +53,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
+    e.target.value = null;
     if (!selectedFile) return;
   
     const validExtensions = ['.xlsx', '.xls', '.ods', '.csv'];
@@ -82,6 +83,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
         icon: "error",
         title: "Todos los campos son requeridos"
       });
+      resetForm();
       return;
     }
 
@@ -90,6 +92,16 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
         icon: "error",
         title: "Por favor ingrese un email válido"
       });
+      resetForm();
+      return;
+    }
+
+    if (!validateUrl(formData.link)) {
+      Toast.fire({
+        icon: "error",
+        title: "Por favor ingrese una url valida"
+      });
+      resetForm();
       return;
     }
 
@@ -116,7 +128,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
         icon: "success",
         title: "Encuesta enviada correctamente"
       });
-      
+      resetForm();
       onClose();
     } catch (error) {
       console.error("Error al enviar:", error);
@@ -124,6 +136,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
         icon: "error",
         title: "Error al enviar la encuesta"
       });
+      resetForm();
     } finally {
       setLoading(false);
     }
@@ -132,9 +145,10 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
   const sendMassive = async () => {
     if (!file) {
       Toast.fire({ icon: "error", title: "Debe seleccionar un archivo" });
+      resetForm();
       return;
     }
-
+  
     setLoading(true);
     const reader = new FileReader();
     
@@ -144,40 +158,67 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
         const workbook = XLSX.read(data, { type: "array" });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: 1 });
-
-        if (jsonData.length === 0 || jsonData[0].length < 3) {
-          throw new Error("El archivo no tiene datos válidos o faltan columnas");
+  
+        // Obtener el rango real de datos
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  
+        // Filtrar filas vacías
+        const filteredData = jsonData.filter(row => row.some(cell => cell !== undefined && cell !== null && cell !== ''));
+  
+        if (filteredData.length <= 1) { // 1 porque el encabezado cuenta como fila
+          throw new Error("El archivo no tiene datos válidos");
         }
-
-        const users = jsonData.map((row, index) => {
-          if (!row[0] || !row[1] || !row[2]) {
-            throw new Error(`Fila ${index + 2}: Datos incompletos`);
-          }
-
-          return {
-            name: row[0].toString().trim(),
-            email: row[1].toString().trim(),
-            link: row[2].toString().trim()
-          };
-        });
-
+  
+        // Omitir encabezados si existen
+        const dataRows = filteredData.length > 1 ? filteredData.slice(1) : filteredData;
+  
+        const users = [];
         const emails = new Set();
         const duplicates = [];
+        const missingDataRows = [];
         
-        users.forEach((user, index) => {
-          if (emails.has(user.email)) {
-            duplicates.push(index + 2);
-          } else {
-            emails.add(user.email);
+        dataRows.forEach((row, index) => {
+          const excelRowNumber = index + 2; // +2 porque: +1 para convertir de 0-based a 1-based, y +1 para saltar encabezado
+          
+          // Verificar si la fila tiene datos faltantes
+          if (!row[0] || !row[1] || !row[2]) {
+            missingDataRows.push(excelRowNumber);
+            return; // Saltar esta fila
           }
+  
+          const link = row[2].toString().trim();
+          if (!validateUrl(link)) {
+            throw new Error(`Fila ${excelRowNumber}: URL no válida`);
+          }
+  
+          const email = row[1].toString().trim();
+          if (emails.has(email)) {
+            duplicates.push(excelRowNumber);
+            return; // Saltar esta fila
+          }
+  
+          emails.add(email);
+          
+          users.push({
+            name: row[0].toString().trim(),
+            email: email,
+            link: link
+          });
         });
-
+  
+        if (missingDataRows.length > 0) {
+          throw new Error(`Datos incompletos en filas: ${missingDataRows.join(", ")}`);
+        }
+  
         if (duplicates.length > 0) {
           throw new Error(`Emails duplicados en filas: ${duplicates.join(", ")}`);
         }
-
+  
+        if (users.length === 0) {
+          throw new Error("No hay usuarios válidos para enviar");
+        }
+  
         const config = {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -185,46 +226,73 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
           },
           withCredentials: true
         };
-
+  
         await axios.post(
           "http://localhost:3000/api/enviar-correos",
           { users },
           config
         );
-
+  
         Toast.fire({
           icon: "success",
           title: `Enviados ${users.length} correos exitosamente!`
         });
-
+        resetForm();
         onClose();
-
+  
       } catch (error) {
         console.error("Error completo:", error);
         Toast.fire({
           icon: "error",
           title: error.message || "Error procesando el archivo"
         });
+        resetForm();
       } finally {
         setLoading(false);
       }
     };
-
+  
     reader.onerror = () => {
       Toast.fire({
         icon: "error",
         title: "Error al leer el archivo"
       });
+      resetForm();
       setLoading(false);
     };
-
+  
     reader.readAsArrayBuffer(file);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      link: ""
+    });
+    setFile(null);
+    setFileName("");
+    // Limpiar el input de archivo en el DOM
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.value = '';
+  };
+
+  const validateUrl = (url) => {
+    try {
+      new URL(url); // Intenta crear un objeto URL
+      return true; // Si no lanza error, es una URL válida
+    } catch (e) {
+      return false; // Si lanza error, no es válida
+    }
   };
 
   return (
     <Dialog
       open={true}
-      onClose={onClose}
+      onClose={() => {
+        resetForm();
+        onClose();
+      }}
       maxWidth="md"
       fullWidth
       components={{
