@@ -4,14 +4,18 @@ import axios from 'axios';
 import '../../assets/css/encuesta.css';
 import { Range_zerototen_survey, Range_onetofive_survey, Yes_no_survey, Range_difficulty_survey, Range_emoji_survey, Single_choice_survey, Multiple_choice_survey } from './questionsSurvey';
 import Swal from "sweetalert2";
+import { useLocation } from "react-router-dom";
+
 
 export default function Survey() {
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const link = queryParams.get("link"); // obtener el link
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState([]);
     const [title, setTitle] = useState("");
     const [survey, setSurvey] = useState({});
     const [visibleQuestions, setVisibleQuestions] = useState([]);
-    const { link } = useParams(); 
     const nav = useNavigate();
 
     useEffect(() => {
@@ -19,50 +23,96 @@ export default function Survey() {
     }, [link]);
 
     useEffect(() => {
-        // Actualiza las preguntas visibles cuando cambien las respuestas
+        
         const updatedVisibleQuestions = questions.filter(shouldRenderQuestion);
         setVisibleQuestions(updatedVisibleQuestions);
         console.log(answers)
-    }, [answers, questions]); // Ejecuta el efecto cada vez que las respuestas o preguntas cambian
+    }, [answers, questions]); 
+   
 
+    // Funncion que envia las respuestas al back
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const url = "http://localhost:3000/api/answer";
+    
+        const answersWithSurveyId = answers.map(answer => ({
+            ...answer,
+            survey_id: survey.id 
+        }));
+    
+        console.log("Datos que se van a enviar:", answersWithSurveyId);
+    
         try {
-            console.log(answers);
-            const response = await axios.post(url, answers);
-            console.log(response);
-            if (response.data.status) {
-                setAnswers([]);
+            const response = await axios.post("http://localhost:3000/api/answers", answersWithSurveyId);
+            console.log('respuesta genera', response);
+    
+            if (response.status === 200 || response.status === 201) {
+                console.log('Se recibió status 200, mostrando alerta');
+                // Alerta de éxito
                 Swal.fire({
-                    title: 'Cargando...',
-                    didOpen: () => {
-                        Swal.showLoading();
-                    },
-                    allowOutsideClick: false,
+                    title: '¡Éxito!',
+                    text: 'Las respuestas se enviaron correctamente.',
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#28a745', // verde
                 });
-                setTimeout(() => {
-                    Swal.close();
-                    nav("/gratitude");
-                }, 2000);
             }
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Error al enviar respuestas:", error);
+            // Alerta de error
+            Swal.fire({
+                title: 'Error',
+                text: 'Hubo un error al enviar las respuestas.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#FF66B2',
+            });
         }
     };
-
+    
+    
+    
+    // Funcion para cargar las encuestas 
     const getSurvey = async () => {
-        const response = await axios.get(`http://localhost:3000/api/survey?link=http://localhost:3000/survey/${link}`);
-        const survey = {
-            id: response.data.data.survey_set.id,
-            logo: response.data.data.survey_set.logo,
-            color_tag1: response.data.data.survey_set.color_tag1,
-            color_tag2: response.data.data.survey_set.color_tag2
-        };
-        setSurvey(survey);
-        setQuestions(response.data.data.questions);
-        setTitle(response.data.data.survey_set.title);
+        const fullLink = link; 
+        console.log("Link enviado al servidor:", fullLink);
+        
+        try {
+            // Hacer la solicitud al backend para obtener la encuesta y sus preguntas
+            const response = await axios.get(`http://localhost:3000/api/surveyByLink?link=${fullLink}`);
+        
+            console.log('Contenido de response.data:', response.data);
+        
+            
+            if (response.data && response.data.data) {
+                const data = response.data.data;
+        
+                const survey = {
+                    id: data.survey_set.id,  
+                    logo: data.survey_set.logo,
+                    color_tag1: data.survey_set.color_tag1,
+                    color_tag2: data.survey_set.color_tag2
+                };
+        
+                console.log("Encuesta obtenida de la base de datos:", survey);
+        
+                setSurvey(survey);  
+                setTitle(data.survey_set.title); 
+        
+                // preguntas obtenidas de la BD
+                setQuestions(data.question);  
+                console.log("Preguntas obtenidas de la base de datos:", data.question);
+            } else {
+                console.error('No se encontró la encuesta en la respuesta.', response.data);
+            }
+        } catch (error) {
+            console.error("Error al cargar encuesta:", error);
+        }
     };
+    
+    
+    
+    
+
 
     const handleChange = (event, id) => {
         const newAnswer = { answer: event.target.value, question_id: id };
@@ -147,7 +197,7 @@ export default function Survey() {
                                     ) : question.type === 'check_opt' ? (
                                         <Multiple_choice_survey answers={question.select_option} key={question.id} id={question.id} change={handleChangeMultiple} />
                                     ) : (
-                                        "<Textfield_s/>"
+                                        "<Textfield/>"
                                     )}
                                 </div>
                             ))}

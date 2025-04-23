@@ -63,6 +63,7 @@ const SurveyList = () => {
   
 
   useEffect(() => {
+    console.log(clients);
     if (userId && accessToken) {
       getClients(userId);
     }
@@ -95,13 +96,13 @@ const SurveyList = () => {
   };
   
   const getClients = async (id) => {
-    const token = accessToken || Cookies.get("accessToken"); // fallback si accessToken está vacío
-
+    const token = accessToken || Cookies.get("accessToken");
+  
     if (!token) {
       console.warn("⚠️ Token no disponible aún.");
       return;
     }
-
+  
     try {
       const authConfig = {
         headers: {
@@ -109,10 +110,17 @@ const SurveyList = () => {
         },
         withCredentials: true,
       };
-      //console.log("📡 Enviando token en headers:", authConfig.headers);
+  
       const response = await axios.get(`http://localhost:3000/api/users_client/${id}`, authConfig);
-      console.log("Clientes relacionados: ", response.data);
-      setClients(response.data.data);
+  
+      console.log("Respuesta de la API:", response.data);
+  
+      if (response.data && response.data.data) {
+        // Si la respuesta tiene los datos en `data`, se actualiza el estado
+        setClients(response.data.data);
+      } else {
+        console.warn("No se encontraron clientes en la respuesta.");
+      }
     } catch (error) {
       console.error("❌ Error al obtener clientes:", error);
       if (error.response) {
@@ -120,6 +128,9 @@ const SurveyList = () => {
       }
     }
   };
+  
+  
+  
 
   const activeSurvey = (survey) => {
     const url = `http://localhost:3000/api/survey`;
@@ -212,7 +223,7 @@ const SurveyList = () => {
   }, [start_date.input, end_date.input]);
 
   const openModal = (op, survey) => {
-    setOperation(op);
+    setOperation(op);  
     if (op == 1) {
       setModalTitle("Añadir encuesta");
       title.handleChange("");
@@ -233,6 +244,7 @@ const SurveyList = () => {
       setidToEdit(survey?.id);
     }
   };
+  
   const validar = (id) => {
     var parametros;
     var metodo;
@@ -258,6 +270,7 @@ const SurveyList = () => {
           type: "survey",
           state: 1,
         };
+        console.log("datos del link a crear:", parametros);
         metodo = "post";
       } else if (operation == 2) {
         const titleExists = survey.some(item => item.title === title.input  );
@@ -445,18 +458,26 @@ const SurveyList = () => {
                 </div>
                 <div className="col-4 mb-3">
                   <label id="labelAnimation">
-                    <select
-                      readOnly
-                      onChange={(e) => idClient.handleChange(e.target.value)}
-                      value={idClient.input}
-                      className="input-new"
-                    >
-                      {clients.map((client) => (
+                  <select
+                    onChange={(e) => idClient.handleChange(e.target.value)}
+                    value={idClient.input}
+                    className="input-new"
+                    disabled={clients.length === 0} // Deshabilitar si no hay clientes
+                  >
+                    <option value="" disabled>
+                      Seleccione un cliente
+                    </option>
+                    {clients.length > 0 ? (
+                      clients.map((client) => (
                         <option value={client.id} key={client.id}>
-                          {client.client}
+                          {client.clientName}
                         </option>
-                      ))}
-                    </select>
+                      ))
+                    ) : (
+                      <option disabled>Cargando clientes...</option> 
+                    )}
+                  </select>
+
                     <span className="labelName">Cliente</span>
                   </label>
                 </div>
@@ -570,7 +591,7 @@ const SurveyList = () => {
                       </option>
                       {clients.map((client) => (
                         <option value={client.id} key={client.id}>
-                          {client.client}
+                          {client.clientName}
                         </option>
                       ))}
                     </select>
