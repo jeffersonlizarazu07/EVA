@@ -16,7 +16,8 @@ const TableSurvey = ({
   onActive,
   onDuplicate,
   onCheck,
-  onCopyLink
+  onCopyLink,
+  onBulkEmail
 }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -157,7 +158,7 @@ const TableSurvey = ({
                   className="btn text-start"
                   data-bs-toggle="modal"
                   data-bs-target={`#${modalId2}`}
-                  onClick={() => onView(item)}
+                  onClick={() => onBulkEmail(item)}
                   style={{width:"100%"}}
                 >
                   <i className="fa-solid fa-envelopes-bulk"></i>
@@ -179,14 +180,7 @@ const TableSurvey = ({
                   <i className="fa-solid fa-power-off"></i> <span> Deshabilitar</span>
                 </button></li>
                     </ul>
-                    
-                
                   </div>
-               
-               
-               
-                 
-          
               </td>):( <td>
                     <div className="row">
                       <div className="col">

@@ -135,9 +135,6 @@ const SurveyList = () => {
       }
     }
   };
-  
-  
-  
 
   const activeSurvey = (survey) => {
     const url = `http://localhost:3000/api/survey`;
@@ -240,6 +237,7 @@ const SurveyList = () => {
       link.handleChange("");
       idClient.handleChange("");
     } else if (op == 2) {
+      console.log("esto es survey",survey)
       setModalTitle("Editar encuesta");
       title.handleChange(survey?.title || "");
       setNewTitle(survey?.title || "")
@@ -346,16 +344,19 @@ const SurveyList = () => {
       console.error("Error:", error);
     }
   };
-  const openModalCont = (survey) => {
-    /*  await getClient(survey.id) */
-    // setModalTitle("Información de la encuesta");
-    // title.handleChange(survey?.title || "");
-    // start_date.handleChange(survey?.start_date || "");
-    // end_date.handleChange(survey?.end_date || "");
-    // state.handleChange(survey?.state || "");
-    // description.handleChange(survey?.description || "");
-    // link.handleChange(survey?.link || "No presenta link anexado");
-    // idClient.handleChange(survey?.idClient || "");
+  const openModalCont =  async (survey) => {
+     /* await getClient(survey.id)  */
+     setModalTitle("Información de la encuesta");
+     title.handleChange(survey?.title || "");
+     start_date.handleChange(survey?.start_date || "");
+     end_date.handleChange(survey?.end_date || "");
+     state.handleChange(survey?.state || "");
+     description.handleChange(survey?.description || "");
+     link.handleChange(survey?.link || "No presenta link anexado");
+     idClient.handleChange(survey?.idClient || "");
+  };
+
+  const openModalBulk = (survey)  => {
     setSelectedSurvey(survey);
     setShowEnvioModal(true);
   };
@@ -431,13 +432,14 @@ const SurveyList = () => {
                 onActive={(payload) => activeSurvey(payload)}
                 onDuplicate={(item) => duplicateSurvey(item)}
                 onCopyLink={(item)=> copyLink(item)}
+                onBulkEmail={(payload)=> openModalBulk(payload)}
               />
             )}
           </div>
           </div>
           </div>
       </div>
-      {/* <div id="modalViewSurvey" className="modal fade" aria-hidden="true">
+     <div id="modalViewSurvey" className="modal fade" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
             <div className="modal-header">
@@ -559,7 +561,7 @@ const SurveyList = () => {
             </div>
           </div>
         </div>
-      </div> */}
+      </div> 
  {showEnvioModal && (
   <ModalEnvioMasivo 
     survey={selectedSurvey} 
