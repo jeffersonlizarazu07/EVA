@@ -37,14 +37,7 @@ import "../../assets/css/surveyBlocks.css";
 
 export default function SurveyBlocks() {
   const { id } = useParams();
-  const [data, setData] = useState([{
-    id: 1,
-    nombreBloque: "Bloque 1",
-    question: "¿Cuál es tu nombre?",
-    // type: "textfield_s",
-    select_option: "",
-    selected_answer: ""
-  },]);
+  const [data, setData] = useState([]);
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
@@ -119,6 +112,8 @@ export default function SurveyBlocks() {
   const [options, setOptions] = useState([]);
   const [correctAnswers, setCorrectAnswers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // State para manejo de preguntas validas
+  const [hasValidQuestions, setHasValidQuestions] = useState(false);
 
   // Validar el input de preguntas del modal
 
@@ -133,19 +128,32 @@ export default function SurveyBlocks() {
   useEffect(() => {
     i18n.changeLanguage(languageUser);
     getSurvey(id, config, setSurveyData);
-    updateSurveyQuestions();
+    // updateSurveyQuestions();
   }, [id, languageUser]);
+
+  useEffect(() => {
+    // Verificar si hay al menos una pregunta con texto y tipo
+    const hasValid = questionsList.some((q) => q.text && q.type);
+    setHasValidQuestions(hasValid);
+
+    // Si hay alguna pregunta válida, actualizar questionType
+    if (hasValid) {
+      const validQuestion = questionsList.find((q) => q.text && q.type);
+      questionType.handleChange(validQuestion.type);
+    }
+  }, [questionsList]);
 
   const config = {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   };
+
   const updateSurveyQuestions = () => {
     getSurveyQuestions(id, config)
       .then(setData)
       .catch((error) => {
-        console.error("Error fetching survey questions", error);
+        console.error("Error al obtener las preguntas de la encuesta", error);
       });
   };
 
@@ -155,6 +163,8 @@ export default function SurveyBlocks() {
     setSingleChoiceData({ options: [], correctAnswer: null });
     setMultipleChoiceData({ options: [], correctAnswers: [] });
     setidToEdit(null);
+    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+    setHasValidQuestions(false);
   };
 
   const conditionalHandleChange = (e) => {
@@ -182,15 +192,13 @@ export default function SurveyBlocks() {
       }
     }
   }, [valueConditional, listConditional, singleChoiceData, multipleChoiceData]);
-  
 
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
     if (op === 1) {
+      resetFormFields(); // 🧼 Limpia todo el estado base
       setTitle("Crear Bloque");
-      setDescriptionText(
-        "Elige un tipo de pregunta de acuerdo a tus necesidades."
-      );
+      setDescriptionText("");
       description.handleChange("");
       questionType.handleChange("");
       section.handleChange("Na");
@@ -200,11 +208,19 @@ export default function SurveyBlocks() {
       id_conditional.handleChange(0);
       conditional_answer.handleChange("NO");
       survey_id.handleChange(idsurvey);
+      // Limpia inputs adicionales
+      setQuestionCountInput(""); // limpia el input de cantidad de preguntas
+      setSelectorData({ options: [], selectedOption: null }); // limpia selectores
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
       setSelectorData({ options: [], selectedOption: null });
+      setSelectorData({ options: [], selectedOption: null });
+      setQuestionsList([
+        { text: "", type: "", options: [], correctAnswers: [] },
+      ]);
+      setHasValidQuestions(false);
     } else if (op === 2) {
       console.log({ questionDetails });
       setSingleChoiceData({ options: [], correctAnswer: null });
@@ -266,107 +282,134 @@ export default function SurveyBlocks() {
     var metodo;
     console.log("??  ", singleChoiceData.correctAnswer);
 
-    if (questionType.input.trim() === "" || description.input.trim() === "") {
-      setError("Ingresa una pregunta valida.");
-    } else {
-      // Determinar los datos específicos según el tipo de pregunta
-      let selectedAnswer, options, selectedAnswerToString, optionsToSave;
+    // if (operation === 1 && nombreInput.input.trim() === "") {
+    //   setError("Ingresa un nombre de bloque válido.");
+    //   return;
+    // }
 
-      if (questionType.input === "radio_opt") {
-        selectedAnswer = singleChoiceData.correctAnswer;
-        options = singleChoiceData.options;
-        selectedAnswerToString = selectedAnswer
-          ? selectedAnswer.toString()
-          : "";
-        optionsToSave = options.map((option) => option.text).join(", ");
-      } else if (questionType.input === "check_opt") {
-        selectedAnswer = multipleChoiceData.correctAnswers;
-        options = multipleChoiceData.options;
-        selectedAnswerToString = selectedAnswer.join(", ");
-        optionsToSave = options.map((option) => option.text).join(", ");
-      } else if (questionType.input === "selector_opt") {
-        selectedAnswer = selectorData.selectedOption;
-        options = selectorData.options;
-        selectedAnswerToString = selectedAnswer
-          ? selectedAnswer.toString()
-          : "";
-        optionsToSave = options.map((option) => option.text).join(", ");
-      }
+    // if (operation === 2 && (questionType.input.trim() === "" || description.input.trim() === "")) {
+    //   setError("Ingresa una pregunta valida.");
+    //   return;
+    // }
 
-      if (operation === 1) {
-        // Código para crear nueva pregunta
-        parametros = {
-          type: questionType.input,
-          percentage: 0,
-          conditional: valueConditional ? "SI" : "NO",
-          question: description.input,
-          survey_id: survey_idt,
-          frm_option: frm_option.input,
-          id_conditional: id_conditional.input,
-          conditional_answer: conditional_answer.input,
-          section: section.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? selectedAnswerToString
-              : " ",
-          select_option:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? optionsToSave
-              : "",
-        };
-        metodo = "post";
-      } else if (operation === 2) {
-        parametros = {
-          type: questionType.input,
-          percentage: 0,
-          conditional: valueConditional ? "SI" : "NO",
-          question: description.input,
-          survey_id: survey_idt,
-          conditional_answer: conditional_answer.input,
-          id_conditional: id_conditional.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? selectedAnswerToString.length > 1
-                ? selectedAnswerToString
-                : selectedAnswerToString
-              : null,
-          select_option:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? optionsToSave
-              : null,
-        };
-        console.log("parametros", parametros);
-        metodo = "put";
-      }
+    setError("");
 
-      sendData(
-        metodo,
-        parametros,
-        config,
-        id,
-        setLoading,
-        setError,
-        updateSurveyQuestions,
-        t
-      )
-        .then(() => {
-          // Actualizar preguntas después de la llamada a sendData
-          updateSurveyQuestions();
-          document.getElementById("btnClose").click();
-          setValueConditional(false);
-        })
-        .catch((error) => {
-          console.error("Error en la actualización de preguntas:", error);
-        });
+    // Determinar los datos específicos según el tipo de pregunta
+    // let selectedAnswer, options, selectedAnswerToString, optionsToSave;
+
+    // if (questionType.input.trim() === "" || description.input.trim() === "") {
+    //   setError("Ingresa una pregunta valida.");
+    // } else {
+    //   // Determinar los datos específicos según el tipo de pregunta
+    let selectedAnswer, options, selectedAnswerToString, optionsToSave;
+
+    if (questionType.input === "radio_opt") {
+      selectedAnswer = singleChoiceData.correctAnswer;
+      options = singleChoiceData.options;
+      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
+      optionsToSave = options.map((option) => option.text).join(", ");
+    } else if (questionType.input === "check_opt") {
+      selectedAnswer = multipleChoiceData.correctAnswers;
+      options = multipleChoiceData.options;
+      selectedAnswerToString = selectedAnswer.join(", ");
+      optionsToSave = options.map((option) => option.text).join(", ");
+    } else if (questionType.input === "selector_opt") {
+      selectedAnswer = selectorData.selectedOption;
+      options = selectorData.options;
+      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
+      optionsToSave = options.map((option) => option.text).join(", ");
     }
+
+    if (operation === 1) {
+      // Crear nuevo bloque
+      parametros = {
+        nombreBloque: nombreInput.input,
+        ponderacion: ponderacionInput.input || 0,
+        posicion: posicionInput.input || 0,
+        preguntas: questionsList,
+        type:
+          questionsList.length > 0 && questionsList[0].type
+            ? questionsList[0].type
+            : "",
+        conditional: valueConditional ? "SI" : "NO",
+        question: description.input,
+        survey_id: survey_idt,
+        frm_option: frm_option.input,
+        id_conditional: id_conditional.input,
+        conditional_answer: conditional_answer.input,
+        section: section.input,
+        selected_answer:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
+            ? selectedAnswerToString
+            : " ",
+        select_option:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
+            ? optionsToSave
+            : "",
+      };
+      metodo = "post";
+    } else if (operation === 2) {
+      parametros = {
+        type: questionType.input,
+        percentage: 0,
+        conditional: valueConditional ? "SI" : "NO",
+        question: description.input,
+        survey_id: survey_idt,
+        conditional_answer: conditional_answer.input,
+        id_conditional: id_conditional.input,
+        selected_answer:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
+            ? selectedAnswerToString.length > 1
+              ? selectedAnswerToString
+              : selectedAnswerToString
+            : null,
+        select_option:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
+            ? optionsToSave
+            : null,
+      };
+      console.log("parametros", parametros);
+      metodo = "put";
+    }
+
+    console.log("Parámetros a guardar:", parametros);
+
+    sendData(
+      metodo,
+      parametros,
+      config,
+      id,
+      setLoading,
+      setError,
+      updateSurveyQuestions,
+      t
+    )
+      .then(() => {
+        // Actualizar preguntas después de la llamada a sendData
+        // updateSurveyQuestions();
+        const nuevosDatos = [...data, parametros];
+        setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
+        localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
+        console.log("✅ Guardado en localStorage:", nuevosDatos); // Verifica en consola
+        Toast.fire({
+          icon: "success",
+          title: "Bloque guardado correctamente",
+        });
+        document.getElementById("btnClose").click();
+        setValueConditional(false);
+        handleCancel(); // Limpiar formulario
+      })
+      .catch((error) => {
+        console.error("Error en la actualización de preguntas:", error);
+      });
   };
 
   const handleSingleChoiceChange = (updatedData) => {
@@ -416,7 +459,7 @@ export default function SurveyBlocks() {
     }));
 
     setQuestionsList((prev) => [...prev, ...newQuestions]);
-    setQuestionCountInput(""); // Limpiar input si deseas
+    setQuestionCountInput(""); // Limpiar input
   };
 
   const handleInputChange = (index, field, value) => {
@@ -449,7 +492,7 @@ export default function SurveyBlocks() {
     return true;
   };
 
-  // Función para manejar el envío de la pregunta
+  // Manejo el envío de pregunta
   const handleSubmit = () => {
     if (validateInputs()) {
       // Aquí puedes manejar el envío de los datos
@@ -459,6 +502,99 @@ export default function SurveyBlocks() {
 
   const handleSelectorChange = (data) => {
     setSelectorData(data);
+  };
+
+  const areAllFieldsCompleted = () => {
+    // Verificación de nombre del bloque
+    if (operation === 1 && nombreInput.input.trim() === "") {
+      return false;
+    }
+
+    // Verificamos que existan preguntas
+    if (questionsList.length === 0) {
+      return false;
+    }
+
+    // Verificacióm para que cada pregunta tenga todos sus campos requeridos diligenciados
+    const allQuestionsValid = questionsList.every((question) => {
+      // Verificar que el texto de la pregunta no esté vacío
+      if (!question.text || question.text.trim() === "") return false;
+
+      // Verificar que tenga un tipo seleccionado
+      if (!question.type || question.type === "") return false;
+
+      // Verificaciones específicas según el tipo de pregunta
+      if (question.type === "selector_opt") {
+        // Si es un selector, debe tener opciones
+        return selectorData.options && selectorData.options.length > 0;
+      }
+
+      if (question.type === "check_opt") {
+        // Si es selección múltiple, debe tener opciones
+        return (
+          multipleChoiceData.options && multipleChoiceData.options.length > 0
+        );
+      }
+
+      if (question.type === "radio_opt") {
+        // Si es selección única, debe tener opciones
+        return singleChoiceData.options && singleChoiceData.options.length > 0;
+      }
+
+      // Para campos de texto no es necesario verificar opciones adicionales
+      return true;
+    });
+
+    // Si la operación es de edición, verificamos el tipo y descripción
+    if (operation === 2) {
+      return (
+        questionType.input.trim() !== "" &&
+        description.input.trim() !== "" &&
+        allQuestionsValid
+      );
+    }
+
+    return allQuestionsValid;
+  };
+
+  // Localstorage temporal
+
+  // Leer al iniciar
+  useEffect(() => {
+    const bloques = localStorage.getItem("bloquesGuardados");
+    if (bloques) {
+      setData(JSON.parse(bloques));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data.length > 0) {
+      localStorage.setItem("bloquesGuardados", JSON.stringify(data));
+    }
+  }, [data]);
+
+  const resetFormFields = () => {
+    nombreInput.handleChange("");
+    ponderacionInput.handleChange("");
+    posicionInput.handleChange("");
+    questionType.handleChange("");
+    description.handleChange("");
+    section.handleChange("");
+    percentage.handleChange("");
+    frm_option.handleChange("");
+    conditional.handleChange("");
+    id_conditional.handleChange("0");
+    survey_id.handleChange("");
+    conditional_answer.handleChange("");
+  
+    setQuestionCountInput("");
+    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+    setSelectorData({ options: [], selectedOption: null });
+    setSingleChoiceData({ options: [], correctAnswer: null });
+    setMultipleChoiceData({ options: [], correctAnswers: [] });
+    setIsChecked(false);
+    setValueConditional(false);
+    setHasValidQuestions(false);
   };
 
   return (
@@ -518,7 +654,8 @@ export default function SurveyBlocks() {
                           </h5>
                           <div className="dropdown">
                             <button
-                              className="btn btn-outline-dark btn-sm dropdown-toggle"
+                              className="btn btn-sm dropdown-toggle"
+                              style={{ color: "rgba(175, 14, 110, 0.717)" }}
                               type="button"
                               data-bs-toggle="dropdown"
                             >
@@ -567,6 +704,7 @@ export default function SurveyBlocks() {
                           <div className="dropdown">
                             <a
                               className="btn dropdown-toggle"
+                              style={{ color: "rgba(175, 14, 110, 0.717)" }}
                               href="#"
                               role="button"
                               data-bs-toggle="dropdown"
@@ -904,15 +1042,14 @@ export default function SurveyBlocks() {
             </div>
             {/* Footer del modal */}
             <div className="modal-footer">
-              {questionType.input && (
-                <button
-                  className="btn bg-gradient-guardar mr-2"
-                  id="btn-send-survey"
-                  onClick={() => validar(idToEdit, id)}
-                >
-                  Guardar
-                </button>
-              )}
+              <button
+                className="btn bg-gradient-guardar mr-2"
+                id="btn-send-survey"
+                onClick={() => validar(idToEdit, id)}
+                disabled={!areAllFieldsCompleted()}
+              >
+                Guardar
+              </button>
               <button
                 className="btn btn-secondary"
                 type="button"
