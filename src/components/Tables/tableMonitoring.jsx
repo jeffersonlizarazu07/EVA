@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import Cookies from "js-cookie";
+import Swal from "sweetalert2";
+//import { getForms } from '../../pages/admin/agent_monitoring'; 
 
 const ModalRegisterUser = ({ open, handleClose, userId }) => {
   const [clients, setClients] = useState([]); // Lista de clientes obtenida de la API
@@ -22,56 +24,95 @@ const ModalRegisterUser = ({ open, handleClose, userId }) => {
 
   useEffect(() => {
     const obtenerClientes = async () => {
-      if (open && userId) {
-        console.log("👤 ID del usuario recibido en Modal:", userId);
-
+      if (open) {
         const token = Cookies.get("accessToken");
-        if (!token) {
-          console.error("❌ Token no encontrado en cookies");
+        const userId = Cookies.get("userId");
+  
+        if (!token || !userId) {
+          console.error("❌ Token o userId no encontrado en cookies");
           return;
         }
-
+  
+        //console.log("👤 ID del usuario desde cookies:", userId);
+  
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         };
-
+  
         try {
           const response = await axios.get(`http://localhost:3000/api/users_client/${userId}`, config);
-
-          console.log("📦 Respuesta completa:", response); // Verifica cómo es la respuesta
-
-          // Asegúrate de acceder correctamente a la propiedad `data` de la respuesta
           if (response.data && response.data.data) {
-            console.log("📦 Datos de clientes:", response.data.data); // Verifica los datos
-            setClients(response.data.data); // Establece los clientes en el estado
+            setClients(response.data.data);
           } else {
-            console.warn("❌ No se encontraron clientes o la estructura de la respuesta no es la esperada");
-            setClients([]); // Si no hay datos, asegurarse de que la lista quede vacía
+            setClients([]);
           }
         } catch (error) {
           console.error("❌ Error al obtener clientes:", error.response || error.message);
-          setClients([]); // Si hay error, también limpiar los clientes
+          setClients([]);
         }
       }
     };
-
+  
     obtenerClientes();
-  }, [open, userId]); // Dependencia de `open` y `userId` para cargar los datos
-
-  const handleSave = () => {
-    // Verifica los valores antes de guardar
+  }, [open]);
+  
+  const handleSave = async () => {
+    const token = Cookies.get("accessToken");
+    const userId = Cookies.get("userId");
+  
+    if (!formName || !description || !selectedClient) {
+      Swal.fire({
+        title: "Error",
+        text: "Todos los campos son obligatorios",
+        icon: "error",
+        confirmButtonText: "Cerrar"
+      });
+      return;
+    }
+  
     const formData = {
-      formName,
+      title: formName,
       description,
-      selectedClient,
+      idClient: selectedClient,
+      creation_date: new Date().toISOString().slice(0, 19).replace("T", " "), // formato 'YYYY-MM-DD HH:MM:SS'
+      created_by: userId,
+      updated_date: new Date().toISOString().slice(0, 19).replace("T", " "),
+      updated_by: userId,
+      state: 1,
     };
-    console.log("📤 Datos del formulario a guardar:", formData);
-    handleClose(); // Cierra el modal después de guardar
-  };
-
+  
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    };
+  
+    try {
+      const response = await axios.post("http://localhost:3000/api/forms", formData, config);
+      console.log("✅ Formulario creado:", response.data);
+      Swal.fire({
+        title: "Formulario creado",
+        text: "Formulario creado correctamente",
+        icon: "success",
+        confirmButtonText: "Cerrar"
+      });
+      handleClose();
+    } catch (error) {
+      console.error("❌ Error al guardar el formulario:", error.response || error.message);
+      Swal.fire({
+        title: "Error",
+        text: "Error al guardar el formulario",
+        icon: "error",
+        confirmButtonText: "Cerrar"
+      });
+    }
+  };  
+  
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle>Añadir Formulario</DialogTitle>

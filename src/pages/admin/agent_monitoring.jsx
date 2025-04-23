@@ -123,36 +123,86 @@ const AdminList = () => {
   };
 
   const deactivateForm = (form) => {
-    const url = `http://localhost:3000/api/forms`;
+    const url = `http://localhost:3000/api/form`;
     const id = form.id;
     const name = form.title;
     const parametros = { state: 0 };
-
+  
     Swal.fire({
-      title: `¿Desactivar el formulario "${name}"?`,
+      title: `¿Seguro que desea cambiar el estado del formulario "${name}"?`,
       showCancelButton: true,
       confirmButtonText: "Confirmar",
       cancelButtonText: "Cancelar",
+      customClass: {
+        popup: 'swal-small',  // Clase personalizada para el popup
+        title: 'swal-title',  // Clase personalizada para el título
+        html: 'swal-html',    // Clase personalizada para el contenido HTML
+        confirmButton: 'swal-confirm-btn',  // Clase personalizada para el botón confirmar
+        cancelButton: 'swal-cancel-btn',    // Clase personalizada para el botón cancelar
+      },
+      showClass: {
+        popup: 'swal2-show' // Clase de animación
+      },
+      padding: '10px', // Reducir el padding general
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await axios.patch(`${url}/${id}`, parametros, config);
-          Swal.fire("Desactivado", `Formulario "${name}" desactivado`, "success");
+  
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+  
+          Toast.fire({
+            icon: "success",
+            title: `Formulario "${name}" cambio de estado`,
+          });
+  
           getForms(); // recargar
         } catch (error) {
           console.error("Error al desactivar:", error);
-          Swal.fire("Error", `No se pudo desactivar el formulario`, "error");
+  
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+  
+          Toast.fire({
+            icon: "error",
+            title: `No se pudo desactivar el formulario`,
+          });
         }
       }
     });
-  };
-
-  const formatDate = (dateString) => {
+  };  
+  
+  const formatDate = (dateString) => { 
     const date = new Date(dateString);
+    
     const day = ("0" + date.getDate()).slice(-2);  // Asegura que el día tenga 2 dígitos
     const month = ("0" + (date.getMonth() + 1)).slice(-2); // Los meses van de 0 a 11
     const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    
+    const hours = ("0" + date.getHours()).slice(-2);  // Asegura que las horas tengan 2 dígitos
+    const minutes = ("0" + date.getMinutes()).slice(-2);  // Asegura que los minutos tengan 2 dígitos
+    const seconds = ("0" + date.getSeconds()).slice(-2);  // Asegura que los segundos tengan 2 dígitos
+  
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;  // Devuelve la fecha y hora en formato: dd/mm/yyyy hh:mm:ss
   };
   
 
@@ -319,7 +369,7 @@ const AdminList = () => {
           </div>
         </div>
       </div>
-      <ModalRegisterUser open={open} handleClose={handleClose} userId={userId} />
+      <ModalRegisterUser open={open} handleClose={handleClose}/>
     </div>
   );
 };

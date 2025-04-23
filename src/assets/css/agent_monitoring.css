@@ -122,3 +122,23 @@ td {
   text-align: center;
   vertical-align: middle;
 }
+/* Cambiar el tamaño de la fuente para el título y quitar la negrita */
+.swal-title {
+  font-size: 16px; /* Ajusta el tamaño de la letra del título */
+  font-weight: normal; /* Eliminar negrita */
+  text-align: left; /* Alineación a la izquierda */
+}
+
+/* Cambiar el tamaño de la fuente para el contenido HTML */
+.swal-html {
+  font-size: 14px; /* Ajusta el tamaño del texto del mensaje */
+  font-weight: normal; /* Eliminar negrita */
+  text-align: left; /* Alineación a la izquierda */
+}
+
+/* Reducir el padding de los botones */
+.swal-confirm-btn,
+.swal-cancel-btn {
+  padding: 5px 10px; /* Reducir el padding de los botones */
+  font-size: 14px; /* Reducir el tamaño de la fuente de los botones */
+}
