@@ -13,8 +13,15 @@ import { generateRandomLink } from "../../components/survey/encrypt";
 import { useTranslation } from "react-i18next";
 import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
 import Cookies from "js-cookie"; // si no lo has importado ya
+
+import ModalEnvioMasivo from "../../components/Modals/modalEnvioMasivo";
+
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
+
+  // En el estado del componente añade:
+  const [showEnvioModal, setShowEnvioModal] = useState(false);
+  const [selectedSurvey, setSelectedSurvey] = useState(null);
 
   const url = "http://localhost:3000/api/surveys";
   const headers = ["Title", "Start_date", "End_date", "state"];
@@ -341,14 +348,16 @@ const SurveyList = () => {
   };
   const openModalCont = (survey) => {
     /*  await getClient(survey.id) */
-    setModalTitle("Información de la encuesta");
-    title.handleChange(survey?.title || "");
-    start_date.handleChange(survey?.start_date || "");
-    end_date.handleChange(survey?.end_date || "");
-    state.handleChange(survey?.state || "");
-    description.handleChange(survey?.description || "");
-    link.handleChange(survey?.link || "No presenta link anexado");
-    idClient.handleChange(survey?.idClient || "");
+    // setModalTitle("Información de la encuesta");
+    // title.handleChange(survey?.title || "");
+    // start_date.handleChange(survey?.start_date || "");
+    // end_date.handleChange(survey?.end_date || "");
+    // state.handleChange(survey?.state || "");
+    // description.handleChange(survey?.description || "");
+    // link.handleChange(survey?.link || "No presenta link anexado");
+    // idClient.handleChange(survey?.idClient || "");
+    setSelectedSurvey(survey);
+    setShowEnvioModal(true);
   };
 
   const duplicateSurvey = (survey) => {
@@ -428,7 +437,7 @@ const SurveyList = () => {
           </div>
           </div>
       </div>
-      <div id="modalViewSurvey" className="modal fade" aria-hidden="true">
+      {/* <div id="modalViewSurvey" className="modal fade" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
             <div className="modal-header">
@@ -550,7 +559,13 @@ const SurveyList = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
+ {showEnvioModal && (
+  <ModalEnvioMasivo 
+    survey={selectedSurvey} 
+    onClose={() => setShowEnvioModal(false)} 
+  />
+)}
       <div id="modalSurvey" className="modal fade" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
