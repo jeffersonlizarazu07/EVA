@@ -12,9 +12,15 @@ export const getSurveys = async (urlSurveys, config) => {
   };
 
 export const getSurvey = async (id, config, setSurveyData) => {
-  const url = "http://localhost:3000/api/survey/";
-  const response = await axios.get(`${url}${id}`, config);
-  setSurveyData(response.data);
+  try{
+    const url = "http://localhost:3000/api/survey/";
+    const response = await axios.get(`${url}${id}`, config);
+    console.log('response data',response)
+    setSurveyData(response.data);
+  }catch(error){
+    console.log('error: ',e)
+  }
+ 
 };
 
 export const getSurveyQuestions = async (id, config) => {

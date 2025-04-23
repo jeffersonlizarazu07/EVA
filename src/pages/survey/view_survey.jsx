@@ -102,11 +102,12 @@ useEffect(() => {
   fetchData();
 }, []);
 
-  const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  };
+const config = {
+  headers: {
+  },
+  withCredentials: true,
+};
+
   const updateSurveyQuestions = async () => {
     try {
       const result = await getSurveyQuestions(id, config);

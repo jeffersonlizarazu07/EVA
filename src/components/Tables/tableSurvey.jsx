@@ -156,8 +156,6 @@ const TableSurvey = ({
 
                   <button
                   className="btn text-start"
-                  data-bs-toggle="modal"
-                  data-bs-target={`#${modalId2}`}
                   onClick={() => onBulkEmail(item)}
                   style={{width:"100%"}}
                 >
