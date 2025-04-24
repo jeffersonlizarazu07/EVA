@@ -20,41 +20,51 @@ import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 
 const AdminList = () => {
-  // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
-
+  // URL base para los usuarios (admins) y para los usuarios-clientes
   const urlUsers = "http://localhost:3000/api/users";
   const urlUsersClients = "http://localhost:3000/api/users_client";
-  const [admins, setAdmins] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [operation, setOperation] = useState([1]);
-  const [title, setTitle] = useState();
-  const [idToEdit, setidToEdit] = useState(null);
-  const [formattedDate, setFormattedDate] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [userclients, setUserClients] = useState([]);
-  const [selectedClients, setSelectedClients] = useState([]);
+
+  // Estados principales del componente
+  const [admins, setAdmins] = useState([]); // Lista de admins cargados desde el backend
+  const [clients, setClients] = useState([]); // Lista de clientes cargados desde el backend
+  const [operation, setOperation] = useState([1]); // Tipo de operación (crear o editar)
+  const [title, setTitle] = useState(); // Título dinámico del modal
+  const [idToEdit, setidToEdit] = useState(null); // ID del admin que se está editando
+  const [formattedDate, setFormattedDate] = useState(""); // Fecha actual formateada
+  const [loading, setLoading] = useState(false); // Bandera de carga (puede ser útil)
+  const [userclients, setUserClients] = useState([]); // Relación de clientes por usuario
+  const [selectedClients, setSelectedClients] = useState([]); // Clientes seleccionados para un admin
+
+  // Traducción e idioma desde el contexto global del usuario
   const { t, i18n } = useTranslation();
   const { accessToken, languageUser } = useContext(UserContext);
+
+  // Íconos para los checkboxes (Material UI)
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
-
+  // Se ejecuta cuando cambia el idioma del usuario o se monta el componente
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
     const day = today.getDate();
+    // Formateo de la fecha (YYYY-MM-DD)
     const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${
       day < 10 ? "0" + day : day
     }`;
+
+    // Cargo admins y clientes desde el backend
     setFormattedDate(formattedDater);
     getAdmins();
+
+    // Cambio el idioma actual del usuario
     i18n.changeLanguage(languageUser);
     getClients();
   }, [languageUser]);
   const config = {
     withCredentials: true,
   };
-
+  // Llaves para campos específicos al mostrar data
   const selectedKeys = ["firstname", "lastname", "type", "state"];
   const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -85,7 +95,8 @@ const AdminList = () => {
     validate: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
   });
 
-  //REQUEST//
+  // ----------- PETICIONES A LA API ----------- //
+  // Obtener todos los admins
   const getAdmins = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/users`, {
@@ -97,6 +108,7 @@ const AdminList = () => {
     }
   };
 
+  // Obtener todos los clientes
   const getClients = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/clients`, {
@@ -108,6 +120,7 @@ const AdminList = () => {
     }
   };
 
+  // Obtener los clientes asignados a un admin específico
   const getUserClients = async (id) => {
     try {
       const response = await axios.get(
@@ -123,6 +136,7 @@ const AdminList = () => {
     }
   };
 
+  // Envío de datos al servidor (crear o editar admin)
   const sendData2 = async (metodo, { password, cPassword, ...rest }) => {
     if (selectedClients.length === 0) {
       Swal.fire({
@@ -228,9 +242,11 @@ const AdminList = () => {
     const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
-    const parametros = {
-      state: 0,
-    };
+
+    // Estado a enviar: 0 = desactivado
+    const parametros = { state: 0 };
+
+    // Confirmación antes de desactivar
     smallAlertDelete
       .fire({
         text: `${t("alertDeactivate.InitialPhrase")}${name} ${t(
@@ -243,14 +259,14 @@ const AdminList = () => {
       .then(async (result) => {
         if (result.isConfirmed) {
           try {
-            await axios.patch(`${url}/${id}`, parametros, config);
-            // getAdmins();
+            await axios.patch(`${url}/${id}`, parametros, config); // peticion para desactivar
+            // getAdmins(); // ya no se usa acá
           } catch (error) {
             alert("error", "Error al eliminar el admin");
             console.error(error);
           }
         }
-        getAdmins();
+        getAdmins(); // refresco de lista
       });
   };
 
@@ -258,9 +274,10 @@ const AdminList = () => {
     const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
-    const parametros = {
-      state: 1,
-    };
+
+    // Estado a enviar: 1 = activo
+    const parametros = { state: 1 };
+
     smallAlertDelete
       .fire({
         text: `${t("alertActivate.InitialPhrase")} ${name} ${t(
@@ -276,15 +293,15 @@ const AdminList = () => {
             await axios.patch(`${url}/${id}`, parametros, {
               withCredentials: true,
             });
+            // Notificación de éxito
             Toast.fire({
               icon: "success",
               title: `${t("alertActivate.InitialPhrase")} ${
                 admin.firstname
               } ${t("alertActivate.SuccessAlert")}`,
             });
-
-            // getAdmins();
           } catch (error) {
+            // Notificación de error
             Toast.fire({
               icon: "error",
               title: `${t("alertActivate.InitialPhrase")}${admin.firstName}${t(
@@ -294,7 +311,7 @@ const AdminList = () => {
             console.error(error);
           }
         }
-        getAdmins();
+        getAdmins(); // actualizar admins
       });
   };
 
@@ -423,15 +440,13 @@ const AdminList = () => {
     setSelectedClients(selectedClientIds);
   };
 
-  //? Select //
-
   return (
     <div className="App">
       <div id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
         <div className="row m-0">
-          <div className="col-1 d-none d-flex  align-items-center ms-0 p-0" >
+          <div className="col-1 d-none d-flex  align-items-center ms-0 p-0">
             {/* <SidebarLT1 /> */}
           </div>
           <div className="col-12">
@@ -765,7 +780,7 @@ const AdminList = () => {
                         ? "Administrador"
                         : type.input == 3
                         ? "Editor"
-                        : "Visualizador"
+                        : "Agente"
                     }`}{" "}
                   </p>
                 </div>
