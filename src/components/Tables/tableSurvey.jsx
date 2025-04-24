@@ -1,6 +1,6 @@
-import { useState,useEffect,useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { UserContext } from "../../context/UserContext";
-import axios from 'axios'
+import axios from "axios";
 import "../../assets/css/tabla.css";
 import { useTranslation } from "react-i18next";
 
@@ -16,42 +16,41 @@ const TableSurvey = ({
   onActive,
   onDuplicate,
   onCheck,
-  onCopyLink
+  onCopyLink,
+  onBulkEmail,
 }) => {
-
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
-  const [userClients,setUserClients]=useState([])
-  const {userId,accessToken,languageUser}=useContext(UserContext)
-  const { t,i18n } = useTranslation();
+  const [userClients, setUserClients] = useState([]);
+  const { userId, accessToken, languageUser } = useContext(UserContext);
+  const { t, i18n } = useTranslation();
 
-
-  useEffect(()=>{
-    i18n.changeLanguage(languageUser)
-    getUserClients(userId)
-    filteredData
- 
-
-  },[languageUser])
-
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+    getUserClients(userId);
+    filteredData;
+  }, [languageUser]);
 
   const getUserClients = async (id) => {
     const config = {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-      withCredentials: true
+      withCredentials: true,
     };
-  
+
     try {
-      const response = await axios.get(`http://localhost:3000/api/users_client/${id}`, config);
+      const response = await axios.get(
+        `http://localhost:3000/api/users_client/${id}`,
+        config
+      );
       setUserClients(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-  
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
     setCurrentPage(1); // Reset page to 1 on new search
@@ -66,15 +65,16 @@ const TableSurvey = ({
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const filteredData = data.filter((item) =>
-    userClients.some(client => client.id  ==  item.idClient) &&
-    Object.values(item).some(
-      (val) =>
-        typeof val  ==  "string" &&
-        val.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const filteredData = data.filter(
+    (item) =>
+      userClients.some((client) => client.id == item.idClient) &&
+      Object.values(item).some(
+        (val) =>
+          typeof val == "string" &&
+          val.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
-  
+
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredData.slice(
@@ -120,96 +120,118 @@ const TableSurvey = ({
             <tr key={idx}>
               {header.map((col, i) => (
                 <td key={i}>
-                  {col == "state"?(item.state == 1? `${t("clientTable.Active")}`:`${t("clientTable.Inactive")}`):(item[col.toLowerCase()] || item[col])}
+                  {col == "state"
+                    ? item.state == 1
+                      ? `${t("clientTable.Active")}`
+                      : `${t("clientTable.Inactive")}`
+                    : item[col.toLowerCase()] || item[col]}
                 </td>
               ))}
-            
-                {item.state == 1?( 
-                  <td>
+
+              {item.state == 1 ? (
+                <td>
                   <div className="dropdown">
-                    <button className="btn-rect btn-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button
+                      className="btn-rect btn-dropdown"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
                       <div className="dropdown-toggle">
-                    <i className="fa-solid fa-ellipsis-vertical"></i>
-                    </div>
+                        <i className="fa-solid fa-ellipsis-vertical"></i>
+                      </div>
                     </button>
                     <ul className="dropdown-menu p-0 ">
                       <li className="text-start btn-rect">
-                      <button className="btn  btn-rect" onClick={()=> onCheck(item)}>
-                    <i className="fa-solid fa-circle-question"></i> <span> Ver preguntas</span>
-                    </button>
+                        <button
+                          className="btn  btn-rect"
+                          onClick={() => onCheck(item)}
+                        >
+                          <i className="fa-solid fa-circle-question"></i>{" "}
+                          <span> Ver preguntas</span>
+                        </button>
                       </li>
                       <li className="text-start btn-rect">
-                      <button className="btn text-start" style={{width:"100%"}} onClick={() => onCopyLink(item)}>
-                      <i className="fa-solid fa-link"></i> <span> Copiar enlace</span>
-                      </button>
-                      </li>
-                      <li className="text-start  btn-rect"  >
-                         <button  style={{width:"100%"}} className="btn text-start"  data-bs-toggle="modal"  data-bs-target={`#${modalId}`}   onClick={() => onUpdate(item)}
-  >
-                  <i className="fa-solid fa-edit"></i> Editar
-                </button>
-                      </li>
-
-                      
-                  <li className="text-start  btn-rect">
-
-                  <button
-                  className="btn text-start"
-                  data-bs-toggle="modal"
-                  data-bs-target={`#${modalId2}`}
-                  onClick={() => onView(item)}
-                  style={{width:"100%"}}
-                >
-                  <i className="fa-solid fa-envelopes-bulk"></i>
-                  <span> Envio masivo</span>
-                </button>
-                  
-                  </li>
-                  <li className="text-start btn-rect">
-                <button
-                  className="btn text-start "
-                  onClick={() => onDuplicate(item)}
-                  style={{width:"100%"}}
-                >
-                  <i className="fa-solid fa-clone"></i> <span>Duplicar</span>
-                </button>
-                
-                </li>
-                <li className="text-start  btn-rect" > <button className="btn text-start"  style={{width:"100%"}} onClick={() => onRemove(item)}>
-                  <i className="fa-solid fa-power-off"></i> <span> Deshabilitar</span>
-                </button></li>
-                    </ul>
-                    
-                
-                  </div>
-               
-               
-               
-                 
-          
-              </td>):( <td>
-                    <div className="row">
-                      <div className="col">
                         <button
-                          className="btn btn-rect"
-                          onClick={() => onActive(item)}
-                          data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Tooltip on bottom"
+                          className="btn text-start"
+                          style={{ width: "100%" }}
+                          onClick={() => onCopyLink(item)}
                         >
-                         <i className="fa-solid fa-power-off"></i>
+                          <i className="fa-solid fa-link"></i>{" "}
+                          <span> Copiar enlace</span>
                         </button>
+                      </li>
+                      <li className="text-start  btn-rect">
                         <button
-                          className="btn btn-rect"
+                          style={{ width: "100%" }}
+                          className="btn text-start"
                           data-bs-toggle="modal"
-                          data-bs-target={`#${modalId2}`}
-                          onClick={() => onView(item)}
+                          data-bs-target={`#${modalId}`}
+                          onClick={() => onUpdate(item)}
                         >
-                          <i className="fa-solid fa-search"></i>
+                          <i className="fa-solid fa-edit"></i> Editar
                         </button>
-                      </div>
+                      </li>
+
+                      <li className="text-start  btn-rect">
+                        <button
+                          className="btn text-start"
+                          onClick={() => onBulkEmail(item)}
+                          style={{ width: "100%" }}
+                        >
+                          <i className="fa-solid fa-envelopes-bulk"></i>
+                          <span> Envio masivo</span>
+                        </button>
+                      </li>
+                      <li className="text-start btn-rect">
+                        <button
+                          className="btn text-start "
+                          onClick={() => onDuplicate(item)}
+                          style={{ width: "100%" }}
+                        >
+                          <i className="fa-solid fa-clone"></i>{" "}
+                          <span>Duplicar</span>
+                        </button>
+                      </li>
+                      <li className="text-start  btn-rect">
+                        {" "}
+                        <button
+                          className="btn text-start"
+                          style={{ width: "100%" }}
+                          onClick={() => onRemove(item)}
+                        >
+                          <i className="fa-solid fa-power-off"></i>{" "}
+                          <span> Deshabilitar</span>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              ) : (
+                <td>
+                  <div className="row">
+                    <div className="col">
+                      <button
+                        className="btn btn-rect"
+                        onClick={() => onActive(item)}
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-title="Tooltip on bottom"
+                      >
+                        <i className="fa-solid fa-power-off"></i>
+                      </button>
+                      <button
+                        className="btn btn-rect"
+                        data-bs-toggle="modal"
+                        data-bs-target={`#${modalId2}`}
+                        onClick={() => onView(item)}
+                      >
+                        <i className="fa-solid fa-search"></i>
+                      </button>
                     </div>
-                  </td>)}
-                  
-               
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

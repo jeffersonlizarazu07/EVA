@@ -197,7 +197,7 @@ export default function SurveyBlocks() {
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
     if (op === 1) {
-      resetFormFields(); // 🧼 Limpia todo el estado base
+      resetFormFields(); // Limpia todo el estado base
       setTitle("Crear Bloque");
       setDescriptionText("");
       description.handleChange("");
@@ -214,9 +214,6 @@ export default function SurveyBlocks() {
       setSelectorData({ options: [], selectedOption: null }); // limpia selectores
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
-      setSingleChoiceData({ options: [], correctAnswer: null });
-      setMultipleChoiceData({ options: [], correctAnswers: [] });
-      setSelectorData({ options: [], selectedOption: null });
       setSelectorData({ options: [], selectedOption: null });
       setQuestionsList([
         { text: "", type: "", options: [], correctAnswers: [] },
@@ -276,6 +273,12 @@ export default function SurveyBlocks() {
       );
       setidToEdit(questionDetails?.id);
     }
+
+    const posiciones = data.map((bloque) => parseInt(bloque.posicion));
+    const nuevaPosicion =
+      posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+
+    posicionInput.handleChange(nuevaPosicion.toString()); // Asigna internamente
   };
 
   const validar = (id, survey_idt) => {
@@ -283,25 +286,8 @@ export default function SurveyBlocks() {
     var metodo;
     console.log("??  ", singleChoiceData.correctAnswer);
 
-    // if (operation === 1 && nombreInput.input.trim() === "") {
-    //   setError("Ingresa un nombre de bloque válido.");
-    //   return;
-    // }
-
-    // if (operation === 2 && (questionType.input.trim() === "" || description.input.trim() === "")) {
-    //   setError("Ingresa una pregunta valida.");
-    //   return;
-    // }
-
     setError("");
 
-    // Determinar los datos específicos según el tipo de pregunta
-    // let selectedAnswer, options, selectedAnswerToString, optionsToSave;
-
-    // if (questionType.input.trim() === "" || description.input.trim() === "") {
-    //   setError("Ingresa una pregunta valida.");
-    // } else {
-    //   // Determinar los datos específicos según el tipo de pregunta
     let selectedAnswer, options, selectedAnswerToString, optionsToSave;
 
     if (questionType.input === "radio_opt") {
@@ -319,6 +305,11 @@ export default function SurveyBlocks() {
       options = selectorData.options;
       selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
       optionsToSave = options.map((option) => option.text).join(", ");
+    } else if (questionType.input === "textfield_s") {
+      selectedAnswer = textFieldAnswer;
+      options = [];
+      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
+      optionsToSave = ""; // No hay opciones para este tipo de pregunta
     }
 
     if (operation === 1) {
@@ -395,7 +386,6 @@ export default function SurveyBlocks() {
     )
       .then(() => {
         // Actualizar preguntas después de la llamada a sendData
-        // updateSurveyQuestions();
         const nuevosDatos = [...data, parametros];
         setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
         localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
@@ -587,6 +577,7 @@ export default function SurveyBlocks() {
     id_conditional.handleChange("0");
     survey_id.handleChange("");
     conditional_answer.handleChange("");
+    setTextFieldAnswer("");
 
     setQuestionCountInput("");
     setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
@@ -607,7 +598,8 @@ export default function SurveyBlocks() {
       case "yes_no":
         return (
           <p>
-            <strong>Respuesta:</strong> {respuesta}
+            <strong>Respuesta:</strong>{" "}
+            {respuesta !== " " ? respuesta : "Sin respuesta"}
           </p>
         );
 
@@ -636,6 +628,14 @@ export default function SurveyBlocks() {
           </p>
         );
     }
+  };
+
+  // Agregar función para manejar edición
+  const onUpdate = (bloque) => {
+    openModal(2, id, bloque);
+    // Abrir modal después de configurar la data
+    document.getElementById("modalManageQuestion").classList.add("show");
+    document.getElementById("modalManageQuestion").style.display = "block";
   };
 
   return (
@@ -686,153 +686,176 @@ export default function SurveyBlocks() {
                   </div>
 
                   <div className="card-body ui-sorteable">
-                    {/* Código para traer datos del formulario Crear Bloque */}
                     {data.map((bloque) => (
                       <div key={bloque.id} className="shadowbox5 p-3 m-3">
-                        <div className="d-flex justify-content-between mb-2">
-                          <div>
-                          <h3 className="m-0 pb-3">
-                            {bloque.nombreBloque || "Bloque sin nombre"}
-                          </h3>
-                          <p className="mb-1">
-                            <strong>Descripción:</strong> {bloque.question}
-                          </p>
-                          <p className="mb-1">
-                            <strong>Ponderación:</strong> {bloque.ponderacion}
-                          </p>
-                          <p className="mb-1">
-                            <strong>Posición:</strong> {bloque.posicion}
-                          </p>
-                          <p className="mb-1">
-                            <strong>Pregunta:</strong> {bloque.question}
-                          </p>
+                        <div className="d-flex justify-content-between mb-2 w-100">
+                          <div className="w-100 ps-2">
+                            <div className="d-flex justify-content-between align-items-start">
+                              <h3 className="mb-3 ms-2">
+                                {bloque.nombreBloque || "Bloque sin nombre"}
+                              </h3>
+                              <span className="text-muted block-weighting me-3">
+                                {`${bloque.ponderacion}%` || "0"}
+                              </span>
+                            </div>
+
+                            <div className="shadowbox5 mb-2 w-100 p-3">
+                              <p className="mb-1">
+                                <strong>Posición:</strong> {bloque.posicion}
+                              </p>
+                              <p className="mb-1">
+                                <strong>Pregunta:</strong>
+                                {bloque.question}
+                              </p>
+                              {renderRespuesta(bloque)}
+                            </div>
+
+                            {/* Aquí se agregan las preguntas internas (columna derecha del modal) */}
+                            {bloque.preguntas &&
+                              bloque.preguntas.length > 0 && (
+                                <div className="mt-2">
+                                  {bloque.preguntas.map((preg, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="shadowbox5 p-3 mb-3"
+                                    >
+                                      <div className="d-flex justify-content-between align-items-start">
+                                        <div>
+                                          <p className="mb-1">
+                                            <strong>Pregunta {idx + 1}:</strong>{" "}
+                                            {preg.text || "Sin texto"}
+                                          </p>
+                                          <p className="mb-1">
+                                            <strong>Tipo:</strong> {preg.type}
+                                          </p>
+                                          {preg.type === "radio_opt" && (
+                                            <SingleChoiceView
+                                              options={preg.options}
+                                              correctOption={
+                                                preg.correctAnswers
+                                              }
+                                            />
+                                          )}
+                                          {preg.type === "check_opt" && (
+                                            <MultipleChoiceView
+                                              options={preg.options}
+                                              correctOption={
+                                                preg.correctAnswers
+                                              }
+                                            />
+                                          )}
+                                          {preg.type === "selector_opt" && (
+                                            <p className="mb-1">
+                                              <strong>Seleccionado:</strong>{" "}
+                                              {preg.selectedOption ||
+                                                "Sin selección"}
+                                            </p>
+                                          )}
+                                          {preg.type === "textfield_s" && (
+                                            <Textfield_s
+                                              value={preg.answer || ""}
+                                              readOnly
+                                            />
+                                          )}
+                                          {preg.type === "yes_no" && (
+                                            <Yes_no
+                                              value={preg.answer || ""}
+                                              readOnly
+                                            />
+                                          )}
+                                        </div>
+                                        <span className="text-muted me-2">
+                                          33%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                           </div>
-                          
-                          {/* <div className="dropdown justify-content-between">
-                            <button
-                              className="btn btn-sm dropdown-toggle"
-                              style={{ color: "rgba(175, 14, 110, 0.717)" }}
-                              type="button"
-                              data-bs-toggle="dropdown"
-                            >
-                              ⋮
-                            </button>
-                            <ul className="dropdown-menu dropdown-menu-end">
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() =>
-                                    console.log("Editar bloque", bloque)
-                                  }
-                                >
-                                  Editar
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={() =>
-                                    console.log("Eliminar bloque", bloque)
-                                  }
-                                >
-                                  Eliminar
-                                </button>
-                              </li>
-                            </ul>
-                          </div> */}
-                        </div>
 
-                        {/* <p className="mb-1">{bloque.question}</p> */}
-                      </div>
-                    ))}
-
-                    {data.map((question) => (
-                      <div
-                        key={question.id}
-                        className="callout callout info shadowbox5 p-3 m-3"
-                      >
-                        <div className="row ">
-                          <div className="col-md-12 col-12"></div>
-                        </div>
-
-                        <div className="d-flex justify-content-between">
-                          <h5 className="mt-2">{question.question}</h5>
+                          {/* Menú de acciones (editar/eliminar) */}
                           <div className="dropdown">
-                            <a
-                              className="btn dropdown-toggle"
-                              style={{ color: "rgba(175, 14, 110, 0.717)" }}
-                              href="#"
-                              role="button"
+                            <button
+                              className="btn-rect btn-dropdown"
+                              type="button"
                               data-bs-toggle="dropdown"
                               aria-expanded="false"
                             >
-                              <i className="fa-solid fa-ellipsis-vertical"></i>
-                            </a>
-                            <ul className="dropdown-menu">
-                              <li>
+                              <div className="dropdown-toggle">
+                                <i className="fa-solid fa-ellipsis-vertical"></i>
+                              </div>
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end p-0">
+                              <li className="text-start btn-rect">
                                 <button
-                                  className="dropdown-item"
-                                  type="button"
+                                  className="btn text-start"
+                                  style={{ width: "100%" }}
                                   data-bs-toggle="modal"
-                                  data-bs-target="#modalManageQuestion"
-                                  onClick={() => openModal(2, id, question)}
+                                  onClick={() => onUpdate(bloque)}
                                 >
-                                  Editar
+                                  <i className="fa-solid fa-edit"></i> Editar
                                 </button>
                               </li>
-                              <li>
+                              <li className="text-start btn-rect">
                                 <button
-                                  className="dropdown-item"
-                                  type="button"
-                                  onClick={() =>
-                                    deleteQuestion(
-                                      question,
-                                      config,
-                                      updateSurveyQuestions,
-                                      t
-                                    )
-                                  }
+                                  className="btn text-start"
+                                  style={{ width: "100%" }}
+                                  onClick={() => onBulkEmail(bloque)}
                                 >
-                                  Eliminar
+                                  <i className="fa-solid fa-trash"></i>{" "}
+                                  <span>Eliminar</span>
                                 </button>
                               </li>
                             </ul>
                           </div>
                         </div>
-
-                        {renderRespuesta(question)}
-
-                        {/* {question.type == "yes_no" ? (
-                          <Yes_no />
-                        ) : question.type == "textfield_s" ? (
-                          <Textfield_s />
-                        ) : question.type == "radio_opt" ? (
-                          <SingleChoiceView
-                            options={question.select_option}
-                            correctOption={question.selected_answer}
-                          />
-                        ) : (
-                          <MultipleChoiceView
-                            options={question.select_option}
-                            correctOption={question.selected_answer}
-                          />
-                        )} */}
-
-                        <div className="text-end me-3">
-                          {question.conditional === "SI" ? (
-                            <i
-                              className="fa-solid fa-question text-primary"
-                              data-bs-toggle="tooltip"
-                              data-bs-placement="top"
-                              data-bs-custom-class="custom-tooltip"
-                              data-bs-title="This top tooltip is themed via CSS variables."
-                            ></i>
-                          ) : (
-                            ""
-                          )}
-                        </div>
                       </div>
                     ))}
+
+                    {/* {data.map((question) => (
+                    <div
+                      key={question.id}
+                      className="callout callout info shadowbox5 p-3 m-3"
+                    >
+                      <div className="row ">
+                        <div className="col-md-12 col-12"></div>
+                      </div>
+
+                      <div className="d-flex justify-content-between">
+                        <h5 className="mt-2">{question.question}</h5>
+                      </div>
+
+                      {question.type == "yes_no" ? (
+                        <Yes_no />
+                      ) : question.type == "textfield_s" ? (
+                        <Textfield_s />
+                      ) : question.type == "radio_opt" ? (
+                        <SingleChoiceView
+                          options={question.select_option}
+                          correctOption={question.selected_answer}
+                        />
+                      ) : (
+                        <MultipleChoiceView
+                          options={question.select_option}
+                          correctOption={question.selected_answer}
+                        />
+                      )}
+
+                      <div className="text-end me-3">
+                        {question.conditional === "SI" ? (
+                          <i
+                            className="fa-solid fa-question text-primary"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-custom-class="custom-tooltip"
+                            data-bs-title="This top tooltip is themed via CSS variables."
+                          ></i>
+                        ) : (
+                          ""
+                        )}
+                      </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
@@ -890,7 +913,7 @@ export default function SurveyBlocks() {
                   <div className="form-group m-2 mt-2 mb-4">
                     <label id="labelAnimation" htmlFor="question">
                       <input
-                        type="text"
+                        type="number"
                         name="question"
                         id="question"
                         className="input-new"
@@ -914,6 +937,7 @@ export default function SurveyBlocks() {
                         className="input-new"
                         placeholder=" "
                         value={posicionInput.input}
+                        readOnly //
                         onChange={(e) =>
                           posicionInput.handleChange(e.target.value)
                         }

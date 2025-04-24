@@ -12,15 +12,23 @@ export const getSurveys = async (urlSurveys, config) => {
   };
 
 export const getSurvey = async (id, config, setSurveyData) => {
-  const url = "http://localhost:3000/api/surveys/";
-  const response = await axios.get(`${url}${id}`, config);
-  setSurveyData(response.data);
+  try{
+    const url = "http://localhost:3000/api/survey/";
+    const response = await axios.get(`${url}${id}`, config);
+    console.log('response data',response)
+    setSurveyData(response.data);
+  }catch(error){
+    console.log('error: ',e)
+  }
+ 
 };
 
 export const getSurveyQuestions = async (id, config) => {
   const url = "http://localhost:3000/api/surveys/";
   const response = await axios.get(`${url}${id}/question`, config);
   const responseData = response.data.data;
+  console.log("Preguntas de la encuesta:", responseData);
+
   return responseData;
 };
 
@@ -76,48 +84,39 @@ export const sendData = async (
   t
 ) => {
   try {
+    setLoading(true);
     if (metodo.toUpperCase() === "POST") {
-      const handleCreateQuestion = async () => {
-        setLoading(true);
-        try {
-          const url =
-            "http://localhost:3000/api/question";
-          const response = await axios.post(url, parametros, config);
-          const responseData = response.data;
-          console.log("Respuesta solicitud Post:", responseData);
-          if (responseData.status) {
-            setLoading(false);
-            setError("");
-            document.getElementById("btnClose").click();
-            Toast2.fire({
-              icon: "success",
-              title: `${t("Pregunta añadida exitosamente.")}`,
-            });
-            updateSurveyQuestions();
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      };
-      handleCreateQuestion();
+      const url = "http://localhost:3000/api/question";
+      const response = await axios.post(url, parametros, config);
+      if (response.data.status) {
+        setLoading(false);
+        setError("");
+        Toast2.fire({
+          icon: "success",
+          title: `${t("Pregunta añadida exitosamente.")}`,
+        });
+        updateSurveyQuestions();
+      } else {
+        throw new Error(response.data.message || "Error desconocido");
+      }
     } else if (metodo.toUpperCase() === "PUT") {
       const url = `http://localhost:3000/api/question/`;
-      const response = await axios.put(
-        `${url}${idToEdit}`,
-        parametros,
-        config
-      );
-      const responseData = response.data;
-      console.log(responseData);
-      if (responseData.status) {
+      const response = await axios.put(`${url}${idToEdit}`, parametros, config);
+      if (response.data.status) {
         Toast2.fire({
           icon: "success",
           title: `${t("Pregunta editada exitosamente.")}`,
         });
         updateSurveyQuestions();
+      } else {
+        throw new Error(response.data.message || "Error desconocido");
       }
     }
   } catch (error) {
     console.error("Error:", error);
+    setError(error.message || "Ha ocurrido un error.");
+    setLoading(false);
+    // Aquí puedes agregar un mensaje más claro para el usuario
+    alert("Hubo un problema con el servidor. Intenta nuevamente más tarde.");
   }
 };
