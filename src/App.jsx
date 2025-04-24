@@ -46,6 +46,10 @@ import Gratitude from "./pages/survey/gratitude";
 import Reports from "./pages/admin/reports"
 
 
+
+// agents
+import AgentList from "./pages/admin/agent_list"; // Asegúrate que este path sea correcto
+
 /* ---------------------------------------------------------*/
 
 export const App = () => {
@@ -79,7 +83,7 @@ export const App = () => {
 
       <Route
             element={
-              <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 3]} />
+              <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 3,4]} />
             }
           >
             <Route path="/reports" element={<Reports/>}></Route>
@@ -87,14 +91,16 @@ export const App = () => {
             <Route path="/survey_list" element={<SurveyList />} />
             <Route path="/editor" element={<IndexEditor />} />
             <Route path="/view_survey/:id" element={<View_survey />} />
+            <Route path="/agent_list" element={<AgentList />} /> 
           </Route> 
           <Route
             element={
-              <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 4]} />
+              <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 3,4,]} />
             }
           > 
             <Route path="/quality" element={<Quality />} />
             <Route path="/index=Quality" element={<IndexQuality />} />
+            
          </Route> 
 
           {/*quality sites*/}

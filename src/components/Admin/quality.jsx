@@ -35,7 +35,7 @@ const Quality = () => {
 
   return (
     <div className="App">
-      <div id="body" className="body-Claro">
+      <div id="body" >
         {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
         <section>
           {/* {userType === "1" || userType === "2" ? (
@@ -138,7 +138,7 @@ const Quality = () => {
                         </div>
                         <div className="row ">
                           <div className="col-12 ">
-                            <a href="./admin_list">
+                            <a href="./agent_list">
                               <button className="card-btn" id="card-btn-1">
                                 {t("qualitySite.Agents_list")}
                               </button>
@@ -326,7 +326,7 @@ const Quality = () => {
                           </span>
                         </div>
                         <div className="col col-lg-2">
-                          <a href="./admin_list">
+                          <a href="./agent_list">
                             <button className="card-btn">
                               {t("qualitySite.Agents_list")}
                             </button>
