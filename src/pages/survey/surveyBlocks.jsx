@@ -708,7 +708,7 @@ export default function SurveyBlocks() {
                           </p>
                           </div>
                           
-                          <div className="dropdown justify-content-between">
+                          {/* <div className="dropdown justify-content-between">
                             <button
                               className="btn btn-sm dropdown-toggle"
                               style={{ color: "rgba(175, 14, 110, 0.717)" }}
@@ -739,10 +739,10 @@ export default function SurveyBlocks() {
                                 </button>
                               </li>
                             </ul>
-                          </div>
+                          </div> */}
                         </div>
 
-                        <p className="mb-1">{bloque.question}</p>
+                        {/* <p className="mb-1">{bloque.question}</p> */}
                       </div>
                     ))}
 
