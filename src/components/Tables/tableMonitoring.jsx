@@ -14,36 +14,36 @@ import {
 import axios from "axios";
 import Cookies from "js-cookie";
 import Swal from "sweetalert2";
-//import { getForms } from '../../pages/admin/agent_monitoring'; 
 
-const ModalRegisterUser = ({ open, handleClose, userId }) => {
-  const [clients, setClients] = useState([]); // Lista de clientes obtenida de la API
-  const [selectedClient, setSelectedClient] = useState(""); // Cliente seleccionado
-  const [formName, setFormName] = useState(""); // Nombre del formulario
-  const [description, setDescription] = useState(""); // Descripción del formulario
+const ModalRegisterUser = ({ open, handleClose, formId }) => {
+  const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState("");
+  const [formName, setFormName] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     const obtenerClientes = async () => {
       if (open) {
         const token = Cookies.get("accessToken");
         const userId = Cookies.get("userId");
-  
+
         if (!token || !userId) {
           console.error("❌ Token o userId no encontrado en cookies");
           return;
         }
-  
-        //console.log("👤 ID del usuario desde cookies:", userId);
-  
+
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         };
-  
+
         try {
-          const response = await axios.get(`http://localhost:3000/api/users_client/${userId}`, config);
+          const response = await axios.get(
+            `http://localhost:3000/api/users_client/${userId}`,
+            config
+          );
           if (response.data && response.data.data) {
             setClients(response.data.data);
           } else {
@@ -55,21 +55,33 @@ const ModalRegisterUser = ({ open, handleClose, userId }) => {
         }
       }
     };
-  
+
     obtenerClientes();
   }, [open]);
-  
+
   const handleSave = async () => {
     const token = Cookies.get("accessToken");
     const userId = Cookies.get("userId");
   
     if (!formName || !description || !selectedClient) {
-      Swal.fire({
-        title: "Error",
-        text: "Todos los campos son obligatorios",
-        icon: "error",
-        confirmButtonText: "Cerrar"
+      // Muestra un error en forma de Toast cuando los campos están vacíos
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
       });
+  
+      Toast.fire({
+        icon: "error",
+        title: "Todos los campos son obligatorios",
+      });
+  
       return;
     }
   
@@ -77,7 +89,7 @@ const ModalRegisterUser = ({ open, handleClose, userId }) => {
       title: formName,
       description,
       idClient: selectedClient,
-      creation_date: new Date().toISOString().slice(0, 19).replace("T", " "), // formato 'YYYY-MM-DD HH:MM:SS'
+      creation_date: new Date().toISOString().slice(0, 19).replace("T", " "),
       created_by: userId,
       updated_date: new Date().toISOString().slice(0, 19).replace("T", " "),
       updated_by: userId,
@@ -93,26 +105,56 @@ const ModalRegisterUser = ({ open, handleClose, userId }) => {
     };
   
     try {
-      const response = await axios.post("http://localhost:3000/api/forms", formData, config);
+      const response = await axios.post(
+        "http://localhost:3000/api/forms",
+        formData,
+        config
+      );
       console.log("✅ Formulario creado:", response.data);
-      Swal.fire({
-        title: "Formulario creado",
-        text: "Formulario creado correctamente",
-        icon: "success",
-        confirmButtonText: "Cerrar"
+  
+      // Muestra un Toast de éxito cuando el formulario se crea correctamente
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
       });
+  
+      Toast.fire({
+        icon: "success",
+        title: "Formulario creado correctamente",
+      });
+  
       handleClose();
     } catch (error) {
       console.error("❌ Error al guardar el formulario:", error.response || error.message);
-      Swal.fire({
-        title: "Error",
-        text: "Error al guardar el formulario",
+  
+      // Muestra un Toast de error si ocurre un fallo al guardar el formulario
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        },
+      });
+  
+      Toast.fire({
         icon: "error",
-        confirmButtonText: "Cerrar"
+        title: "Error al guardar el formulario",
       });
     }
-  };  
+  };
   
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle>Añadir Formulario</DialogTitle>
@@ -122,17 +164,34 @@ const ModalRegisterUser = ({ open, handleClose, userId }) => {
           label="Nombre del formulario"
           margin="dense"
           value={formName}
-          onChange={(e) => setFormName(e.target.value)} // Actualiza el estado de `formName`
+          onChange={(e) => setFormName(e.target.value)}
+          sx={{
+            borderRadius: "8px", // Borde redondeado
+            //padding: "8px", // Menos padding
+            marginBottom: "10px", // Espacio abajo
+          }}
         />
 
-        <FormControl fullWidth margin="dense" sx={{ mt: 2 }}>
+        <FormControl
+          fullWidth
+          margin="dense"
+          sx={{
+            borderRadius: "8px", // Borde redondeado
+            padding: "8px", // Menos padding
+            marginBottom: "10px", // Espacio abajo
+          }}
+        >
           <InputLabel id="clientes-label">Clientes</InputLabel>
           <Select
             labelId="clientes-label"
             id="clientes"
             value={selectedClient}
-            onChange={(e) => setSelectedClient(e.target.value)} // Actualiza el estado de `selectedClient`
+            onChange={(e) => setSelectedClient(e.target.value)}
             label="Clientes"
+            sx={{
+              borderRadius: "8px", // Borde redondeado
+              padding: "8px", // Menos padding
+            }}
           >
             <MenuItem value="">Seleccione</MenuItem>
             {clients.length > 0 ? (
@@ -155,9 +214,13 @@ const ModalRegisterUser = ({ open, handleClose, userId }) => {
           margin="dense"
           multiline
           rows={4}
-          sx={{ mt: 2 }}
+          sx={{
+            borderRadius: "8px", // Borde redondeado
+            padding: "8px", // Menos padding
+            marginBottom: "10px", // Espacio abajo
+          }}
           value={description}
-          onChange={(e) => setDescription(e.target.value)} // Actualiza el estado de `description`
+          onChange={(e) => setDescription(e.target.value)}
         />
       </DialogContent>
 
@@ -165,14 +228,22 @@ const ModalRegisterUser = ({ open, handleClose, userId }) => {
         <Button
           onClick={handleClose}
           variant="contained"
-          sx={{ backgroundColor: "#6c757d" }}
+          sx={{
+            backgroundColor: "#6c757d",
+            borderRadius: "8px", // Borde redondeado
+            padding: "6px 12px", // Menos padding
+          }}
         >
           Cerrar
         </Button>
         <Button
           onClick={handleSave}
           variant="contained"
-          sx={{ backgroundColor: "#d1006c" }}
+          sx={{
+            backgroundColor: "#d1006c",
+            borderRadius: "8px", // Borde redondeado
+            padding: "6px 12px", // Menos padding
+          }}
         >
           Guardar
         </Button>

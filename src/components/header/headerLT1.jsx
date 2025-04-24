@@ -2,7 +2,7 @@ import Logo from "../../assets/img/logo EVA.webp";
 import axios from "axios";
 import { useContext, useState, useEffect } from "react";
 import { toggleBlackMode } from "../../assets/js/toggleBlackMode";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { Modal, ModalBody, ModalHeader, Button, ModalFooter } from "reactstrap";
 import { useTranslation } from "react-i18next";
@@ -269,6 +269,13 @@ const [confirmError, setConfirmError] = useState("");
     setAnchorEl(null);
   };
 
+  const location = useLocation();  // Hook para obtener la URL actual
+  
+  // Función para determinar el color del botón basado en la URL
+  const getButtonColor = (path) => {
+    return location.pathname === path ? 'rgb(199, 14, 143)' : '#000';
+  };
+
   return (
     
     <header className="sticky-top">
@@ -294,9 +301,9 @@ const [confirmError, setConfirmError] = useState("");
               <MUIButton
                 variant="text"
                 sx={{
-                  color: "#000",
+                  color: getButtonColor("/admin"),  // Establecer color dinámicamente
                   "&:hover": {
-                    color: "rgb(199, 14, 143)", // Cambia el color del texto al pasar el ratón
+                    color: "rgb(199, 14, 143)",
                   },
                 }}
                 className="fw-bold h-100 m-0 p-0"
@@ -310,9 +317,9 @@ const [confirmError, setConfirmError] = useState("");
               <MUIButton
                 variant="text"
                 sx={{
-                  color: "#000",
+                  color: getButtonColor("/admin_list"),  // Establecer color dinámicamente
                   "&:hover": {
-                    color: "rgb(199, 14, 143)", // Cambia el color del texto al pasar el ratón
+                    color: "rgb(199, 14, 143)",
                   },
                 }}
                 className="fw-bold h-100 m-0 p-0"
@@ -326,9 +333,9 @@ const [confirmError, setConfirmError] = useState("");
               <MUIButton
                 variant="text"
                 sx={{
-                  color: "#000",
+                  color: getButtonColor("/client_list"),  // Establecer color dinámicamente
                   "&:hover": {
-                    color: "rgb(199, 14, 143)", // Cambia el color del texto al pasar el ratón
+                    color: "rgb(199, 14, 143)",
                   },
                 }}
                 className="fw-bold h-100 m-0 p-0"

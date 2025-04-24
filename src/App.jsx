@@ -17,6 +17,7 @@ import Satisfaction from "./components/Admin/satisfaction";
 import Client_list from "./pages/admin/client_list";
 import AdminList from "./pages/admin/admin_list";
 import Agent_Monitoring from "./pages/admin/agent_monitoring";
+import AgentMonitoring from "./pages/admin/agent_monitoring_";
 import SurveyBlocks from "./pages/survey/surveyBlocks";
 /* ---------------------------------------------------------*/
 
@@ -56,6 +57,7 @@ export const App = () => {
           <Route path="/survey/:link" element={<Survey/>}/>
           <Route path="/gratitude" element={<Gratitude/>}/>
           <Route path="/agent_monitoring" element={<Agent_Monitoring />} />
+          <Route exact path="/agent_monitoring_" component={AgentMonitoring} />
           <Route path="/survey_blocks/:id_form" element={<SurveyBlocks />} />
           {/* Pruebas de barras */}
           {/*error views*/}
