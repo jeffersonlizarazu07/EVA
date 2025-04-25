@@ -422,7 +422,12 @@ export default function SurveyBlocks() {
   };
 
   const handleMultipleChoiceChange = (data) => {
-    setMultipleChoiceData(data);
+    setMultipleChoiceData(data)({
+      options: data.options || [],
+      correctAnswers: Array.isArray(data.correctAnswers)
+        ? data.correctAnswers
+        : [],
+    });
   };
   const handleSelectConditionalQuestionChange = (e) => {
     const selectedId = e.target.value; // Captura el value (question.id)
@@ -1160,14 +1165,32 @@ export default function SurveyBlocks() {
 
                       {operation === 1 && (
                         <div className="mt-2 mb-2">
-                          {q.type === "yes_no" ? <Yes_no /> : null}
-                          {q.type === "textfield_s" ? <Textfield_s /> : null}
+                          {q.type === "yes_no" && <Yes_no />}
+                          {q.type === "textfield_s" && <Textfield_s />}
+                          {q.type === "radio_opt" && (
+                            <SingleChoiceQuestion
+                              options={singleChoiceData.options}
+                              correctOption={singleChoiceData.correctAnswer}
+                              onChange={handleSingleChoiceChange}
+                            />
+                          )}
+                          {q.type === "check_opt" && (
+                            <MultipleChoiceQuestion
+                              options={multipleChoiceData.options || []}
+                              correctAnswers={
+                                Array.isArray(multipleChoiceData.correctAnswers)
+                                  ? multipleChoiceData.correctAnswers
+                                  : []
+                              }
+                              onChange={handleMultipleChoiceChange}
+                            />
+                          )}
                         </div>
                       )}
 
                       {operation === 2 && (
                         <>
-                          <div className="form-check form-switch m-2">
+                          <div className="form-check form-switch">
                             <input
                               className="form-check-input"
                               type="checkbox"
@@ -1184,7 +1207,6 @@ export default function SurveyBlocks() {
                               className="col-6 p-2 shadowbox5"
                               style={{ borderLeft: "5px solid gray" }}
                             >
-                              {/* ... contenido condicional ... */}
                             </div>
                           )}
                         </>
@@ -1198,6 +1220,9 @@ export default function SurveyBlocks() {
                         <div className="mt-2 mb-2">
                           {q.type === "yes_no" ? <Yes_no /> : null}
                           {q.type === "textfield_s" ? <Textfield_s /> : null}
+                          {q.type === "radio_opt" ? (
+                            <MultipleChoiceQuestion />
+                          ) : null}
                         </div>
                       )}
                     </div>

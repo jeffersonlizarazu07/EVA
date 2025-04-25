@@ -54,24 +54,29 @@ function SingleChoiceQuestion({ options, correctAnswer, onChange }) {
   return (
     <div>
       {localOptions.map((option, index) => (
-        <div key={index} className="row m-2 form-group">
-          <div className="col-1 p-2">
+        <div
+          key={index}
+          className="row m-2 align-items-center form-group d-flex"
+        >
+          <div className="col-1 d-flex justify-content-center align-items-start">
             <input
               type="checkbox"
               checked={option.checked}
               onChange={() => handleCheckboxChange(index)}
               className="form-check-input"
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: "20px", height: "20px" }} // Ajusta el tamaño del checkbox
             />
           </div>
-          <div className="col">
-            <label id="labelAnimation">
+
+          <div className="col d-flex align-items-center">
+            <label id="labelAnimation" className="w-100">
               <input
                 type="text"
                 value={option.text}
                 onChange={(e) => handleOptionChange(index, e.target.value)}
                 placeholder=" "
-                className="input-new"
+                className="input-new form-control"
+                sx={{ paddingBottom: "5px" }} // Ajusta el padding del input
               />
               <span className="labelName">Opción de respuesta</span>
             </label>
@@ -162,16 +167,16 @@ function SingleChoiceQuestionEdit({
   return (
     <div>
       {localOptions.map((option, index) => (
-        <div key={index} className="row m-2 form-group">
-          <div className="col-1 p-2">
-            <input
-              type="checkbox"
-              checked={option.checked}
-              onChange={() => handleCheckboxChange(index)}
-              className="form-check-input"
-              style={{ width: "100%", height: "100%" }}
-            />
-          </div>
+        <div key={index} className="row mx-2 form-group align-items-stretch d-flex">
+        <div className="col-1 p-1 mb-7">
+          <input
+            type="checkbox"
+            checked={option.checked}
+            onChange={() => handleCheckboxChange(index)}
+            className="form-check-input"
+            style={{ width: "100%", height: "50%"}}
+          />
+        </div>
           <div className="col">
             <label id="labelAnimation">
               <input
@@ -276,16 +281,16 @@ function MultipleChoiceQuestionEdit({
   return (
     <div>
       {localOptions.map((option, index) => (
-        <div key={index} className="row m-2 form-group">
-          <div className="col-1 p-2">
-            <input
-              type="checkbox"
-              checked={option.checked}
-              onChange={() => handleCheckboxChange(index)}
-              className="form-check-input"
-              style={{ width: "100%", height: "100%" }}
-            />
-          </div>
+        <div key={index} className="row mx-2 form-group align-items-stretch d-flex">
+        <div className="col-1 p-1 mb-7">
+          <input
+            type="checkbox"
+            checked={option.checked}
+            onChange={() => handleCheckboxChange(index)}
+            className="form-check-input"
+            style={{ width: "100%", height: "50%"}}
+          />
+        </div>
           <div className="col mt-2">
             <label id="labelAnimation">
               <input
@@ -387,14 +392,17 @@ function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
   return (
     <div>
       {localOptions.map((option, index) => (
-        <div key={index} className="row m-2 form-group">
-          <div className="col-1 p-2">
+        <div
+          key={index}
+          className="row mx-2 form-group align-items-stretch d-flex"
+        >
+          <div className="col-1 p-1 mb-7">
             <input
               type="checkbox"
               checked={option.checked}
               onChange={() => handleCheckboxChange(index)}
               className="form-check-input"
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: "100%", height: "50%" }}
             />
           </div>
           <div className="col">
@@ -565,11 +573,11 @@ function SelectorQuestionEdit({ options, correctAnswer, onChange }) {
     const newOptions = localOptions.filter((_, i) => i !== index);
     if (JSON.stringify(newOptions) !== JSON.stringify(localOptions)) {
       setLocalOptions(newOptions);
-  
+
       const newCorrectAnswers = newOptions
         .map((option, i) => (option.checked ? i : -1))
         .filter((index) => index !== -1);
-  
+
       setLocalCorrectAnswer(newCorrectAnswers);
       onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
     }
@@ -596,9 +604,9 @@ function SelectorQuestionEdit({ options, correctAnswer, onChange }) {
       ...option,
       checked: i === index ? !option.checked : false, // Solo permite una opción seleccionada
     }));
-  
+
     const newCorrectAnswer = newOptions[index].checked ? index : null;
-  
+
     // Solo actualiza el estado si hay un cambio real
     if (
       JSON.stringify(newOptions) !== JSON.stringify(localOptions) ||
@@ -606,7 +614,7 @@ function SelectorQuestionEdit({ options, correctAnswer, onChange }) {
     ) {
       setLocalOptions(newOptions);
       setLocalCorrectAnswer(newCorrectAnswer);
-  
+
       // Llama a onChange solo si hay un cambio
       if (onChange) {
         onChange({ options: newOptions, correctAnswer: newCorrectAnswer });
@@ -617,14 +625,17 @@ function SelectorQuestionEdit({ options, correctAnswer, onChange }) {
   return (
     <div>
       {localOptions.map((option, index) => (
-        <div key={index} className="row m-2 form-group">
-          <div className="col-1 p-2">
+        <div
+          key={index}
+          className="row mx-2 form-group align-items-stretch d-flex"
+        >
+          <div className="col-1 p-1 mb-7">
             <input
               type="checkbox"
               checked={option.checked}
               onChange={() => handleCheckboxChange(index)}
               className="form-check-input"
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: "100%", height: "50%" }}
             />
           </div>
           <div className="col">
