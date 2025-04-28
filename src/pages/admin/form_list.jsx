@@ -10,29 +10,29 @@ import { smallAlertDelete, Toast } from "../../assets/js/alertConfig";
 import Cookies from "js-cookie";
 import { useTranslation } from 'react-i18next';
 
-const FormList = () => {
-  const headersArray = [
-    "id", "title", "description", "client_name",
-    "creation_date", "created_by_name", "updated_date",
-    "updated_by_name", "state"
-  ];
+// Función para formatear las fechas
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  
+  const day = ("0" + date.getDate()).slice(-2);  // Asegura que el día tenga 2 dígitos
+  const month = ("0" + (date.getMonth() + 1)).slice(-2); // Los meses van de 0 a 11
+  const year = date.getFullYear();
+  
+  const hours = ("0" + date.getHours()).slice(-2);  // Asegura que las horas tengan 2 dígitos
+  const minutes = ("0" + date.getMinutes()).slice(-2);  // Asegura que los minutos tengan 2 dígitos
+  const seconds = ("0" + date.getSeconds()).slice(-2);  // Asegura que los segundos tengan 2 dígitos
 
-  const headers = {
-    id: "ID",
-    title: "Form Name",
-    description: "Description",
-    client_name: "Client",
-    creation_date: "Creation Date",
-    created_by_name: "Created By",
-    updated_date: "Updated Date",
-    updated_by_name: "Updated By",
-    state: "State"
-  };
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;  // Devuelve la fecha y hora en formato: dd/mm/yyyy hh:mm:ss
+};
+
+const FormList = () => {
+  const headersArray = [ "id", "title", "description", "client_name", "creation_date", "created_by_name", "updated_date", "updated_by_name", "state"];
 
   const { userType, languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const accessToken = Cookies.get('accessToken');
+  const userId = Cookies.get("userId");
 
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -74,7 +74,6 @@ const FormList = () => {
   };
 
   const getClients = async () => {
-    // Aquí deberías traer los clientes desde tu API
     try {
       const res = await axios.get("http://localhost:3000/api/clients", config);
       setClients(res.data.data);
@@ -84,16 +83,16 @@ const FormList = () => {
   };
 
   const openForm = (form) => {
-    navigate(`/view_form/${form.id}`);
+    navigate(`/survey_blocks/${form.id}`);
   };
 
   const deactivateForm = async (form) => {
     smallAlertDelete
       .fire({
-        text: `El formulario "${form.title}" se eliminará de forma permanente.`,
+        text: `${t("alertDeactivate.InitialPhrase")}"${form.title}"${t("alertDeactivate.FinalPhrase")}`,
         showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        confirmButtonText: t("alertDeactivate.Confirm"),
+        cancelButtonText: t("alertDeactivate.Cancel"),
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -105,26 +104,30 @@ const FormList = () => {
             );
             Toast.fire({
               icon: "success",
-              title: `Formulario "${form.title}" desactivado.`,
+              title: `${form.title}${t("alertDeactivate.SuccessAlert")}`,
             });
             getForms();
           } catch (error) {
+            Toast.fire({
+              icon: "error",
+              title: `${form.title}${t("alertDeactivate.ErrorAlert")}`,
+            });
             console.error("Error al desactivar formulario:", error);
           }
         }
       });
-  };
+  };  
 
   const openModal = (mode, form = null) => {
     if (mode === "create") {
-      setModalTitle("Crear Formulario");
+      setModalTitle(t("formModal.NewForm"));
       setIdToEdit(null);
       title.handleChange("");
       description.handleChange("");
       state.handleChange("1");
       idClient.handleChange("");
     } else if (mode === "edit" && form) {
-      setModalTitle("Editar Formulario");
+      setModalTitle(t("formModal.EditClient"));
       setIdToEdit(form.id);
       title.handleChange(form.title || "");
       description.handleChange(form.description || "");
@@ -133,6 +136,8 @@ const FormList = () => {
     }
     setModalOpen(true);
   };
+  console.log("idClient.input:", idClient.input);
+
 
   const closeModal = () => {
     setModalOpen(false);
@@ -140,40 +145,37 @@ const FormList = () => {
   };
 
   const saveForm = async () => {
-    // Aquí va la validación simple
     if (!title.input || !idClient.input) {
-      alert("Por favor llena todos los campos obligatorios");
+      alert(t("alerts.fillRequiredFields"));  // Aquí también podrías traducir el mensaje de alerta
       return;
     }
-
+  
     const dataToSend = {
       title: title.input,
       description: description.input,
       state: parseInt(state.input),
       idClient: parseInt(idClient.input),
+      creation_date: new Date().toISOString().slice(0, 19).replace("T", " "),
+      created_by: userId,
+      updated_date: new Date().toISOString().slice(0, 19).replace("T", " "),
+      updated_by: userId
     };
-
+  
     try {
       if (idToEdit) {
-        // Editar
-        await axios.put(
-          `http://localhost:3000/api/form/${idToEdit}`,
-          dataToSend,
-          config
-        );
-        Toast.fire({ icon: "success", title: "Formulario actualizado." });
+        await axios.put(`http://localhost:3000/api/form/${idToEdit}`, dataToSend, config);
       } else {
-        // Crear
         await axios.post("http://localhost:3000/api/forms", dataToSend, config);
-        Toast.fire({ icon: "success", title: "Formulario creado." });
       }
+      Toast.fire({ icon: "success", title: title.input + t("alertCreateEdit.SuccessAlert") });
       getForms();
       closeModal();
     } catch (error) {
       console.error("Error guardando formulario:", error);
-      Toast.fire({ icon: "error", title: "Error guardando formulario." });
+      Toast.fire({ icon: "error", title: t("alertCreateEdit.ErrorAlert") });
     }
   };
+  
 
   return (
     <div className="App">
@@ -187,8 +189,11 @@ const FormList = () => {
               ) : forms.length > 0 ? (
                 <TableForms
                   header={headersArray}
-                  headerLabels={headers}
-                  data={forms}
+                  data={forms.map((form) => ({
+                    ...form,
+                    creation_date: formatDate(form.creation_date),  // Aquí aplicamos el formato
+                    updated_date: formatDate(form.updated_date),    // Aquí aplicamos el formato
+                  }))}
                   onView={openForm}
                   onRemove={deactivateForm}
                   onCreate={() => openModal("create")}
@@ -208,79 +213,83 @@ const FormList = () => {
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">{modalTitle}</h5>
+                <label className="h5">{modalTitle}</label>
                 <button
                   type="button"
                   className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="close"
                   onClick={closeModal}
-                  aria-label="Close"
-                />
+                ></button>
               </div>
-              <div className="modal-body">
-                <div className="row mb-3">
-                  <div className="col-8">
-                    <label className="form-label">Título</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={title.input}
-                      onChange={(e) => title.handleChange(e.target.value)}
-                      placeholder="Título del formulario"
-                    />
+              <div className="modal-body ">
+                {/* Título y Cliente */}
+                <div className="row">
+                  <div className="col-8 mb-3">
+                    <label id="labelAnimation">
+                      <input
+                        placeholder=" "
+                        className="input-new"
+                        type="text"
+                        name="title"
+                        value={title.input}
+                        onChange={(e) => title.handleChange(e.target.value)}
+                      />
+                      <span className="labelName">{t("formModal.title")}</span>
+                    </label>
                   </div>
-                  <div className="col-4">
-                    <label className="form-label">Cliente</label>
-                    <select
-                      className="form-select"
-                      value={idClient.input}
-                      onChange={(e) => idClient.handleChange(e.target.value)}
-                    >
-                      <option value="">Seleccione un cliente</option>
-                      {clients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.client}
+                  <div className="col-4 mb-3">
+                    <label id="labelAnimation">
+                      <select
+                        className="input-new"
+                        value={idClient.input}
+                        onChange={(e) => idClient.handleChange(e.target.value)}>
+                        <option value="" disabled>
+                          Seleccione un cliente
                         </option>
-                      ))}
-                    </select>
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.client}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="labelName">{t("formModal.client_name")}</span>
+                    </label>
                   </div>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label">Descripción</label>
-                  <textarea
-                    className="form-control"
-                    value={description.input}
-                    onChange={(e) => description.handleChange(e.target.value)}
-                    placeholder="Descripción del formulario"
-                    rows={3}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Estado</label>
-                  <select
-                    className="form-select"
-                    value={state.input}
-                    onChange={(e) => state.handleChange(e.target.value)}
-                  >
-                    <option value="1">Activo</option>
-                    <option value="0">Inactivo</option>
-                    <option value="2">Archivado</option>
-                  </select>
+
+                {/* Descripción */}
+                <div className="row mt-2">
+                  <div className="col mb-3">
+                    <label id="labelAnimation">
+                      <textarea
+                        placeholder={t("formModal.description")}
+                        className="input-new"
+                        name="description"
+                        value={description.input}
+                        onChange={(e) => description.handleChange(e.target.value)}
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
+
               <div className="modal-footer">
                 <button
                   type="button"
+                  id="btnCerrarModalCrear"
                   className="btn btn-secondary"
+                  data-bs-dismiss="modal"
                   onClick={closeModal}
                 >
-                  Cerrar
+                  {t("formModal.Close")}
                 </button>
                 <button
-                  type="button"
-                  className="btn btn-primary"
+                  id="saveButton"
                   onClick={saveForm}
+                  className="btn btn-primary"
                 >
-                  Guardar
+                  {t("formModal.Save")}
                 </button>
               </div>
             </div>

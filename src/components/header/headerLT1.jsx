@@ -311,7 +311,7 @@ const [confirmError, setConfirmError] = useState("");
                 disableRipple
               >
                 <HomeIcon className="me-1" />
-                Inicio
+                {t("header.Home")}
               </MUIButton>
               <div className="vr"></div>
               <MUIButton
@@ -327,7 +327,7 @@ const [confirmError, setConfirmError] = useState("");
                 disableRipple
               >
                 <PersonIcon className="me-1" />
-                Usuarios
+                {t("header.Users")}
               </MUIButton>
               <div className="vr"></div>
               <MUIButton
@@ -343,7 +343,7 @@ const [confirmError, setConfirmError] = useState("");
                 disableRipple
               >
                 <AssignmentIndIcon className="me-1" />
-                Clientes
+                {t("header.Clients")}
               </MUIButton>
             </div>
             <div className="col-1 col-sm-6 col-md-1 col-lg-1 d-flex align-items-center justify-content-end">

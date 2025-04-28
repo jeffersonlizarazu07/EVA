@@ -13,7 +13,7 @@ const TableForms = ({
   onView,
   modalId,
   modalId2
-}) =>{
+}) => {
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
 
@@ -58,7 +58,7 @@ const TableForms = ({
         <div className="col-6">
           <input
             className="w-50 inp-search"
-            placeholder={t("clientTable.Search")}
+            placeholder={t("formTable.Search")} 
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -70,22 +70,21 @@ const TableForms = ({
             data-bs-target={`#${modalId}`}
             onClick={onCreate}
           >
-            <i className="fa fa-plus"></i> {t("clientTable.newClient")}
+            <i className="fa fa-plus"></i> {t("formTable.newForm")}
           </button>
         </div>
       </div>
 
       <table className="table table-hover">
         <thead>
-          <tr className="table-light tr-table">
-            {header.map((item, i) => (
-              <th key={i} className="text-center">
-                {capitalize(item)}
-              </th>
-            ))}
-            <th className="text-center">{t("clientTable.Actions")}</th>
-
-          </tr>
+        <tr className="table-light tr-table">
+          {header.map((item, i) => (
+            <th key={i} className="text-center">
+              {t(`formTable.${item}`)}
+            </th>
+          ))}
+          <th className="text-center">{t("formTable.Actions")}</th>
+        </tr>
         </thead>
         <tbody>
           {currentRecords.map((form, idx) => (
@@ -93,49 +92,44 @@ const TableForms = ({
               {header.map((key, i) => (
                 <td key={i}>
                   {key === "state"
-                    ? form.state === 1
-                      ? t("clientTable.Active")
-                      : t("clientTable.Inactive")
+                    ? form.state === "Activo"
+                      ? t("formTable.Active") 
+                      : t("formTable.Inactive") 
                     : form[key]}
-                </td>
+                </td>            
               ))}
               <td>
                 {form.state !== 1 ? (
                   <div className="dropdown">
-                  <button className="btn-rect btn-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div className="dropdown-toggle">
-                  <i className="fa-solid fa-ellipsis-vertical"></i>
+                    <button className="btn-rect btn-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <div className="dropdown-toggle">
+                        <i className="fa-solid fa-ellipsis-vertical"></i>
+                      </div>
+                    </button>
+                    <ul className="dropdown-menu p-0">
+                      <li className="text-start btn-rect">
+                        <button className="btn btn-rect" onClick={() => onView(form)}>
+                          <i className="fa-solid fa-circle-question"></i> <span> {t("buttons.WatchSections")} </span>
+                        </button>
+                      </li>
+                      <li className="text-start btn-rect">
+                        <button style={{ width: "100%" }} className="btn text-start" data-bs-toggle="modal" data-bs-target={`#${modalId}`} onClick={() => onUpdate(form)}>
+                          <i className="fa-solid fa-edit"></i> {t("buttons.Edit")}
+                        </button>
+                      </li>
+                      <li className="text-start btn-rect">
+                        <button className="btn text-start" style={{ width: "100%" }} onClick={() => onRemove(form)}>
+                          <i className="fa-solid fa-power-off"></i> <span> {t("buttons.Deactivate")} </span>
+                        </button>
+                      </li>
+                    </ul>
                   </div>
-                  </button>
-                  <ul className="dropdown-menu p-0 ">
-                    <li className="text-start btn-rect">
-                    <button className="btn  btn-rect" onClick={()=> onCheck(item)}>
-                  <i className="fa-solid fa-circle-question"></i> <span> Ver preguntas</span>
-                  </button>
-                    </li>
-                    <li className="text-start  btn-rect"  >
-                       <button  style={{width:"100%"}} className="btn text-start"  data-bs-toggle="modal"  data-bs-target={`#${modalId}`}   onClick={() => onUpdate(item)}
->
-                <i className="fa-solid fa-edit"></i> Editar
-              </button>
-                    </li>
-              <li className="text-start  btn-rect" > <button className="btn text-start"  style={{width:"100%"}} onClick={() => onRemove(item)}>
-                <i className="fa-solid fa-power-off"></i> <span> Deshabilitar</span>
-              </button></li>
-                  </ul>
-                </div>
-                  
                 ) : (
                   <div className="d-flex justify-content-center">
                     <button className="btn btn-rect" onClick={() => onActive(form)}>
                       <i className="fa-solid fa-power-off"></i>
                     </button>
-                    <button
-                      className="btn btn-rect"
-                      data-bs-toggle="modal"
-                      data-bs-target={`#${modalId2}`}
-                      onClick={() => onView(form)}
-                    >
+                    <button className="btn btn-rect" data-bs-toggle="modal" data-bs-target={`#${modalId2}`} onClick={() => onView(form)}>
                       <i className="fa-solid fa-search"></i>
                     </button>
                   </div>
@@ -149,7 +143,7 @@ const TableForms = ({
       <div className="row d-flex ps-5 pe-5 mt-3">
         <div className="col-6">
           <label>
-            {t("clientTable.Show")}
+            {t("formTable.Show")} {/* Cambié de clientTable a formTable */}
             <button
               className="dropdown-toggle inp-search"
               type="button"
@@ -174,7 +168,7 @@ const TableForms = ({
                 </li>
               ))}
             </ul>
-            {t("clientTable.Registered")}
+            {t("formTable.Registered")} {/* Cambié de clientTable a formTable */}
           </label>
         </div>
         <div className="col-6 d-flex justify-content-end">
