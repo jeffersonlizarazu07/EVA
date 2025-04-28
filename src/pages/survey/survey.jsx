@@ -5,22 +5,33 @@ import '../../assets/css/encuesta.css';
 import { Range_zerototen_survey, Range_onetofive_survey, Yes_no_survey, Range_difficulty_survey, Range_emoji_survey, Single_choice_survey, Multiple_choice_survey } from './questionsSurvey';
 import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
+import TextField from '@mui/material/TextField';
+import Cookies from "js-cookie";
+
 
 
 export default function Survey() {
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const link = queryParams.get("link"); // obtener el link
+    //const location = useLocation();
+    //const queryParams = new URLSearchParams(location.search);
+    //const link = queryParams.get("link"); // obtener el link
+    const fullUrl = window.location.href
+    console.log("URL completa:", fullUrl);
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState([]);
     const [title, setTitle] = useState("");
     const [survey, setSurvey] = useState({});
     const [visibleQuestions, setVisibleQuestions] = useState([]);
     const nav = useNavigate();
+    const accessToken = Cookies.get('accessToken');
 
     useEffect(() => {
-        getSurvey(link);
-    }, [link]);
+        const surveyCompleted = localStorage.getItem('surveyCompleted');
+        if (surveyCompleted) {
+            nav("/gratitude"); // Redirigir a Gratitude si ya se completó
+        } else {
+            getSurvey(fullUrl); // Si no se ha completado, cargar la encuesta
+        }
+    }, [fullUrl],nav);
 
     useEffect(() => {
         
@@ -30,10 +41,45 @@ export default function Survey() {
     }, [answers, questions]); 
    
 
+
     // Funncion que envia las respuestas al back
     const handleSubmit = async (event) => {
+        const token = accessToken || Cookies.get("accessToken");
+  
+        if (!token) {
+        console.warn("⚠️ Token no disponible aún.");
+        return;
+        }
+
         event.preventDefault();
-    
+        // Validar que hay respuestas antes de enviar
+        if (answers.length === 0) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No hay respuestas para enviar.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#FF66B2',
+            });
+            return;
+        }
+
+         // Validar que todas las preguntas visibles estén respondidas
+        const allAnswered = visibleQuestions.every(question =>
+            answers.some(answer => answer.question_id === question.id && answer.answer !== "")
+        );
+
+        if (!allAnswered) {
+            Swal.fire({
+            title: 'Error',
+            text: 'Por favor responde todas las preguntas antes de enviar.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#FF66B2',
+        });
+        return;
+    }
+
         const answersWithSurveyId = answers.map(answer => ({
             ...answer,
             survey_id: survey.id 
@@ -42,7 +88,13 @@ export default function Survey() {
         console.log("Datos que se van a enviar:", answersWithSurveyId);
     
         try {
-            const response = await axios.post("http://localhost:3000/api/answers", answersWithSurveyId);
+            const authConfig = {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+                withCredentials: true,
+            };
+            const response = await axios.post("http://localhost:3000/api/answers", answersWithSurveyId,authConfig);
             console.log('respuesta genera', response);
     
             if (response.status === 200 || response.status === 201) {
@@ -54,6 +106,11 @@ export default function Survey() {
                     icon: 'success',
                     confirmButtonText: 'Aceptar',
                     confirmButtonColor: '#28a745', // verde
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        localStorage.setItem('surveyCompleted', 'true'); // Guardar indicador para no dejar ver la encuesta otra vez
+                        nav("/gratitude");  // <-- redirige a Gratitude.jsx
+                    }
                 });
             }
         } catch (error) {
@@ -72,13 +129,26 @@ export default function Survey() {
     
     
     // Funcion para cargar las encuestas 
-    const getSurvey = async () => {
-        const fullLink = link; 
+    const getSurvey = async (link) => {
+        const token = accessToken || Cookies.get("accessToken");
+  
+        if (!token) {
+        console.warn("⚠️ Token no disponible aún.");
+        return;
+        }
+
+        const fullLink = encodeURIComponent(link); 
         console.log("Link enviado al servidor:", fullLink);
         
         try {
+            const authConfig = {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+                withCredentials: true,
+              };
             // Hacer la solicitud al backend para obtener la encuesta y sus preguntas
-            const response = await axios.get(`http://localhost:3000/api/surveyByLink?link=${fullLink}`);
+            const response = await axios.get(`http://localhost:3000/api/surveyByLink?link=${fullLink}`,authConfig);
         
             console.log('Contenido de response.data:', response.data);
         
@@ -196,9 +266,27 @@ export default function Survey() {
                                         <Single_choice_survey answers={question.select_option} key={question.id} id={question.id} change={(e) => handleChange(e, question.id)} />
                                     ) : question.type === 'check_opt' ? (
                                         <Multiple_choice_survey answers={question.select_option} key={question.id} id={question.id} change={handleChangeMultiple} />
-                                    ) : (
-                                        "<Textfield/>"
-                                    )}
+                                    ) :  question.type === 'textfield_s' ? (
+                                        <TextField
+                                            fullWidth
+                                            variant="outlined"
+                                            margin="normal"
+                                            value={answers.find(a => a.question_id === question.id)?.answer || ''}
+                                            onChange={(e) => handleChange(e, question.id)}
+                                            sx={{
+                                                width: '60%',
+                                                margin: '16px auto !important', // centrado horizontal
+                                                display: 'block', // necesario para que funcione margin auto
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: '8px',
+                                                    '& fieldset, &:hover fieldset, &.Mui-focused fieldset': {
+                                                        borderColor: 'black',
+                                                        borderWidth: '1%',
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    ) : null}
                                 </div>
                             ))}
                             <div className="row">
