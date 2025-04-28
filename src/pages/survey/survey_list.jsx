@@ -226,6 +226,13 @@ const SurveyList = () => {
     validateDates(start_date.input, end_date.input);
   }, [start_date.input, end_date.input]);
 
+  const formatDateForInput = (isoDate) => {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    return date.toISOString().split('T')[0];
+  };
+  
+
   const openModal = (op, survey) => {
     setOperation(op);  
     if (op == 1) {
@@ -240,9 +247,9 @@ const SurveyList = () => {
       console.log("esto es survey",survey)
       setModalTitle("Editar encuesta");
       title.handleChange(survey?.title || "");
-      setNewTitle(survey?.title || "")
-      start_date.handleChange(survey?.start_date || "");
-      end_date.handleChange(survey?.end_date || "");
+      setNewTitle(survey?.title || "");
+      start_date.handleChange(formatDateForInput(survey?.start_date));
+      end_date.handleChange(formatDateForInput(survey?.end_date));
       description.handleChange(survey?.description || "");
       link.handleChange(survey?.link || "");
       idClient.handleChange(survey?.idClient || "");

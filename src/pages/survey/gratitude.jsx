@@ -1,10 +1,13 @@
 import LogoEVA from "../../assets/img/logo EVA.webp";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Gratitude() {
-  useEffect(()=>
-    console.log('Hola')
-  ,[])
+
+  useEffect(()=> {
+    const surveyCompleted = localStorage.getItem('surveyCompleted');
+    console.log("Estado de la encuesta completada:", surveyCompleted);
+  }, []);
     // TODO: Implement gratitude page content here. For now, it's just a placeholder.
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
