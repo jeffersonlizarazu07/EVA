@@ -12,5 +12,8 @@ router.put('/survey/:id', authMiddleware,surveySetController.putSurvey);
 router.patch('/survey/:id', authMiddleware,surveySetController.patchSurvey);
 router.delete('/survey/:id',authMiddleware, surveySetController.deleteSurvey);
 
+//ruta para obtener las preguntas de una encuesta
+router.get('/surveyByLink', authMiddleware, surveySetController.surveyByLink)
+             
 
 module.exports = router;

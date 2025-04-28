@@ -1,15 +1,45 @@
 const db = require('../config/db');
 class AnswerModel {
-    createAnswer(data) {
-        // Solo incluir los campos que existen en tu tabla
-        const validData = {
-            survey_id: data.survey_id,
-            answer: data.answer,  // Parece que en la base de datos se llama "answer", aunque en tu objeto lo llamas "answers"
-            question_id: data.question_id,
-            date: data.date || new Date().toISOString()
+    async createAnswer(data) {
+        
+        console.log('---------Datos recibidos en createAnswer:', data);
+        // Función para formatear la fecha correctamente para MySQL
+        const formatDateForMySQL = (date) => {
+            return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
         };
         
-        return db('answers').insert(validData);
+        try {
+            const insertedAnswers = [];
+
+            // Recorre el array de respuestas
+            for (const answerData of data) {
+              
+              const validData = {
+                survey_id: answerData.survey_id,
+                answer: answerData.answer,
+                question_id: answerData.question_id,
+                date: answerData.date ? formatDateForMySQL(answerData.date) : formatDateForMySQL(new Date())
+              };
+        
+              // Realiza la inserción y obtén el ID del registro insertado
+              const [insertedId] = await db('answers').insert(validData);
+              
+              const insertedAnswer = { 
+                id: insertedId, 
+                ...validData 
+                };
+                
+                insertedAnswers.push(insertedAnswer);
+
+              console.log('---------Respuesta insertada correctamente');
+            }
+
+            return { success: true, message: 'Respuestas creadas correctamente', insertedAnswers };
+
+          } catch (error) {
+            console.error('Error al crear las respuestas:', error);
+            return { success: false, message: 'Error al crear las respuestas', error: error.message };
+          }
     }
     async getAll() {
         try {

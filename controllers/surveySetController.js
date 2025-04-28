@@ -1,4 +1,5 @@
 const SurveySet = require('../models/surveySet');
+const Question  = require('../models/question');
 
 const surveySetController = {
    /* async surveys(req, res) {
@@ -79,12 +80,31 @@ const surveySetController = {
     
     async surveyByLink(req, res) {
         try {
-            const survey = await SurveySet.getByLink(req.query.link);
-            if (!survey) {
+            console.log('url-----------:', req.query.link);
+            const link = req.query.link;
+            console.log('Recibiendo solicitud para obtener encuesta con link:', link);
+            const survey_set = await SurveySet.getByLink(link);
+            if (!survey_set) {
                 return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
             }
-            res.json({ status: '200', message: 'Encuesta obtenida correctamente', data: survey });
-        } catch (error) {
+            const questions = await Question.getBySurvey(survey_set.id);
+
+            
+            res.json({ status: '200', message: 'Encuesta obtenida correctamente', data: {
+                survey_set,
+                question: questions
+            }});
+
+            console.log({
+                status: '200',
+                message: 'Encuesta obtenida correctamente',
+                data: {
+                  survey_set,
+                  question: questions
+                }
+              });
+
+            } catch (error) {
             res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
         }
     },
