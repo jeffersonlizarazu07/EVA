@@ -261,7 +261,7 @@ export default function SurveyBlocks() {
       }
       if (questionDetails.type == "selector_opt") {
         const optionsData = questionDetails?.select_option;
-        const optionsDataArray = optionsData.split(",");
+        const optionsDataArray = optionsData ? optionsData.split(",") : [];
         const selectedOption = questionDetails?.selected_answer;
 
         setSelectorData({
@@ -271,7 +271,26 @@ export default function SurveyBlocks() {
           })),
           selectedOption: selectedOption,
         });
+
+        // Actualizar QuestionList
+
+        setQuestionsList((prevQuestions) =>
+          prevQuestions.map((q) => {
+            if (q.type === "selector_opt") {
+              return {
+                ...q,
+                options: optionsDataArray.map((text) => ({
+                  text: text.trim(),
+                  checked: false,
+                })),
+                selected_answer: selectedOption,
+              };
+            }
+            return q;
+          })
+        );
       }
+
       id_conditional.handleChange(questionDetails?.id_conditional || null);
       conditional.handleChange(questionDetails?.conditional || "");
       description.handleChange(questionDetails?.question || "");
@@ -320,7 +339,7 @@ export default function SurveyBlocks() {
       optionsToSave = options.map((option) => option.text).join(", ");
     } else if (questionType.input === "selector_opt") {
       selectedAnswer = selectorData.selectedOption;
-      options = multipleChoiceData.options;
+      options = selectorData.options;
       selectedAnswerToString = Array.isArray(selectedAnswer)
         ? selectedAnswer.join(", ")
         : "";
@@ -338,13 +357,43 @@ export default function SurveyBlocks() {
       optionsToSave = ""; // No hay opciones para este tipo de pregunta
     }
 
+    // Recargar de opciones de pregunta antes de guardar
+
+    const refillQuestions = questionsList.map((q) => {
+      let select_option = "";
+      let selected_answer = "";
+
+      if (q.type === "radio_opt") {
+        select_option = singleChoiceData.options
+          .map((opt) => opt.text)
+          .join(", ");
+        selected_answer = singleChoiceData.correctAnswer?.toString() || "";
+      } else if (q.type === "check_opt") {
+        select_option = multipleChoiceData.options
+          .map((opt) => opt.text)
+          .join(", ");
+        selected_answer = multipleChoiceData.correctAnswers.join(", ");
+      } else if (q.type === "selector_opt") {
+        select_option = (q.options || [])
+          .map((opt) => (typeof opt === "object" ? opt.text : opt))
+          .join(", ");
+        // selected_answer = selectorData.selectedOption || "";
+      }
+
+      return {
+        ...q,
+        select_option,
+        selected_answer,
+      };
+    });
+
     if (operation === 1) {
       // Crear nuevo bloque
       parametros = {
         nombreBloque: nombreInput.input,
         ponderacion: ponderacionInput.input || 0,
         posicion: posicionInput.input || 0,
-        preguntas: questionsList,
+        preguntas: refillQuestions,
         type:
           questionsList.length > 0 && questionsList[0].type
             ? questionsList[0].type
@@ -377,7 +426,7 @@ export default function SurveyBlocks() {
     } else if (operation === 2) {
       parametros = {
         type: questionType.input,
-        preguntas: questionsList,
+        preguntas: refillQuestions,
         percentage: 0,
         conditional: valueConditional ? "SI" : "NO",
         question: description.input,
@@ -535,6 +584,20 @@ export default function SurveyBlocks() {
 
   const handleSelectorChange = (data) => {
     setSelectorData(data);
+
+    // Actualizar directamente en questionsList el tipo selector
+    setQuestionsList((prevQuestions) =>
+      prevQuestions.map((q, idx) => {
+        if (q.type === "selector_opt") {
+          return {
+            ...q,
+            options: data.options, // Guardar todas las opciones
+            selected_answer: data.selectedOption, // Guardar la respuesta seleccionada
+          };
+        }
+        return q;
+      })
+    );
   };
 
   const areAllFieldsCompleted = () => {
@@ -815,70 +878,83 @@ export default function SurveyBlocks() {
                             <div className="mt-2">
                               {bloque.preguntas.map((preg, idx) => (
                                 <div key={idx} className="shadowbox5 p-3 mb-3">
-                                  {data.map((question, idx) => (
-                                    <div
-                                      key={question.id}
-                                      className="d-flex justify-content-between align-items-start"
-                                    >
-                                      <div>
-                                        <p className="mb-1 mb-3">
-                                          <strong>Pregunta {idx + 1}:</strong>{" "}
-                                          {question.text || "Sin texto"}
-                                        </p>
-                                        <p className="mb-3">
-                                          <strong>Tipo:</strong> {question.type}
-                                        </p>
+                                  <div className="d-flex justify-content-between align-items-start">
+                                    <div>
+                                      <p className="mb-1 mb-3">
+                                        <strong>Pregunta {idx + 1}:</strong>{" "}
+                                        {preg.text || "Sin texto"}
+                                      </p>
 
-                                        {question.type === "radio_opt" && (
-                                          <SingleChoiceView
-                                            options={question.select_option}
-                                            correctOption={
-                                              question.selected_answer
-                                            }
-                                          />
-                                        )}
-                                        {question.type === "check_opt" && (
-                                          <MultipleChoiceView
-                                            options={question.select_option}
-                                            correctOption={
-                                              question.selected_answer
-                                            }
-                                          />
-                                        )}
-                                        {question.type === "selector_opt" && (
-                                          <p className="mb-1">
-                                            <strong>Seleccionado:</strong>{" "}
-                                            {question.selectedOption ||
-                                              "Sin selección"}
-                                          </p>
-                                        )}
-                                        {question.type === "textfield_s" && (
-                                          <Textfield_s
-                                            value={question.answer || ""}
-                                            readOnly
-                                          />
-                                        )}
-                                        {question.type === "yes_no" && (
-                                          <Yes_no
-                                            value={question.answer || ""}
-                                            readOnly
-                                          />
-                                        )}
-
-                                        <div className="text-end me-3">
-                                          {question.conditional === "SI" && (
-                                            <i
-                                              className="fa-solid fa-question text-primary"
-                                              data-bs-toggle="tooltip"
-                                              data-bs-placement="top"
-                                              data-bs-custom-class="custom-tooltip"
-                                              data-bs-title="Esta pregunta es condicional."
-                                            ></i>
-                                          )}
+                                      {preg.type === "radio_opt" && (
+                                        <SingleChoiceView
+                                          options={preg.select_option}
+                                          correctOption={preg.selected_answer}
+                                        />
+                                      )}
+                                      {preg.type === "check_opt" && (
+                                        <MultipleChoiceView
+                                          options={preg.select_option}
+                                          correctOption={preg.selected_answer}
+                                        />
+                                      )}
+                                      {preg.type === "selector_opt" && (
+                                        <div className="mb-1">
+                                          <label className="form-label">
+                                            <strong>
+                                              Selecciona una opción:
+                                            </strong>
+                                          </label>
+                                          <select
+                                            className="form-select"
+                                            disabled
+                                          >
+                                            {(preg.select_option || "")
+                                              .split(",")
+                                              .map((opt, idx) => {
+                                                const optionText = opt.trim();
+                                                return (
+                                                  <option
+                                                    key={idx}
+                                                    value={optionText}
+                                                    selected={
+                                                      optionText ===
+                                                      preg.selected_answer
+                                                    }
+                                                  >
+                                                    {optionText}
+                                                  </option>
+                                                );
+                                              })}
+                                          </select>
                                         </div>
+                                      )}
+
+                                      {preg.type === "textfield_s" && (
+                                        <Textfield_s
+                                          value={preg.answer || ""}
+                                          readOnly
+                                        />
+                                      )}
+                                      {preg.type === "yes_no" && (
+                                        <Yes_no
+                                          value={preg.answer || ""}
+                                          readOnly
+                                        />
+                                      )}
+
+                                      <div className="text-end me-3">
+                                        {preg.conditional === "SI" && (
+                                          <i
+                                            className="fa-solid fa-question text-primary"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            data-bs-custom-class="custom-tooltip"
+                                            data-bs-title="Esta pregunta es condicional."
+                                          ></i>
+                                        )}
                                       </div>
                                     </div>
-                                  ))}
+                                  </div>
                                 </div>
                               ))}
 
