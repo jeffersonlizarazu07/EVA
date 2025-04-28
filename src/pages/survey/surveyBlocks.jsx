@@ -342,12 +342,12 @@ export default function SurveyBlocks() {
       options = selectorData.options;
       selectedAnswerToString = Array.isArray(selectedAnswer)
         ? selectedAnswer.join(", ")
-        : "";
+        : selectedAnswer || "";
       optionsToSave = Array.isArray(options)
         ? options
             .map((option) =>
-              typeof option === "object" ? option.text : option
-            )
+              (typeof option === "object" ? option.text : option
+            ))
             .join(", ")
         : "";
     } else if (questionType.input === "textfield_s") {
@@ -906,7 +906,7 @@ export default function SurveyBlocks() {
                                           </label>
                                           <select
                                             className="form-select"
-                                            disabled
+                                            
                                           >
                                             {(preg.select_option || "")
                                               .split(",")
