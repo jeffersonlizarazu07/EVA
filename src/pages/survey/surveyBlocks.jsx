@@ -116,6 +116,9 @@ export default function SurveyBlocks() {
   const [hasValidQuestions, setHasValidQuestions] = useState(false);
   const [textFieldAnswer, setTextFieldAnswer] = useState("");
 
+  //Id bloque creado
+  const [bloques, setBloques] = useState([]);
+
   // Paginador
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(3); // Número de bloques por página
@@ -277,6 +280,7 @@ export default function SurveyBlocks() {
         questionDetails?.conditional_answer || ""
       );
       setidToEdit(questionDetails?.id);
+      setQuestionsList(questionDetails?.preguntas || []);
     }
 
     const posiciones = data.map((bloque) => parseInt(bloque.posicion));
@@ -284,6 +288,15 @@ export default function SurveyBlocks() {
       posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
 
     posicionInput.handleChange(nuevaPosicion.toString()); // Asigna internamente
+
+    const preguntasConvertidas = (questionDetails.preguntas || []).map((p) => ({
+      text: p.text || p.question || "", // usa el campo correcto
+      type: p.type || "",
+      options: p.options || [],
+      correctAnswers: p.correctAnswers || [],
+    }));
+
+    setQuestionsList(preguntasConvertidas);
   };
 
   const validar = (id, survey_idt) => {
@@ -357,9 +370,14 @@ export default function SurveyBlocks() {
             : "",
       };
       metodo = "post";
+
+      const nuevosDatos = [...data, parametros];
+      setData(nuevosDatos);
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
     } else if (operation === 2) {
       parametros = {
         type: questionType.input,
+        preguntas: questionsList,
         percentage: 0,
         conditional: valueConditional ? "SI" : "NO",
         question: description.input,
@@ -383,6 +401,12 @@ export default function SurveyBlocks() {
       };
       console.log("parametros", parametros);
       metodo = "put";
+
+      const nuevosDatos = data.map((b) =>
+        b.id === idToEdit ? { ...b, ...parametros } : b
+      );
+      setData(nuevosDatos);
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
     }
 
     console.log("Parámetros a guardar:", parametros);
@@ -402,7 +426,7 @@ export default function SurveyBlocks() {
         const nuevosDatos = [...data, parametros];
         setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
         localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
-        console.log("✅ Guardado en localStorage:", nuevosDatos); // Verifica en consola
+        console.log("Guardado en localStorage:", nuevosDatos); // Verifica en consola
         Toast.fire({
           icon: "success",
           title: "Bloque guardado correctamente",
@@ -471,9 +495,9 @@ export default function SurveyBlocks() {
     setQuestionCountInput(""); // Limpiar input
   };
 
-  const handleInputChange = (index, field, value) => {
+  const handleInputChange = (index, key, value) => {
     const updatedQuestions = [...questionsList];
-    updatedQuestions[index][field] = value;
+    updatedQuestions[index][key] = value;
     setQuestionsList(updatedQuestions);
   };
 
@@ -607,6 +631,28 @@ export default function SurveyBlocks() {
     setHasValidQuestions(false);
   };
 
+  // Id único para cada bloque
+
+  const handleAgregarBloque = () => {
+    if (!nombreInput.value || !posicionInput.value || !ponderacionInput.value)
+      return;
+
+    const nuevoBloque = {
+      blockId: generateId(),
+      nombre: nombreInput.value,
+      posicion: parseInt(posicionInput.value),
+      ponderacion: parseInt(ponderacionInput.value),
+      preguntas: [],
+    };
+
+    setBloques((prev) => [...prev, nuevoBloque]);
+
+    // Reset inputs
+    nombreInput.reset();
+    posicionInput.reset();
+    ponderacionInput.reset();
+  };
+
   const renderRespuesta = (question) => {
     const tipo = question.type;
     const respuesta = question.selected_answer || "Sin respuesta";
@@ -650,7 +696,13 @@ export default function SurveyBlocks() {
 
   // Agregar función para manejar edición
   const onUpdate = (bloque) => {
-    openModal(2, id, bloque);
+    const preguntasBloque = bloque.preguntas || [];
+
+    const bloqueConPreguntas = {
+      ...bloque,
+      preguntas: preguntasBloque,
+    };
+    openModal(2, id, bloqueConPreguntas);
     // Abrir modal después de configurar la data
     document.getElementById("modalManageQuestion").classList.add("show");
     document.getElementById("modalManageQuestion").style.display = "block";
@@ -758,107 +810,116 @@ export default function SurveyBlocks() {
                               </p>
                             </div>
 
-                            {/* Aquí se agregan las preguntas internas (columna derecha del modal) */}
-                            {bloque.preguntas &&
-                              bloque.preguntas.length > 0 && (
-                                <div className="mt-2">
-                                  {bloque.preguntas.map((preg, idx) => (
-                                    <div
-                                      key={idx}
-                                      className="shadowbox5 p-3 mb-3"
-                                    >
-                                      <div className="d-flex justify-content-between align-items-start">
-                                        <div>
-                                          <p className="mb-1 mb-3">
-                                            <strong>Pregunta {idx + 1}:</strong>{" "}
-                                            {preg.text || "Sin texto"}
-                                          </p>
-                                          <p className="mb-3">
-                                            <strong>Tipo:</strong> {preg.type}
-                                          </p>
-                                          {preg.type === "radio_opt" && (
-                                            <SingleChoiceView
-                                              options={preg.options}
-                                              correctOption={
-                                                preg.correctAnswers
-                                              }
-                                            />
-                                          )}
-                                          {preg.type === "check_opt" && (
-                                            <MultipleChoiceView
-                                              options={question.select_option}
-                                              correctOption={
-                                                question.selected_answer
-                                              }
-                                            />
-                                          )}
+                            {/* Se agregan las preguntas a la vista principal */}
 
-                                          {preg.type === "selector_opt" && (
-                                            <p className="mb-1">
-                                              <strong>Seleccionado:</strong>{" "}
-                                              {preg.selectedOption ||
-                                                "Sin selección"}
-                                            </p>
-                                          )}
-                                          {preg.type === "textfield_s" && (
-                                            <Textfield_s
-                                              value={preg.answer || ""}
-                                              readOnly
-                                            />
-                                          )}
-                                          {preg.type === "yes_no" && (
-                                            <Yes_no
-                                              value={preg.answer || ""}
-                                              readOnly
-                                            />
+                            <div className="mt-2">
+                              {bloque.preguntas.map((preg, idx) => (
+                                <div key={idx} className="shadowbox5 p-3 mb-3">
+                                  {data.map((question, idx) => (
+                                    <div
+                                      key={question.id}
+                                      className="d-flex justify-content-between align-items-start"
+                                    >
+                                      <div>
+                                        <p className="mb-1 mb-3">
+                                          <strong>Pregunta {idx + 1}:</strong>{" "}
+                                          {question.text || "Sin texto"}
+                                        </p>
+                                        <p className="mb-3">
+                                          <strong>Tipo:</strong> {question.type}
+                                        </p>
+
+                                        {question.type === "radio_opt" && (
+                                          <SingleChoiceView
+                                            options={question.select_option}
+                                            correctOption={
+                                              question.selected_answer
+                                            }
+                                          />
+                                        )}
+                                        {question.type === "check_opt" && (
+                                          <MultipleChoiceView
+                                            options={question.select_option}
+                                            correctOption={
+                                              question.selected_answer
+                                            }
+                                          />
+                                        )}
+                                        {question.type === "selector_opt" && (
+                                          <p className="mb-1">
+                                            <strong>Seleccionado:</strong>{" "}
+                                            {question.selectedOption ||
+                                              "Sin selección"}
+                                          </p>
+                                        )}
+                                        {question.type === "textfield_s" && (
+                                          <Textfield_s
+                                            value={question.answer || ""}
+                                            readOnly
+                                          />
+                                        )}
+                                        {question.type === "yes_no" && (
+                                          <Yes_no
+                                            value={question.answer || ""}
+                                            readOnly
+                                          />
+                                        )}
+
+                                        <div className="text-end me-3">
+                                          {question.conditional === "SI" && (
+                                            <i
+                                              className="fa-solid fa-question text-primary"
+                                              data-bs-toggle="tooltip"
+                                              data-bs-placement="top"
+                                              data-bs-custom-class="custom-tooltip"
+                                              data-bs-title="Esta pregunta es condicional."
+                                            ></i>
                                           )}
                                         </div>
-                                        <span className="text-muted me-2">
-                                          33%
-                                        </span>
                                       </div>
                                     </div>
                                   ))}
-
-                                  <div className="d-flex mt-4">
-                                    <div
-                                      className="page-selector btn-group"
-                                      role="group"
-                                    >
-                                      <button
-                                        type="button"
-                                        className="btn btn-outline-secondary"
-                                        onClick={() =>
-                                          setCurrentPage((prev) =>
-                                            Math.max(prev - 1, 1)
-                                          )
-                                        }
-                                        disabled={currentPage === 1}
-                                      >
-                                        &lt;
-                                      </button>
-                                      <span className="btn btn-outline-secondary">
-                                        {currentPage || 1}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        className="btn btn-outline-secondary"
-                                        onClick={() =>
-                                          setCurrentPage((prev) =>
-                                            Math.min(prev + 1, totalPages)
-                                          )
-                                        }
-                                        disabled={
-                                          currentPage === totalPages ||
-                                          totalPages === 0
-                                        }
-                                      >
-                                        &gt;
-                                      </button>
-                                    </div>
-                                  </div>
                                 </div>
-                              )}
+                              ))}
+
+                              <div className="d-flex mt-4">
+                                <div
+                                  className="page-selector btn-group"
+                                  role="group"
+                                >
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() =>
+                                      setCurrentPage((prev) =>
+                                        Math.max(prev - 1, 1)
+                                      )
+                                    }
+                                    disabled={currentPage === 1}
+                                  >
+                                    &lt;
+                                  </button>
+                                  <span className="btn btn-outline-secondary">
+                                    {currentPage || 1}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() =>
+                                      setCurrentPage((prev) =>
+                                        Math.min(prev + 1, totalPages)
+                                      )
+                                    }
+                                    disabled={
+                                      currentPage === totalPages ||
+                                      totalPages === 0
+                                    }
+                                  >
+                                    &gt;
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
 
                           {/* Menú de acciones (editar/eliminar) */}
@@ -900,51 +961,6 @@ export default function SurveyBlocks() {
                       </div>
                     ))}
                   </div>
-
-                  {data.map((question) => (
-                    <div
-                      key={question.id}
-                      className="callout callout info shadowbox5 p-3 m-3"
-                    >
-                      <div className="row ">
-                        <div className="col-md-12 col-12"></div>
-                      </div>
-
-                      <div className="d-flex justify-content-between">
-                        <h5 className="mt-2">{question.question}</h5>
-                      </div>
-
-                      {question.type == "yes_no" ? (
-                        <Yes_no />
-                      ) : question.type == "textfield_s" ? (
-                        <Textfield_s />
-                      ) : question.type == "radio_opt" ? (
-                        <SingleChoiceView
-                          options={question.select_option}
-                          correctOption={question.selected_answer}
-                        />
-                      ) : (
-                        <MultipleChoiceView
-                          options={question.select_option}
-                          correctOption={question.selected_answer}
-                        />
-                      )}
-
-                      <div className="text-end me-3">
-                        {question.conditional === "SI" ? (
-                          <i
-                            className="fa-solid fa-question text-primary"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            data-bs-custom-class="custom-tooltip"
-                            data-bs-title="This top tooltip is themed via CSS variables."
-                          ></i>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
@@ -1025,7 +1041,6 @@ export default function SurveyBlocks() {
                         className="input-new"
                         placeholder=" "
                         value={posicionInput.input}
-                        readOnly //
                         onChange={(e) =>
                           posicionInput.handleChange(e.target.value)
                         }
@@ -1206,8 +1221,7 @@ export default function SurveyBlocks() {
                             <div
                               className="col-6 p-2 shadowbox5"
                               style={{ borderLeft: "5px solid gray" }}
-                            >
-                            </div>
+                            ></div>
                           )}
                         </>
                       )}
