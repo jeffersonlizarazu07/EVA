@@ -159,50 +159,99 @@ const AdminList = () => {
       return;
     }
 
-    // Elimina password si está vacío antes de enviar
-    if (metodo.toUpperCase() === "PUT") {
-      if (!password || password.trim() === "") {
-        delete rest.password;
-      } else {
-        rest.password = password;
-      }
-    }
+    // PUT
+if (metodo.toUpperCase() === "PUT") {
+  // Verifica y prepara los datos antes de enviar
+  if (!password || password.trim() === "") {
+    delete rest.password; // Elimina el campo de password si está vacío
+  } else {
+    rest.password = password; // Asigna el password si está presente
+  }
+
+  try {
+    // Enviar solicitud para editar el usuario
+    const respuesta = await axios.put(
+      `${urlUsers}/${idToEdit}`,
+      rest,
+      config
+    );
+
+    console.log("Respuesta: ", respuesta);
+
+    // Asigna los clientes seleccionados al usuario editado
+    sendClients(respuesta.data.data.id, 2);
+
+    // Muestra una alerta de éxito utilizando Toast
+    Toast.fire({
+      icon: "success",
+      title: "Usuario actualizado",
+      text: "El Usuario se editó exitosamente.",
+    });
+
+    // Cierra el modal después de la acción
+    document.getElementById("btnCerrar").click();
+
+    // Actualiza la lista de administradores
+    getAdmins();
+  } catch (error) {
+    // Muestra una alerta de error en caso de fallo utilizando Toast
+    console.log("Error:", error);
+    Toast.fire({
+      icon: "error",
+      title: "Error al actualizar usuario",
+      text: `Hubo un problema al actualizar el usuario: ${error.message}`,
+    });
+  }
+}
 
     // POST
-    if (metodo.toUpperCase() === "POST") {
-      const duplicados = admins.find((u) => u.email === rest.email);
-      if (duplicados) {
-        alert("Este administrador ya existe");
-        return;
-      }
-      try {
-        const respuesta = await axios.post(
-          `${urlUsers}`,
-          { ...rest, password },
-          config
-        );
-        console.log("Response: ", respuesta);
-        sendClients(respuesta.data.data.id, 1);
-        document.getElementById("btnCerrar").click();
-        getAdmins();
-      } catch (error) {
-        console.log("Error: ", error);
-      }
-    } else if (metodo.toUpperCase() === "PUT") {
-      try {
-        const respuesta = await axios.put(
-          `${urlUsers}/${idToEdit}`,
-          rest,
-          config
-        );
-        console.log("Respuesta: ", respuesta);
-        sendClients(respuesta.data.data.id, 2);
-        document.getElementById("btnCerrar").click();
-        getAdmins();
-      } catch (error) {
-        console.log("Error:", error);
-      }
-    }
+if (metodo.toUpperCase() === "POST") {
+  // Verifica si existe un administrador duplicado
+  const duplicados = admins.find((u) => u.email === rest.email);
+  if (duplicados) {
+    Toast.fire({
+      icon: "error",
+      title: "Usuario duplicado",
+      text: "Este administrador ya existe.",
+    });
+    return;
+  }
+
+  try {
+    // Enviar solicitud para crear el usuario
+    const respuesta = await axios.post(
+      `${urlUsers}`,
+      { ...rest, password },
+      config
+    );
+
+    console.log("Response: ", respuesta);
+
+    // Asigna los clientes seleccionados al nuevo usuario
+    sendClients(respuesta.data.data.id, 1);
+
+    // Muestra una alerta de éxito utilizando Toast
+    Toast.fire({
+      icon: "success",
+      title: "Usuario creado",
+      text: "El Usuario se creó exitosamente.",
+    });
+
+    // Cierra el modal después de la acción
+    document.getElementById("btnCerrar").click();
+
+    // Actualiza la lista de administradores
+    getAdmins();
+  } catch (error) {
+    // Muestra una alerta de error en caso de fallo utilizando Toast
+    console.log("Error: ", error);
+    Toast.fire({
+      icon: "error",
+      title: "Error al crear usuario",
+      text: `Hubo un problema al crear el usuario: ${error.message}`,
+    });
+  }
+}
   };
 
   const sendClients = async (id, metodo) => {
@@ -237,15 +286,14 @@ const AdminList = () => {
       }
     }
   };
-
   const deactivateUser = (admin) => {
     const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
-
+  
     // Estado a enviar: 0 = desactivado
     const parametros = { state: 0 };
-
+  
     // Confirmación antes de desactivar
     smallAlertDelete
       .fire({
@@ -259,25 +307,34 @@ const AdminList = () => {
       .then(async (result) => {
         if (result.isConfirmed) {
           try {
-            await axios.patch(`${url}/${id}`, parametros, config); // peticion para desactivar
-            // getAdmins(); // ya no se usa acá
+            await axios.patch(`${url}/${id}`, parametros, config); // Petición para desactivar
+  
+            // Notificación de éxito al desactivar
+            Toast.fire({
+              icon: "success",
+              title: `El usuario ${name} ha sido desactivado correctamente.`,
+            });
           } catch (error) {
-            alert("error", "Error al eliminar el admin");
+            // Notificación de error al desactivar
+            Toast.fire({
+              icon: "error",
+              title: `Error al desactivar al usuario ${name}.`,
+            });
             console.error(error);
           }
         }
-        getAdmins(); // refresco de lista
+        getAdmins(); // Refrescar lista de admins
       });
   };
-
+  
   const activeUser = (admin) => {
     const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
-
+  
     // Estado a enviar: 1 = activo
     const parametros = { state: 1 };
-
+  
     smallAlertDelete
       .fire({
         text: `${t("alertActivate.InitialPhrase")} ${name} ${t(
@@ -293,7 +350,8 @@ const AdminList = () => {
             await axios.patch(`${url}/${id}`, parametros, {
               withCredentials: true,
             });
-            // Notificación de éxito
+  
+            // Notificación de éxito al activar
             Toast.fire({
               icon: "success",
               title: `${t("alertActivate.InitialPhrase")} ${
@@ -301,7 +359,7 @@ const AdminList = () => {
               } ${t("alertActivate.SuccessAlert")}`,
             });
           } catch (error) {
-            // Notificación de error
+            // Notificación de error al activar
             Toast.fire({
               icon: "error",
               title: `${t("alertActivate.InitialPhrase")}${admin.firstName}${t(
@@ -311,10 +369,10 @@ const AdminList = () => {
             console.error(error);
           }
         }
-        getAdmins(); // actualizar admins
+        getAdmins(); // Refrescar lista de admins
       });
   };
-
+  
   //REQUEST//
 
   //MODALS//
