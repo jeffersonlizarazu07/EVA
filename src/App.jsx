@@ -58,7 +58,7 @@ export const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LogIn />} />
-          <Route path="/survey" element={<Survey />} />  { /*ruta del link*/}
+          <Route path="/survey/:link" element={<Survey />} />  { /*ruta del link*/}
           <Route path="/gratitude" element={<Gratitude/>}/>
           <Route path="/agent_monitoring" element={<Agent_Monitoring />} />
           <Route path="/forms" element={<Forms />} />
