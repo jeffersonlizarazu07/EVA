@@ -126,6 +126,10 @@ export default function SurveyBlocks() {
   const [staticData, setStaticData] = useState([]); // Copia de los datos para filtrado
   const blockRefs = useRef([]);
 
+  // Estados para manejo de posicionamiento relativo de bloques
+  const [positionType, setPositionType] = useState(""); // 'before' o 'after'
+  const [referenceBlockId, setReferenceBlockId] = useState(""); // ID del bloque de referencia
+
   /* ***********************************************************************************************************/
   /* Component Logic*/
   /* ***********************************************************************************************************/
@@ -321,7 +325,6 @@ export default function SurveyBlocks() {
   const validar = (id, survey_idt) => {
     var parametros;
     var metodo;
-    console.log("??  ", singleChoiceData.correctAnswer);
 
     setError("");
 
@@ -345,10 +348,10 @@ export default function SurveyBlocks() {
         : selectedAnswer || "";
       optionsToSave = Array.isArray(options)
         ? options
-            .map((option) =>
-              (typeof option === "object" ? option.text : option
-            ))
-            .join(", ")
+          .map((option) =>
+            typeof option === "object" ? option.text : option
+          )
+          .join(", ")
         : "";
     } else if (questionType.input === "textfield_s") {
       selectedAnswer = textFieldAnswer;
@@ -377,7 +380,6 @@ export default function SurveyBlocks() {
         select_option = (q.options || [])
           .map((opt) => (typeof opt === "object" ? opt.text : opt))
           .join(", ");
-        // selected_answer = selectorData.selectedOption || "";
       }
 
       return {
@@ -387,12 +389,15 @@ export default function SurveyBlocks() {
       };
     });
 
+    const newPositionBlock = calBlockPosition();
+
     if (operation === 1) {
       // Crear nuevo bloque
       parametros = {
+        id: Date.now() , // Genera un ID único para el localStorage
         nombreBloque: nombreInput.input,
         ponderacion: ponderacionInput.input || 0,
-        posicion: posicionInput.input || 0,
+        posicion: newPositionBlock || 0,
         preguntas: refillQuestions,
         type:
           questionsList.length > 0 && questionsList[0].type
@@ -407,21 +412,50 @@ export default function SurveyBlocks() {
         section: section.input,
         selected_answer:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? selectedAnswerToString
             : " ",
         select_option:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? optionsToSave
             : "",
       };
       metodo = "post";
 
-      const nuevosDatos = [...data, parametros];
-      setData(nuevosDatos);
+      let nuevosDatos;
+      if (positionType && referenceBlockId) {
+        // Si hay un bloque de referencia y un tipo de posición, reordenar los bloques
+        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
+        nuevosDatos.push(parametros); // Agregar el nuevo bloque al array
+
+        // ordenar por posición asignada
+        nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+      } else {
+        // Si no hay un bloque de referencia, simplemente agregar el nuevo bloque al final
+        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
+      }
+
+      setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
+
+      // Reordenar todos los bloques por su campo `posicion`
+      nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+
+      // Asignar posiciones consecutivas para evitar duplicadas o saltos
+      const bloquesReordenados = nuevosDatos.map((bloque, index) => ({
+        ...bloque,
+        posicion: index + 1,
+      }));
+
+      setData(bloquesReordenados);
+      localStorage.setItem(
+        "bloquesGuardados",
+        JSON.stringify(bloquesReordenados)
+      );
+
       localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
     } else if (operation === 2) {
       parametros = {
@@ -435,16 +469,16 @@ export default function SurveyBlocks() {
         id_conditional: id_conditional.input,
         selected_answer:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? selectedAnswerToString.length > 1
               ? selectedAnswerToString
               : selectedAnswerToString
             : null,
         select_option:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? optionsToSave
             : null,
       };
@@ -471,17 +505,23 @@ export default function SurveyBlocks() {
       t
     )
       .then(() => {
-        // Actualizar preguntas después de la llamada a sendData
-        const nuevosDatos = [...data, parametros];
-        setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
-        localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
-        console.log("Guardado en localStorage:", nuevosDatos); // Verifica en consola
+        // // Actualizar preguntas después de la llamada a sendData
+        // const nuevosDatos = [...data, parametros];
+        // setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
+        // localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
+        updateSurveyQuestions(); // Actualiza la lista de preguntas en el componente
         Toast.fire({
           icon: "success",
           title: "Bloque guardado correctamente",
         });
+
+        setPositionType(""); // Limpiar tipo de posición
+        setReferenceBlockId(""); // Limpiar bloque de referencia
+
         document.getElementById("btnClose").click();
         setValueConditional(false);
+        setPositionType(""); // Limpiar tipo de posición
+        // setReferenceBlockId(""); // Limpiar bloque de referencia
         handleCancel(); // Limpiar formulario
       })
       .catch((error) => {
@@ -659,7 +699,10 @@ export default function SurveyBlocks() {
   useEffect(() => {
     const bloques = localStorage.getItem("bloquesGuardados");
     if (bloques) {
-      setData(JSON.parse(bloques));
+      const bloquesData = JSON.parse(bloques);
+      // Ordenar bloques por posición
+      bloquesData.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+      setData(bloquesData);
     }
   }, []);
 
@@ -684,6 +727,10 @@ export default function SurveyBlocks() {
     conditional_answer.handleChange("");
     setTextFieldAnswer("");
 
+    // Limpiar estados de posicionamiento
+    setPositionType("");
+    setReferenceBlockId("");
+
     setQuestionCountInput("");
     setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
     setSelectorData({ options: [], selectedOption: null });
@@ -700,10 +747,13 @@ export default function SurveyBlocks() {
     if (!nombreInput.value || !posicionInput.value || !ponderacionInput.value)
       return;
 
+    const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
+
+
     const nuevoBloque = {
       blockId: generateId(),
       nombre: nombreInput.value,
-      posicion: parseInt(posicionInput.value),
+      posicion: nuevaPosicion,
       ponderacion: parseInt(ponderacionInput.value),
       preguntas: [],
     };
@@ -802,6 +852,45 @@ export default function SurveyBlocks() {
     );
   }, [filteredData, currentPage, recordsPerPage]);
 
+  // Posición de bloques
+
+  const calBlockPosition = () => {
+    // Si no hay selección relativa, usar la posición por defecto (última posición + 1)
+    if (!positionType || !referenceBlockId) {
+      const posiciones = data.map((bloque) => parseInt(bloque.posicion));
+      return posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+    }
+
+    // Encontrar el bloque de referencia
+    const bloqueReferencia = data.find(
+      (bloque) => bloque.id == referenceBlockId
+    );
+    if (!bloqueReferencia) return 1;
+
+    const posicionReferencia = parseInt(bloqueReferencia.posicion);
+    const nuevosDatos = [...data]; // Clonar el array para no mutar el original directamente
+
+    // Calcular nueva posición basada en el tipo de posicionamiento
+    const nuevaPosicion =
+      positionType === "before" ? posicionReferencia : posicionReferencia + 1;
+
+    // Actualizar posiciones de los bloques afectados
+    nuevosDatos.forEach((bloque) => {
+      const posBloque = parseInt(bloque.posicion);
+      if (positionType === "before" && posBloque >= posicionReferencia) {
+        bloque.posicion = posBloque + 1;
+      } else if (positionType === "after" && posBloque > posicionReferencia) {
+        bloque.posicion = posBloque + 1;
+      }
+    });
+
+    // Actualizar el estado y el localStorage con los bloques reordenados
+    setData(nuevosDatos);
+    localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
+
+    return nuevaPosicion;
+  };
+
   return (
     <div className="App">
       <div id="body">
@@ -863,7 +952,8 @@ export default function SurveyBlocks() {
                                 {bloque.nombreBloque || "Bloque sin nombre"}
                               </h3>
                               <span className="text-muted block-weighting me-3">
-                                {`${bloque.ponderacion}%` || "0"}
+                                {`${bloque.ponderacion}%` ||
+                                  ("0" && bloque.ponderacion > 0)}
                               </span>
                             </div>
 
@@ -904,10 +994,7 @@ export default function SurveyBlocks() {
                                               Selecciona una opción:
                                             </strong>
                                           </label>
-                                          <select
-                                            className="form-select"
-                                            
-                                          >
+                                          <select className="form-select">
                                             {(preg.select_option || "")
                                               .split(",")
                                               .map((opt, idx) => {
@@ -1052,9 +1139,8 @@ export default function SurveyBlocks() {
         aria-hidden="true"
       >
         <div
-          className={`${
-            operation === 1 ? "modal-dialog modal-xl" : ""
-          } modal-dialog-centered modal-dialog-scrollable`}
+          className={`${operation === 1 ? "modal-dialog modal-xl" : ""
+            } modal-dialog-centered modal-dialog-scrollable`}
         >
           <div className="modal-content">
             <div className="modal-header">
@@ -1126,32 +1212,65 @@ export default function SurveyBlocks() {
                     </label>
                   </div>
 
-                  <div className="block-position">
-                    <h5>Posición</h5>
+                  <div className="block-position mb-4">
+                    <h5 className="mb-3">Posición del bloque</h5>
                     <div className="d-flex gap-3 m-2">
                       <div className="form-group flex-fill">
-                        <label htmlFor="select1" className="w-100">
-                          <select>
-                            <option value="0" hidden>
-                              Antes
-                            </option>
-                            <option>Antes</option>
-                            <option>Después</option>
-                          </select>
+                        <label
+                          htmlFor="positionTypeSelect"
+                          className="form-label"
+                        >
+                          Posición relativa:
                         </label>
+                        <select
+                          id="positionTypeSelect"
+                          className="form-select"
+                          value={positionType}
+                          onChange={(e) =>
+                            setPositionType(e.target.value.toLowerCase())
+                          }
+                        >
+                          <option value="" hidden>
+                            Seleccione posición
+                          </option>
+                          <option value="before">⬆️ Antes de</option>
+                          <option value="after">⬇️ Después de</option>
+                        </select>
                       </div>
                       <div className="form-group flex-fill">
-                        <label htmlFor="select2" className="w-100">
-                          <select>
-                            <option value="0" hidden>
-                              Comentarios
-                            </option>
-                            <option>Comentarios</option>
-                            <option>Notas</option>
-                          </select>
+                        <label htmlFor="referenceBlock" className="form-label">
+                          Bloque de referencia:
                         </label>
+                        <select
+                          id="referenceBlock"
+                          className="form-select"
+                          value={referenceBlockId || ""}
+                          onChange={(e) => setReferenceBlockId(e.target.value)}
+                          disabled={!positionType}
+                        >
+                          <option value="" hidden>
+                            Seleccione bloque
+                          </option>
+                          {data.map((bloque) => (
+                            <option key={bloque.id} value={bloque.id}>
+                              {`Bloque ${bloque.posicion}: ${bloque.nombreBloque || "Sin nombre"
+                                }`}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
+                    {positionType && referenceBlockId && (
+                      <div className="alert alert-info mt-3">
+                        <i className="fa-solid fa-info-circle me-2"></i>
+                        El bloque se colocará{" "}
+                        {positionType === "before"
+                          ? "antes del"
+                          : "después del"}{" "}
+                        bloque seleccionado y se actualizarán automáticamente
+                        las posiciones de los demás bloques.
+                      </div>
+                    )}
                   </div>
                 </div>
 
