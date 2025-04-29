@@ -6,6 +6,8 @@ const answerModel = new AnswerModel();  // Importamos el modelo
 const db = require('../config/db');
 //const { check, validationResult } = require('express-validator');
 const { body, validationResult } = require('express-validator');
+const { check } = require('express-validator');
+
 
 class AnswerController {
 
@@ -374,6 +376,7 @@ class AnswerController {
             }
         }
 
+
     
         // Controlador para manejar el post de respuestas
         async postAnswer(req, res) {
@@ -430,6 +433,7 @@ class AnswerController {
                 });
             }
         }
+
 
 
 

@@ -131,7 +131,7 @@ const surveySetController = {
             console.log('datos recibidos',data)
             await SurveySet.create(data);
             res.status(201).json({ status: '201', message: 'Encuesta creada correctamente' });
-            console.log('encuesta creada exitosamente',res)
+            console.log('encuesta creada exitosamente')
         } catch (error) {
             res.status(500).json({ status: '500', message: 'Error al crear la encuesta', error });
             console.log('error al crear la enceesta,', error,error)

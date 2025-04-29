@@ -6,13 +6,22 @@ const SurveySet = {
 
     getById: (id) => db('survey_set').where({ id }).first(),
 
-    getByLink: (link) => {
-        return db('survey_set')
+    getByLink: (name, clientId) => {
+        const query = db('survey_set')
             .join('clients', 'clients.id', '=', 'survey_set.idClient')
-            .where('survey_set.link', link)
+            .where('survey_set.title', name)
+            .andWhere('survey_set.idClient', clientId)
             .select('survey_set.*', 'clients.logo', 'clients.color_tag1', 'clients.color_tag2')
             .first();
+    
+        // Log para ver la consulta SQL generada
+        console.log(query.toString()); // Imprime la consulta SQL generada
+    
+        return query;
     },
+    
+    
+    
 
     getByClients: (clientIdsArray) => {
         return db('survey_set')
