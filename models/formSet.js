@@ -8,6 +8,7 @@ const FormSet = {
           .join('users as updater', 'form_set.updated_by', '=', 'updater.id') // Relacionamos con el editor
           .select(
             'form_set.id',
+            'form_set.idClient',
             'form_set.title', // Usamos 'title' en lugar de 'form_name'
             'form_set.description', // Usamos 'description'
             'form_set.creation_date', // Usamos 'creation_date'
