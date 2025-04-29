@@ -14,11 +14,14 @@ const clientsRoutes = require('./routes/clientRoutes');
 const answersRoutes = require('./routes/answerRoutes');
 const agentRoutes = require('./routes/agentRoutes');
 const formSetRoutes = require('./routes/formRoutes');
+const enviarCorreos = require('./routes/mailRoutes');
+
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
+
     origin: 'http://localhost:5173', 
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], 
     allowedHeaders: ['Content-Type', 'Authorization'], 
@@ -39,6 +42,7 @@ app.use('/api', endUserRoutes);
 app.use('/api', endUserClientRoutes); 
 app.use('/api', clientsRoutes);
 app.use('/api', answersRoutes);
+app.use('/api', enviarCorreos);
 app.use('/api', agentRoutes);
 app.use('/api', formSetRoutes);
 
@@ -68,6 +72,7 @@ app.get('/survey/:encodedData', async (req, res) => {
 //app.get('*', (req, res) => {
   //res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 //});
+
 
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
