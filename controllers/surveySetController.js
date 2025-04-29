@@ -1,4 +1,5 @@
 const SurveySet = require('../models/surveySet');
+const Question  = require('../models/question');
 
 const surveySetController = {
    /* async surveys(req, res) {
@@ -25,7 +26,7 @@ const surveySetController = {
     
             // Transformar las fechas y otros posibles valores antes de enviarlos
             const formattedSurveys = surveys.map(survey => ({
-                survey_id: survey.survey_id,
+                id: survey.id,
                 title: survey.title,
                 start_date: survey.start_date === '0000-00-00' ? null : survey.start_date,  // Convertir fechas inválidas a null
                 end_date: survey.end_date === '0000-00-00' ? null : survey.end_date,  // Lo mismo para end_date
@@ -79,12 +80,31 @@ const surveySetController = {
     
     async surveyByLink(req, res) {
         try {
-            const survey = await SurveySet.getByLink(req.query.link);
-            if (!survey) {
+            console.log('url-----------:', req.query.link);
+            const link = req.query.link;
+            console.log('Recibiendo solicitud para obtener encuesta con link:', link);
+            const survey_set = await SurveySet.getByLink(link);
+            if (!survey_set) {
                 return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
             }
-            res.json({ status: '200', message: 'Encuesta obtenida correctamente', data: survey });
-        } catch (error) {
+            const questions = await Question.getBySurvey(survey_set.id);
+
+            
+            res.json({ status: '200', message: 'Encuesta obtenida correctamente', data: {
+                survey_set,
+                question: questions
+            }});
+
+            console.log({
+                status: '200',
+                message: 'Encuesta obtenida correctamente',
+                data: {
+                  survey_set,
+                  question: questions
+                }
+              });
+
+            } catch (error) {
             res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
         }
     },
@@ -111,7 +131,7 @@ const surveySetController = {
             console.log('datos recibidos',data)
             await SurveySet.create(data);
             res.status(201).json({ status: '201', message: 'Encuesta creada correctamente' });
-            console.log('encuesta creada exitosamente',res)
+            console.log('encuesta creada exitosamente')
         } catch (error) {
             res.status(500).json({ status: '500', message: 'Error al crear la encuesta', error });
             console.log('error al crear la enceesta,', error,error)

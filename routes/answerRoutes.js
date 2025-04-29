@@ -26,7 +26,7 @@ router.get('/answers/survey/:id/percentage', answerController.percentagesXSurvey
 
 
 // Ruta para crear una nueva respuesta
-router.post('/answers',authMiddleware, AnswerController.postAnswer);
+router.post('/answers',AnswerController.postAnswer);
 
 // Ruta para actualizar una respuesta
 

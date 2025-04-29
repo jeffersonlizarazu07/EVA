@@ -6,6 +6,8 @@ const answerModel = new AnswerModel();  // Importamos el modelo
 const db = require('../config/db');
 //const { check, validationResult } = require('express-validator');
 const { body, validationResult } = require('express-validator');
+const { check } = require('express-validator');
+
 
 class AnswerController {
 
@@ -374,41 +376,54 @@ class AnswerController {
             }
         }
 
+
     
         // Controlador para manejar el post de respuestas
         async postAnswer(req, res) {
             try {
                 console.log("Datos recibidos en req.body:", req.body);
         
-                // Asegúrate de que el campo "answer" esté presente (no "answers")
-                if (!req.body.answer) {
+                // Validación combinada (array y no vacío)
+                if (!Array.isArray(req.body) || req.body.length === 0) {
                     return res.status(400).json({
                         status: 400,
-                        message: 'El campo "answer" es requerido'
+                        message: 'El campo answer es requerido'
                     });
-                }
+                }      
         
+                console.log("---respuesta hacia el modeleo", req.body);
                 // Crear una nueva respuesta
                 const result = await answerModel.createAnswer(req.body);
                 
                 console.log("Resultado de la inserción:", result);
-                const date = req.body.date || new Date().toISOString();
                 
-                const newAnswer = {
-                    id: result,
-                    survey_id: req.body.survey_id,
-                    answer: req.body.answer,
-                    question_id: req.body.question_id,
-                    date: date
-                };
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+                // const date = req.body.date || new Date().toISOString();
                 
-                console.log("Respuesta creada exitosamente:", newAnswer);
+                // const newAnswer = {
+                //     id: result,
+                //     survey_id: req.body.survey_id,
+                //     answer: req.body.answer,
+                //     question_id: req.body.question_id,
+                //     date: date
+                // };
+                
+                const newAnswers = result.insertedAnswers;
+
+                console.log("Respuesta creada exitosamente:", newAnswers);
         
                 res.status(201).json({
-                    status: 201,
-                    message: 'Respuesta creada exitosamente',
-                    answer: newAnswer
-                });
+                status: 201,
+                message: 'Respuestas creadas exitosamente',
+                answers: newAnswers
+            });
+                            // res.status(201).json({
+                //     status: 201,
+                //     message: 'Respuesta creada exitosamente',
+                //     answer: newAnswer
+                // });
             } catch (error) {
                 console.error("Error al crear la respuesta:", error);
                 res.status(500).json({
@@ -418,6 +433,7 @@ class AnswerController {
                 });
             }
         }
+
 
 
 
