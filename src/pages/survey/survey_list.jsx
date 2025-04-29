@@ -13,6 +13,8 @@ import { generateRandomLink } from "../../components/survey/encrypt";
 import { useTranslation } from "react-i18next";
 import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
 import Cookies from "js-cookie"; // si no lo has importado ya
+import ModalEnvioMasivo from "../../components/Modals/modalEnvioMasivo";
+
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
