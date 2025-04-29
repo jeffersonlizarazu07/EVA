@@ -24,6 +24,25 @@ export const smallAlertDelete = Swal.mixin({
   position: "center",
 });
 
+export const smallAlertDeactivateConfirm = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  icon: "success", // Icono para indicar éxito
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  },
+  customClass: {
+    container: "small-alert-container",
+    title: "small-alert-title",
+    content: "medium-alert-content",
+    actions: "small-alert-actions",
+  },
+});
+
 
 export const loadingAlert = Swal.mixin({
   toast: true,
