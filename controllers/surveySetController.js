@@ -1,6 +1,5 @@
 const SurveySet = require('../models/surveySet');
-const Question = require('../models/question');
-
+const Question  = require('../models/question');
 
 const surveySetController = {
    /* async surveys(req, res) {
@@ -81,67 +80,34 @@ const surveySetController = {
     
     async surveyByLink(req, res) {
         try {
-            console.log('Parámetro del link recibido:', req.query);
-        
-            const { link } = req.query;
-        
-            if (!link) {
-                return res.status(400).json({ status: '400', message: 'Falta el parámetro "link"' });
-            }
-        
-            // Decodificar el link de base64 a un objeto JSON
-            const decodedLink = Buffer.from(link, 'base64').toString('utf-8');
-            console.log('Link decodificado:', decodedLink);
-        
-            const linkData = JSON.parse(decodedLink); 
-            console.log('Datos del link:', linkData);
-        
-            const { name, clientId } = linkData;
-        
-            // Asegurarse de que los valores necesarios estén presentes
-            if (!name || !clientId) {
-                return res.status(400).json({ status: '400', message: 'Faltan parámetros en el link decodificado' });
-            }
-        
-            // Verificar que los parámetros se pasen correctamente a la consulta
-            console.log('Buscando encuesta con título:', name, 'y ID de cliente:', clientId);
-        
-            // Realizamos la consulta utilizando el título y el ID del cliente
-            const survey = await SurveySet.getByLink(name, clientId); // Pasamos los parámetros correctamente
-            console.log('Encuesta encontrada para el link:', survey);
-        
-            if (!survey) {
+            console.log('url-----------:', req.query.link);
+            const link = req.query.link;
+            console.log('Recibiendo solicitud para obtener encuesta con link:', link);
+            const survey_set = await SurveySet.getByLink(link);
+            if (!survey_set) {
                 return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
             }
-        
-            // Nueva parte: Obtener las preguntas de la encuesta
-            // Asegúrate de tener una ruta o función para obtener preguntas asociadas a la encuesta
-            const question = await Question.getBySurvey(survey.id);  // Llamada a la función que obtiene las preguntas asociadas a esta encuesta
-            console.log('Preguntas de la encuesta:', question);
-        
-            // Ahora devolvemos tanto la encuesta como las preguntas
-            res.json({
+            const questions = await Question.getBySurvey(survey_set.id);
+
+            
+            res.json({ status: '200', message: 'Encuesta obtenida correctamente', data: {
+                survey_set,
+                question: questions
+            }});
+
+            console.log({
                 status: '200',
                 message: 'Encuesta obtenida correctamente',
                 data: {
-                    survey_set: survey,  // Información de la encuesta
-                    question: question  // Preguntas asociadas
+                  survey_set,
+                  question: questions
                 }
-            });
-    
-            console.log('Encuesta y preguntas enviadas correctamente');
-        } catch (error) {
-            console.error('Error en surveyByLink:', error);
-            res.status(500).json({ status: '500', message: 'Error interno del servidor', error: error.message });
+              });
+
+            } catch (error) {
+            res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
         }
     },
-    
-    
-    
-    
-    
-    
-    
 
     async surveysxClients(req, res) {
         try {
