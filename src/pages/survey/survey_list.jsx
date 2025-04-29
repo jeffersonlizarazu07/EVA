@@ -13,15 +13,10 @@ import { generateRandomLink } from "../../components/survey/encrypt";
 import { useTranslation } from "react-i18next";
 import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
 import Cookies from "js-cookie"; // si no lo has importado ya
-
 import ModalEnvioMasivo from "../../components/Modals/modalEnvioMasivo";
 
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
-
-  // En el estado del componente añade:
-  const [showEnvioModal, setShowEnvioModal] = useState(false);
-  const [selectedSurvey, setSelectedSurvey] = useState(null);
 
   const url = "http://localhost:3000/api/surveys";
   const headers = ["Title", "Start_date", "End_date", "state"];
@@ -70,7 +65,6 @@ const SurveyList = () => {
   
 
   useEffect(() => {
-    console.log(clients);
     if (userId && accessToken) {
       getClients(userId);
     }
@@ -103,13 +97,13 @@ const SurveyList = () => {
   };
   
   const getClients = async (id) => {
-    const token = accessToken || Cookies.get("accessToken");
-  
+    const token = accessToken || Cookies.get("accessToken"); // fallback si accessToken está vacío
+
     if (!token) {
       console.warn("⚠️ Token no disponible aún.");
       return;
     }
-  
+
     try {
       const authConfig = {
         headers: {
@@ -117,17 +111,10 @@ const SurveyList = () => {
         },
         withCredentials: true,
       };
-  
+      //console.log("📡 Enviando token en headers:", authConfig.headers);
       const response = await axios.get(`http://localhost:3000/api/users_client/${id}`, authConfig);
-  
-      console.log("Respuesta de la API:", response.data);
-  
-      if (response.data && response.data.data) {
-        // Si la respuesta tiene los datos en `data`, se actualiza el estado
-        setClients(response.data.data);
-      } else {
-        console.warn("No se encontraron clientes en la respuesta.");
-      }
+      console.log("Clientes relacionados: ", response.data);
+      setClients(response.data.data);
     } catch (error) {
       console.error("❌ Error al obtener clientes:", error);
       if (error.response) {
@@ -234,7 +221,7 @@ const SurveyList = () => {
   
 
   const openModal = (op, survey) => {
-    setOperation(op);  
+    setOperation(op);
     if (op == 1) {
       setModalTitle("Añadir encuesta");
       title.handleChange("");
@@ -244,7 +231,6 @@ const SurveyList = () => {
       link.handleChange("");
       idClient.handleChange("");
     } else if (op == 2) {
-      console.log("esto es survey",survey)
       setModalTitle("Editar encuesta");
       title.handleChange(survey?.title || "");
       setNewTitle(survey?.title || "");
@@ -256,7 +242,6 @@ const SurveyList = () => {
       setidToEdit(survey?.id);
     }
   };
-  
   const validar = (id) => {
     var parametros;
     var metodo;
@@ -282,7 +267,6 @@ const SurveyList = () => {
           type: "survey",
           state: 1,
         };
-        console.log("datos del link a crear:", parametros);
         metodo = "post";
       } else if (operation == 2) {
         const titleExists = survey.some(item => item.title === title.input  );
@@ -351,21 +335,16 @@ const SurveyList = () => {
       console.error("Error:", error);
     }
   };
-  const openModalCont =  async (survey) => {
-     /* await getClient(survey.id)  */
-     setModalTitle("Información de la encuesta");
-     title.handleChange(survey?.title || "");
-     start_date.handleChange(survey?.start_date || "");
-     end_date.handleChange(survey?.end_date || "");
-     state.handleChange(survey?.state || "");
-     description.handleChange(survey?.description || "");
-     link.handleChange(survey?.link || "No presenta link anexado");
-     idClient.handleChange(survey?.idClient || "");
-  };
-
-  const openModalBulk = (survey)  => {
-    setSelectedSurvey(survey);
-    setShowEnvioModal(true);
+  const openModalCont = (survey) => {
+    /*  await getClient(survey.id) */
+    setModalTitle("Información de la encuesta");
+    title.handleChange(survey?.title || "");
+    start_date.handleChange(survey?.start_date || "");
+    end_date.handleChange(survey?.end_date || "");
+    state.handleChange(survey?.state || "");
+    description.handleChange(survey?.description || "");
+    link.handleChange(survey?.link || "No presenta link anexado");
+    idClient.handleChange(survey?.idClient || "");
   };
 
   const duplicateSurvey = (survey) => {
@@ -399,7 +378,6 @@ const SurveyList = () => {
   
 
   const openSurvey = (survey) => {
-    console.log('catching survey', survey)
     navigate(`/view_survey/${survey.id}`);
   };
 
@@ -420,7 +398,9 @@ const SurveyList = () => {
         {userType == "1" || userType == "2" ? <HeaderLT1 /> : <HeaderLT2 />}
      <div className="row m-0">
       <div className="col-1 d-flex  align-items-center mx-auto p-0">
+        
           {/* {userType == "1" || userType == "2" ? <SidebarLT1 /> : <SidebarLT2 />} */}
+       
           </div>
           <div className="w-100 d-flex justify-content-center px-2">
           <div className="w-100 px-3" style={{ maxWidth: "97%" }}>
@@ -438,14 +418,13 @@ const SurveyList = () => {
                 onActive={(payload) => activeSurvey(payload)}
                 onDuplicate={(item) => duplicateSurvey(item)}
                 onCopyLink={(item)=> copyLink(item)}
-                onBulkEmail={(payload)=> openModalBulk(payload)}
               />
             )}
           </div>
           </div>
           </div>
       </div>
-     <div id="modalViewSurvey" className="modal fade" aria-hidden="true">
+      <div id="modalViewSurvey" className="modal fade" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
             <div className="modal-header">
@@ -475,26 +454,18 @@ const SurveyList = () => {
                 </div>
                 <div className="col-4 mb-3">
                   <label id="labelAnimation">
-                  <select
-                    onChange={(e) => idClient.handleChange(e.target.value)}
-                    value={idClient.input}
-                    className="input-new"
-                    disabled={clients.length === 0} // Deshabilitar si no hay clientes
-                  >
-                    <option value="" disabled>
-                      Seleccione un cliente
-                    </option>
-                    {clients.length > 0 ? (
-                      clients.map((client) => (
+                    <select
+                      readOnly
+                      onChange={(e) => idClient.handleChange(e.target.value)}
+                      value={idClient.input}
+                      className="input-new"
+                    >
+                      {clients.map((client) => (
                         <option value={client.id} key={client.id}>
-                          {client.clientName}
+                          {client.client}
                         </option>
-                      ))
-                    ) : (
-                      <option disabled>Cargando clientes...</option> 
-                    )}
-                  </select>
-
+                      ))}
+                    </select>
                     <span className="labelName">Cliente</span>
                   </label>
                 </div>
@@ -567,13 +538,7 @@ const SurveyList = () => {
             </div>
           </div>
         </div>
-      </div> 
- {showEnvioModal && (
-  <ModalEnvioMasivo 
-    survey={selectedSurvey} 
-    onClose={() => setShowEnvioModal(false)} 
-  />
-)}
+      </div>
       <div id="modalSurvey" className="modal fade" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
@@ -614,7 +579,7 @@ const SurveyList = () => {
                       </option>
                       {clients.map((client) => (
                         <option value={client.id} key={client.id}>
-                          {client.clientName}
+                          {client.client}
                         </option>
                       ))}
                     </select>

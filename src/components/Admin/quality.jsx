@@ -186,7 +186,7 @@ const Quality = () => {
                         </div>
                         <div className="row button-container">
                           <div className="col-10">
-                            <button className="card-btn check" onClick={() => navigate("/agent_monitoring")}>
+                            <button className="card-btn check" onClick={() => navigate("/forms")}>
                               {t("qualitySite.Create_form")}
                             </button>
                           </div>

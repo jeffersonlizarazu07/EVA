@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from "react";
+import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
 import HeaderLT1 from "../../components/header/headerLT1";
 import axios from "axios";
 import useInput from "../../components/hooks/useInput";
@@ -63,6 +63,9 @@ export default function SurveyBlocks() {
 
   const question = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const nombreInput = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const ponderacionInput = useInput({ defaultValue: "", validate: /^[0-9]*$/ });
+  const posicionInput = useInput({ defaultValue: "", validate: /^[0-9]*$/ });
   const questionType = useInput({ defaultValue: "", validate: /^[A-Za-z_]+$/ });
   const section = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const percentage = useInput({
@@ -100,14 +103,35 @@ export default function SurveyBlocks() {
 
   /* Selector option */
 
+  const [selectorData, setSelectorData] = useState({
+    options: [],
+    selectedOption: null,
+  });
   const [questions, setQuestions] = useState([]);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [options, setOptions] = useState([]);
   const [correctAnswers, setCorrectAnswers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // State para manejo de preguntas validas
+  const [hasValidQuestions, setHasValidQuestions] = useState(false);
+  const [textFieldAnswer, setTextFieldAnswer] = useState("");
+
+  //Id bloque creado
+  const [bloques, setBloques] = useState([]);
+
+  // Paginador
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage] = useState(3); // Número de bloques por página
+  const [searchTerm, setSearchTerm] = useState(""); // Para filtrado
+  const [staticData, setStaticData] = useState([]); // Copia de los datos para filtrado
+  const blockRefs = useRef([]);
+
+  // Estados para manejo de posicionamiento relativo de bloques
+  const [positionType, setPositionType] = useState(""); // 'before' o 'after'
+  const [referenceBlockId, setReferenceBlockId] = useState(""); // ID del bloque de referencia
 
   /* ***********************************************************************************************************/
-  /* UseEffect */
+  /* Component Logic*/
   /* ***********************************************************************************************************/
 
   useEffect(() => {
@@ -116,16 +140,33 @@ export default function SurveyBlocks() {
     updateSurveyQuestions();
   }, [id, languageUser]);
 
+  useEffect(() => {
+    setStaticData([...data]);
+  }, [data]);
+
+  useEffect(() => {
+    // Verificar si hay al menos una pregunta con texto y tipo
+    const hasValid = questionsList.some((q) => q.text && q.type);
+    setHasValidQuestions(hasValid);
+
+    // Si hay alguna pregunta válida, actualizar questionType
+    if (hasValid) {
+      const validQuestion = questionsList.find((q) => q.text && q.type);
+      questionType.handleChange(validQuestion.type);
+    }
+  }, [questionsList]);
+
   const config = {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   };
+
   const updateSurveyQuestions = () => {
     getSurveyQuestions(id, config)
       .then(setData)
       .catch((error) => {
-        console.error("Error fetching survey questions", error);
+        console.error("Error al obtener las preguntas de la encuesta", error);
       });
   };
 
@@ -135,6 +176,8 @@ export default function SurveyBlocks() {
     setSingleChoiceData({ options: [], correctAnswer: null });
     setMultipleChoiceData({ options: [], correctAnswers: [] });
     setidToEdit(null);
+    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+    setHasValidQuestions(false);
   };
 
   const conditionalHandleChange = (e) => {
@@ -144,21 +187,31 @@ export default function SurveyBlocks() {
   };
 
   useEffect(() => {
-    if (!valueConditional) {
+    if (valueConditional && !listConditional) {
+      setListConditional(true);
+    } else if (!valueConditional && listConditional) {
       setListConditional(false);
-      setSingleChoiceData({ options: [], correctAnswer: null });
-      setMultipleChoiceData({ options: [], correctAnswers: [] });
+      if (
+        singleChoiceData.options.length > 0 ||
+        singleChoiceData.correctAnswer !== null
+      ) {
+        setSingleChoiceData({ options: [], correctAnswer: null });
+      }
+      if (
+        multipleChoiceData.options.length > 0 ||
+        multipleChoiceData.correctAnswers.length > 0
+      ) {
+        setMultipleChoiceData({ options: [], correctAnswers: [] });
+      }
     }
-    setListConditional(true);
-  }, [valueConditional]);
+  }, [valueConditional, listConditional, singleChoiceData, multipleChoiceData]);
 
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
     if (op === 1) {
+      resetFormFields(); // Limpia todo el estado base
       setTitle("Crear Bloque");
-      setDescriptionText(
-        "Elige un tipo de pregunta de acuerdo a tus necesidades."
-      );
+      setDescriptionText("");
       description.handleChange("");
       questionType.handleChange("");
       section.handleChange("Na");
@@ -168,8 +221,16 @@ export default function SurveyBlocks() {
       id_conditional.handleChange(0);
       conditional_answer.handleChange("NO");
       survey_id.handleChange(idsurvey);
+      // Limpia inputs adicionales
+      setQuestionCountInput(""); // limpia el input de cantidad de preguntas
+      setSelectorData({ options: [], selectedOption: null }); // limpia selectores
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
+      setSelectorData({ options: [], selectedOption: null });
+      setQuestionsList([
+        { text: "", type: "", options: [], correctAnswers: [] },
+      ]);
+      setHasValidQuestions(false);
     } else if (op === 2) {
       console.log({ questionDetails });
       setSingleChoiceData({ options: [], correctAnswer: null });
@@ -202,6 +263,38 @@ export default function SurveyBlocks() {
           correctAnswer: answerSelected,
         });
       }
+      if (questionDetails.type == "selector_opt") {
+        const optionsData = questionDetails?.select_option;
+        const optionsDataArray = optionsData ? optionsData.split(",") : [];
+        const selectedOption = questionDetails?.selected_answer;
+
+        setSelectorData({
+          options: optionsDataArray.map((text) => ({
+            text: text.trim(),
+            checked: false,
+          })),
+          selectedOption: selectedOption,
+        });
+
+        // Actualizar QuestionList
+
+        setQuestionsList((prevQuestions) =>
+          prevQuestions.map((q) => {
+            if (q.type === "selector_opt") {
+              return {
+                ...q,
+                options: optionsDataArray.map((text) => ({
+                  text: text.trim(),
+                  checked: false,
+                })),
+                selected_answer: selectedOption,
+              };
+            }
+            return q;
+          })
+        );
+      }
+
       id_conditional.handleChange(questionDetails?.id_conditional || null);
       conditional.handleChange(questionDetails?.conditional || "");
       description.handleChange(questionDetails?.question || "");
@@ -210,104 +303,230 @@ export default function SurveyBlocks() {
         questionDetails?.conditional_answer || ""
       );
       setidToEdit(questionDetails?.id);
+      setQuestionsList(questionDetails?.preguntas || []);
     }
+
+    const posiciones = data.map((bloque) => parseInt(bloque.posicion));
+    const nuevaPosicion =
+      posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+
+    posicionInput.handleChange(nuevaPosicion.toString()); // Asigna internamente
+
+    const preguntasConvertidas = (questionDetails.preguntas || []).map((p) => ({
+      text: p.text || p.question || "", // usa el campo correcto
+      type: p.type || "",
+      options: p.options || [],
+      correctAnswers: p.correctAnswers || [],
+    }));
+
+    setQuestionsList(preguntasConvertidas);
   };
 
   const validar = (id, survey_idt) => {
     var parametros;
     var metodo;
-    console.log("??  ", singleChoiceData.correctAnswer);
-    if (questionType.input.trim() === "" || description.input.trim() === "") {
-      setError("Ingresa una pregunta valida.");
-    } else {
-      // Asegúrate de que selectedAnswer sea un índice (número) para radio_opt
-      const selectedAnswer =
-        questionType.input === "radio_opt"
-          ? singleChoiceData.correctAnswer
-          : multipleChoiceData.correctAnswers;
 
-      const options =
-        questionType.input === "radio_opt"
-          ? singleChoiceData.options
-          : multipleChoiceData.options;
+    setError("");
 
-      const selectedAnswerToString =
-        questionType.input === "radio_opt"
-          ? selectedAnswer.toString() // Convierte a string para guardarlo
-          : selectedAnswer.join(", "); // Para check_opt, une los valores
+    let selectedAnswer, options, selectedAnswerToString, optionsToSave;
 
-      const optionsToSave = options.map((option) => option.text).join(", ");
+    if (questionType.input === "radio_opt") {
+      selectedAnswer = singleChoiceData.correctAnswer;
+      options = singleChoiceData.options;
+      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
+      optionsToSave = options.map((option) => option.text).join(", ");
+    } else if (questionType.input === "check_opt") {
+      selectedAnswer = multipleChoiceData.correctAnswers;
+      options = multipleChoiceData.options;
+      selectedAnswerToString = selectedAnswer.join(", ");
+      optionsToSave = options.map((option) => option.text).join(", ");
+    } else if (questionType.input === "selector_opt") {
+      selectedAnswer = selectorData.selectedOption;
+      options = selectorData.options;
+      selectedAnswerToString = Array.isArray(selectedAnswer)
+        ? selectedAnswer.join(", ")
+        : selectedAnswer || "";
+      optionsToSave = Array.isArray(options)
+        ? options
+          .map((option) =>
+            typeof option === "object" ? option.text : option
+          )
+          .join(", ")
+        : "";
+    } else if (questionType.input === "textfield_s") {
+      selectedAnswer = textFieldAnswer;
+      options = [];
+      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
+      optionsToSave = ""; // No hay opciones para este tipo de pregunta
+    }
 
-      if (operation === 1) {
-        parametros = {
-          type: questionType.input,
-          percentage: 0,
-          conditional: valueConditional ? "SI" : "NO",
-          question: description.input,
-          survey_id: survey_idt,
-          frm_option: frm_option.input,
-          id_conditional: id_conditional.input,
-          conditional_answer: conditional_answer.input,
-          section: section.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-              questionType.input === "radio_opt"
-              ? selectedAnswerToString
-              : " ",
-          select_option:
-            questionType.input === "check_opt" ||
-              questionType.input === "radio_opt"
-              ? optionsToSave
-              : "",
-        };
-        metodo = "post";
-        console.log("parametros: ", parametros);
-      } else if (operation === 2) {
-        parametros = {
-          type: questionType.input,
-          percentage: 0,
-          conditional: valueConditional ? "SI" : "NO",
-          question: description.input,
-          survey_id: survey_idt,
-          conditional_answer: conditional_answer.input,
-          id_conditional: id_conditional.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-              questionType.input === "radio_opt"
-              ? selectedAnswerToString.length > 1
-                ? selectedAnswerToString
-                : selectedAnswerToString
-              : null,
-          select_option:
-            questionType.input === "check_opt" ||
-              questionType.input === "radio_opt"
-              ? optionsToSave
-              : null,
-        };
-        console.log("parametros", parametros);
-        metodo = "put";
+    // Recargar de opciones de pregunta antes de guardar
+
+    const refillQuestions = questionsList.map((q) => {
+      let select_option = "";
+      let selected_answer = "";
+
+      if (q.type === "radio_opt") {
+        select_option = singleChoiceData.options
+          .map((opt) => opt.text)
+          .join(", ");
+        selected_answer = singleChoiceData.correctAnswer?.toString() || "";
+      } else if (q.type === "check_opt") {
+        select_option = multipleChoiceData.options
+          .map((opt) => opt.text)
+          .join(", ");
+        selected_answer = multipleChoiceData.correctAnswers.join(", ");
+      } else if (q.type === "selector_opt") {
+        select_option = (q.options || [])
+          .map((opt) => (typeof opt === "object" ? opt.text : opt))
+          .join(", ");
       }
 
-      sendData(
-        metodo,
-        parametros,
-        config,
-        id,
-        setLoading,
-        setError,
-        updateSurveyQuestions,
-        t
-      )
-        .then(() => {
-          // Actualizar preguntas después de la llamada a sendData
-          updateSurveyQuestions();
-          document.getElementById("btnClose").click();
-          setValueConditional(false);
-        })
-        .catch((error) => {
-          console.error("Error en la actualización de preguntas:", error);
-        });
+      return {
+        ...q,
+        select_option,
+        selected_answer,
+      };
+    });
+
+    const newPositionBlock = calBlockPosition();
+
+    if (operation === 1) {
+      // Crear nuevo bloque
+      parametros = {
+        id: Date.now() , // Genera un ID único para el localStorage
+        nombreBloque: nombreInput.input,
+        ponderacion: ponderacionInput.input || 0,
+        posicion: newPositionBlock || 0,
+        preguntas: refillQuestions,
+        type:
+          questionsList.length > 0 && questionsList[0].type
+            ? questionsList[0].type
+            : "",
+        conditional: valueConditional ? "SI" : "NO",
+        question: description.input,
+        survey_id: survey_idt,
+        frm_option: frm_option.input,
+        id_conditional: id_conditional.input,
+        conditional_answer: conditional_answer.input,
+        section: section.input,
+        selected_answer:
+          questionType.input === "check_opt" ||
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
+            ? selectedAnswerToString
+            : " ",
+        select_option:
+          questionType.input === "check_opt" ||
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
+            ? optionsToSave
+            : "",
+      };
+      metodo = "post";
+
+      let nuevosDatos;
+      if (positionType && referenceBlockId) {
+        // Si hay un bloque de referencia y un tipo de posición, reordenar los bloques
+        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
+        nuevosDatos.push(parametros); // Agregar el nuevo bloque al array
+
+        // ordenar por posición asignada
+        nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+      } else {
+        // Si no hay un bloque de referencia, simplemente agregar el nuevo bloque al final
+        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
+      }
+
+      setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
+
+      // Reordenar todos los bloques por su campo `posicion`
+      nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+
+      // Asignar posiciones consecutivas para evitar duplicadas o saltos
+      const bloquesReordenados = nuevosDatos.map((bloque, index) => ({
+        ...bloque,
+        posicion: index + 1,
+      }));
+
+      setData(bloquesReordenados);
+      localStorage.setItem(
+        "bloquesGuardados",
+        JSON.stringify(bloquesReordenados)
+      );
+
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
+    } else if (operation === 2) {
+      parametros = {
+        type: questionType.input,
+        preguntas: refillQuestions,
+        percentage: 0,
+        conditional: valueConditional ? "SI" : "NO",
+        question: description.input,
+        survey_id: survey_idt,
+        conditional_answer: conditional_answer.input,
+        id_conditional: id_conditional.input,
+        selected_answer:
+          questionType.input === "check_opt" ||
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
+            ? selectedAnswerToString.length > 1
+              ? selectedAnswerToString
+              : selectedAnswerToString
+            : null,
+        select_option:
+          questionType.input === "check_opt" ||
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
+            ? optionsToSave
+            : null,
+      };
+      console.log("parametros", parametros);
+      metodo = "put";
+
+      const nuevosDatos = data.map((b) =>
+        b.id === idToEdit ? { ...b, ...parametros } : b
+      );
+      setData(nuevosDatos);
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
     }
+
+    console.log("Parámetros a guardar:", parametros);
+
+    sendData(
+      metodo,
+      parametros,
+      config,
+      id,
+      setLoading,
+      setError,
+      updateSurveyQuestions,
+      t
+    )
+      .then(() => {
+        // // Actualizar preguntas después de la llamada a sendData
+        // const nuevosDatos = [...data, parametros];
+        // setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
+        // localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
+        updateSurveyQuestions(); // Actualiza la lista de preguntas en el componente
+        Toast.fire({
+          icon: "success",
+          title: "Bloque guardado correctamente",
+        });
+
+        setPositionType(""); // Limpiar tipo de posición
+        setReferenceBlockId(""); // Limpiar bloque de referencia
+
+        document.getElementById("btnClose").click();
+        setValueConditional(false);
+        setPositionType(""); // Limpiar tipo de posición
+        // setReferenceBlockId(""); // Limpiar bloque de referencia
+        handleCancel(); // Limpiar formulario
+      })
+      .catch((error) => {
+        console.error("Error en la actualización de preguntas:", error);
+      });
   };
 
   const handleSingleChoiceChange = (updatedData) => {
@@ -316,7 +535,12 @@ export default function SurveyBlocks() {
   };
 
   const handleMultipleChoiceChange = (data) => {
-    setMultipleChoiceData(data);
+    setMultipleChoiceData(data)({
+      options: data.options || [],
+      correctAnswers: Array.isArray(data.correctAnswers)
+        ? data.correctAnswers
+        : [],
+    });
   };
   const handleSelectConditionalQuestionChange = (e) => {
     const selectedId = e.target.value; // Captura el value (question.id)
@@ -330,6 +554,7 @@ export default function SurveyBlocks() {
     id_conditional.handleChange(selectedId);
   };
 
+  /* Selector Option */
   const rangeOptions = useMemo(
     () =>
       getRangeOptions(
@@ -348,7 +573,6 @@ export default function SurveyBlocks() {
       count = 1;
     }
 
-
     const newQuestions = Array.from({ length: count }, () => ({
       text: "",
       type: "",
@@ -357,16 +581,315 @@ export default function SurveyBlocks() {
     }));
 
     setQuestionsList((prev) => [...prev, ...newQuestions]);
-    setQuestionCountInput(""); // Limpiar input si deseas
+    setQuestionCountInput(""); // Limpiar input
   };
 
-  const handleInputChange = (index, field, value) => {
+  const handleInputChange = (index, key, value) => {
     const updatedQuestions = [...questionsList];
-    updatedQuestions[index][field] = value;
+    updatedQuestions[index][key] = value;
     setQuestionsList(updatedQuestions);
   };
 
-  /* Selector Option */
+  // Validar el input de preguntas del modal
+
+  const validateInputs = () => {
+    // Validación de questionType: solo letras y guiones bajos
+    const questionTypeValid = /^[A-Za-z_]+$/.test(questionType);
+    const descriptionValid = description.trim() !== "";
+
+    if (!questionTypeValid) {
+      setError(
+        "El tipo de pregunta no es válido. Solo se permiten letras y guiones bajos."
+      );
+      return false;
+    }
+
+    if (!descriptionValid) {
+      setError("La descripción de la pregunta es obligatoria.");
+      return false;
+    }
+
+    // Si pasa todas las validaciones
+    setError(""); // Limpiar cualquier error previo
+    return true;
+  };
+
+  // Manejo el envío de pregunta
+  const handleSubmit = () => {
+    if (validateInputs()) {
+      // Aquí puedes manejar el envío de los datos
+      console.log("Pregunta válida. Enviar datos...");
+    }
+  };
+
+  const handleSelectorChange = (data) => {
+    setSelectorData(data);
+
+    // Actualizar directamente en questionsList el tipo selector
+    setQuestionsList((prevQuestions) =>
+      prevQuestions.map((q, idx) => {
+        if (q.type === "selector_opt") {
+          return {
+            ...q,
+            options: data.options, // Guardar todas las opciones
+            selected_answer: data.selectedOption, // Guardar la respuesta seleccionada
+          };
+        }
+        return q;
+      })
+    );
+  };
+
+  const areAllFieldsCompleted = () => {
+    // Verificación de nombre del bloque
+    if (operation === 1 && nombreInput.input.trim() === "") {
+      return false;
+    }
+
+    // Verificamos que existan preguntas
+    if (questionsList.length === 0) {
+      return false;
+    }
+
+    // Verificacióm para que cada pregunta tenga todos sus campos requeridos diligenciados
+    const allQuestionsValid = questionsList.every((question) => {
+      // Verificar que el texto de la pregunta no esté vacío
+      if (!question.text || question.text.trim() === "") return false;
+
+      // Verificar que tenga un tipo seleccionado
+      if (!question.type || question.type === "") return false;
+
+      // Verificaciones específicas según el tipo de pregunta
+      if (question.type === "selector_opt") {
+        // Si es un selector, debe tener opciones
+        return selectorData.options && selectorData.options.length > 0;
+      }
+
+      if (question.type === "check_opt") {
+        // Si es selección múltiple, debe tener opciones
+        return (
+          multipleChoiceData.options && multipleChoiceData.options.length > 0
+        );
+      }
+
+      if (question.type === "radio_opt") {
+        // Si es selección única, debe tener opciones
+        return singleChoiceData.options && singleChoiceData.options.length > 0;
+      }
+
+      // Para campos de texto no es necesario verificar opciones adicionales
+      return true;
+    });
+
+    // Si la operación es de edición, verificamos el tipo y descripción
+    if (operation === 2) {
+      return (
+        questionType.input.trim() !== "" &&
+        description.input.trim() !== "" &&
+        allQuestionsValid
+      );
+    }
+
+    return allQuestionsValid;
+  };
+
+  // Localstorage temporal
+
+  // Leer al iniciar
+  useEffect(() => {
+    const bloques = localStorage.getItem("bloquesGuardados");
+    if (bloques) {
+      const bloquesData = JSON.parse(bloques);
+      // Ordenar bloques por posición
+      bloquesData.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+      setData(bloquesData);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data.length > 0) {
+      localStorage.setItem("bloquesGuardados", JSON.stringify(data));
+    }
+  }, [data]);
+
+  const resetFormFields = () => {
+    nombreInput.handleChange("");
+    ponderacionInput.handleChange("");
+    posicionInput.handleChange("");
+    questionType.handleChange("");
+    description.handleChange("");
+    section.handleChange("");
+    percentage.handleChange("");
+    frm_option.handleChange("");
+    conditional.handleChange("");
+    id_conditional.handleChange("0");
+    survey_id.handleChange("");
+    conditional_answer.handleChange("");
+    setTextFieldAnswer("");
+
+    // Limpiar estados de posicionamiento
+    setPositionType("");
+    setReferenceBlockId("");
+
+    setQuestionCountInput("");
+    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+    setSelectorData({ options: [], selectedOption: null });
+    setSingleChoiceData({ options: [], correctAnswer: null });
+    setMultipleChoiceData({ options: [], correctAnswers: [] });
+    setIsChecked(false);
+    setValueConditional(false);
+    setHasValidQuestions(false);
+  };
+
+  // Id único para cada bloque
+
+  const handleAgregarBloque = () => {
+    if (!nombreInput.value || !posicionInput.value || !ponderacionInput.value)
+      return;
+
+    const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
+
+
+    const nuevoBloque = {
+      blockId: generateId(),
+      nombre: nombreInput.value,
+      posicion: nuevaPosicion,
+      ponderacion: parseInt(ponderacionInput.value),
+      preguntas: [],
+    };
+
+    setBloques((prev) => [...prev, nuevoBloque]);
+
+    // Reset inputs
+    nombreInput.reset();
+    posicionInput.reset();
+    ponderacionInput.reset();
+  };
+
+  const renderRespuesta = (question) => {
+    const tipo = question.type;
+    const respuesta = question.selected_answer || "Sin respuesta";
+
+    switch (tipo) {
+      case "textfield_s":
+      case "yes_no":
+        return (
+          <p>
+            <strong>Respuesta:</strong>{" "}
+            {respuesta !== " " ? respuesta : "Sin respuesta"}
+          </p>
+        );
+
+      case "radio_opt":
+      case "check_opt":
+      case "selector_opt":
+        return (
+          <div>
+            <p>
+              <strong>Respuesta:</strong> {respuesta}
+            </p>
+            {question.select_option && (
+              <p>
+                <small>
+                  <strong>Opciones:</strong> {question.select_option}
+                </small>
+              </p>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <p>
+            <em>Tipo de pregunta no soportado</em>
+          </p>
+        );
+    }
+  };
+
+  // Agregar función para manejar edición
+  const onUpdate = (bloque) => {
+    const preguntasBloque = bloque.preguntas || [];
+
+    const bloqueConPreguntas = {
+      ...bloque,
+      preguntas: preguntasBloque,
+    };
+    openModal(2, id, bloqueConPreguntas);
+    // Abrir modal después de configurar la data
+    document.getElementById("modalManageQuestion").classList.add("show");
+    document.getElementById("modalManageQuestion").style.display = "block";
+  };
+
+  // Paginador bloques
+
+  const filteredData = useMemo(() => {
+    return staticData.filter((row) => {
+      if (!searchTerm) return true;
+
+      const parsedSearchTerm = parseInt(searchTerm, 10);
+
+      if (!isNaN(parsedSearchTerm) && row.id) {
+        return row.id === parsedSearchTerm;
+      }
+
+      return Object.values(row).some(
+        (value) =>
+          value &&
+          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
+  }, [staticData, searchTerm]);
+
+  // Calcular el total de páginas
+  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+
+  // Datos paginados para mostrar en la vista actual
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(
+      (currentPage - 1) * recordsPerPage,
+      currentPage * recordsPerPage
+    );
+  }, [filteredData, currentPage, recordsPerPage]);
+
+  // Posición de bloques
+
+  const calBlockPosition = () => {
+    // Si no hay selección relativa, usar la posición por defecto (última posición + 1)
+    if (!positionType || !referenceBlockId) {
+      const posiciones = data.map((bloque) => parseInt(bloque.posicion));
+      return posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+    }
+
+    // Encontrar el bloque de referencia
+    const bloqueReferencia = data.find(
+      (bloque) => bloque.id == referenceBlockId
+    );
+    if (!bloqueReferencia) return 1;
+
+    const posicionReferencia = parseInt(bloqueReferencia.posicion);
+    const nuevosDatos = [...data]; // Clonar el array para no mutar el original directamente
+
+    // Calcular nueva posición basada en el tipo de posicionamiento
+    const nuevaPosicion =
+      positionType === "before" ? posicionReferencia : posicionReferencia + 1;
+
+    // Actualizar posiciones de los bloques afectados
+    nuevosDatos.forEach((bloque) => {
+      const posBloque = parseInt(bloque.posicion);
+      if (positionType === "before" && posBloque >= posicionReferencia) {
+        bloque.posicion = posBloque + 1;
+      } else if (positionType === "after" && posBloque > posicionReferencia) {
+        bloque.posicion = posBloque + 1;
+      }
+    });
+
+    // Actualizar el estado y el localStorage con los bloques reordenados
+    setData(nuevosDatos);
+    localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
+
+    return nuevaPosicion;
+  };
 
   return (
     <div className="App">
@@ -403,10 +926,10 @@ export default function SurveyBlocks() {
                 <div className="card p-4 card-outline card-success borderEVA bg-light">
                   <div>
                     <h3 className="text-center">Preguntas</h3>
-                    <div className="card-tools">
+                    <div className="card-tools ms-4">
                       <button
                         className="btn fw-bold btn-sm acces-tabla"
-                        onClick={() => openModal(1, id_form)}
+                        onClick={() => openModal(1)}
                         data-bs-toggle="modal"
                         data-bs-target="#modalManageQuestion"
                       >
@@ -416,87 +939,187 @@ export default function SurveyBlocks() {
                   </div>
 
                   <div className="card-body ui-sorteable">
-                    {data.map((question) => (
+                    {paginatedData.map((bloque, index) => (
                       <div
-                        key={question.id}
-                        className="callout callout info shadowbox5 p-3 m-3"
+                        key={index}
+                        ref={(el) => (blockRefs.current[index] = el)}
+                        className="shadowbox5 p-3 m-3"
                       >
-                        <div className="row ">
-                          <div className="col-md-12 col-12"></div>
-                        </div>
+                        <div className="d-flex justify-content-between mb-2 w-100">
+                          <div className="w-100 ps-2">
+                            <div className="d-flex justify-content-between align-items-start">
+                              <h3 className="mb-3 ms-2">
+                                {bloque.nombreBloque || "Bloque sin nombre"}
+                              </h3>
+                              <span className="text-muted block-weighting me-3">
+                                {`${bloque.ponderacion}%` ||
+                                  ("0" && bloque.ponderacion > 0)}
+                              </span>
+                            </div>
 
-                        <div className="d-flex justify-content-between">
-                          <h5 className="mt-2">{question.question}</h5>
+                            <div className="shadowbox5 mb-2 w-100 p-3 mt-2">
+                              <p className="mb-1">
+                                <strong>Posición:</strong> {bloque.posicion}
+                              </p>
+                            </div>
+
+                            {/* Se agregan las preguntas a la vista principal */}
+
+                            <div className="mt-2">
+                              {bloque.preguntas.map((preg, idx) => (
+                                <div key={idx} className="shadowbox5 p-3 mb-3">
+                                  <div className="d-flex justify-content-between align-items-start">
+                                    <div>
+                                      <p className="mb-1 mb-3">
+                                        <strong>Pregunta {idx + 1}:</strong>{" "}
+                                        {preg.text || "Sin texto"}
+                                      </p>
+
+                                      {preg.type === "radio_opt" && (
+                                        <SingleChoiceView
+                                          options={preg.select_option}
+                                          correctOption={preg.selected_answer}
+                                        />
+                                      )}
+                                      {preg.type === "check_opt" && (
+                                        <MultipleChoiceView
+                                          options={preg.select_option}
+                                          correctOption={preg.selected_answer}
+                                        />
+                                      )}
+                                      {preg.type === "selector_opt" && (
+                                        <div className="mb-1">
+                                          <label className="form-label">
+                                            <strong>
+                                              Selecciona una opción:
+                                            </strong>
+                                          </label>
+                                          <select className="form-select">
+                                            {(preg.select_option || "")
+                                              .split(",")
+                                              .map((opt, idx) => {
+                                                const optionText = opt.trim();
+                                                return (
+                                                  <option
+                                                    key={idx}
+                                                    value={optionText}
+                                                    selected={
+                                                      optionText ===
+                                                      preg.selected_answer
+                                                    }
+                                                  >
+                                                    {optionText}
+                                                  </option>
+                                                );
+                                              })}
+                                          </select>
+                                        </div>
+                                      )}
+
+                                      {preg.type === "textfield_s" && (
+                                        <Textfield_s
+                                          value={preg.answer || ""}
+                                          readOnly
+                                        />
+                                      )}
+                                      {preg.type === "yes_no" && (
+                                        <Yes_no
+                                          value={preg.answer || ""}
+                                          readOnly
+                                        />
+                                      )}
+
+                                      <div className="text-end me-3">
+                                        {preg.conditional === "SI" && (
+                                          <i
+                                            className="fa-solid fa-question text-primary"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            data-bs-custom-class="custom-tooltip"
+                                            data-bs-title="Esta pregunta es condicional."
+                                          ></i>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+
+                              <div className="d-flex mt-4">
+                                <div
+                                  className="page-selector btn-group"
+                                  role="group"
+                                >
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() =>
+                                      setCurrentPage((prev) =>
+                                        Math.max(prev - 1, 1)
+                                      )
+                                    }
+                                    disabled={currentPage === 1}
+                                  >
+                                    &lt;
+                                  </button>
+                                  <span className="btn btn-outline-secondary">
+                                    {currentPage || 1}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() =>
+                                      setCurrentPage((prev) =>
+                                        Math.min(prev + 1, totalPages)
+                                      )
+                                    }
+                                    disabled={
+                                      currentPage === totalPages ||
+                                      totalPages === 0
+                                    }
+                                  >
+                                    &gt;
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Menú de acciones (editar/eliminar) */}
                           <div className="dropdown">
-                            <a
-                              className="btn dropdown-toggle"
-                              href="#"
-                              role="button"
+                            <button
+                              className="btn-rect btn-dropdown"
+                              type="button"
                               data-bs-toggle="dropdown"
                               aria-expanded="false"
                             >
-                              <i className="fa-solid fa-ellipsis-vertical"></i>
-                            </a>
-                            <ul className="dropdown-menu">
-                              <li>
+                              <div className="dropdown-toggle">
+                                <i className="fa-solid fa-ellipsis-vertical"></i>
+                              </div>
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end p-0">
+                              <li className="text-start btn-rect">
                                 <button
-                                  className="dropdown-item"
-                                  type="button"
+                                  className="btn text-start"
+                                  style={{ width: "100%" }}
                                   data-bs-toggle="modal"
-                                  data-bs-target="#modalManageQuestion"
-                                  onClick={() => openModal(2, id, question)}
+                                  onClick={() => onUpdate(bloque)}
                                 >
-                                  Editar
+                                  <i className="fa-solid fa-edit"></i> Editar
                                 </button>
                               </li>
-                              <li>
+                              <li className="text-start btn-rect">
                                 <button
-                                  className="dropdown-item"
-                                  type="button"
-                                  onClick={() =>
-                                    deleteQuestion(
-                                      question,
-                                      config,
-                                      updateSurveyQuestions,
-                                      t
-                                    )
-                                  }
+                                  className="btn text-start"
+                                  style={{ width: "100%" }}
+                                  onClick={() => onBulkEmail(bloque)}
                                 >
-                                  Eliminar
+                                  <i className="fa-solid fa-trash"></i>{" "}
+                                  <span>Eliminar</span>
                                 </button>
                               </li>
                             </ul>
                           </div>
-                        </div>
-
-                        {question.type == "yes_no" ? (
-                          <Yes_no />
-                        ) : question.type == "textfield_s" ? (
-                          <Textfield_s />
-                        ) : question.type == "radio_opt" ? (
-                          <SingleChoiceView
-                            options={question.select_option}
-                            correctOption={question.selected_answer}
-                          />
-                        ) : (
-                          <MultipleChoiceView
-                            options={question.select_option}
-                            correctOption={question.selected_answer}
-                          />
-                        )}
-
-                        <div className="text-end me-3">
-                          {question.conditional === "SI" ? (
-                            <i
-                              className="fa-solid fa-question text-primary"
-                              data-bs-toggle="tooltip"
-                              data-bs-placement="top"
-                              data-bs-custom-class="custom-tooltip"
-                              data-bs-title="This top tooltip is themed via CSS variables."
-                            ></i>
-                          ) : (
-                            ""
-                          )}
                         </div>
                       </div>
                     ))}
@@ -543,9 +1166,9 @@ export default function SurveyBlocks() {
                         id="question"
                         className="input-new"
                         placeholder=" "
-                        value={description.input}
+                        value={nombreInput.input}
                         onChange={(e) =>
-                          description.handleChange(e.target.value)
+                          nombreInput.handleChange(e.target.value)
                         }
                         required
                       />
@@ -556,27 +1179,18 @@ export default function SurveyBlocks() {
                   <div className="form-group m-2 mt-2 mb-4">
                     <label id="labelAnimation" htmlFor="question">
                       <input
-                        type="text"
+                        type="number"
                         name="question"
                         id="question"
                         className="input-new"
                         placeholder=" "
-                        value={description.input}
+                        value={ponderacionInput.input}
                         onChange={(e) =>
-                          description.handleChange(e.target.value)
+                          ponderacionInput.handleChange(e.target.value)
                         }
                         required
                       />
                       <span className="labelName">Ponderación</span>
-                    </label>
-                  </div>
-
-                  <div className="form-group m-2 mt-2 mb-4">
-                    <label id="labelAnimation" htmlFor="question">
-                      <select name="client" id="client" className="input-new ps-2" required>
-                        <option value="0">Seleccionar cliente:</option>
-                      </select>
-                      <span className="labelName">Cliente</span>
                     </label>
                   </div>
 
@@ -588,9 +1202,9 @@ export default function SurveyBlocks() {
                         id="question"
                         className="input-new"
                         placeholder=" "
-                        value={description.input}
+                        value={posicionInput.input}
                         onChange={(e) =>
-                          description.handleChange(e.target.value)
+                          posicionInput.handleChange(e.target.value)
                         }
                         required
                       />
@@ -598,32 +1212,65 @@ export default function SurveyBlocks() {
                     </label>
                   </div>
 
-                  <div className="block-position">
-                    <h5>Posición</h5>
+                  <div className="block-position mb-4">
+                    <h5 className="mb-3">Posición del bloque</h5>
                     <div className="d-flex gap-3 m-2">
                       <div className="form-group flex-fill">
-                        <label htmlFor="select1" className="w-100">
-                          <select>
-                            <option value="0" hidden>
-                              Antes
-                            </option>
-                            <option>Antes</option>
-                            <option>Después</option>
-                          </select>
+                        <label
+                          htmlFor="positionTypeSelect"
+                          className="form-label"
+                        >
+                          Posición relativa:
                         </label>
+                        <select
+                          id="positionTypeSelect"
+                          className="form-select"
+                          value={positionType}
+                          onChange={(e) =>
+                            setPositionType(e.target.value.toLowerCase())
+                          }
+                        >
+                          <option value="" hidden>
+                            Seleccione posición
+                          </option>
+                          <option value="before">⬆️ Antes de</option>
+                          <option value="after">⬇️ Después de</option>
+                        </select>
                       </div>
                       <div className="form-group flex-fill">
-                        <label htmlFor="select2" className="w-100">
-                          <select>
-                            <option value="0" hidden>
-                              Comentarios
-                            </option>
-                            <option>Comentarios</option>
-                            <option>Notas</option>
-                          </select>
+                        <label htmlFor="referenceBlock" className="form-label">
+                          Bloque de referencia:
                         </label>
+                        <select
+                          id="referenceBlock"
+                          className="form-select"
+                          value={referenceBlockId || ""}
+                          onChange={(e) => setReferenceBlockId(e.target.value)}
+                          disabled={!positionType}
+                        >
+                          <option value="" hidden>
+                            Seleccione bloque
+                          </option>
+                          {data.map((bloque) => (
+                            <option key={bloque.id} value={bloque.id}>
+                              {`Bloque ${bloque.posicion}: ${bloque.nombreBloque || "Sin nombre"
+                                }`}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
+                    {positionType && referenceBlockId && (
+                      <div className="alert alert-info mt-3">
+                        <i className="fa-solid fa-info-circle me-2"></i>
+                        El bloque se colocará{" "}
+                        {positionType === "before"
+                          ? "antes del"
+                          : "después del"}{" "}
+                        bloque seleccionado y se actualizarán automáticamente
+                        las posiciones de los demás bloques.
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -635,161 +1282,173 @@ export default function SurveyBlocks() {
                   {/* Botón para agregar preguntas */}
                   <div className="card-tools row ms-2">
                     {/* Input para cantidad de preguntas */}
-                      <div class="col-sm-5">
-                        <div className="form-group">
-                          <label htmlFor="questionConditional" id="labelAnimation">
-                            <input
-                              type="number"
-                              className="input-new conditionalQuestionSelect"
-                              name="questionConditional"
-                              id="questionConditional"
-                              value={questionCountInput}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                // Solo permitir números o vacío
-                                if (/^\d*$/.test(value)) {
-                                  setQuestionCountInput(value);
-                                }
-                              }}
-                            />
-                            <span className="labelName">Número de preguntas</span>
-                          </label>
-                        </div>
+                    <div class="col-sm-5">
+                      <div className="form-group">
+                        <label
+                          htmlFor="questionConditional"
+                          id="labelAnimation"
+                        >
+                          <input
+                            type="number"
+                            className="input-new conditionalQuestionSelect"
+                            name="questionConditional"
+                            id="questionConditional"
+                            value={questionCountInput}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (/^\d*$/.test(value)) {
+                                setQuestionCountInput(value);
+                              }
+                            }}
+                          />
+                          <span className="labelName">Número de preguntas</span>
+                        </label>
                       </div>
-                      <div class="col-auto">
-                        <button className="btn fw-bold btn-sm add-question-btn p-2" onClick = { addNewQuestion }>
-                              + Pregunta
-                        </button>
-                      </div>
-                      
+                    </div>
+                    <div class="col-auto">
+                      <button
+                        className="btn fw-bold btn-sm add-question-btn p-2"
+                        onClick={addNewQuestion}
+                      >
+                        + Pregunta
+                      </button>
+                    </div>
                   </div>
 
-
-                {questionsList.map((q, index) => (
-                  <div key={index} className="shadowbox5 p-2 m-3">
-                    {/* Input para escribir el texto de la pregunta */}
-                    <div className="form-group m-2">
-                    <h5>Pregunta {index + 1}</h5>
-                      <label id="labelAnimation">
-                        <input
-                          type="text"
-                          className="input-new"
-                          placeholder=""
-                          value={q.text || ""}
-                          onChange={(e) =>
-                            handleInputChange(index, "text", e.target.value)
-                          }
-                        />
-                        <span className="labelName">
-                          Texto de la pregunta:
-                        </span>
-                      </label>
-                    </div>
-
-                    {/* Tipo de pregunta */}
-                    <div className="form-group m-2">
-                      <label
-                        htmlFor={`questionType_${index}`}
-                        id="labelAnimation"
-                      >
-                        <select
-                          className="input-new text-center"
-                          name={`questionType_${index}`}
-                          id={`questionType_${index}`}
-                          value={q.type}
-                          onChange={(e) =>
-                            handleInputChange(index, "type", e.target.value)
-                          }
-                        >
-                          <option value="" disabled>
-                            Seleccione opción
-                          </option>
-                          <option value="selector_opt">Seleccionador</option>
-                          <option value="check_opt">
-                            Selección múltiple
-                          </option>
-                          <option value="textfield_s">Campo de texto</option>
-                        </select>
-                        <span className="labelName">Tipo de pregunta:</span>
-                      </label>
-                    </div>
-
-                    {/* Lógica para diferentes tipos de preguntas */}
-                    {q.type === "selector_opt" && operation === 1 && (
-                      <SelectorQuestion
-                        question={q}
-                        onUpdate={(id, updatedData) =>
-                          handleUpdateFromChild(index, updatedData)
-                        }
-                      />
-                    )}
-
-                    {q.type === "check_opt" && operation === 1 && (
-                      <MultipleChoiceQuestion
-                        options={multipleChoiceData.options}
-                        correctAnswers={multipleChoiceData.correctAnswers}
-                        onChange={handleMultipleChoiceChange}
-                      />
-                    )}
-
-                    {operation === 1 && (
-                      <div className="mt-2 mb-2">
-                        {q.type === "yes_no" ? <Yes_no /> : null}
-                        {q.type === "textfield_s" ? <Textfield_s /> : null}
-                      </div>
-                    )}
-
-                    {operation === 2 && (
-                      <>
-                        <div className="form-check form-switch m-2">
+                  {questionsList.map((q, index) => (
+                    <div key={index} className="shadowbox5 p-2 m-3">
+                      {/* Input para escribir el texto de la pregunta */}
+                      <div className="form-group m-2">
+                        <h5>Pregunta {index + 1}</h5>
+                        <label id="labelAnimation">
                           <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={`flexSwitchCheckChecked_${index}`}
-                            checked={isChecked}
+                            type="text"
+                            className="input-new"
+                            placeholder=""
+                            value={q.text || ""}
                             onChange={(e) =>
-                              conditionalHandleChange(e.target.checked)
+                              handleInputChange(index, "text", e.target.value)
                             }
                           />
-                        </div>
-
-                        {isChecked && listConditional && valueConditional && (
-                          <div
-                            className="col-6 p-2 shadowbox5"
-                            style={{ borderLeft: "5px solid gray" }}
-                          >
-                            {/* ... contenido condicional ... */}
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {error && (
-                      <p className="text-danger text-center">{error}</p>
-                    )}
-
-                    {operation === 2 && (
-                      <div className="mt-2 mb-2">
-                        {q.type === "yes_no" ? <Yes_no /> : null}
-                        {q.type === "textfield_s" ? <Textfield_s /> : null}
+                          <span className="labelName">
+                            Texto de la pregunta:
+                          </span>
+                        </label>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Tipo de pregunta */}
+                      <div className="form-group m-2">
+                        <label
+                          htmlFor={`questionType_${index}`}
+                          id="labelAnimation"
+                        >
+                          <select
+                            className="input-new text-center"
+                            name={`questionType_${index}`}
+                            id={`questionType_${index}`}
+                            value={q.type}
+                            onChange={(e) =>
+                              handleInputChange(index, "type", e.target.value)
+                            }
+                          >
+                            <option value="" disabled>
+                              Seleccione opción
+                            </option>
+                            <option value="selector_opt">Seleccionador</option>
+                            <option value="check_opt">
+                              Selección múltiple
+                            </option>
+                            <option value="textfield_s">Campo de texto</option>
+                          </select>
+                          <span className="labelName">Tipo de pregunta:</span>
+                        </label>
+                      </div>
+
+                      {/* Lógica para diferentes tipos de preguntas */}
+                      {q.type === "selector_opt" && operation === 1 && (
+                        <SelectorQuestion
+                          options={selectorData.options}
+                          selectedOption={selectorData.selectedOption}
+                          onChange={handleSelectorChange}
+                        />
+                      )}
+
+                      {operation === 1 && (
+                        <div className="mt-2 mb-2">
+                          {q.type === "yes_no" && <Yes_no />}
+                          {q.type === "textfield_s" && <Textfield_s />}
+                          {q.type === "radio_opt" && (
+                            <SingleChoiceQuestion
+                              options={singleChoiceData.options}
+                              correctOption={singleChoiceData.correctAnswer}
+                              onChange={handleSingleChoiceChange}
+                            />
+                          )}
+                          {q.type === "check_opt" && (
+                            <MultipleChoiceQuestion
+                              options={multipleChoiceData.options || []}
+                              correctAnswers={
+                                Array.isArray(multipleChoiceData.correctAnswers)
+                                  ? multipleChoiceData.correctAnswers
+                                  : []
+                              }
+                              onChange={handleMultipleChoiceChange}
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      {operation === 2 && (
+                        <>
+                          <div className="form-check form-switch">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`flexSwitchCheckChecked_${index}`}
+                              checked={isChecked}
+                              onChange={(e) =>
+                                conditionalHandleChange(e.target.checked)
+                              }
+                            />
+                          </div>
+
+                          {isChecked && listConditional && valueConditional && (
+                            <div
+                              className="col-6 p-2 shadowbox5"
+                              style={{ borderLeft: "5px solid gray" }}
+                            ></div>
+                          )}
+                        </>
+                      )}
+
+                      {error && (
+                        <p className="text-danger text-center">{error}</p>
+                      )}
+
+                      {operation === 2 && (
+                        <div className="mt-2 mb-2">
+                          {q.type === "yes_no" ? <Yes_no /> : null}
+                          {q.type === "textfield_s" ? <Textfield_s /> : null}
+                          {q.type === "radio_opt" ? (
+                            <MultipleChoiceQuestion />
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          {/* Footer del modal */}
-          <div className="modal-footer">
-              {questionType.input && (
-                <button
-                  className="btn bg-gradient-guardar mr-2"
-                  id="btn-send-survey"
-                  onClick={() => validar(idToEdit, id)}
-                >
-                  Guardar
-                </button>
-              )}
+            {/* Footer del modal */}
+            <div className="modal-footer">
+              <button
+                className="btn bg-gradient-guardar mr-2"
+                id="btn-send-survey"
+                onClick={() => validar(idToEdit, id)}
+                disabled={!areAllFieldsCompleted()}
+              >
+                Guardar
+              </button>
               <button
                 className="btn btn-secondary"
                 type="button"
@@ -800,9 +1459,9 @@ export default function SurveyBlocks() {
                 Cancelar
               </button>
             </div>
+          </div>
         </div>
       </div>
     </div>
-    </div >
   );
 }
