@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 
 // Ruta absoluta 
-const uploadDir = 'C:\\Users\\Luis Miguel Moncayo\\Desktop\\Eva\\tpco_transversal_EvaFe\\public\\clientes';
+const uploadDir = 'C:\\Users\\moncayorojas.6\\Desktop\\Trabajos\\EVA\\tpco_transversal_EvaFe\\public\\clientes';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
