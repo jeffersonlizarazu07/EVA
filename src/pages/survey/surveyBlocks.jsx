@@ -348,10 +348,10 @@ export default function SurveyBlocks() {
         : selectedAnswer || "";
       optionsToSave = Array.isArray(options)
         ? options
-          .map((option) =>
-            typeof option === "object" ? option.text : option
-          )
-          .join(", ")
+            .map((option) =>
+              typeof option === "object" ? option.text : option
+            )
+            .join(", ")
         : "";
     } else if (questionType.input === "textfield_s") {
       selectedAnswer = textFieldAnswer;
@@ -394,7 +394,7 @@ export default function SurveyBlocks() {
     if (operation === 1) {
       // Crear nuevo bloque
       parametros = {
-        id: Date.now() , // Genera un ID único para el localStorage
+        id: Date.now(), // Genera un ID único para el localStorage
         nombreBloque: nombreInput.input,
         ponderacion: ponderacionInput.input || 0,
         posicion: newPositionBlock || 0,
@@ -412,14 +412,14 @@ export default function SurveyBlocks() {
         section: section.input,
         selected_answer:
           questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
             ? selectedAnswerToString
             : " ",
         select_option:
           questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
             ? optionsToSave
             : "",
       };
@@ -469,16 +469,16 @@ export default function SurveyBlocks() {
         id_conditional: id_conditional.input,
         selected_answer:
           questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
             ? selectedAnswerToString.length > 1
               ? selectedAnswerToString
               : selectedAnswerToString
             : null,
         select_option:
           questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
             ? optionsToSave
             : null,
       };
@@ -749,7 +749,6 @@ export default function SurveyBlocks() {
 
     const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
 
-
     const nuevoBloque = {
       blockId: generateId(),
       nombre: nombreInput.value,
@@ -957,36 +956,42 @@ export default function SurveyBlocks() {
                               </span>
                             </div>
 
-                            <div className="shadowbox5 mb-2 w-100 p-3 mt-2">
-                              <p className="mb-1">
-                                <strong>Posición:</strong> {bloque.posicion}
-                              </p>
-                            </div>
-
                             {/* Se agregan las preguntas a la vista principal */}
 
-                            <div className="mt-2">
+                            <div className="mt-2 d-flex flex-column align-items-center">
                               {bloque.preguntas.map((preg, idx) => (
-                                <div key={idx} className="shadowbox5 p-3 mb-3">
-                                  <div className="d-flex justify-content-between align-items-start">
-                                    <div>
-                                      <p className="mb-1 mb-3">
-                                        <strong>Pregunta {idx + 1}:</strong>{" "}
+                                <div
+                                  key={idx}
+                                  className="shadowbox5 p-3 mb-3"
+                                  style={{ width: "100%" }}
+                                >
+                                  <div className="d-flex justify-content-between align-items-center">
+                                    <div className="w-100">
+                                      <p className="mb-1 mb-3 text-center fs-4">
+                                        <strong className="questionRender">
+                                          Pregunta {idx + 1}:
+                                        </strong>{" "}
                                         {preg.text || "Sin texto"}
                                       </p>
 
                                       {preg.type === "radio_opt" && (
-                                        <SingleChoiceView
-                                          options={preg.select_option}
-                                          correctOption={preg.selected_answer}
-                                        />
+                                        <div className="d-flex flex-column align-items-center">
+                                          <SingleChoiceView
+                                            options={preg.select_option}
+                                            correctOption={preg.selected_answer}
+                                          />
+                                        </div>
                                       )}
+
                                       {preg.type === "check_opt" && (
-                                        <MultipleChoiceView
-                                          options={preg.select_option}
-                                          correctOption={preg.selected_answer}
-                                        />
+                                        <div className="d-flex flex-column align-items-center">
+                                          <MultipleChoiceView
+                                            options={preg.select_option}
+                                            correctOption={preg.selected_answer}
+                                          />
+                                        </div>
                                       )}
+
                                       {preg.type === "selector_opt" && (
                                         <div className="mb-1">
                                           <label className="form-label">
@@ -1045,7 +1050,7 @@ export default function SurveyBlocks() {
                                 </div>
                               ))}
 
-                              <div className="d-flex mt-4">
+                              <div className="d-flex">
                                 <div
                                   className="page-selector btn-group"
                                   role="group"
@@ -1139,8 +1144,9 @@ export default function SurveyBlocks() {
         aria-hidden="true"
       >
         <div
-          className={`${operation === 1 ? "modal-dialog modal-xl" : ""
-            } modal-dialog-centered modal-dialog-scrollable`}
+          className={`${
+            operation === 1 ? "modal-dialog modal-xl" : ""
+          } modal-dialog-centered modal-dialog-scrollable`}
         >
           <div className="modal-content">
             <div className="modal-header">
@@ -1220,7 +1226,6 @@ export default function SurveyBlocks() {
                           htmlFor="positionTypeSelect"
                           className="form-label"
                         >
-                          Posición relativa:
                         </label>
                         <select
                           id="positionTypeSelect"
@@ -1239,7 +1244,6 @@ export default function SurveyBlocks() {
                       </div>
                       <div className="form-group flex-fill">
                         <label htmlFor="referenceBlock" className="form-label">
-                          Bloque de referencia:
                         </label>
                         <select
                           id="referenceBlock"
@@ -1253,8 +1257,9 @@ export default function SurveyBlocks() {
                           </option>
                           {data.map((bloque) => (
                             <option key={bloque.id} value={bloque.id}>
-                              {`Bloque ${bloque.posicion}: ${bloque.nombreBloque || "Sin nombre"
-                                }`}
+                              {`Bloque ${bloque.posicion}: ${
+                                bloque.nombreBloque || "Sin nombre"
+                              }`}
                             </option>
                           ))}
                         </select>
