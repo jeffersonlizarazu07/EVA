@@ -3,4 +3,7 @@ uploads/
 .env
 node_modules
 
+# Environment variables
+.env
+
 
