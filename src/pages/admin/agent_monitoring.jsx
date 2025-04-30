@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 
 const AdminList = () => {
   const [open, setOpen] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const [formId, setFormId] = useState(null);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,9 +39,9 @@ const AdminList = () => {
   };
 
   const handleOpen = (id = null) => {
-    setUserId(id);
-    setOpen(true);
-  };
+    setFormId(id);
+    setOpen(true); // Esto abre el modal para edición si id existe o creación si es null.
+  };  
 
   const handleClose = () => setOpen(false);
 

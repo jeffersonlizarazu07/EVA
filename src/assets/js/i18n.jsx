@@ -5,6 +5,11 @@ import { initReactI18next } from "react-i18next";
       resources : {
         "es": {
           translation: {
+            header:{
+              "Home":"Inicio",
+              "Users": "Usuarios",
+              "Clients": "Clientes"
+            },
             quality: {
               "title": "Calidad",
               "description": "Agentes / Usuarios / Formularios de monitoreo / Informes",
@@ -66,6 +71,33 @@ import { initReactI18next } from "react-i18next";
               "Viwer":"Agente",
               "selectedColor":"Colores seleccionados",
               "colorSelect":"Selecciona dos colores representativos del cliente",
+            },
+            formTable: {
+              "id": "ID",
+              "title": "Título",
+              "description": "Descripción",
+              "client_name": "Cliente",
+              "creation_date": "Fecha de Creación",
+              "created_by_name": "Creado Por",
+              "updated_date": "Fecha de Actualización",
+              "updated_by_name": "Actualizado Por",
+              "state": "Estado",
+              "Actions": "Acciones",
+              "newForm": "Nuevo formulario",
+              "Search": "Buscar",
+              "Show": "Mostrar",
+              "Registered": "Registros",
+              "Active": "Activo",
+              "Inactive": "Inactivo"
+            },
+            formModal: { 
+              "NewForm": "Crear formulario", 
+              "EditClient": "Editar formulario",
+              "title": "Título",
+              "description": "Descripción",
+              "client_name": "Cliente",
+              "Close": "Cerrar",
+              "Save": "Guardar"
             },
             qualitySite: {
               "Quality_system": "Sistema de calidad",
@@ -142,19 +174,28 @@ import { initReactI18next } from "react-i18next";
             },
             alertDeactivate:{
               "InitialPhrase":"El registro de ",
-              "FinalPhrase":"se desactivara. ",
+              "FinalPhrase":"se desactivará. ",
               "Confirm":"Confirmar",
               "Cancel":"Cancelar",
+              "SuccessAlert":" se ha desactivado exitosamente.",
+              "ErrorAlert":" no ha sido desactivado.",
             },
             alertActivate:{
-              "InitialPhrase":"El usuario ",
-              "FinalPhrase":" se activara.",
+              "InitialPhrase":"El registro de ",
+              "FinalPhrase":" se activará.",
               "Confirm":"Confirmar",
               "Cancel":"Cancelar",
               "SuccessAlert":" se ha activado exitosamente.",
               "ErrorAlert":" no ha sido activado.",
               "TheClient":"El cliente",
               "Created":"se ha creado exitosamente.",
+            },
+            alertCreateEdit:{
+              "SuccessAlert":" se ha guardado exitosamente.",
+              "ErrorAlert":"Error, no ha sido guardado.",
+            },
+            alerts: {
+              "fillRequiredFields": "Por favor llena todos los campos obligatorios."
             },
             clientModal:{
               "NewClient":"Añadir cliente",
@@ -195,6 +236,7 @@ import { initReactI18next } from "react-i18next";
             },
             buttons:{
               "WatchQuestions":"Ver preguntas",
+              "WatchSections":"Ver bloques",
               "CopyLink":"Copiar enlace",
               "Edit":"Editar",
               "MassiveSend":"Envio masivo",
@@ -212,6 +254,11 @@ import { initReactI18next } from "react-i18next";
         },
         "en": {
           translation: {
+            header:{
+              "Home":"Home",
+              "Users": "Users",
+              "Clients": "Clients"
+            },
             quality: {
               "title": "Quality",
               "description": "Agents / Users / Monitoring forms / Reports",
@@ -251,6 +298,33 @@ import { initReactI18next } from "react-i18next";
               "SuperAdmin": "SuperAdmin",
               "Viwer": "Viewer"
             },
+            formTable: {
+              "id": "ID",
+              "title": "Form Name",
+              "description": "Description",
+              "client_name": "Client",
+              "creation_date": "Creation Date",
+              "created_by_name": "Created By",
+              "updated_date": "Updated Date",
+              "updated_by_name": "Updated By",
+              "state": "State",
+              "Actions": "Actions",
+              "newForm": "New Form",
+              "Search": "Search",
+              "Show": "Show",
+              "Registered": "Registered",
+              "Active": "Active",
+              "Inactive": "Inactive"
+            },
+            formModal: { 
+              "NewForm": "Create Form", 
+              "EditClient": "Edit Form",
+              "title": "Form Name",
+              "description": "Description",
+              "client_name": "Client",
+              "Close": "Close",
+              "Save": "Save"
+            },                      
             UserModal: {
               "RegisterUser": "Register User",
               "EditUser": "Edit user",
@@ -285,17 +359,28 @@ import { initReactI18next } from "react-i18next";
             },
             alertDeactivate: {
               "InitialPhrase": "The record of ",
-              "FinalPhrase": "will be disabled. ",
-              "Confirm": "Confirm",
-              "Cancel": "Cancel"
-            },
-            alertActivate: {
-              "InitialPhrase": "The user ",
-              "FinalPhrase": "will be activated. ",
+              "FinalPhrase": " will be deactivated.",
               "Confirm": "Confirm",
               "Cancel": "Cancel",
+              "SuccessAlert": " has been successfully deactivated.",
+              "ErrorAlert": " has not been deactivated."
+            },
+            alertActivate: {
+              "InitialPhrase": "The record of ",
+              "FinalPhrase": " will be activated.",
+              "Confirm": "Confirm",
+              "Cancel": "Cancel",
+              "SuccessAlert": " has been successfully activated.",
+              "ErrorAlert": " has not been activated.",
               "TheClient":"The client",
               "Created": "has been created successfully."
+            },
+            alertCreateEdit: {
+              "SuccessAlert": " has been successfully saved.",
+              "ErrorAlert": "Error, it was not saved."
+            },
+            alerts: {
+              "fillRequiredFields": "Please fill in all required fields."
             },
             clientModal: {
               "NewClient": "Add client",
@@ -366,11 +451,29 @@ import { initReactI18next } from "react-i18next";
             "SendMail": "Send Emails",
             "FinalUserSurveys": "Final User Surveys",
             "Rate_the_quality_of_customer_service_being_provided_by_the_agent": "Rate the Quality of Customer Service Being Provided by the Agent"
-           }
+           },
+           buttons: {
+            "WatchQuestions": "View Questions",
+            "WatchSections": "View Sections",
+            "CopyLink": "Copy Link",
+            "Edit": "Edit",
+            "MassiveSend": "Massive Send",
+            "Duply": "Duplicate",
+            "Deactivate": "Deactivate",
+            "Delete": "Delete",
+            "Survey": "Survey",
+            "NewQuestion": "Add New Question"
+          }
+          
           },
         },
-        it: {
+        "it": {
           translation: {
+            header: {
+              "Home": "Home",
+              "Users": "Utenti",
+              "Clients": "Clienti"
+            },
             quality: {
               "title": "Qualità",
               "description": "Agenti / Utenti / Moduli di monitoraggio / Report",
@@ -430,6 +533,33 @@ import { initReactI18next } from "react-i18next";
               "SuperAdmin": "SuperAdmin",
               "Viwer": "Visualizzatore"
             },
+            formTable: {
+              "id": "ID",
+              "title": "Titolo",
+              "description": "Descrizione",
+              "client_name": "Cliente",
+              "creation_date": "Data di Creazione",
+              "created_by_name": "Creato da",
+              "updated_date": "Data di Aggiornamento",
+              "updated_by_name": "Aggiornato da",
+              "state": "Stato",
+              "Actions": "Azioni",
+              "newForm": "Nuovo Modulo",
+              "Search": "Cerca",
+              "Show": "Mostra",
+              "Registered": "Registrati",
+              "Active": "Attivo",
+              "Inactive": "Inattivo"
+            },
+            formModal: { 
+              "NewForm": "Crea Modulo", 
+              "EditClient": "Modifica Modulo",
+              "title": "Titolo",
+              "description": "Descrizione",
+              "client_name": "Cliente",
+              "Close": "Chiudi",
+              "Save": "Salva"
+            },             
             UserModal: {
               "RegisterUser": "Registrare utente",
               "EditUser": "Modifica utente",
@@ -464,18 +594,29 @@ import { initReactI18next } from "react-i18next";
               "NotClients": "Nessun cliente presente"
             },
             alertDeactivate: {
-              "InitialPhrase": "La registrazione di ",
-              "FinalPhrase": "sarà disabilitato. ",
-              "Confirm": "Conferma",
-              "Cancel": "Annulla"
+              "InitialPhrase": "Il record di ",
+              "FinalPhrase": " sarà disattivato.",
+              "Confirm": "Confermare",
+              "Cancel": "Annulla",
+              "SuccessAlert": " è stato disattivato con successo.",
+              "ErrorAlert": " non è stato disattivato."
             },
             alertActivate: {
-              "InitialPhrase": "L'utente ",
-              "FinalPhrase": "sarà attivato. ",
-              "Confirm": "Conferma",
+              "InitialPhrase": "Il record di ",
+              "FinalPhrase": " sarà attivato.",
+              "Confirm": "Confermare",
               "Cancel": "Annulla",
+              "SuccessAlert": " è stato attivato con successo.",
+              "ErrorAlert": " non è stato attivato.",
               "TheClient":"Il cliente",
               "Created": "è stato creato con successo."
+            },
+            alertCreateEdit: {
+              "SuccessAlert": " è stato salvato con successo.",
+              "ErrorAlert": "Errore, non è stato salvato."
+            },
+            alerts: {
+              "fillRequiredFields": "Si prega di compilare tutti i campi obbligatori."
             },
             clientModal: {
               "NewClient": "Aggiungi cliente",
@@ -525,11 +666,29 @@ import { initReactI18next } from "react-i18next";
               "SendMail": "Invia Email",
               "FinalUserSurveys": "Sondaggi Utente Finali",
               "Rate_the_quality_of_customer_service_being_provided_by_the_agent": "Valuta la Qualità del Servizio Clienti Fornito dall'Agente"
+            },
+            buttons: {
+              "WatchQuestions": "Visualizza Domande",
+              "WatchSections": "Visualizza Sezioni",
+              "CopyLink": "Copia Link",
+              "Edit": "Modifica",
+              "MassiveSend": "Invio Massivo",
+              "Duply": "Duplica",
+              "Deactivate": "Disattiva",
+              "Delete": "Elimina",
+              "Survey": "Sondaggio",
+              "NewQuestion": "Aggiungi Nuova Domanda"
             }
+            
           },
         },
         "pt": {
           translation: {
+            header: {
+              "Home": "Início",
+              "Users": "Usuários",
+              "Clients": "Clientes"
+            },
             quality: {
               "title": "Qualidade",
               "description": "Agentes / Usuários / Formulários de monitoramento / Relatórios",
@@ -552,6 +711,33 @@ import { initReactI18next } from "react-i18next";
               "SuperAdmin": "SuperAdmin",
               "Viwer": "Agente"
             },
+            formTable: {
+              "id": "ID",
+              "title": "Título",
+              "description": "Descrição",
+              "client_name": "Cliente",
+              "creation_date": "Data de Criação",
+              "created_by_name": "Criado Por",
+              "updated_date": "Data de Atualização",
+              "updated_by_name": "Atualizado Por",
+              "state": "Estado",
+              "Actions": "Ações",
+              "newForm": "Novo Formulário",
+              "Search": "Pesquisar",
+              "Show": "Mostrar",
+              "Registered": "Registros",
+              "Active": "Ativo",
+              "Inactive": "Inativo"
+            },
+            formModal: { 
+              "NewForm": "Criar Formulário", 
+              "EditClient": "Editar Formulário",
+              "title": "Título",
+              "description": "Descrição",
+              "client_name": "Cliente",
+              "Close": "Fechar",
+              "Save": "Salvar"
+            },            
             UserModal: {
               "RegisterUser": "Registrar usuário",
               "EditUser": "Editar usuário",
@@ -586,17 +772,28 @@ import { initReactI18next } from "react-i18next";
             },
             alertDeactivate: {
               "InitialPhrase": "O registro de ",
-              "FinalPhrase": "será desativado. ",
-              "Confirm": "Confirmar",
-              "Cancel": "Cancelar"
-            },
-            alertActivate: {
-              "InitialPhrase": "O usuário ",
-              "FinalPhrase": "será ativado. ",
+              "FinalPhrase": " será desativado.",
               "Confirm": "Confirmar",
               "Cancel": "Cancelar",
+              "SuccessAlert": " foi desativado com sucesso.",
+              "ErrorAlert": " não foi desativado."
+            },
+            alertActivate: {
+              "InitialPhrase": "O registro de ",
+              "FinalPhrase": " será ativado.",
+              "Confirm": "Confirmar",
+              "Cancel": "Cancelar",
+              "SuccessAlert": " foi ativado com sucesso.",
+              "ErrorAlert": " não foi ativado.",
               "TheClient":"O cliente",
               "Created": "criado com sucesso."
+            },
+            alertCreateEdit: {
+              "SuccessAlert": " foi salvo com sucesso.",
+              "ErrorAlert": "Erro, não foi salvo."
+            },
+            alerts: {
+              "fillRequiredFields": "Por favor, preencha todos os campos obrigatórios."
             },
             clientModal: {
               "NewClient": "Adicionar cliente",
@@ -683,8 +880,20 @@ import { initReactI18next } from "react-i18next";
               "SendMail": "Enviar E-mails",
               "FinalUserSurveys": "Pesquisas de Usuário Final",
               "Rate_the_quality_of_customer_service_being_provided_by_the_agent": "Avalie a Qualidade do Serviço ao Cliente Fornecido pelo Agente"
+          },
+          buttons: {
+            "WatchQuestions": "Ver Perguntas",
+            "WatchSections": "Ver Seções",
+            "CopyLink": "Copiar Link",
+            "Edit": "Editar",
+            "MassiveSend": "Envio Massivo",
+            "Duply": "Duplicar",
+            "Deactivate": "Desativar",
+            "Delete": "Excluir",
+            "Survey": "Pesquisa",
+            "NewQuestion": "Adicionar Nova Pergunta"
           }
-
+          
           },
         },
       },
