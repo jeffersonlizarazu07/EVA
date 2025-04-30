@@ -68,7 +68,7 @@ const TableSurvey = ({
   };
 
   const filteredData = data.filter((item) =>
-    userClients.some(client => client.id  ==  item.idClient) &&
+    //userClients.some(client => client.id  ==  item.idClient) &&
     Object.values(item).some(
       (val) =>
         typeof val  ==  "string" &&

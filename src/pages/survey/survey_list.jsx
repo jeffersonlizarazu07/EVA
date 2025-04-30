@@ -70,7 +70,7 @@ const SurveyList = () => {
   
 
   useEffect(() => {
-    console.log(clients);
+    console.log("******",clients);
     if (userId && accessToken) {
       getClients(userId);
     }
@@ -117,7 +117,7 @@ const SurveyList = () => {
         },
         withCredentials: true,
       };
-  
+      console.log("-------------------ID del usuario:", id);
       const response = await axios.get(`http://localhost:3000/api/users_client/${id}`, authConfig);
   
       console.log("Respuesta de la API:", response.data);
@@ -252,6 +252,7 @@ const SurveyList = () => {
       end_date.handleChange(formatDateForInput(survey?.end_date));
       description.handleChange(survey?.description || "");
       link.handleChange(survey?.link || "");
+      console.log("----**idClient", survey.idClient);
       idClient.handleChange(survey?.idClient || "");
       setidToEdit(survey?.id);
     }
@@ -261,6 +262,9 @@ const SurveyList = () => {
     var parametros;
     var metodo;
     const dates = validateDates();
+
+    console.log("idCliente se envia", idClient.input);
+
     if (
       title.input.trim() == "" ||
       start_date.input.trim() == "" ||
@@ -476,7 +480,9 @@ const SurveyList = () => {
                 <div className="col-4 mb-3">
                   <label id="labelAnimation">
                   <select
-                    onChange={(e) => idClient.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      console.log("***--lo que se manda--***",e.target.value);
+                      idClient.handleChange(e.target.value)}}
                     value={idClient.input}
                     className="input-new"
                     disabled={clients.length === 0} // Deshabilitar si no hay clientes
@@ -486,7 +492,7 @@ const SurveyList = () => {
                     </option>
                     {clients.length > 0 ? (
                       clients.map((client) => (
-                        <option value={client.id} key={client.id}>
+                        <option value={client.idClient} key={client.id}>
                           {client.clientName}
                         </option>
                       ))
@@ -605,7 +611,9 @@ const SurveyList = () => {
                 <div className="col-4 mb-3">
                   <label id="labelAnimation">
                     <select
-                      onChange={(e) => idClient.handleChange(e.target.value)}
+                      onChange={(e) =>{ 
+                        console.log("***--lo que se manda--***",e.target.value);
+                        idClient.handleChange(e.target.value)}}
                       value={idClient.input}
                       className="input-new"
                     >
@@ -613,7 +621,7 @@ const SurveyList = () => {
                         Seleccione un cliente
                       </option>
                       {clients.map((client) => (
-                        <option value={client.id} key={client.id}>
+                        <option value={client.idClient} key={client.id}>
                           {client.clientName}
                         </option>
                       ))}
