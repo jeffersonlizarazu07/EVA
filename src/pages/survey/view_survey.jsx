@@ -96,7 +96,11 @@ export default function View_survey() {
 useEffect(() => {
   const fetchData = async () => {
     const questions = await getSurveyQuestions(id, config);
-    setSurveyData({ sampleCount: questions.length });
+    // setSurveyData({ sampleCount: questions.length });
+    setSurveyData(prevData => ({
+      ...prevData,
+      sampleCount: questions.length
+    }));
   };
 
   fetchData();
@@ -350,8 +354,9 @@ const config = {
                         <p className="fs-6">{surveyData.description}</p>
                       </div>
                       <div className="col-6 text-end">
-                      {surveyData.start_date ? formatDate(surveyData.start_date) : "Sin fecha"} / 
-                      {surveyData.end_date ? formatDate(surveyData.end_date) : "Sin fecha"}
+                        {console.log("-----surveyData aca", surveyData)}
+                      {surveyData.data?.start_date ||  "Sin fecha"} / 
+                      {surveyData.data?.end_date || "Sin fecha"}
                         <p className="fs-6">Cantidad de muestras: {surveyData.sampleCount || 0}</p>
                       </div>
                     </div>

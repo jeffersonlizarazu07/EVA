@@ -68,14 +68,15 @@ const TableSurvey = ({
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const filteredData = data.filter(
-    (item) =>
-      //userClients.some((client) => client.id == item.idClient) &&
-      Object.values(item).some(
-        (val) =>
-          typeof val == "string" &&
-          val.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+
+  const filteredData = data.filter((item) =>
+    //userClients.some(client => client.id  ==  item.idClient) &&
+    Object.values(item).some(
+      (val) =>
+        typeof val  ==  "string" &&
+        val.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
   );
 
   const indexOfLastRecord = currentPage * recordsPerPage;
