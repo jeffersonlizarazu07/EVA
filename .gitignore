@@ -1,8 +1,5 @@
-uploads 
-uploads/
-.env
 node_modules
-
+public/
 # Environment variables
 .env
 
