@@ -13,8 +13,10 @@ router.patch('/survey/:id', authMiddleware,surveySetController.patchSurvey);
 router.delete('/survey/:id',authMiddleware, surveySetController.deleteSurvey);
 router.get('/surveyByLink',surveySetController.surveyByLink);
 
-//ruta para obtener las preguntas de una encuesta
-router.get('/surveyByLink', authMiddleware, surveySetController.surveyByLink)
-             
+//ruta para obtener las preguntas de una encuesta y responder
+router.get('/surveyByLink', surveySetController.surveyByLink)
+
+//ruta para obtener las encuestas asociadas a un usuario
+router.get('/surveys-user/:id', authMiddleware, surveySetController.surveysByUser);             
 
 module.exports = router;

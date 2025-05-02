@@ -84,6 +84,7 @@ const surveySetController = {
             const link = req.query.link;
             console.log('Recibiendo solicitud para obtener encuesta con link:', link);
             const survey_set = await SurveySet.getByLink(link);
+            console.log('Encuesta encontrada:', survey_set);
             if (!survey_set) {
                 return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
             }
@@ -105,7 +106,7 @@ const surveySetController = {
               });
 
             } catch (error) {
-            res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
+            res.status(500).json({ status: '500', message: 'Error interno del servidor', error: error.message });
         }
     },
 
@@ -172,7 +173,20 @@ const surveySetController = {
         } catch (error) {
             res.status(500).json({ status: '500', message: 'Error al eliminar la encuesta', error });
         }
+    },
+
+    async surveysByUser(req, res) {
+        const { id } = req.params;
+        try{
+            console.log('ID del usuario:', id); // Imprimir el ID del usuario   
+            const surveys = await SurveySet.getSurveysByUser(id);
+            res.json({ status: '200', message: 'Encuestas obtenidas correctamente', data: surveys });
+        }catch (error) {
+            console.error('Error al obtener las encuestas por usuario:', error);
+            res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
+        }
     }
+
 };
 
 module.exports = surveySetController;
