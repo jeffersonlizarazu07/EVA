@@ -18,24 +18,6 @@ import { initReactI18next } from "react-i18next";
               "title": "Experiencia del cliente",
               "description": "Encuestas / Gráficos / Informes",
             },
-            sidebarlt:{
-              "First_name": "Primer nombre",
-              "Middle_name": "Segundo nombre",
-              "Last_name": "Apellidos",
-              "Email": "Correo",
-              "Password": "Contraseña",
-              "Leave_this_blank_if_you_dont_want_to_change_the_password": "Deje esto en blanco si no desea cambiar la contraseña.",
-              "Confirm_Password": "Confirmar Contraseña",
-              "Language": "Idioma",
-              "Spanish": "Español",
-              "English": "Inglés",
-              "Italian": "Italiano",
-              "Portuguese": "Portugués",
-              "Manage_account": "Gestionar cuenta",
-              "Logout": "Cerrar sesión",
-              "Save": "Guardar",
-              "Cancel": "Cancelar",
-            },
             headerlt: {
               "First_name": "Primer nombre",
               "Middle_name": "Segundo nombre",
@@ -55,20 +37,17 @@ import { initReactI18next } from "react-i18next";
               "Close": "Cerrar",
               "Role":"Rol"
             },
-            /* clienTable contiene las palabras usadas en userTable */
             clientTable:{
+              "id": "ID",
               "newClient":"Nuevo cliente",
               "Search":"Buscar",
+              "client": "Cliente",
+              "state": "Estado",
               "Actions":"Acciones",
               "Show":"Mostrar",
               "Registered":"Registros",
-              "newUser":"Nuevo usuario",
               "Active":"Activo",
               "Inactive":"Inactivo",
-              "Admin":"Administrador",
-              "Editor":"Editor",
-              "SuperAdmin":"SuperAdmin",
-              "Viwer":"Agente",
               "selectedColor":"Colores seleccionados",
               "colorSelect":"Selecciona dos colores representativos del cliente",
             },
@@ -89,6 +68,23 @@ import { initReactI18next } from "react-i18next";
               "Registered": "Registros",
               "Active": "Activo",
               "Inactive": "Inactivo"
+            },
+            userTable:{
+              "First_name": "Primer nombre",
+              "Last_name": "Apellidos",
+              "Role":"Rol",
+              "state": "Estado",
+              "Actions":"Acciones",
+              "Active":"Activo",
+              "Inactive":"Inactivo",
+              "Search": "Buscar",
+              "newUser":"Nuevo usuario",
+              "Show": "Mostrar",
+              "Registered": "Registros",
+              "Admin":"Administrador",
+              "Editor":"Editor",
+              "SuperAdmin":"SuperAdmin",
+              "Viwer":"Agente"
             },
             formModal: { 
               "NewForm": "Crear formulario", 
@@ -157,7 +153,10 @@ import { initReactI18next } from "react-i18next";
               "Viwer":"Agente",
               "Close":"Cerrar",
               "Save":"Guardar",
-              "SelectRole":"Seleccione un rol"
+              "SelectRole":"Seleccione un rol",
+              "AssignClient": "Debes asignar al menos un cliente al usuario.",
+              "PasswordMismatch": "Las contraseñas no coinciden",
+              "DuplicatedUser": "Este usuario ya existe."
             },
             viewUserModal:{
               "UserDetails":"Detalles del usuario",
@@ -186,9 +185,7 @@ import { initReactI18next } from "react-i18next";
               "Confirm":"Confirmar",
               "Cancel":"Cancelar",
               "SuccessAlert":" se ha activado exitosamente.",
-              "ErrorAlert":" no ha sido activado.",
-              "TheClient":"El cliente",
-              "Created":"se ha creado exitosamente.",
+              "ErrorAlert":" no ha sido activado."
             },
             alertCreateEdit:{
               "SuccessAlert":" se ha guardado exitosamente.",
@@ -198,15 +195,23 @@ import { initReactI18next } from "react-i18next";
               "fillRequiredFields": "Por favor llena todos los campos obligatorios."
             },
             clientModal:{
+              "Created":"se ha creado exitosamente.",
               "NewClient":"Añadir cliente",
               "EditClient":"Editar cliente",
-              "ClientName":"Nombre del cliente"
+              "ClientName":"Nombre del cliente",
+              "newLogo":"Añadir un logo",
+              "editLogo":"Modificar logo",
+              "selectColor":"Selecciona dos colores representativos del cliente:",
+              "color1":"Color principal:",
+              "color2":"Color secundario:",
+              "Close": "Cerrar",
+              "Save": "Guardar",
+              "DuplicatedUser": "Este cliente ya existe."
             },
             clientViewModal:{
               "Client":"Cliente",
               "ClientInfo":"Información detallada del cliente.",
-              "State":"Estado",
-              
+              "State":"Estado"
             },
             survey:{
               "NewSurvey":"Añadir encuesta",
@@ -284,19 +289,19 @@ import { initReactI18next } from "react-i18next";
               "title": "Customer Experience",
               "description": "Surveys / Charts / Reports",
             },
-            clientTable: {
+            clientTable:{
+              "id": "ID",
               "newClient": "New client",
               "Search": "Search",
+              "client": "Client",
+              "state": "State",
               "Actions": "Actions",
               "Show": "Show",
               "Registered": "Records",
-              "newUser": "New user",
               "Active": "Active",
               "Inactive": "Inactive",
-              "Admin": "Administrator",
-              "Editor": "Editor",
-              "SuperAdmin": "SuperAdmin",
-              "Viwer": "Viewer"
+              "selectedColor": "Selected colors",
+              "colorSelect": "Select two representative colors for the client"
             },
             formTable: {
               "id": "ID",
@@ -316,6 +321,23 @@ import { initReactI18next } from "react-i18next";
               "Active": "Active",
               "Inactive": "Inactive"
             },
+            userTable:{
+              "First_name": "First name",
+              "Last_name": "Last name",
+              "Role": "Role",
+              "state": "State",
+              "Actions": "Actions",
+              "Active": "Active",
+              "Inactive": "Inactive",
+              "Search": "Search",
+              "newUser": "New user",
+              "Show": "Show",
+              "Registered": "Records",
+              "Admin": "Admin",
+              "Editor": "Editor",
+              "SuperAdmin": "SuperAdmin",
+              "Viwer": "Agent"
+            },
             formModal: { 
               "NewForm": "Create Form", 
               "EditClient": "Edit Form",
@@ -327,23 +349,26 @@ import { initReactI18next } from "react-i18next";
             },                      
             UserModal: {
               "RegisterUser": "Register User",
-              "EditUser": "Edit user",
-              "UserData": "User data",
-              "AdminData": "Administrative data",
-              "FirstName": "First name",
-              "MiddleName": "Middle name",
-              "LastName": "Last name",
+              "EditUser": "Edit User",
+              "UserData": "User Data",
+              "AdminData": "Administrative Data",
+              "FirstName": "First Name",
+              "MiddleName": "Middle Name",
+              "LastName": "Last Name",
               "Email": "Email",
               "Password": "Password",
-              "ConfirmPassword": "Confirm password",
+              "ConfirmPassword": "Confirm Password",
               "Type": "Type",
-              "SuperAdmin": "Super Administrator",
-              "Admin": "Administrator",
+              "SuperAdmin": "Super Admin",
+              "Admin": "Admin",
               "Editor": "Editor",
               "Viwer": "Viewer",
               "Close": "Close",
               "Save": "Save",
-              "SelectRole":"Select a role"
+              "SelectRole": "Select a role",
+              "AssignClient": "You must assign at least one client to the user.",
+              "PasswordMismatch": "Passwords do not match",
+              "DuplicatedUser": "This user already exists."
             },
             viewUserModal: {
               "UserDetails": "User details",
@@ -371,9 +396,7 @@ import { initReactI18next } from "react-i18next";
               "Confirm": "Confirm",
               "Cancel": "Cancel",
               "SuccessAlert": " has been successfully activated.",
-              "ErrorAlert": " has not been activated.",
-              "TheClient":"The client",
-              "Created": "has been created successfully."
+              "ErrorAlert": " has not been activated."
             },
             alertCreateEdit: {
               "SuccessAlert": " has been successfully saved.",
@@ -382,33 +405,22 @@ import { initReactI18next } from "react-i18next";
             alerts: {
               "fillRequiredFields": "Please fill in all required fields."
             },
-            clientModal: {
+            clientModal:{
               "NewClient": "Add client",
               "EditClient": "Edit client",
-              "ClientName": "Client name"
-            },
+              "ClientName": "Client name",
+              "newLogo": "Add a logo",
+              "editLogo": "Edit logo",
+              "selectColor": "Select two representative colors for the client:",
+              "color1": "Primary color:",
+              "color2": "Secondary color:",
+              "Close": "Close",
+              "Save": "Save"
+            },            
             clientViewModal: {
               "Client": "Client",
               "ClientInfo": "Detailed client information.",
               "State": "State"
-            },
-            sidebarlt: {
-              "First_name": "First Name",
-              "Middle_name": "Middle Name",
-              "Last_name": "Last Name",
-              "Email": "Email",
-              "Password": "Password",
-              "Leave_this_blank_if_you_dont_want_to_change_the_password": "Leave this blank if you don't want to change the password.",
-              "Confirm_Password": "Confirm Password",
-              "Language": "Language",
-              "Spanish": "Spanish",
-              "English": "English",
-              "Italian": "Italian",
-              "Portuguese": "Portuguese",
-              "Manage_account": "Manage Account",
-              "Logout": "Logout",
-              "Save": "Save",
-              "Cancel": "Cancel"
             },
             headerlt: {
                 "First_name": "First Name",
@@ -482,24 +494,6 @@ import { initReactI18next } from "react-i18next";
               "title": "Esperienza del cliente",
               "description": "Sondaggi / Grafici / Report",
             },
-            sidebarlt: {
-              "First_name": "Nome",
-              "Middle_name": "Secondo nome",
-              "Last_name": "Cognome",
-              "Email": "Email",
-              "Password": "Password",
-              "Leave_this_blank_if_you_dont_want_to_change_the_password": "Lascia vuoto se non vuoi cambiare la password.",
-              "Confirm_Password": "Conferma password",
-              "Language": "Lingua",
-              "Spanish": "Spagnolo",
-              "English": "Inglese",
-              "Italian": "Italiano",
-              "Portuguese": "Portoghese",
-              "Manage_account": "Gestisci account",
-              "Logout": "Esci",
-              "Save": "Salva",
-              "Cancel": "Annulla",
-            },
             headerlt: {
               "First_name": "Nome",
               "Middle_name": "Secondo nome",
@@ -519,19 +513,19 @@ import { initReactI18next } from "react-i18next";
               "Close": "Chiudi",
               "Role":"Ruolo"
             },
-            clientTable: {
+            clientTable:{
+              "id": "ID",
               "newClient": "Nuovo cliente",
               "Search": "Cerca",
+              "client": "Cliente",
+              "state": "Stato",
               "Actions": "Azioni",
               "Show": "Mostra",
               "Registered": "Registrazioni",
-              "newUser": "Nuovo utente",
               "Active": "Attivo",
               "Inactive": "Inattivo",
-              "Admin": "Amministratore",
-              "Editor": "Editore",
-              "SuperAdmin": "SuperAdmin",
-              "Viwer": "Visualizzatore"
+              "selectedColor": "Colori selezionati",
+              "colorSelect": "Seleziona due colori rappresentativi del cliente"
             },
             formTable: {
               "id": "ID",
@@ -551,6 +545,23 @@ import { initReactI18next } from "react-i18next";
               "Active": "Attivo",
               "Inactive": "Inattivo"
             },
+            userTable:{
+              "First_name": "Nome",
+              "Last_name": "Cognome",
+              "Role": "Ruolo",
+              "state": "Stato",
+              "Actions": "Azioni",
+              "Active": "Attivo",
+              "Inactive": "Inattivo",
+              "Search": "Cerca",
+              "newUser": "Nuovo utente",
+              "Show": "Mostra",
+              "Registered": "Registrazioni",
+              "Admin": "Amministratore",
+              "Editor": "Editore",
+              "SuperAdmin": "SuperAdmin",
+              "Viwer": "Agente"
+            },
             formModal: { 
               "NewForm": "Crea Modulo", 
               "EditClient": "Modifica Modulo",
@@ -561,25 +572,27 @@ import { initReactI18next } from "react-i18next";
               "Save": "Salva"
             },             
             UserModal: {
-              "RegisterUser": "Registrare utente",
-              "EditUser": "Modifica utente",
-              "UserData": "Dati dell'utente",
-              "AdminData": "Dati amministrativi",
+              "RegisterUser": "Registra Utente",
+              "EditUser": "Modifica Utente",
+              "UserData": "Dati Utente",
+              "AdminData": "Dati Amministrativi",
               "FirstName": "Nome",
-              "MiddleName": "Secondo nome",
-              "LastName": "Cognomi",
+              "MiddleName": "Secondo Nome",
+              "LastName": "Cognome",
               "Email": "Email",
               "Password": "Password",
-              "ConfirmPassword": "Conferma password",
+              "ConfirmPassword": "Conferma Password",
               "Type": "Tipo",
               "SuperAdmin": "Super Amministratore",
               "Admin": "Amministratore",
-              "Editor": "Editore",
+              "Editor": "Editor",
               "Viwer": "Visualizzatore",
               "Close": "Chiudi",
               "Save": "Salva",
-              "SelectRole":"Seleziona un ruolo"
-
+              "SelectRole": "Seleziona un ruolo",
+              "AssignClient": "Devi assegnare almeno un cliente all'utente.",
+              "PasswordMismatch": "Le password non corrispondono",
+              "DuplicatedUser": "Questo utente esiste già."
             },
             viewUserModal: {
               "UserDetails": "Dettagli dell'utente",
@@ -607,9 +620,7 @@ import { initReactI18next } from "react-i18next";
               "Confirm": "Confermare",
               "Cancel": "Annulla",
               "SuccessAlert": " è stato attivato con successo.",
-              "ErrorAlert": " non è stato attivato.",
-              "TheClient":"Il cliente",
-              "Created": "è stato creato con successo."
+              "ErrorAlert": " non è stato attivato."
             },
             alertCreateEdit: {
               "SuccessAlert": " è stato salvato con successo.",
@@ -618,10 +629,17 @@ import { initReactI18next } from "react-i18next";
             alerts: {
               "fillRequiredFields": "Si prega di compilare tutti i campi obbligatori."
             },
-            clientModal: {
+            clientModal:{
               "NewClient": "Aggiungi cliente",
               "EditClient": "Modifica cliente",
-              "ClientName": "Nome del cliente"
+              "ClientName": "Nome del cliente",
+              "newLogo": "Aggiungi un logo",
+              "editLogo": "Modifica logo",
+              "selectColor": "Seleziona due colori rappresentativi del cliente:",
+              "color1": "Colore principale:",
+              "color2": "Colore secondario:",
+              "Close": "Chiudi",
+              "Save": "Salva"
             },
             clientViewModal: {
               "Client": "Cliente",
@@ -697,19 +715,19 @@ import { initReactI18next } from "react-i18next";
               "title": "Experiência do cliente",
               "description": "Pesquisas / Gráficos / Relatórios",
             },
-            clientTable: {
+            clientTable:{
+              "id": "ID",
               "newClient": "Novo cliente",
               "Search": "Buscar",
+              "client": "Cliente",
+              "state": "Estado",
               "Actions": "Ações",
               "Show": "Mostrar",
               "Registered": "Registros",
-              "newUser": "Novo usuário",
               "Active": "Ativo",
               "Inactive": "Inativo",
-              "Admin": "Administrador",
-              "Editor": "Editor",
-              "SuperAdmin": "SuperAdmin",
-              "Viwer": "Agente"
+              "selectedColor": "Cores selecionadas",
+              "colorSelect": "Selecione duas cores representativas do cliente"
             },
             formTable: {
               "id": "ID",
@@ -729,6 +747,23 @@ import { initReactI18next } from "react-i18next";
               "Active": "Ativo",
               "Inactive": "Inativo"
             },
+            userTable:{
+              "First_name": "Primeiro nome",
+              "Last_name": "Sobrenome",
+              "Role": "Função",
+              "state": "Estado",
+              "Actions": "Ações",
+              "Active": "Ativo",
+              "Inactive": "Inativo",
+              "Search": "Buscar",
+              "newUser": "Novo usuário",
+              "Show": "Mostrar",
+              "Registered": "Registros",
+              "Admin": "Administrador",
+              "Editor": "Editor",
+              "SuperAdmin": "SuperAdmin",
+              "Viwer": "Agente"
+            },
             formModal: { 
               "NewForm": "Criar Formulário", 
               "EditClient": "Editar Formulário",
@@ -739,24 +774,27 @@ import { initReactI18next } from "react-i18next";
               "Save": "Salvar"
             },            
             UserModal: {
-              "RegisterUser": "Registrar usuário",
-              "EditUser": "Editar usuário",
-              "UserData": "Dados do usuário",
-              "AdminData": "Dados administrativos",
-              "FirstName": "Primeiro nome",
-              "MiddleName": "Segundo nome",
-              "LastName": "Sobrenomes",
-              "Email": "Email",
+              "RegisterUser": "Registrar Usuário",
+              "EditUser": "Editar Usuário",
+              "UserData": "Dados do Usuário",
+              "AdminData": "Dados Administrativos",
+              "FirstName": "Primeiro Nome",
+              "MiddleName": "Segundo Nome",
+              "LastName": "Sobrenome",
+              "Email": "E-mail",
               "Password": "Senha",
-              "ConfirmPassword": "Confirmar senha",
+              "ConfirmPassword": "Confirmar Senha",
               "Type": "Tipo",
               "SuperAdmin": "Super Administrador",
               "Admin": "Administrador",
               "Editor": "Editor",
-              "Viwer": "Agente",
+              "Viwer": "Visualizador",
               "Close": "Fechar",
               "Save": "Salvar",
-               "SelectRole":"Selecione um papel"
+              "SelectRole": "Selecione um papel",
+              "AssignClient": "Você deve atribuir pelo menos um cliente ao usuário.",
+              "PasswordMismatch": "As senhas não coincidem",
+              "DuplicatedUser": "Este usuário já existe."
             },
             viewUserModal: {
               "UserDetails": "Detalhes do usuário",
@@ -784,9 +822,7 @@ import { initReactI18next } from "react-i18next";
               "Confirm": "Confirmar",
               "Cancel": "Cancelar",
               "SuccessAlert": " foi ativado com sucesso.",
-              "ErrorAlert": " não foi ativado.",
-              "TheClient":"O cliente",
-              "Created": "criado com sucesso."
+              "ErrorAlert": " não foi ativado."
             },
             alertCreateEdit: {
               "SuccessAlert": " foi salvo com sucesso.",
@@ -795,33 +831,22 @@ import { initReactI18next } from "react-i18next";
             alerts: {
               "fillRequiredFields": "Por favor, preencha todos os campos obrigatórios."
             },
-            clientModal: {
+            clientModal:{
               "NewClient": "Adicionar cliente",
               "EditClient": "Editar cliente",
-              "ClientName": "Nome do cliente"
-            },
+              "ClientName": "Nome do cliente",
+              "newLogo": "Adicionar um logotipo",
+              "editLogo": "Editar logotipo",
+              "selectColor": "Selecione duas cores representativas do cliente:",
+              "color1": "Cor principal:",
+              "color2": "Cor secundária:",
+              "Close": "Fechar",
+              "Save": "Salvar"
+            },            
             clientViewModal: {
               "Client": "Cliente",
               "ClientInfo": "Informações detalhadas do cliente.",
               "State": "Estado"
-            },
-            sidebarlt: {
-              "First_name": "Primeiro nome",
-              "Middle_name": "Nome do meio",
-              "Last_name": "Sobrenome",
-              "Email": "Email",
-              "Password": "Senha",
-              "Leave_this_blank_if_you_dont_want_to_change_the_password": "Deixe em branco se não deseja alterar a senha.",
-              "Confirm_Password": "Confirmar senha",
-              "Language": "Idioma",
-              "Spanish": "Espanhol",
-              "English": "Inglês",
-              "Italian": "Italiano",
-              "Portuguese": "Português",
-              "Manage_account": "Gerenciar conta",
-              "Logout": "Sair",
-              "Save": "Salvar",
-              "Cancel": "Cancelar",
             },
             headerlt: {
               "First_name": "Primeiro nome",

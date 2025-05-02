@@ -2,7 +2,6 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useState, useEffect, useContext } from "react";
 import HeaderLT1 from "../../components/header/headerLT1";
-import SidebarLT1 from "../../components/aside/sidebarLT1";
 import TableDetalle from "../../components/Tables/tableClients";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
@@ -13,40 +12,22 @@ import { SketchPicker } from "react-color";
 import { useStateManager } from "react-select";
 
 export default function Client_list() {
-  // Estado para saber si estoy creando (1) o editando (2)
-  const [operation, setOperation] = useState([1]);
-  // Guarda el ID del cliente que se está editando
-  const [idToEdit, setidToEdit] = useState(null);
-  // Guarda el logo actual del cliente a editar
-  const [logoEdit, setLogoToEdit] = useState("");
-  // Título del modal que se muestra (crear/editar)
-  const [title, setTitle] = useState();
-  // Campos seleccionados en la tabla (solo ciertos campos)
-  const selectedKeys = ["id", "client", "state"];
-  // Datos de los clientes traídos de la API
-  const [data, setData] = useState([]);
-  // Archivo del logo que selecciona el usuario
-  const [selectedFile, setSelectedFile] = useState(null);
-  // Mostrar u ocultar el picker de color principal
-  const [displayColorPicker, setDisplayColorPicker] = useState(false);
-  // Mostrar u ocultar el picker de color secundario
-  const [displayColorPicker2, setDisplayColorPicker2] = useState(false);
-  // Mostrar error en validación
-  const [error, setError] = useState("");
-  // Color principal del cliente
-  const [colors1, setColors1] = useState("#FFFFFF");
-  // Color secundario del cliente
-  const [colors2, setColors2] = useState("#FFFFFF");
-  // Vista previa del logo cargado
-  const [previewUrl, setPreviewUrl] = useState(null);
-  // Mostrar/Ocultar el color picker 1
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  // Mostrar/Ocultar el color picker 2
-  const [showColorPicker2, setShowColorPicker2] = useState(false);
-  // URL base de la API para clientes
-  const url = "http://localhost:3000/api/clients";
-  // Hook para traducciones
-  const { t, i18n } = useTranslation();
+  const [operation, setOperation] = useState([1]); // Estado para saber si estoy creando (1) o editando (2)
+  const [idToEdit, setidToEdit] = useState(null);  // Guarda el ID del cliente que se está editando
+  const [logoEdit, setLogoToEdit] = useState("");  // Guarda el logo actual del cliente a editar
+  const [title, setTitle] = useState();  // Título del modal que se muestra (crear/editar)
+  const selectedKeys = ["id", "client", "state"];  // Campos seleccionados en la tabla (solo ciertos campos)
+  const [data, setData] = useState([]);  // Datos de los clientes traídos de la API
+  const [selectedFile, setSelectedFile] = useState(null);  // Archivo del logo que selecciona el usuario
+  const [displayColorPicker, setDisplayColorPicker] = useState(false);  // Mostrar u ocultar el picker de color principal
+  const [displayColorPicker2, setDisplayColorPicker2] = useState(false);  // Mostrar u ocultar el picker de color secundario
+  const [error, setError] = useState("");  // Mostrar error en validación
+  const [colors1, setColors1] = useState("#FFFFFF");  // Color principal del cliente
+  const [colors2, setColors2] = useState("#FFFFFF");  // Color secundario del cliente
+  const [previewUrl, setPreviewUrl] = useState(null);// Vista previa del logo cargado
+  const [showColorPicker, setShowColorPicker] = useState(false);  // Mostrar/Ocultar el color picker 1
+  const [showColorPicker2, setShowColorPicker2] = useState(false);   // Mostrar/Ocultar el color picker 2
+  const { t, i18n } = useTranslation();   // Hook para traducciones
 
   // Estados del formulario
   const client = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -71,7 +52,7 @@ export default function Client_list() {
   // Función para obtener los datos de clientes desde la API
   const fetchData = async () => {
     try {
-      const response = await axios.get(url, config);
+      const response = await axios.get('http://localhost:3000/api/clients', config);
       console.log(response.data.data);
       setData(response.data.data);
     } catch (error) {
@@ -100,7 +81,7 @@ export default function Client_list() {
 
     smallAlertDelete
       .fire({
-        text: `${t("alertActivate.TheClient")} ${name} ${t(
+        text: `${t("alertActivate.InitialPhrase")} ${name} ${t(
           "alertActivate.FinalPhrase"
         )}`,
         showCancelButton: true,
@@ -114,14 +95,14 @@ export default function Client_list() {
 
             Toast.fire({
               icon: "success",
-              title: `${t("alertActivate.TheClient")} ${clientData.client} ${t(
+              title: `${t("alertActivate.InitialPhrase")} ${clientData.client} ${t(
                 "alertActivate.SuccessAlert"
               )}`,
             });
           } catch (error) {
             Toast.fire({
               icon: "error",
-              title: `${t("alertActivate.TheClient")} ${clientData.client}${t(
+              title: `${t("alertActivate.InitialPhrase")} ${clientData.client}${t(
                 "alertActivate.ErrorAlert"
               )} `,
             });
@@ -143,7 +124,7 @@ export default function Client_list() {
 
     smallAlertDelete
       .fire({
-        text: `${t("alertActivate.TheClient")} ${name} ${t(
+        text: `${t("alertDeactivate.InitialPhrase")} ${name} ${t(
           "alertDeactivate.FinalPhrase"
         )}`,
         showCancelButton: true,
@@ -156,16 +137,16 @@ export default function Client_list() {
             await axios.patch(`${url}/${id}`, parametros, config);
             Toast.fire({
               icon: "success",
-              title: `${t("alertActivate.TheClient")} ${clientData.client} ${t(
-                "alertActivate.SuccessAlert"
+              title: `${t("alertDeactivate.InitialPhrase")} ${clientData.client} ${t(
+                "alertDeactivate.SuccessAlert"
               )}`,
             });
             fetchData(); // Recarga los datos después de desactivar
           } catch (error) {
             Toast.fire({
               icon: "error",
-              title: `${t("alertActivate.TheClient")} ${clientData.client} ${t(
-                "alertActivate.ErrorAlert"
+              title: `${t("alertDeactivate.InitialPhrase")} ${clientData.client} ${t(
+                "alertDeactivate.ErrorAlert"
               )}`,
             });
             console.error(error);
@@ -241,73 +222,93 @@ export default function Client_list() {
   };
 
   const validar = async (id) => {
-    const urlpost = `http://localhost:3000/api/clients`;
+    const urlpost = `http://localhost:3000/api/clients`; // URL para crear cliente
     const formData = new FormData();
     console.log("Archivo seleccionado:", selectedFile);
     console.log("Cliente:", client.input);
     console.log("Color 1:", colors1);
     console.log("Color 2:", colors2);
+  
+    // Si hay un archivo, se agrega al FormData
     selectedFile ? formData.append("logo", selectedFile) : null;
+  
+    // Agrega los demás campos del formulario al FormData
     formData.append("client", client.input);
     formData.append("color_tag1", colors1);
     formData.append("color_tag2", colors2);
     formData.append("state", 1);
-
+  
+    // Validación: Verificar si el nombre del cliente ya existe
     if (id == null) {
-      // Aquí se crea un nuevo cliente
+      // Creación de cliente
+      const clientExists = data.some((item) => item.client === client.input);
+      if (clientExists) {
+        setError("El nombre del cliente ya existe");
+        Toast.fire({
+          icon: "error",
+          title: t("clientModal.DuplicatedUser"),
+        });
+        return;
+      }
+  
       try {
-        const clientExists = data.some((item) => item.client === client.input);
-        if (clientExists) {
-          setError("El nombre del cliente ya existe");
-          return;
-        }
+        // Realizar la solicitud POST para crear el cliente
         const response = await axios.post(`${urlpost}`, formData, {
           withCredentials: true,
         });
         console.log("Respuesta del servidor:", response.data);
+  
+        // Si la respuesta es exitosa, se realizan las acciones de éxito
         if (response.data.status) {
           setColors1("#FFFFFF");
           setColors2("#FFFFFF");
           setSelectedFile(null);
           setError("");
-          fetchData();
-          document.getElementById("btnCerrar").click();
+          fetchData(); // Actualiza los datos
+          document.getElementById("btnCerrar").click(); // Cierra el modal
+  
+          // Muestra la alerta de éxito
           Toast.fire({
             icon: "success",
-            title: `${t("alertActivate.TheClient")} ${client.input} ${t(
-              "alertActivate.Created"
-            )}`,
+            title: `${client.input} ${t("alertCreateEdit.SuccessAlert")}`,
           });
         }
       } catch (error) {
         console.error("Error subiendo el archivo:", error);
+        Toast.fire({
+          icon: "error",
+          title: "Hubo un problema al crear el cliente",
+        });
       }
     } else {
-      // Aquí se realiza una actualización del cliente con PUT
+      // Edición de cliente
       const urlput = `http://localhost:3000/api/clients/${id}`;
-
+  
       try {
+        // Realizar la solicitud PUT para actualizar el cliente
         const response = await axios.put(urlput, formData, {
           "Content-Type": "multipart/form-data",
           withCredentials: true,
         });
-        console.log("Respuesta del servidor:", response);
-        if (!response.data.status) {
-          alert("No se realizó la edición del cliente");
-          document.getElementById("btnCerrar").click();
-          console.log(response.data);
-        }
+        
+        // Si la respuesta es exitosa, se realizan las acciones de éxito
         Toast.fire({
           icon: "success",
-          title: `El cliente ${client.input} se ha editado exitosamente`,
+          title: `${client.input} ${t("alertCreateEdit.SuccessAlert")}`,
         });
-        fetchData();
-        document.getElementById("btnCerrar").click();
+  
+        fetchData(); // Actualiza los datos
+        document.getElementById("btnCerrar").click(); // Cierra el modal
+  
       } catch (error) {
         console.error("Error actualizando el cliente:", error);
+        Toast.fire({
+          icon: "error",
+          title: t("alertCreateEdit.ErrorAlert"),
+        });
       }
     }
-  };
+  };  
 
   const handleClose = () => {
     setDisplayColorPicker(false);
@@ -531,20 +532,11 @@ export default function Client_list() {
                   <div className="col-5 m-2 ms-5 text-center ">
                     {logoEdit && operation === 2 ? (
                       <img
-                        src={`clientes/${logoEdit}`}
+                        src={`http://localhost:3000/public/imgClientes/${logoEdit}`}
                         alt="Logo"
                         width={150}
                         height={150}
                         id="logoToEditOriginal"
-                        className="logoModal m-2"
-                      />
-                    ) : null}
-                    {selectedFile ? (
-                      <img
-                        src={previewUrl}
-                        alt="Logo"
-                        width={150}
-                        height={150}
                         className="logoModal m-2"
                       />
                     ) : null}
@@ -561,12 +553,13 @@ export default function Client_list() {
                     <input
                       type="file"
                       id="imagenLogo"
+                      name="logo"
                       accept=".jpg, .jpeg, .png"
                       onChange={handleFileChange}
                       style={{ display: "none" }} // Ocultar el input
                     />
                     <span className="ms-1 text-center">
-                      {operation === 2 ? "Modificar logo" : "Añadir un logo "}
+                      {operation === 2 ? t("clientModal.newLogo") : t("clientModal.editLogo")}
                     </span>
                   </div>
                   <div className="col m-2 ">
@@ -589,11 +582,11 @@ export default function Client_list() {
                 <div className="row d-flex justify-content-between">
                   <small className="mt-4 ms-3">
                     <span>
-                      Selecciona dos colores representativos del cliente:
+                      {t("clientModal.selectColor")}
                     </span>
                   </small>
                   <div className="col-5 text-center d-flex justify-content-center m-2">
-                    <span className="me-2">Color principal:</span>
+                    <span className="me-2">{t("clientModal.color1")}</span>
                     <div style={styles.swatch} onClick={handleClick}>
                       <div style={styles.color} />
                     </div>
@@ -608,7 +601,7 @@ export default function Client_list() {
                     )}
                   </div>
                   <div className="col-6 text-center d-flex justify-content-center m-2">
-                    <span className="me-2">Color secundario: </span>
+                    <span className="me-2">{t("clientModal.color2")}</span>
                     <div style={styles2.swatch} onClick={handle2Click}>
                       <div style={styles2.color} />
                     </div>
@@ -632,13 +625,13 @@ export default function Client_list() {
                   className="btn btn-secondary"
                   data-bs-dismiss="modal"
                 >
-                  {t("sidebarlt.Cancel")}
+                  {t("clientModal.Close")}
                 </button>
                 <button
                   onClick={() => validar(idToEdit)}
                   className="btn-primary btn"
                 >
-                  {t("sidebarlt.Save")}
+                  {t("clientModal.Save")}
                 </button>
               </div>
             </div>
