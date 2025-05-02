@@ -1,16 +1,22 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-// Ruta absoluta 
-const uploadDir = 'C:\\Users\\Luis Miguel Moncayo\\Desktop\\Eva\\tpco_transversal_EvaFe\\public\\clientes';
+// Ruta relativa dentro del proyecto para la carpeta imgClientes
+const uploadDir = path.join(__dirname, '..', 'public', 'imgClientes'); // Esto genera la ruta 'miProyectoNodeJS/public/imgClientes'
+
+// Asegúrate de que la carpeta exista, si no la crea
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log('Ruta de destino para el archivo:', uploadDir); 
-    cb(null, uploadDir);
+    console.log('Ruta de destino para el archivo:', uploadDir);  // Esto es solo para depuración
+    cb(null, uploadDir);  // Guarda en la carpeta 'imgClientes'
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));  
+    cb(null, Date.now() + path.extname(file.originalname));  // Usa un timestamp como nombre de archivo
   }
 });
 
