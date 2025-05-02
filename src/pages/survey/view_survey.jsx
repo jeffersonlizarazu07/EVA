@@ -350,6 +350,7 @@ const config = {
                         <p className="fs-6">{surveyData.description}</p>
                       </div>
                       <div className="col-6 text-end">
+                        ${console.log("-----surveyData aca", surveyData)}
                       {surveyData.start_date ? formatDate(surveyData.start_date) : "Sin fecha"} / 
                       {surveyData.end_date ? formatDate(surveyData.end_date) : "Sin fecha"}
                         <p className="fs-6">Cantidad de muestras: {surveyData.sampleCount || 0}</p>

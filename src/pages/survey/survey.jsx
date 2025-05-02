@@ -25,13 +25,13 @@ export default function Survey() {
     const accessToken = Cookies.get('accessToken');
 
     useEffect(() => {
-        const surveyCompleted = localStorage.getItem('surveyCompleted');
-        if (surveyCompleted) {
-            nav("/gratitude"); // Redirigir a Gratitude si ya se completó
-        } else {
-            getSurvey(fullUrl); // Si no se ha completado, cargar la encuesta
-        }
-    }, [fullUrl],nav);
+        const completedSurveys = JSON.parse(localStorage.getItem("surveyCompleted") || "[]");
+  if (completedSurveys.includes(survey.id)) {
+    nav("/gratitude");
+  } else {
+    getSurvey(fullUrl);
+  }
+}, [fullUrl, survey.id, nav]);
 
     useEffect(() => {
         
@@ -44,12 +44,12 @@ export default function Survey() {
 
     // Funncion que envia las respuestas al back
     const handleSubmit = async (event) => {
-        const token = accessToken || Cookies.get("accessToken");
+        // const token = accessToken || Cookies.get("accessToken");
   
-        if (!token) {
-        console.warn("⚠️ Token no disponible aún.");
-        return;
-        }
+        // if (!token) {
+        // console.warn("⚠️ Token no disponible aún.");
+        // return;
+        // }
 
         event.preventDefault();
         // Validar que hay respuestas antes de enviar
@@ -88,13 +88,13 @@ export default function Survey() {
         console.log("Datos que se van a enviar:", answersWithSurveyId);
     
         try {
-            const authConfig = {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true,
-            };
-            const response = await axios.post("http://localhost:3000/api/answers", answersWithSurveyId,authConfig);
+            // const authConfig = {
+            //     headers: {
+            //       Authorization: `Bearer ${token}`,
+            //     },
+            //     withCredentials: true,
+            // };
+            const response = await axios.post("http://localhost:3000/api/answers", answersWithSurveyId);
             console.log('respuesta genera', response);
     
             if (response.status === 200 || response.status === 201) {
@@ -106,10 +106,18 @@ export default function Survey() {
                     icon: 'success',
                     confirmButtonText: 'Aceptar',
                     confirmButtonColor: '#28a745', // verde
-                }).then((result) => {
+                })
+                .then((result) => {
                     if (result.isConfirmed) {
-                        localStorage.setItem('surveyCompleted', 'true'); // Guardar indicador para no dejar ver la encuesta otra vez
-                        nav("/gratitude");  // <-- redirige a Gratitude.jsx
+                        //  Guardar el ID de la encuesta como completada (en array)
+                        const completedSurveys = JSON.parse(localStorage.getItem("surveyCompleted") || "[]");
+                        if (!completedSurveys.includes(survey.id)) {
+                            completedSurveys.push(survey.id);
+                            localStorage.setItem("surveyCompleted", JSON.stringify(completedSurveys));
+                        }
+                
+                        //  Redirigir al mensaje de gratitud
+                        nav("/gratitude");
                     }
                 });
             }
@@ -130,25 +138,25 @@ export default function Survey() {
     
     // Funcion para cargar las encuestas 
     const getSurvey = async (link) => {
-        const token = accessToken || Cookies.get("accessToken");
+        // const token = accessToken || Cookies.get("accessToken");
   
-        if (!token) {
-        console.warn("⚠️ Token no disponible aún.");
-        return;
-        }
+        // if (!token) {
+        // console.warn("⚠️ Token no disponible aún.");
+        // return;
+        // }
 
         const fullLink = encodeURIComponent(link); 
         console.log("Link enviado al servidor:", fullLink);
         
         try {
-            const authConfig = {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                withCredentials: true,
-              };
+            // const authConfig = {
+            //     headers: {
+            //       Authorization: `Bearer ${token}`,
+            //     },
+            //     withCredentials: true,
+            //   };
             // Hacer la solicitud al backend para obtener la encuesta y sus preguntas
-            const response = await axios.get(`http://localhost:3000/api/surveyByLink?link=${fullLink}`,authConfig);
+            const response = await axios.get(`http://localhost:3000/api/surveyByLink?link=${fullLink}`);
         
             console.log('Contenido de response.data:', response.data);
         

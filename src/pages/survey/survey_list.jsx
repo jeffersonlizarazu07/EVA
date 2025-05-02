@@ -23,7 +23,7 @@ const SurveyList = () => {
   const [showEnvioModal, setShowEnvioModal] = useState(false);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
 
-  const url = "http://localhost:3000/api/surveys";
+  //const url = "http://localhost:3000/api/surveys";
   const headers = ["Title", "Start_date", "End_date", "state"];
   const [operation, setOperation] = useState([1]);
   const [idToEdit, setidToEdit] = useState(null);
@@ -66,7 +66,7 @@ const SurveyList = () => {
       dateToday: formattedDater,
       dateTomorrow: formattedDaterTomorrow,
     });
-  }, []);
+  }, [userId]);
   
 
   useEffect(() => {
@@ -91,7 +91,8 @@ const SurveyList = () => {
 
   const getSurveys = async () => {
     try {
-      const response = await axios.get(url, config);
+      //const response = await axios.get(url, config);
+      const response = await axios.get(`http://localhost:3000/api/surveys-user/${userId}`, config);
       console.log("Encuestas: ", response.data);
       setSurvey(response.data.data); // <-- ¡aquí está el fix!
     } catch (error) {
@@ -210,6 +211,18 @@ const SurveyList = () => {
   const validateDates = (dateStart, dateEnd) => {
     const start = new Date(dateStart);
     const end = new Date(dateEnd);
+
+    //validar que la fecha de inicio no se posterior 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Establecer la hora a medianoche para comparar solo fechas
+
+    //validar que la fecha de inicio no sea menor a la fecha actual
+    if (start < today) {
+      setErrorFechas(true);
+      setErrorFechasMessage("La fecha de inicio no puede ser anterior al día de hoy")
+      document.getElementById("saveButton").disabled = true;
+      return false;
+    }
 
     if (end < start) {
       setErrorFechas(true);
