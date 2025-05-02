@@ -45,6 +45,7 @@ app.use('/api', answersRoutes);
 app.use('/api', enviarCorreos);
 app.use('/api', agentRoutes);
 app.use('/api', formSetRoutes);
+// app.use('/api', blocksRoutes);
 
 // Hacer accesible la carpeta 'public' para el navegador
 app.use('/public', express.static(path.join(__dirname, 'public')));
