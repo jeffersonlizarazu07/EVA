@@ -45,7 +45,7 @@ app.use('/api', answersRoutes);
 app.use('/api', enviarCorreos);
 app.use('/api', agentRoutes);
 app.use('/api', formSetRoutes);
-app.use('/api', blocksRoutes);
+// app.use('/api', blocksRoutes);
 
 // Ruta específica para manejar enlaces de encuestas
 app.get('/survey/:encodedData', async (req, res) => {
