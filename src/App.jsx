@@ -18,7 +18,7 @@ import Client_list from "./pages/admin/client_list";
 import AdminList from "./pages/admin/admin_list";
 import Agent_Monitoring from "./pages/admin/agent_monitoring";
 import Forms from "./pages/admin/form_list";
-import SurveyBlocks from "./pages/survey/surveyBlocks";
+import SurveyBlocks from "./pages/quality/surveyBlocks";
 /* ---------------------------------------------------------*/
 
 /* Admin Imports */

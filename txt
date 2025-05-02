@@ -24,16 +24,17 @@ import {
   SingleChoiceQuestionEdit,
   SelectorQuestion,
   SelectorQuestionEdit,
-} from "./singleChoiceQuestion";
+} from "../survey/singleChoiceQuestion";
 import "../../assets/css/survey.css";
 import {
   Yes_no,
   Textfield_s,
   SingleChoiceView,
   MultipleChoiceView,
-} from "./questions";
-import getRangeOptions from "./conditional";
+} from "../survey/questions";
+import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
+import "../../components/Modals/modalSurveyBlocks"
 
 export default function SurveyBlocks() {
   const { id } = useParams();

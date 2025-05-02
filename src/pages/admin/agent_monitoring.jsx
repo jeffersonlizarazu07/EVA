@@ -16,7 +16,7 @@ import ModalRegisterUser from "../../components/Tables/tableMonitoring";
 import Loading from "../layout/loading";
 import Swal from "sweetalert2";
 import "../../assets/css/agent_monitoring.css";
-import SurveyBlocks from "../survey/surveyBlocks";
+import SurveyBlocks from "../../pages/quality/surveyBlocks";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
 
