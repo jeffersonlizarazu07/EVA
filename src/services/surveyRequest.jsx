@@ -15,7 +15,7 @@ export const getSurvey = async (id, config, setSurveyData) => {
   try{
     const url = "http://localhost:3000/api/survey/";
     const response = await axios.get(`${url}${id}`, config);
-    console.log('*** data',response.data.data)
+    console.log("*** response completa", response.data);
     setSurveyData(response.data);
   }catch(error){
     console.log('error: ',e)
