@@ -2,6 +2,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+// Ruta absoluta 
+//const uploadDir = 'C:\\Users\\moncayorojas.6\\Desktop\\Trabajos\\EVA\\tpco_transversal_EvaFe\\public\\clientes';
 
 // Ruta relativa dentro del proyecto para la carpeta imgClientes
 const uploadDir = path.join(__dirname, '..', 'public', 'imgClientes'); // Esto genera la ruta 'miProyectoNodeJS/public/imgClientes'
@@ -10,9 +12,6 @@ const uploadDir = path.join(__dirname, '..', 'public', 'imgClientes'); // Esto g
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
-
-// Ruta absoluta 
-//const uploadDir = 'C:\\Users\\moncayorojas.6\\Desktop\\Trabajos\\EVA\\tpco_transversal_EvaFe\\public\\clientes';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
