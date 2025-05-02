@@ -96,11 +96,11 @@ export default function View_survey() {
 useEffect(() => {
   const fetchData = async () => {
     const questions = await getSurveyQuestions(id, config);
-    // setSurveyData({ sampleCount: questions.length });
-    setSurveyData(prevData => ({
-      ...prevData,
-      sampleCount: questions.length
-    }));
+    setSurveyData({ sampleCount: questions.length });
+    // setSurveyData(prevData => ({
+    //   ...prevData,
+    //   sampleCount: questions.length
+    // }));
   };
 
   fetchData();
