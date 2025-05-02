@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 export default function Gratitude() {
 
   useEffect(()=> {
-    const surveyCompleted = localStorage.getItem('surveyCompleted');
-    console.log("Estado de la encuesta completada:", surveyCompleted);
+    const completedSurveys = JSON.parse(localStorage.getItem("surveyCompleted") || "[]");
+  console.log("Encuestas completadas:", completedSurveys);
   }, []);
     // TODO: Implement gratitude page content here. For now, it's just a placeholder.
   return (

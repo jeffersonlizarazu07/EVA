@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import "../../assets/css/tabla.css";
 
 const TableForms = ({
@@ -14,6 +15,7 @@ const TableForms = ({
   modalId,
   modalId2
 }) => {
+  const nav = useNavigate();
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
 
@@ -56,6 +58,11 @@ const TableForms = ({
     <div className="table-container">
       <div className="row d-flex mb-3">
         <div className="col-6">
+          <button className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-1 mb-2" onClick={() => nav("/quality")} >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-90deg-left" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
+            </svg>
+          </button>
           <input
             className="w-50 inp-search"
             placeholder={t("formTable.Search")} 
@@ -143,7 +150,7 @@ const TableForms = ({
       <div className="row d-flex ps-5 pe-5 mt-3">
         <div className="col-6">
           <label>
-            {t("formTable.Show")} {/* Cambié de clientTable a formTable */}
+            {t("formTable.Show")}
             <button
               className="dropdown-toggle inp-search"
               type="button"
@@ -168,7 +175,7 @@ const TableForms = ({
                 </li>
               ))}
             </ul>
-            {t("formTable.Registered")} {/* Cambié de clientTable a formTable */}
+            {t("formTable.Registered")}
           </label>
         </div>
         <div className="col-6 d-flex justify-content-end">

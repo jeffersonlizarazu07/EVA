@@ -6,7 +6,6 @@ import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAdmin";
 import Swal from "sweetalert2";
 import axios from "axios";
-import SidebarLT1 from "../../components/aside/sidebarLT1";
 import HeaderLT1 from "../../components/header/headerLT1";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
@@ -139,119 +138,87 @@ const AdminList = () => {
   // Envío de datos al servidor (crear o editar admin)
   const sendData2 = async (metodo, { password, cPassword, ...rest }) => {
     if (selectedClients.length === 0) {
-      Swal.fire({
+      Toast.fire({
         icon: "warning",
-        title: "Cliente requerido",
-        text: "Debes asignar al menos un cliente al usuario.",
+        title: t("UserModal.AssignClient"),
       });
       return;
     }
-
-    console.log("Password:", password);
-    console.log("Confirm Password:", cPassword);
-
+  
     if (password && cPassword !== password) {
-      Swal.fire({
+      Toast.fire({
         icon: "error",
-        title: "Contraseñas no coinciden",
-        text: "La contraseña y su confirmación deben ser iguales.",
+        title: t("UserModal.PasswordMismatch"),
       });
       return;
     }
+
+    const nombre = rest.firstname; // Se usará para el mensaje dinámico
 
     // PUT
-if (metodo.toUpperCase() === "PUT") {
-  // Verifica y prepara los datos antes de enviar
-  if (!password || password.trim() === "") {
-    delete rest.password; // Elimina el campo de password si está vacío
-  } else {
-    rest.password = password; // Asigna el password si está presente
-  }
-
-  try {
-    // Enviar solicitud para editar el usuario
-    const respuesta = await axios.put(
-      `${urlUsers}/${idToEdit}`,
-      rest,
-      config
-    );
-
-    console.log("Respuesta: ", respuesta);
-
-    // Asigna los clientes seleccionados al usuario editado
-    sendClients(respuesta.data.data.id, 2);
-
-    // Muestra una alerta de éxito utilizando Toast
-    Toast.fire({
-      icon: "success",
-      title: "Usuario actualizado",
-      text: "El Usuario se editó exitosamente.",
-    });
-
-    // Cierra el modal después de la acción
-    document.getElementById("btnCerrar").click();
-
-    // Actualiza la lista de administradores
-    getAdmins();
-  } catch (error) {
-    // Muestra una alerta de error en caso de fallo utilizando Toast
-    console.log("Error:", error);
-    Toast.fire({
-      icon: "error",
-      title: "Error al actualizar usuario",
-      text: `Hubo un problema al actualizar el usuario: ${error.message}`,
-    });
-  }
-}
+    if (metodo.toUpperCase() === "PUT") {
+      if (!password || password.trim() === "") {
+        delete rest.password;
+      } else {
+        rest.password = password;
+      }
+  
+      try {
+        const respuesta = await axios.put(
+          `${urlUsers}/${idToEdit}`,
+          rest,
+          config
+        );
+  
+        sendClients(respuesta.data.data.id, 2);
+  
+        Toast.fire({
+          icon: "success",
+          title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
+        });
+  
+        document.getElementById("btnCerrar").click();
+        getAdmins();
+      } catch (error) {
+        console.error("Error:", error);
+        Toast.fire({
+          icon: "error",
+          title: `${nombre} - ${t("alertCreateEdit.ErrorAlert")}`,
+        });
+      }
+    }
 
     // POST
-if (metodo.toUpperCase() === "POST") {
-  // Verifica si existe un administrador duplicado
-  const duplicados = admins.find((u) => u.email === rest.email);
-  if (duplicados) {
-    Toast.fire({
-      icon: "error",
-      title: "Usuario duplicado",
-      text: "Este administrador ya existe.",
-    });
-    return;
-  }
-
-  try {
-    // Enviar solicitud para crear el usuario
-    const respuesta = await axios.post(
-      `${urlUsers}`,
-      { ...rest, password },
-      config
-    );
-
-    console.log("Response: ", respuesta);
-
-    // Asigna los clientes seleccionados al nuevo usuario
-    sendClients(respuesta.data.data.id, 1);
-
-    // Muestra una alerta de éxito utilizando Toast
-    Toast.fire({
-      icon: "success",
-      title: "Usuario creado",
-      text: "El Usuario se creó exitosamente.",
-    });
-
-    // Cierra el modal después de la acción
-    document.getElementById("btnCerrar").click();
-
-    // Actualiza la lista de administradores
-    getAdmins();
-  } catch (error) {
-    // Muestra una alerta de error en caso de fallo utilizando Toast
-    console.log("Error: ", error);
-    Toast.fire({
-      icon: "error",
-      title: "Error al crear usuario",
-      text: `Hubo un problema al crear el usuario: ${error.message}`,
-    });
-  }
-}
+    if (metodo.toUpperCase() === "POST") {
+      const duplicados = admins.find((u) => u.email === rest.email);
+      if (duplicados) {
+        Toast.fire({
+          icon: "error",
+          title: t("UserModal.DuplicatedUser"),
+        });
+        return;
+      }
+  
+      try {
+        const respuesta = await axios.post(`${urlUsers}`, { ...rest, password }, config);
+  
+        sendClients(respuesta.data.data.id, 1);
+  
+        Toast.fire({
+          icon: "success",
+          title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
+        });
+  
+        document.getElementById("btnCerrar").click();
+        getAdmins();
+      } catch (error) {
+        console.error("Error: ", error);
+        Toast.fire({
+          icon: "error",
+          title: `${nombre} - ${t("alertCreateEdit.ErrorAlert")}`,
+        });
+      }
+    }
   };
 
   const sendClients = async (id, metodo) => {
@@ -297,7 +264,7 @@ if (metodo.toUpperCase() === "POST") {
     // Confirmación antes de desactivar
     smallAlertDelete
       .fire({
-        text: `${t("alertDeactivate.InitialPhrase")}${name} ${t(
+        text: `${t("alertDeactivate.InitialPhrase")} ${name} ${t(
           "alertDeactivate.FinalPhrase"
         )}`,
         showCancelButton: true,
@@ -307,25 +274,31 @@ if (metodo.toUpperCase() === "POST") {
       .then(async (result) => {
         if (result.isConfirmed) {
           try {
-            await axios.patch(`${url}/${id}`, parametros, config); // Petición para desactivar
+            await axios.patch(`${url}/${id}`, parametros, {
+              withCredentials: true,
+            });
   
             // Notificación de éxito al desactivar
             Toast.fire({
               icon: "success",
-              title: `El usuario ${name} ha sido desactivado correctamente.`,
+              title: `${t("alertDeactivate.InitialPhrase")} ${name}${t(
+                "alertDeactivate.SuccessAlert"
+              )}`,
             });
           } catch (error) {
             // Notificación de error al desactivar
             Toast.fire({
               icon: "error",
-              title: `Error al desactivar al usuario ${name}.`,
+              title: `${t("alertDeactivate.InitialPhrase")} ${name}${t(
+                "alertDeactivate.ErrorAlert"
+              )}`,
             });
             console.error(error);
           }
         }
         getAdmins(); // Refrescar lista de admins
       });
-  };
+  };  
   
   const activeUser = (admin) => {
     const url = `http://localhost:3000/api/users`;
@@ -373,8 +346,6 @@ if (metodo.toUpperCase() === "POST") {
       });
   };
   
-  //REQUEST//
-
   //MODALS//
   const openModal = (op, admin) => {
     setOperation(op);
@@ -445,15 +416,30 @@ if (metodo.toUpperCase() === "POST") {
   const validar = () => {
     var parametros;
     var metodo;
+  
+    // Imprime los valores para depurar
+    console.log("lastName:", lastName.input);
+    console.log("firstName:", firstName.input);
+    console.log("email:", email.input);
+    console.log("type:", type.input);
+  
+    // Verificación de campos vacíos
     if (
       lastName.input.trim() == "" ||
       firstName.input.trim() == "" ||
       email.input.trim() == "" ||
+      password.input.trim() == "" ||
+      cPassword.input.trim() == "" ||
       type.input == ""
     ) {
-      console.log("Hola");
-      alert("Campos mal diligenciados");
+      // Asegúrate de que `Toast` está correctamente configurado
+      Toast.fire({
+        icon: "error",
+        title: t("alerts.fillRequiredFields"), // Verifica que `nombre` tiene valor
+      });
+      return; // Sale de la función si hay campos vacíos
     } else {
+      // Si la validación pasa, asignamos los parámetros y el método
       if (operation === 1) {
         parametros = {
           lastname: lastName.input,
@@ -479,13 +465,13 @@ if (metodo.toUpperCase() === "POST") {
         if (password.input.trim() !== "") {
           parametros.password = password.input;
         }
-
+  
         metodo = "put";
       }
-
-      console.log(parametros);
-
-      sendData2(metodo, parametros);
+  
+      console.log("Parametros:", parametros);
+  
+      sendData2(metodo, parametros); // Llamada a la función de envío de datos
     }
   };
 
