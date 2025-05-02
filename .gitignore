@@ -1,7 +1,6 @@
-uploads 
-uploads/
 .env
-node_modules
+node_modules/
+public/
 
 # Environment variables
 .env
