@@ -124,24 +124,12 @@ const Satisfaction = () => {
                     <div className="card card4">
                       <div className="card-body d-grid">
                         <div className="row">
-                          <div className="col-10 card-title">
+                          <div className="col-12 card-title">
                             <span className="">
                               {" "}
                               {t("satisfactionSite.FinalUserSurveys")}
                             </span>
-                          </div>
-                          <div className="col-2">
-                            <div className="dropdown">
-                              <button className="dropbtn">
-                                <i className="fa-solid fa-ellipsis-vertical"></i>
-                              </button>
-                              <div className="dropdown-content">
-                                <a href="#">Link 1</a>
-                                <a href="#">Link 2</a>
-                                <a href="#">Link 3</a>
-                              </div>
-                            </div>
-                          </div>
+                          </div>                          
                         </div>
                         <div className="row">
                           <div className="col-12">
@@ -158,18 +146,13 @@ const Satisfaction = () => {
                           </div>
                         </div>
                         <div className="row button-container">
-                          <div className="col-10">
+                          <div className="col">
                             <a href="/survey_list">
                               <button className="card-btn check">
                                 {t("satisfactionSite.CreateSurvey")}
                               </button>
                             </a>
-                          </div>
-                          <div className="col-2">
-                            <button className="btn-plus">
-                              <i className="fa-solid fa-plus"></i>
-                            </button>
-                          </div>
+                          </div>                          
                         </div>
                       </div>
                     </div>
@@ -178,25 +161,14 @@ const Satisfaction = () => {
                     <div className="card card5">
                       <div className="card-body d-grid">
                         <div className="row">
-                          <div className="col-10 card-title">
+                          <div className="col-12 card-title">
                             <span className="">
                               {t(
                                 "satisfactionSite.GenerateGraphsAndSurveyReport"
                               )}
                             </span>
                           </div>
-                          <div className="col-2">
-                            <div className="dropdown">
-                              <button className="dropbtn">
-                                <i className="fa-solid fa-ellipsis-vertical"></i>
-                              </button>
-                              <div className="dropdown-content">
-                                <a href="#">Link 1</a>
-                                <a href="#">Link 2</a>
-                                <a href="#">Link 3</a>
-                              </div>
-                            </div>
-                          </div>
+                          
                         </div>
                         <div className="row">
                           <div className="col-12">
@@ -213,20 +185,13 @@ const Satisfaction = () => {
                           </div>
                         </div>
                         <div className="row button-container">
-                          <div className="col-10">
+                          <div className="col-12">
                             <a href="./reports">
                               <button className="card-btn check">
                                 {t("satisfactionSite.GenerateGraphs")}
                               </button>
                             </a>
-                          </div>
-                          <div className="col-2">
-                            <a href="./reports">
-                              <button className="btn-plus">
-                                <i className="fa-solid fa-plus"> </i>
-                              </button>
-                            </a>
-                          </div>
+                          </div>                          
                         </div>
                       </div>
                     </div>
@@ -302,23 +267,10 @@ const Satisfaction = () => {
                           <button className="card-btn ">
                             {" "}
                             {t("satisfactionSite.CreateSurvey")}
-                          </button>
-
-                          <button className="btn-plus ms-2">
-                            <i className="fa-solid fa-plus"></i>
-                          </button>
+                          </button>                          
                         </div>
                         <div className="col-1 d-none d-lg-block">
-                          <div className="dropdown">
-                            <button className="dropbtn">
-                              <i className="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
-                            <div className="dropdown-content">
-                              <a href="#">Link 1</a>
-                              <a href="#">Link 2</a>
-                              <a href="#">Link 3</a>
-                            </div>
-                          </div>
+                         
                         </div>
                       </ul>
                       <ul className="list-item item-5 d-flex justify-content-between">
@@ -338,58 +290,11 @@ const Satisfaction = () => {
                           <button className="card-btn">
                             {" "}
                             {t("satisfactionSite.Generate_report")}
-                          </button>
-                          <button className="btn-plus ms-2">
-                            <i className="fa-solid fa-plus"></i>
-                          </button>
+                          </button>                          
                         </div>
-                        <div className="col-1 d-none d-lg-block">
-                          <div className="dropdown">
-                            <button className="dropbtn">
-                              <i className="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
-                            <div className="dropdown-content">
-                              <a href="#">Link 1</a>
-                              <a href="#">Link 2</a>
-                              <a href="#">Link 3</a>
-                            </div>
-                          </div>
+                        <div className="col-1 d-none d-lg-block">                          
                         </div>
-                      </ul>
-                      <ul className="list-item item-6 d-flex justify-content-between">
-                        <div className="col-6 col-lg-5">
-                          <h5 className="text-white fw-bolder">
-                            {t("satisfactionSite.SendMailsurvey")}
-                          </h5>
-                        </div>
-                        <div className="col-lg-2 ms-3 d-none d-lg-block">
-                          <span className="text-white text-start">
-                            {t("satisfactionSite.SendSurvey")}
-                          </span>
-                        </div>
-                        <div className="col-lg-3  justify-content-center  col ">
-                          <button className="card-btn ">
-                            {" "}
-                            {t("satisfactionSite.SendMail")}
-                          </button>
-
-                          <button className="btn-plus ms-2">
-                            <i className="fa-solid fa-plus"></i>
-                          </button>
-                        </div>
-                        <div className="col-1 d-none d-lg-block">
-                          <div className="dropdown">
-                            <button className="dropbtn">
-                              <i className="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
-                            <div className="dropdown-content">
-                              <a href="#">Link 1</a>
-                              <a href="#">Link 2</a>
-                              <a href="#">Link 3</a>
-                            </div>
-                          </div>
-                        </div>
-                      </ul>
+                      </ul>                      
                     </li>
                   </div>
                 </div>

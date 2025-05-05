@@ -208,16 +208,40 @@ const SurveyList = () => {
       });
   };
 
+  const parseLocalDate = (dateString) => {
+    if (!dateString || typeof dateString !== "string") {
+      console.warn("se recibio un valor invalido:", dateString);
+      return null;
+    }  
+    const [year, month, day] = dateString.split("-");
+    return new Date(year, month - 1, day); // Recuerda: month es 0-indexed
+  };
+
   const validateDates = (dateStart, dateEnd) => {
-    const start = new Date(dateStart);
-    const end = new Date(dateEnd);
+    
+    if (!dateStart || !dateEnd) {
+      console.warn("Una o ambas fechas no están definidas:", dateStart, dateEnd);
+      return false;
+    }
 
-    //validar que la fecha de inicio no se posterior 
+    const start = parseLocalDate(dateStart);
+    const end = parseLocalDate(dateEnd);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Establecer la hora a medianoche para comparar solo fechas
 
+    //  Validar antes de usar setHours
+    if (!start || !end) {
+      setErrorFechas(true);
+      setErrorFechasMessage("Fechas inválidas.");
+      return false;
+    }
+    
+    // Normaliza TODAS las fechas a medianoche
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
     //validar que la fecha de inicio no sea menor a la fecha actual
-    if (start < today) {
+    if (start < today)  {
       setErrorFechas(true);
       setErrorFechasMessage("La fecha de inicio no puede ser anterior al día de hoy")
       document.getElementById("saveButton").disabled = true;
@@ -430,6 +454,7 @@ const SurveyList = () => {
   }
 
   console.log("encuestas a mostrar:", survey);
+  console.log("Valor de start_date.input en el render:", start_date.input);
 
   return (
     <div className="App">
@@ -441,7 +466,7 @@ const SurveyList = () => {
           </div>
           <div className="w-100 d-flex justify-content-center px-2">
           <div className="w-100 px-3" style={{ maxWidth: "97%" }}>
-            {survey.length > 0 && (
+            {survey.length > 0 ? (
               <TableSurvey
                 header={headers}
                 data={survey}
@@ -457,6 +482,18 @@ const SurveyList = () => {
                 onCopyLink={(item)=> copyLink(item)}
                 onBulkEmail={(payload)=> openModalBulk(payload)}
               />
+            ) : (
+              <div className="text-center py-5">
+                <h4>No hay encuestas disponibles</h4>
+                <button 
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalSurvey"
+                  className="btn btn-primary mt-3"
+                  onClick={() => openModal(1)}
+                >
+                  Crear nueva encuesta
+                </button>
+              </div>
             )}
           </div>
           </div>
@@ -527,7 +564,9 @@ const SurveyList = () => {
                       type="date"
                       name="start_date"
                       value={start_date.input}
+                      min={formatDateForInput(new Date())}
                       onChange={(e) => {
+                        console.log("-----Valor seleccionado:}}}", e.target.value)
                         start_date.handleChange(e.target.value);
                         validateDates(e.target.value, end_date.input);
                       }}
