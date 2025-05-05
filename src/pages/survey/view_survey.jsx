@@ -98,11 +98,11 @@ export default function View_survey() {
 useEffect(() => {
   const fetchData = async () => {
     const questions = await getSurveyQuestions(id, config);
-    setSurveyData({ sampleCount: questions.length });
-    // setSurveyData(prevData => ({
-    //   ...prevData,
-    //   sampleCount: questions.length
-    // }));
+    //setSurveyData({ sampleCount: questions.length });
+    setSurveyData(prevData => ({
+       ...prevData,
+       sampleCount: Array.isArray(questions) ? questions.length : 0
+     }));
   };
 
   fetchData();
@@ -342,14 +342,14 @@ const config = {
         <section style={{alignItems:"stretch", flexWrap:"nowrap", padding:0}}>
         {/* <SidebarLT1/> */}
         <div className="container mt-0">
-          <div className="row">
+          <div className="row">            
             <div className="col-md-12">
-              <div className="card p-4 borderEVA bg-light">
               <button className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-1 mb-2" onClick={() => nav("/survey_list")} >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-90deg-left" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-left" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
                 </svg>
               </button>
+              <div className="card p-4 borderEVA bg-light">             
                 <div className="text-center">
                   <h3>Información Encuesta</h3>
                 </div>
@@ -357,8 +357,9 @@ const config = {
                   <div className="container-fluid">
                     <div className="row d-flex align-items-center">
                       <div className="col-6">
-                        <h5>{surveyData.title}</h5>
-                        <p className="fs-6">{surveyData.description}</p>
+                      {console.log("-----surveyData aca ------", surveyData)}
+                        <h5>{surveyData.data?.title}</h5>
+                        <p className="fs-6">{surveyData.data?.description}</p>
                       </div>
                       <div className="col-6 text-end">
                         {console.log("-----surveyData aca", surveyData)}
