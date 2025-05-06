@@ -277,7 +277,7 @@ export default function SurveyBlocks() {
           selectedOption: selectedOption,
         });
 
-        // Actualizar QuestionList
+        // Actualizar QuestionsList
 
         setQuestionsList((prevQuestions) =>
           prevQuestions.map((q) => {

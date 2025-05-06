@@ -19,6 +19,7 @@
     "@mui/x-date-pickers": "^7.13.0",
     "axios": "^1.8.4",
     "boostrap": "^2.0.0",
+    "bootstrap": "^5.3.6",
     "chart.js": "^4.4.3",
     "chartjs-plugin-annotation": "^3.0.1",
     "chartjs-plugin-datalabels": "^2.2.0",
