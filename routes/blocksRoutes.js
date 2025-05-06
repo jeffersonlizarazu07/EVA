@@ -1,7 +1,12 @@
-// const express = require('express');
-// const router = express.Router();
-// const { createBlock } = require('../controllers/form.controller');
+const express = require('express');
+const router = express.Router();
+const blockController = require('../controllers/form.controller');
 
-// router.post('/form', createBlock);
-
-// module.exports = router;
+// Crear un nuevo bloque
+router.post('/form', blockController.createBlock);
+router.post('/form', createBlock);
+router.get('/form', getAllBlocks);
+router.get('/form/:id', getBlockById);
+router.put('/form/:id', updateBlock);
+router.delete('/form/:id', deleteBlock);
+module.exports = router;

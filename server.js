@@ -15,6 +15,7 @@ const answersRoutes = require('./routes/answerRoutes');
 const agentRoutes = require('./routes/agentRoutes');
 const formSetRoutes = require('./routes/formRoutes');
 const enviarCorreos = require('./routes/mailRoutes');
+const blockRoutes = require('./routes/blockRoutes');
 
 
 const app = express();
@@ -45,7 +46,7 @@ app.use('/api', answersRoutes);
 app.use('/api', enviarCorreos);
 app.use('/api', agentRoutes);
 app.use('/api', formSetRoutes);
-// app.use('/api', blocksRoutes);
+app.use('/api', blockRoutes);
 
 // Hacer accesible la carpeta 'public' para el navegador
 app.use('/public', express.static(path.join(__dirname, 'public')));
