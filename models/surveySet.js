@@ -97,8 +97,90 @@ const SurveySet = {
             console.error('Error al obtener las encuestas del usuario:', error);
             throw error; // Lanza el error para que pueda ser manejado por el controlador
         }
+    },
+
+    getTopSurveys: async (id) => {
+        try {
+            const result = await db('survey_set as s')
+            .join('answers as a', 's.id', 'a.survey_id')
+            .join('questions as q', 'a.question_id', 'q.id')
+            .join('user_clients as uc', 's.idClient', 'uc.idClient')
+            .where('uc.idUser', id)
+            .groupBy('s.id', 's.title', 's.link')
+            .select(
+              's.id as survey_id',
+              's.title',
+              's.link',
+              db.raw(`CEIL(COUNT(a.id) * 1.0 / NULLIF(COUNT(DISTINCT CASE WHEN q.conditional = 'no' THEN a.question_id END), 0)) AS encuestas_enviadas`)
+            )
+            .orderBy('encuestas_enviadas', 'desc')
+            .limit(5);
+          
+          return result;
+        } catch (error) {
+          console.error('Error al obtener el top de encuestas:', error );
+          throw error;
+        }            
+    },
+
+    //lo de chezet
+    copySurvey: async (idOriginalSurvey, link) => {
+        if (!idOriginalSurvey || !link) { 
+            return { status: false, message: "Faltan parámetros requeridos en la petición." };
+        }
+    
+        try {
+            // Obtener la encuesta original
+            const getSurveyToCopy = await this.getById(idOriginalSurvey);
+            if (!getSurveyToCopy) {
+                return { status: false, message: "La encuesta original no existe." };
+            }
+    
+            console.log("Encuesta original obtenida:", getSurveyToCopy);
+    
+            // Crear la nueva encuesta sin duplicar ID ni link
+            delete getSurveyToCopy.id;
+            delete getSurveyToCopy.link;
+    
+            const addSurvey = await this.create({
+                title: getSurveyToCopy.title,
+                start_date: getSurveyToCopy.start_date,
+                end_date: getSurveyToCopy.end_date,
+                description: getSurveyToCopy.description,
+                link: link,
+                type: getSurveyToCopy.type,
+                idClient: getSurveyToCopy.idClient,
+                state: getSurveyToCopy.state,
+            });
+    
+            if (!addSurvey) {
+                return { status: false, message: "Error al crear la encuesta duplicada." };
+            }
+    
+            console.log("Encuesta duplicada creada:", addSurvey);
+    
+            // traemos las preguntas de la encuesta original y las vinculamos a la nueva encuesta
+            const questionsToAttach = await this.getQuestionsBySurveyId(idOriginalSurvey);
+            if (!questionsToAttach || questionsToAttach.length === 0) {
+                console.log("No se encontraron preguntas en la encuesta original.");
+            } else {
+                console.log("Preguntas que se asociarán a la encuesta duplicada:", questionsToAttach);
+            }
+    
+            // Retornamos la encuesta duplicada junto con las preguntas originales
+            return { 
+                status: true, 
+                message: "Encuesta duplicada exitosamente con preguntas originales asociadas.", 
+                data: { ...addSurvey, questions: questionsToAttach }
+            };
+    
+        } catch (err) { 
+            console.error("Error inesperado en el servidor:", err);
+            return { status: false, message: "Error inesperado en el servidor.", error: err };
+        }
     }
 
+    
 };
 
 module.exports = SurveySet;
