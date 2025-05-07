@@ -588,17 +588,31 @@ const AdminList = () => {
                     value={clients.filter((client) =>
                       selectedClients.includes(client.id)
                     )}
-                    renderOption={(props, option, { selected }) => (
-                      <li key={option.id} {...props}>
-                        <Checkbox
-                          icon={icon}
-                          checkedIcon={checkedIcon}
-                          style={{ marginRight: 8 }}
-                          checked={selected}
-                        />
-                        {option.client}
-                      </li>
-                    )}
+                    // renderOption={(props, option, { selected }) => (
+                    //   <li key={option.id} {...props}>
+                    //     <Checkbox
+                    //       icon={icon}
+                    //       checkedIcon={checkedIcon}
+                    //       style={{ marginRight: 8 }}
+                    //       checked={selected}
+                    //     />
+                    //     {option.client}
+                    //   </li>
+                    // )}
+                    renderOption={(props, option, { selected }) => {
+                      const { key, ...rest } = props;
+                      return (
+                        <li key={option.id} {...rest}>
+                          <Checkbox
+                            icon={icon}
+                            checkedIcon={checkedIcon}
+                            style={{ marginRight: 8 }}
+                            checked={selected}
+                          />
+                          {option.client}
+                        </li>
+                      );
+                    }}
                     style={{ width: "100%" }}
                     renderInput={(params) => (
                       <TextField
@@ -620,9 +634,9 @@ const AdminList = () => {
                       className="input-new"
                       placeholder=""
                       type="text"
-                      name="email"
-                      value={email.input}
+                      name="email"                      
                       onChange={(e) => email.handleChange(e.target.value)}
+                      value={email.input}
                     />
                     <span className="labelName">{t("UserModal.Email")}:</span>
                   </label>
@@ -673,7 +687,6 @@ const AdminList = () => {
                       <option
                         value="0"
                         disabled
-                        selected
                         className="opt-default"
                       >
                         {t("UserModal.SelectRole")}
@@ -809,6 +822,7 @@ const AdminList = () => {
                     type="text"
                     className="form-control mt-1"
                     value={email.input}
+                    readOnly
                   />
                 </div>
                 <div className="m-1 p-1">

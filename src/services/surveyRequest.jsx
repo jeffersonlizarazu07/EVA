@@ -4,7 +4,7 @@ import { smallAlertDelete, Toast, Toast2 } from "../assets/js/alertConfig";
 export const getSurveys = async (urlSurveys, config) => {
     try {
       const response = await axios.get(urlSurveys, config);
-      console.log(response.data)
+      console.log("*ñññ*",response.data)
       return response.data.data.length;
     } catch (error) {
       console.error("Error fetching surveys:", error);
@@ -43,12 +43,16 @@ export const deleteQuestion = async (
 
   smallAlertDelete
     .fire({
-      text: `${t("alertDeactivate.InitialPhrase")}${questiontext} ${t(
-        "alertDeactivate.FinalPhrase"
-      )}`,
+      title: "🗑️ Eliminar elemento",
+      icon: "warning",
+      text: `Esta seguro que desea eliminar la pregunta "${questiontext}"`, 
       showCancelButton: true,
       confirmButtonText: `${t("alertDeactivate.Confirm")}`,
       cancelButtonText: `${t("alertDeactivate.Cancel")}`,
+      confirmButtonColor: "#b62a8b",
+      customClass :{
+        actions: 'swal2-actions-center ', 
+      },
     })
     .then(async (result) => {
       if (result.isConfirmed) {

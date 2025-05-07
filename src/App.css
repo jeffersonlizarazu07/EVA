@@ -156,3 +156,12 @@ body {
   color: var(--text-color);
   transition: all 0.3s ease;
 }
+
+.swal2-actions.swal2-actions-center {
+  justify-content: center !important;
+}
+
+/* Justificar el texto */
+.swal2-html-container {
+  text-align: justify !important;
+}

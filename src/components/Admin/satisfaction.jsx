@@ -11,17 +11,42 @@ import SidebarLT2 from "../aside/sidebarLT2";
 import HeaderLT2 from "../header/headerLT2";
 import { useTranslation } from "react-i18next";
 import { getSurveys } from "../../services/surveyRequest";
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const Satisfaction = () => {
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { userType, languageUser, clients } = useContext(UserContext);
+  const { userType, languageUser, clients, userId} = useContext(UserContext);
   const { accessToken } = useContext(UserContext);
   const urlSurveys = `http://localhost:3000/api/clients/surveys?clientIds=${clients}`;
   const [surveys, setSurveys] = useState("");
+  const [topSurveys, setTopSurveys] = useState([]);
+
+
+  useEffect(() => {
+    const fetchTopSurveys = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/top-surveys/${userId}`);
+        setTopSurveys(response.data.data);
+        
+      } catch (error) {
+       
+        console.error("Error fetching top surveys:", error);
+      }
+    };
+
+    fetchTopSurveys();
+  }, []);
 
   useEffect(() => {
     cSurveys();
     i18n.changeLanguage(languageUser);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(cSurveys, 30000); // Cada 30 segundos
+    return () => clearInterval(interval);
   }, []);
   
   // document
@@ -44,6 +69,9 @@ const Satisfaction = () => {
   };
 
   const cSurveys = function () {
+    console.log("--urlSurveys", urlSurveys);
+    console.log("--clientes", clients);
+    console.log("--userId", userId);
     getSurveys(urlSurveys, config)
       .then(setSurveys)
       .catch((error) => {
@@ -141,7 +169,7 @@ const Satisfaction = () => {
                         <div className="row d-flex align-items-start justify-content-start mb-2">
                           <div className="col card-second-text  ">
                             <span className="">
-                              {t("satisfactionSite.Create_and_or_edit_survey")}
+                              Gestionar encuestas
                             </span>
                           </div>
                         </div>
@@ -149,7 +177,7 @@ const Satisfaction = () => {
                           <div className="col">
                             <a href="/survey_list">
                               <button className="card-btn check">
-                                {t("satisfactionSite.CreateSurvey")}
+                                Visualizar encuestas
                               </button>
                             </a>
                           </div>                          
@@ -260,13 +288,13 @@ const Satisfaction = () => {
                         </div>
                         <div className="col-lg-2 ms-3 d-none d-lg-block">
                           <span className="text-white text-start">
-                            {t("satisfactionSite.Create_and_or_edit_survey")}
+                            Gestionar encuestas
                           </span>
                         </div>
                         <div className="col-lg-3  justify-content-center  col ">
-                          <button className="card-btn ">
+                          <button className="card-btn " onClick={() => navigate("/survey_list")}>
                             {" "}
-                            {t("satisfactionSite.CreateSurvey")}
+                            visualizar encuestas
                           </button>                          
                         </div>
                         <div className="col-1 d-none d-lg-block">
@@ -287,7 +315,7 @@ const Satisfaction = () => {
                           </span>
                         </div>
                         <div className="col-lg-3  justify-content-center  col ">
-                          <button className="card-btn">
+                          <button className="card-btn" onClick={() => navigate("/reports")}>
                             {" "}
                             {t("satisfactionSite.Generate_report")}
                           </button>                          
@@ -303,15 +331,45 @@ const Satisfaction = () => {
               <div className="col-12 col-lg-4 col-sm-12">
                 <div className="card outstanding-card2 extern">
                   <div className="card-body div-title">
-                    <h5 className=""> {t("satisfactionSite.Surveys")}</h5>
+                    <h5 className=""> Ecuestas frecuentes</h5>
                     <div className="row">
-                      <div className="col-12">
+                      {/* <div className="col-12">
                         <span className=" text-start fw-bold">
                           Titulo encuesta mas demandada{" "}
                           <i className=" fa-regular fa-clipboard"></i>
                         </span>
-                      </div>
+                      </div> */}
                     </div>
+                    <div className="p-3">
+                      
+                      {topSurveys.length === 0 ? (
+                        <p className="text-center" style={{ fontSize: '100%', padding: '30%'}}>
+                          Aún no hay encuestas contestadas
+                        </p>
+                      ) :( 
+                        <ul style={{listStyle: 'none', padding: 0, textAlign: 'center' }}>
+                          {topSurveys.map((survey) => (
+                            <li key={survey.survey_id} className="text-start"
+                            style={{
+                              fontSize: '100%', // Tamaño de letra
+                              margin: '0.5rem 2rem', // Espaciado vertical y horizontal
+                              display: 'inline-block', // Para que haya separación horizontal si los quieres en una línea
+                            }}>
+                              <a
+                                href={survey.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ textDecoration: 'none', color: 'inherit' }}
+                              >
+                                <strong>{survey.title}</strong>
+                              </a>{' '}
+                              {/* : {survey.encuestas_enviadas} */}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    
                     <div className="row">
                       <p className="text-start ">
                         {t(

@@ -186,10 +186,16 @@ const SurveyList = () => {
 
     smallAlertDelete
       .fire({
-        text: `La encuesta ${name} se eliminará de forma permanente.`,
+        icon: "warning",
+        title: "🚫 Deshabilitar elemento",
+        text: `La encuesta ${name} se deshabilitara de forma permanente.`,
         showCancelButton: true,
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+        },
       })
       .then(async (result) => {
         if (result.isConfirmed) {
