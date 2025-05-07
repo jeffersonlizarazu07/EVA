@@ -18,6 +18,7 @@ const enviarCorreos = require('./routes/mailRoutes');
 const blockRoutes = require('./routes/blockRoutes');
 
 
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -47,6 +48,7 @@ app.use('/api', enviarCorreos);
 app.use('/api', agentRoutes);
 app.use('/api', formSetRoutes);
 app.use('/api', blockRoutes);
+app.use("/api/blocks", blockRoutes);
 
 // Hacer accesible la carpeta 'public' para el navegador
 app.use('/public', express.static(path.join(__dirname, 'public')));
