@@ -185,6 +185,18 @@ const surveySetController = {
             console.error('Error al obtener las encuestas por usuario:', error);
             res.status(500).json({ status: '500', message: 'Error interno del servidor', error });
         }
+    },
+
+    //funcion para obtener las encuestas mas contestadas
+    async topSurveys(req, res) {
+        try {
+            const userId = req.params.userId;
+            console.log('ID del usuario:', userId); // Imprimir el ID del usuario
+            const topSurveys = await SurveySet.getTopSurveys(userId);
+            res.json({success: true, data: topSurveys});
+        }catch (error) {
+            res.status(500).json({success: false, message: 'Error al obtener las encuestas más contestadas', error});
+        }
     }
 
 };
