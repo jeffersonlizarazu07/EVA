@@ -24,7 +24,7 @@ import {
   SingleChoiceQuestionEdit,
   SelectorQuestion,
   SelectorQuestionEdit,
-} from "../../pages/survey/singleChoiceQuestion"
+} from "../../pages/survey/singleChoiceQuestion";
 import "../../assets/css/survey.css";
 import {
   Yes_no,
@@ -32,10 +32,15 @@ import {
   SingleChoiceView,
   MultipleChoiceView,
 } from "../survey/questions";
+import {
+  createBlock,
+  getAllBlocks,
+  updateBlock,
+  deleteBlock,
+} from "../../services/blockService";
 import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
-
 
 export default function SurveyBlocks() {
   const { id } = useParams();
@@ -131,6 +136,10 @@ export default function SurveyBlocks() {
   // Estados para manejo de posicionamiento relativo de bloques
   const [positionType, setPositionType] = useState(""); // 'before' o 'after'
   const [referenceBlockId, setReferenceBlockId] = useState(""); // ID del bloque de referencia
+
+  // Estados para manejo de bloques
+  const [blocks, setBlocks] = useState([]);
+  const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
   /* ***********************************************************************************************************/
   /* Component Logic*/
@@ -892,6 +901,61 @@ export default function SurveyBlocks() {
     return nuevaPosicion;
   };
 
+  // Obtener bloques al cargar
+  useEffect(() => {
+    loadBlocks();
+  }, []);
+
+  const loadBlocks = async () => {
+    try {
+      const res = await getAllBlocks();
+      setBlocks(res.data);
+    } catch (err) {
+      console.error("Error al cargar bloques:", err);
+    }
+  };
+
+  // Crear bloque
+  const handleCreate = async () => {
+    try {
+      const res = await createBlock(newBlock);
+      setBlocks([...blocks, res.data.data]);
+      setNewBlock({ name: "", textQuestion: "" });
+    } catch (err) {
+      console.error("Error al crear bloque:", err);
+    }
+  };
+
+  //Actualizar bloque
+  const handleUpdate = async (id, updatedFields) => {
+    try {
+      const res = await updateBlock(id, updatedFields);
+      setBlocks(blocks.map((b) => (b.id === id ? res.data.data : b)));
+    } catch (err) {
+      console.error("Error al actualizar:", err);
+    }
+  };
+
+  // Eliminar bloque
+  const handleDelete = async (id) => {
+    try {
+      await deleteBlock(id);
+      setBlocks(blocks.filter((b) => b.id !== id));
+    } catch (err) {
+      console.error("Error al eliminar:", err);
+    }
+  };
+  // Elimina el bloque - pendiente por revisar**
+  const onBulkEmail = (bloque) => {
+    console.log("Eliminar bloque", bloque);
+  };
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/blocks/ping")
+      .then((res) => res.json())
+      .then((data) => console.log("Conexión exitosa:", data))
+      .catch((err) => console.error("Error en conexión:", err));
+  }, []);
 
   return (
     <div className="App">
@@ -1139,37 +1203,37 @@ export default function SurveyBlocks() {
         </section>
       </div>
       <ModalSurveyBlocks
-  operation={operation}
-  title={title}
-  descriptionText={descriptionText}
-  questionsList={questionsList}
-  handleInputChange={handleInputChange}
-  singleChoiceData={singleChoiceData}
-  multipleChoiceData={multipleChoiceData}
-  selectorData={selectorData}
-  handleSingleChoiceChange={handleSingleChoiceChange}
-  handleMultipleChoiceChange={handleMultipleChoiceChange}
-  handleSelectorChange={handleSelectorChange}
-  isChecked={isChecked}
-  listConditional={listConditional}
-  valueConditional={valueConditional}
-  conditionalHandleChange={conditionalHandleChange}
-  error={error}
-  validar={validar}
-  idToEdit={idToEdit}
-  id={id}
-  areAllFieldsCompleted={areAllFieldsCompleted}
-  handleCancel={handleCancel}
-  addNewQuestion={addNewQuestion}
-  questionCountInput={questionCountInput}
-  setQuestionCountInput={setQuestionCountInput}
-  nombreInput={nombreInput}
-  ponderacionInput={ponderacionInput}
-  posicionInput={posicionInput}
-  positionType={positionType}
-  referenceBlockId={referenceBlockId}
-  data={data}
-/>
+        operation={operation}
+        title={title}
+        descriptionText={descriptionText}
+        questionsList={questionsList}
+        handleInputChange={handleInputChange}
+        singleChoiceData={singleChoiceData}
+        multipleChoiceData={multipleChoiceData}
+        selectorData={selectorData}
+        handleSingleChoiceChange={handleSingleChoiceChange}
+        handleMultipleChoiceChange={handleMultipleChoiceChange}
+        handleSelectorChange={handleSelectorChange}
+        isChecked={isChecked}
+        listConditional={listConditional}
+        valueConditional={valueConditional}
+        conditionalHandleChange={conditionalHandleChange}
+        error={error}
+        validar={validar}
+        idToEdit={idToEdit}
+        id={id}
+        areAllFieldsCompleted={areAllFieldsCompleted}
+        handleCancel={handleCancel}
+        addNewQuestion={addNewQuestion}
+        questionCountInput={questionCountInput}
+        setQuestionCountInput={setQuestionCountInput}
+        nombreInput={nombreInput}
+        ponderacionInput={ponderacionInput}
+        posicionInput={posicionInput}
+        positionType={positionType}
+        referenceBlockId={referenceBlockId}
+        data={data}
+      />
     </div>
   );
 }
