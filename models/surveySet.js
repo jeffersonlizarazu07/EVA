@@ -1,4 +1,4 @@
-const db = require('../config/db'); // Importa la conexión a la base de datos
+const db = require("../config/db"); // Importa la conexión a la base de datos
 
 const SurveySet = {
 
@@ -33,6 +33,7 @@ const SurveySet = {
     
     //     return query;
     // },
+      
 
     getByLink: (link) => {
         return db('survey_set')
@@ -43,14 +44,14 @@ const SurveySet = {
     },
     
     
-    
 
     getByClients: (clientIdsArray) => {
         return db('survey_set')
             .whereIn('idClient', clientIdsArray)
             .select('*');
     },
-
+      
+       
 
     create: (data) => db('survey_set').insert(data),
 
@@ -180,7 +181,7 @@ const SurveySet = {
         }
     }
 
-    
+   
 };
 
 module.exports = SurveySet;
