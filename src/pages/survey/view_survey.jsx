@@ -130,12 +130,22 @@ const config = {
     setSingleChoiceData({ options: [], correctAnswer: null });
     setMultipleChoiceData({ options: [], correctAnswers: [] });
     setidToEdit(null);
+    //limpiar también los valores de los inputs
+    id_conditional.handleChange(0);
+    conditional_answer.handleChange("");
+    conditional.handleChange("NO");
   };
 
   const conditionalHandleChange = (e) => {
     const conditional = e;
     setIsChecked(conditional);
     setValueConditional(conditional);
+
+    //si se desmarca limpiar los valores relacionados a la pregunta condicional
+    if(!conditional) {
+      id_conditional.handleChange(0);
+      conditional_answer.handleChange("");
+    }
   };
 
   useEffect(() => {
@@ -460,13 +470,14 @@ const config = {
 
                         <div className="text-end me-3">
                           {question.conditional === "SI" ? (
+                            <div>
                             <i
                               className="fa-solid fa-question text-primary"
                               data-bs-toggle="tooltip"
                               data-bs-placement="top"
                               data-bs-custom-class="custom-tooltip"
                               data-bs-title="This top tooltip is themed via CSS variables."
-                            ></i>
+                            ></i> Pregunta condicional</div>
                           ) : (
                             ""
                           )}

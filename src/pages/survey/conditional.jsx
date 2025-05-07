@@ -16,22 +16,22 @@ export default function getRangeOptions(questionType, answers = "") {
 
     case "yes_no":
       return [
-        { optionText: "Si", value: "yes" },
-        { optionText: "No", value: "no" },
+        { optionText: "Si", value: "1" },
+        { optionText: "No", value: "0" },
       ];
 
     case "range_difficulty":
       return [
-        { optionText: ["Dificil o muy dificil"], value: "hard" },
-        { optionText: ["Neutro"], value: "neutral" },
-        { optionText: ["Facil o muy facil"], value: "easy" },
+        { optionText: ["Dificil o muy dificil"], value: "5,4" },
+        { optionText: ["Neutro"], value: "3" },
+        { optionText: ["Facil o muy facil"], value: "2,1" },
       ];
 
     case "range_emoji":
       return [
-        { optionText: "Muy triste: 🙁 o Triste: 😐", value: "sad" },
-        { optionText: "Neutro: 😐", value: "neutral" },
-        { optionText: "Feliz: 😄 o Muy feliz: 😊", value: "happy" },
+        { optionText: "Muy triste: 🙁 o Triste: 😐", value: "1,2" },
+        { optionText: "Neutro: 😐", value: "3" },
+        { optionText: "Feliz: 😄 o Muy feliz: 😊", value: "4,5" },
       ];
 
     case "radio_opt": {

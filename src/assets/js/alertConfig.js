@@ -17,7 +17,7 @@ export const smallAlertDelete = Swal.mixin({
     cancelButton: "small-alert-cancel-button",
   },
   buttonsStyling: true, // Para aplicar estilos personalizados
-  width: "400px", // Ajusta el ancho de la alerta
+  width: "400px", // Ajusta el ancho s la alerta
   padding: "1em", // Reduce el padding para que sea menos invasiva
   display: "flex",
   backdrop: false,
