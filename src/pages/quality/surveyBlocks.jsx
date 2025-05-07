@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
 import HeaderLT1 from "../../components/header/headerLT1";
 import axios from "axios";
+import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useParams } from "react-router-dom";
 import {
@@ -16,6 +17,14 @@ import {
   getSurvey,
   getSurveyQuestions,
 } from "../../services/surveyRequest";
+import {
+  SingleChoiceQuestion,
+  MultipleChoiceQuestion,
+  MultipleChoiceQuestionEdit,
+  SingleChoiceQuestionEdit,
+  SelectorQuestion,
+  SelectorQuestionEdit,
+} from "../../pages/survey/singleChoiceQuestion";
 import "../../assets/css/survey.css";
 import {
   Yes_no,
@@ -23,16 +32,66 @@ import {
   SingleChoiceView,
   MultipleChoiceView,
 } from "../survey/questions";
+import {
+  createBlock,
+  getAllBlocks,
+  updateBlock,
+  deleteBlock,
+} from "../../services/blockService";
+import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
-import "../../components/Modals/modalSurveyBlocks";
-import { ModalSurveyBlocks } from "../../components/Modals/modalSurveyBlocks";
+import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 
 export default function SurveyBlocks() {
   const { id } = useParams();
   const [data, setData] = useState([]);
+  const [operation, setOperation] = useState(1);
+  const [title, setTitle] = useState("");
+  const [descriptionText, setDescriptionText] = useState("");
   const [surveyData, setSurveyData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [idToEdit, setidToEdit] = useState(null);
   const [error, setError] = useState("");
+  const [listConditional, setListConditional] = useState(false);
+  const [valueConditional, setValueConditional] = useState(null);
+  const [singleChoiceData, setSingleChoiceData] = useState({
+    options: [],
+    correctAnswer: null,
+  });
+  const [multipleChoiceData, setMultipleChoiceData] = useState({
+    options: [],
+    correctAnswers: [],
+  });
+  const [isChecked, setIsChecked] = useState(false);
+  const [selectedRangeType, setSelectedRangeType] = useState({
+    questionTypeRange: "",
+    answersRange: "",
+  });
+
+  const question = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const nombreInput = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const ponderacionInput = useInput({ defaultValue: "", validate: /^[0-9]*$/ });
+  const posicionInput = useInput({ defaultValue: "", validate: /^[0-9]*$/ });
+  const questionType = useInput({ defaultValue: "", validate: /^[A-Za-z_]+$/ });
+  const section = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const percentage = useInput({
+    defaultValue: "",
+    validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
+  });
+  const frm_option = useInput({
+    defaultValue: "",
+    validate:
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+  });
+  const conditional = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const id_conditional = useInput({ defaultValue: "0", validate: /^[0-9]*$/ });
+  const survey_id = useInput({ defaultValue: "", validate: /^[0-9]*$/ });
+  const conditional_answer = useInput({
+    defaultValue: "",
+    validate: /^[A-Za-z0-9]*$/,
+  });
+
   const { t, i18n } = useTranslation();
   const { accessToken, languageUser } = useContext(UserContext);
 
@@ -46,7 +105,23 @@ export default function SurveyBlocks() {
     },
   ]);
 
-  // Estados de bloques
+  /* Contador de número de encuestas segun input */
+  const [questionCountInput, setQuestionCountInput] = useState("");
+
+  /* Selector option */
+
+  const [selectorData, setSelectorData] = useState({
+    options: [],
+    selectedOption: null,
+  });
+  const [questions, setQuestions] = useState([]);
+  const [editingQuestion, setEditingQuestion] = useState(null);
+  const [options, setOptions] = useState([]);
+  const [correctAnswers, setCorrectAnswers] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  // State para manejo de preguntas validas
+  const [hasValidQuestions, setHasValidQuestions] = useState(false);
+  const [textFieldAnswer, setTextFieldAnswer] = useState("");
 
   //Id bloque creado
   const [bloques, setBloques] = useState([]);
@@ -62,9 +137,9 @@ export default function SurveyBlocks() {
   const [positionType, setPositionType] = useState(""); // 'before' o 'after'
   const [referenceBlockId, setReferenceBlockId] = useState(""); // ID del bloque de referencia
 
-  // Abrir modal
-  const [modalProps, setModalProps] = useState({ isOpen: false, mode: 1, bloque: null });
-
+  // Estados para manejo de bloques
+  const [blocks, setBlocks] = useState([]);
+  const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
   /* ***********************************************************************************************************/
   /* Component Logic*/
@@ -80,6 +155,18 @@ export default function SurveyBlocks() {
     setStaticData([...data]);
   }, [data]);
 
+  useEffect(() => {
+    // Verificar si hay al menos una pregunta con texto y tipo
+    const hasValid = questionsList.some((q) => q.text && q.type);
+    setHasValidQuestions(hasValid);
+
+    // Si hay alguna pregunta válida, actualizar questionType
+    if (hasValid) {
+      const validQuestion = questionsList.find((q) => q.text && q.type);
+      questionType.handleChange(validQuestion.type);
+    }
+  }, [questionsList]);
+
   const config = {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -94,9 +181,644 @@ export default function SurveyBlocks() {
       });
   };
 
+  const handleCancel = () => {
+    setValueConditional(false);
+    setIsChecked(false);
+    setSingleChoiceData({ options: [], correctAnswer: null });
+    setMultipleChoiceData({ options: [], correctAnswers: [] });
+    setidToEdit(null);
+    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+    setHasValidQuestions(false);
+  };
+
+  const conditionalHandleChange = (e) => {
+    const conditional = e;
+    setIsChecked(conditional);
+    setValueConditional(conditional);
+  };
+
+  useEffect(() => {
+    if (valueConditional && !listConditional) {
+      setListConditional(true);
+    } else if (!valueConditional && listConditional) {
+      setListConditional(false);
+      if (
+        singleChoiceData.options.length > 0 ||
+        singleChoiceData.correctAnswer !== null
+      ) {
+        setSingleChoiceData({ options: [], correctAnswer: null });
+      }
+      if (
+        multipleChoiceData.options.length > 0 ||
+        multipleChoiceData.correctAnswers.length > 0
+      ) {
+        setMultipleChoiceData({ options: [], correctAnswers: [] });
+      }
+    }
+  }, [valueConditional, listConditional, singleChoiceData, multipleChoiceData]);
+
+  const openModal = (op, idsurvey, questionDetails) => {
+    setOperation(op);
+    if (op === 1) {
+      resetFormFields(); // Limpia todo el estado base
+      setTitle("Crear Bloque");
+      setDescriptionText("");
+      description.handleChange("");
+      questionType.handleChange("");
+      section.handleChange("Na");
+      percentage.handleChange("");
+      frm_option.handleChange("Na");
+      conditional.handleChange("NO");
+      id_conditional.handleChange(0);
+      conditional_answer.handleChange("NO");
+      survey_id.handleChange(idsurvey);
+      // Limpia inputs adicionales
+      setQuestionCountInput(""); // limpia el input de cantidad de preguntas
+      setSelectorData({ options: [], selectedOption: null }); // limpia selectores
+      setSingleChoiceData({ options: [], correctAnswer: null });
+      setMultipleChoiceData({ options: [], correctAnswers: [] });
+      setSelectorData({ options: [], selectedOption: null });
+      setQuestionsList([
+        { text: "", type: "", options: [], correctAnswers: [] },
+      ]);
+      setHasValidQuestions(false);
+    } else if (op === 2) {
+      console.log({ questionDetails });
+      setSingleChoiceData({ options: [], correctAnswer: null });
+      setMultipleChoiceData({ options: [], correctAnswers: [] });
+      setTitle("Editar pregunta");
+      setDescriptionText("Modifica la pregunta de acuerdo a tus necesidades.");
+      if (questionDetails.conditional == "SI") {
+        setValueConditional(true);
+        setIsChecked(true);
+      } else {
+        setValueConditional(false);
+        setIsChecked(false);
+      }
+
+      if (questionDetails.type == "check_opt") {
+        const opstionsMultipleData = questionDetails.select_option.split(",");
+        const multipleAnswers = questionDetails.selected_answer.split(",");
+
+        setMultipleChoiceData({
+          options: opstionsMultipleData,
+          correctAnswers: multipleAnswers,
+        });
+      }
+      if (questionDetails.type == "radio_opt") {
+        const optiosnData = questionDetails?.select_option;
+        const optionsDataArray = optiosnData.split(",");
+        const answerSelected = questionDetails?.selected_answer.split(",");
+        setSingleChoiceData({
+          options: optionsDataArray,
+          correctAnswer: answerSelected,
+        });
+      }
+      if (questionDetails.type == "selector_opt") {
+        const optionsData = questionDetails?.select_option;
+        const optionsDataArray = optionsData ? optionsData.split(",") : [];
+        const selectedOption = questionDetails?.selected_answer;
+
+        setSelectorData({
+          options: optionsDataArray.map((text) => ({
+            text: text.trim(),
+            checked: false,
+          })),
+          selectedOption: selectedOption,
+        });
+
+        // Actualizar QuestionsList
+
+        setQuestionsList((prevQuestions) =>
+          prevQuestions.map((q) => {
+            if (q.type === "selector_opt") {
+              return {
+                ...q,
+                options: optionsDataArray.map((text) => ({
+                  text: text.trim(),
+                  checked: false,
+                })),
+                selected_answer: selectedOption,
+              };
+            }
+            return q;
+          })
+        );
+      }
+
+      id_conditional.handleChange(questionDetails?.id_conditional || null);
+      conditional.handleChange(questionDetails?.conditional || "");
+      description.handleChange(questionDetails?.question || "");
+      questionType.handleChange(questionDetails?.type || "");
+      conditional_answer.handleChange(
+        questionDetails?.conditional_answer || ""
+      );
+      setidToEdit(questionDetails?.id);
+      setQuestionsList(questionDetails?.preguntas || []);
+    }
+
+    const posiciones = data.map((bloque) => parseInt(bloque.posicion));
+    const nuevaPosicion =
+      posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+
+    posicionInput.handleChange(nuevaPosicion.toString()); // Asigna internamente
+
+    const preguntasConvertidas = (questionDetails.preguntas || []).map((p) => ({
+      text: p.text || p.question || "", // usa el campo correcto
+      type: p.type || "",
+      options: p.options || [],
+      correctAnswers: p.correctAnswers || [],
+    }));
+
+    setQuestionsList(preguntasConvertidas);
+  };
+
+  const validar = (id, survey_idt) => {
+    var parametros;
+    var metodo;
+
+    setError("");
+
+    let selectedAnswer, options, selectedAnswerToString, optionsToSave;
+
+    if (questionType.input === "radio_opt") {
+      selectedAnswer = singleChoiceData.correctAnswer;
+      options = singleChoiceData.options;
+      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
+      optionsToSave = options.map((option) => option.text).join(", ");
+    } else if (questionType.input === "check_opt") {
+      selectedAnswer = multipleChoiceData.correctAnswers;
+      options = multipleChoiceData.options;
+      selectedAnswerToString = selectedAnswer.join(", ");
+      optionsToSave = options.map((option) => option.text).join(", ");
+    } else if (questionType.input === "selector_opt") {
+      selectedAnswer = selectorData.selectedOption;
+      options = selectorData.options;
+      selectedAnswerToString = Array.isArray(selectedAnswer)
+        ? selectedAnswer.join(", ")
+        : selectedAnswer || "";
+      optionsToSave = Array.isArray(options)
+        ? options
+            .map((option) =>
+              typeof option === "object" ? option.text : option
+            )
+            .join(", ")
+        : "";
+    } else if (questionType.input === "textfield_s") {
+      selectedAnswer = textFieldAnswer;
+      options = [];
+      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
+      optionsToSave = ""; // No hay opciones para este tipo de pregunta
+    }
+
+    // Recargar de opciones de pregunta antes de guardar
+
+    const refillQuestions = questionsList.map((q) => {
+      let select_option = "";
+      let selected_answer = "";
+
+      if (q.type === "radio_opt") {
+        select_option = singleChoiceData.options
+          .map((opt) => opt.text)
+          .join(", ");
+        selected_answer = singleChoiceData.correctAnswer?.toString() || "";
+      } else if (q.type === "check_opt") {
+        select_option = multipleChoiceData.options
+          .map((opt) => opt.text)
+          .join(", ");
+        selected_answer = multipleChoiceData.correctAnswers.join(", ");
+      } else if (q.type === "selector_opt") {
+        select_option = (q.options || [])
+          .map((opt) => (typeof opt === "object" ? opt.text : opt))
+          .join(", ");
+      }
+
+      return {
+        ...q,
+        select_option,
+        selected_answer,
+      };
+    });
+
+    const newPositionBlock = calBlockPosition();
+
+    if (operation === 1) {
+      // Crear nuevo bloque
+      parametros = {
+        id: Date.now(), // Genera un ID único para el localStorage
+        nombreBloque: nombreInput.input,
+        ponderacion: ponderacionInput.input || 0,
+        posicion: newPositionBlock || 0,
+        preguntas: refillQuestions,
+        type:
+          questionsList.length > 0 && questionsList[0].type
+            ? questionsList[0].type
+            : "",
+        conditional: valueConditional ? "SI" : "NO",
+        question: description.input,
+        survey_id: survey_idt,
+        frm_option: frm_option.input,
+        id_conditional: id_conditional.input,
+        conditional_answer: conditional_answer.input,
+        section: section.input,
+        selected_answer:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
+            ? selectedAnswerToString
+            : " ",
+        select_option:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
+            ? optionsToSave
+            : "",
+      };
+      metodo = "post";
+
+      let nuevosDatos;
+      if (positionType && referenceBlockId) {
+        // Si hay un bloque de referencia y un tipo de posición, reordenar los bloques
+        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
+        nuevosDatos.push(parametros); // Agregar el nuevo bloque al array
+
+        // ordenar por posición asignada
+        nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+      } else {
+        // Si no hay un bloque de referencia, simplemente agregar el nuevo bloque al final
+        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
+      }
+
+      setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
+
+      // Reordenar todos los bloques por su campo `posicion`
+      nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+
+      // Asignar posiciones consecutivas para evitar duplicadas o saltos
+      const bloquesReordenados = nuevosDatos.map((bloque, index) => ({
+        ...bloque,
+        posicion: index + 1,
+      }));
+
+      setData(bloquesReordenados);
+      localStorage.setItem(
+        "bloquesGuardados",
+        JSON.stringify(bloquesReordenados)
+      );
+
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
+    } else if (operation === 2) {
+      parametros = {
+        type: questionType.input,
+        preguntas: refillQuestions,
+        percentage: 0,
+        conditional: valueConditional ? "SI" : "NO",
+        question: description.input,
+        survey_id: survey_idt,
+        conditional_answer: conditional_answer.input,
+        id_conditional: id_conditional.input,
+        selected_answer:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
+            ? selectedAnswerToString.length > 1
+              ? selectedAnswerToString
+              : selectedAnswerToString
+            : null,
+        select_option:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt" ||
+          questionType.input === "selector_opt"
+            ? optionsToSave
+            : null,
+      };
+      console.log("parametros", parametros);
+      metodo = "put";
+
+      const nuevosDatos = data.map((b) =>
+        b.id === idToEdit ? { ...b, ...parametros } : b
+      );
+      setData(nuevosDatos);
+      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
+    }
+
+    console.log("Parámetros a guardar:", parametros);
+
+    sendData(
+      metodo,
+      parametros,
+      config,
+      id,
+      setLoading,
+      setError,
+      updateSurveyQuestions,
+      t
+    )
+      .then(() => {
+        // // Actualizar preguntas después de la llamada a sendData
+        // const nuevosDatos = [...data, parametros];
+        // setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
+        // localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
+        updateSurveyQuestions(); // Actualiza la lista de preguntas en el componente
+        Toast.fire({
+          icon: "success",
+          title: "Bloque guardado correctamente",
+        });
+
+        setPositionType(""); // Limpiar tipo de posición
+        setReferenceBlockId(""); // Limpiar bloque de referencia
+
+        document.getElementById("btnClose").click();
+        setValueConditional(false);
+        setPositionType(""); // Limpiar tipo de posición
+        // setReferenceBlockId(""); // Limpiar bloque de referencia
+        handleCancel(); // Limpiar formulario
+      })
+      .catch((error) => {
+        console.error("Error en la actualización de preguntas:", error);
+      });
+  };
+
+  const handleSingleChoiceChange = (updatedData) => {
+    setSingleChoiceData(updatedData);
+    console.log("updated Data:", singleChoiceData.correctAnswer);
+  };
+
+  const handleMultipleChoiceChange = (data) => {
+    setMultipleChoiceData(data)({
+      options: data.options || [],
+      correctAnswers: Array.isArray(data.correctAnswers)
+        ? data.correctAnswers
+        : [],
+    });
+  };
+  const handleSelectConditionalQuestionChange = (e) => {
+    const selectedId = e.target.value; // Captura el value (question.id)
+    const selectedType = e.target.selectedOptions[0].getAttribute("data-type");
+    const selectedAnswers =
+      e.target.selectedOptions[0].getAttribute("data-answers"); // Convertimos de vuelta a un array u objeto
+    setSelectedRangeType({
+      questionTypeRange: selectedType,
+      answersRange: selectedAnswers,
+    });
+    id_conditional.handleChange(selectedId);
+  };
+
+  /* Selector Option */
+  const rangeOptions = useMemo(
+    () =>
+      getRangeOptions(
+        selectedRangeType.questionTypeRange,
+        selectedRangeType.answersRange
+      ),
+    [selectedRangeType]
+  );
+
+  /*Agregar preguntas botón + Pregunta. Si el valor es 0 el botón por defecto crea una encuesta*/
+  const addNewQuestion = () => {
+    let count = parseInt(questionCountInput);
+
+    // Validar que sea un número válido mayor o igual a 1
+    if (isNaN(count) || count < 1) {
+      count = 1;
+    }
+
+    const newQuestions = Array.from({ length: count }, () => ({
+      text: "",
+      type: "",
+      options: [],
+      correctAnswers: [],
+    }));
+
+    setQuestionsList((prev) => [...prev, ...newQuestions]);
+    setQuestionCountInput(""); // Limpiar input
+  };
+
+  const handleInputChange = (index, key, value) => {
+    const updatedQuestions = [...questionsList];
+    updatedQuestions[index][key] = value;
+    setQuestionsList(updatedQuestions);
+  };
+
+  // Validar el input de preguntas del modal
+
+  const validateInputs = () => {
+    // Validación de questionType: solo letras y guiones bajos
+    const questionTypeValid = /^[A-Za-z_]+$/.test(questionType);
+    const descriptionValid = description.trim() !== "";
+
+    if (!questionTypeValid) {
+      setError(
+        "El tipo de pregunta no es válido. Solo se permiten letras y guiones bajos."
+      );
+      return false;
+    }
+
+    if (!descriptionValid) {
+      setError("La descripción de la pregunta es obligatoria.");
+      return false;
+    }
+
+    // Si pasa todas las validaciones
+    setError(""); // Limpiar cualquier error previo
+    return true;
+  };
+
+  // Manejo el envío de pregunta
+  const handleSubmit = () => {
+    if (validateInputs()) {
+      // Aquí puedes manejar el envío de los datos
+      console.log("Pregunta válida. Enviar datos...");
+    }
+  };
+
+  const handleSelectorChange = (data) => {
+    setSelectorData(data);
+
+    // Actualizar directamente en questionsList el tipo selector
+    setQuestionsList((prevQuestions) =>
+      prevQuestions.map((q, idx) => {
+        if (q.type === "selector_opt") {
+          return {
+            ...q,
+            options: data.options, // Guardar todas las opciones
+            selected_answer: data.selectedOption, // Guardar la respuesta seleccionada
+          };
+        }
+        return q;
+      })
+    );
+  };
+
+  const areAllFieldsCompleted = () => {
+    // Verificación de nombre del bloque
+    if (operation === 1 && nombreInput.input.trim() === "") {
+      return false;
+    }
+
+    // Verificamos que existan preguntas
+    if (questionsList.length === 0) {
+      return false;
+    }
+
+    // Verificacióm para que cada pregunta tenga todos sus campos requeridos diligenciados
+    const allQuestionsValid = questionsList.every((question) => {
+      // Verificar que el texto de la pregunta no esté vacío
+      if (!question.text || question.text.trim() === "") return false;
+
+      // Verificar que tenga un tipo seleccionado
+      if (!question.type || question.type === "") return false;
+
+      // Verificaciones específicas según el tipo de pregunta
+      if (question.type === "selector_opt") {
+        // Si es un selector, debe tener opciones
+        return selectorData.options && selectorData.options.length > 0;
+      }
+
+      if (question.type === "check_opt") {
+        // Si es selección múltiple, debe tener opciones
+        return (
+          multipleChoiceData.options && multipleChoiceData.options.length > 0
+        );
+      }
+
+      if (question.type === "radio_opt") {
+        // Si es selección única, debe tener opciones
+        return singleChoiceData.options && singleChoiceData.options.length > 0;
+      }
+
+      // Para campos de texto no es necesario verificar opciones adicionales
+      return true;
+    });
+
+    // Si la operación es de edición, verificamos el tipo y descripción
+    if (operation === 2) {
+      return (
+        questionType.input.trim() !== "" &&
+        description.input.trim() !== "" &&
+        allQuestionsValid
+      );
+    }
+
+    return allQuestionsValid;
+  };
+
+  // Localstorage temporal
+
+  // Leer al iniciar
+  useEffect(() => {
+    const bloques = localStorage.getItem("bloquesGuardados");
+    if (bloques) {
+      const bloquesData = JSON.parse(bloques);
+      // Ordenar bloques por posición
+      bloquesData.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
+      setData(bloquesData);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data.length > 0) {
+      localStorage.setItem("bloquesGuardados", JSON.stringify(data));
+    }
+  }, [data]);
+
+  const resetFormFields = () => {
+    nombreInput.handleChange("");
+    ponderacionInput.handleChange("");
+    posicionInput.handleChange("");
+    questionType.handleChange("");
+    description.handleChange("");
+    section.handleChange("");
+    percentage.handleChange("");
+    frm_option.handleChange("");
+    conditional.handleChange("");
+    id_conditional.handleChange("0");
+    survey_id.handleChange("");
+    conditional_answer.handleChange("");
+    setTextFieldAnswer("");
+
+    // Limpiar estados de posicionamiento
+    setPositionType("");
+    setReferenceBlockId("");
+
+    setQuestionCountInput("");
+    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+    setSelectorData({ options: [], selectedOption: null });
+    setSingleChoiceData({ options: [], correctAnswer: null });
+    setMultipleChoiceData({ options: [], correctAnswers: [] });
+    setIsChecked(false);
+    setValueConditional(false);
+    setHasValidQuestions(false);
+  };
+
+  // Id único para cada bloque
+
+  const handleAgregarBloque = () => {
+    if (!nombreInput.value || !posicionInput.value || !ponderacionInput.value)
+      return;
+
+    const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
+
+    const nuevoBloque = {
+      blockId: generateId(),
+      nombre: nombreInput.value,
+      posicion: nuevaPosicion,
+      ponderacion: parseInt(ponderacionInput.value),
+      preguntas: [],
+    };
+
+    setBloques((prev) => [...prev, nuevoBloque]);
+
+    // Reset inputs
+    nombreInput.reset();
+    posicionInput.reset();
+    ponderacionInput.reset();
+  };
+
+  const renderRespuesta = (question) => {
+    const tipo = question.type;
+    const respuesta = question.selected_answer || "Sin respuesta";
+
+    switch (tipo) {
+      case "textfield_s":
+      case "yes_no":
+        return (
+          <p>
+            <strong>Respuesta:</strong>{" "}
+            {respuesta !== " " ? respuesta : "Sin respuesta"}
+          </p>
+        );
+
+      case "radio_opt":
+      case "check_opt":
+      case "selector_opt":
+        return (
+          <div>
+            <p>
+              <strong>Respuesta:</strong> {respuesta}
+            </p>
+            {question.select_option && (
+              <p>
+                <small>
+                  <strong>Opciones:</strong> {question.select_option}
+                </small>
+              </p>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <p>
+            <em>Tipo de pregunta no soportado</em>
+          </p>
+        );
+    }
+  };
+
   // Agregar función para manejar edición
   const onUpdate = (bloque) => {
-    setModalProps({ isOpen: true, mode: 2, bloque });
     const preguntasBloque = bloque.preguntas || [];
 
     const bloqueConPreguntas = {
@@ -179,6 +901,62 @@ export default function SurveyBlocks() {
     return nuevaPosicion;
   };
 
+  // Obtener bloques al cargar
+  useEffect(() => {
+    loadBlocks();
+  }, []);
+
+  const loadBlocks = async () => {
+    try {
+      const res = await getAllBlocks();
+      setBlocks(res.data);
+    } catch (err) {
+      console.error("Error al cargar bloques:", err);
+    }
+  };
+
+  // Crear bloque
+  const handleCreate = async () => {
+    try {
+      const res = await createBlock(newBlock);
+      setBlocks([...blocks, res.data.data]);
+      setNewBlock({ name: "", textQuestion: "" });
+    } catch (err) {
+      console.error("Error al crear bloque:", err);
+    }
+  };
+
+  //Actualizar bloque
+  const handleUpdate = async (id, updatedFields) => {
+    try {
+      const res = await updateBlock(id, updatedFields);
+      setBlocks(blocks.map((b) => (b.id === id ? res.data.data : b)));
+    } catch (err) {
+      console.error("Error al actualizar:", err);
+    }
+  };
+
+  // Eliminar bloque
+  const handleDelete = async (id) => {
+    try {
+      await deleteBlock(id);
+      setBlocks(blocks.filter((b) => b.id !== id));
+    } catch (err) {
+      console.error("Error al eliminar:", err);
+    }
+  };
+  // Elimina el bloque - pendiente por revisar**
+  const onBulkEmail = (bloque) => {
+    console.log("Eliminar bloque", bloque);
+  };
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/blocks/ping")
+      .then((res) => res.json())
+      .then((data) => console.log("Conexión exitosa:", data))
+      .catch((err) => console.error("Error en conexión:", err));
+  }, []);
+
   return (
     <div className="App">
       <div id="body">
@@ -217,7 +995,7 @@ export default function SurveyBlocks() {
                     <div className="card-tools ms-4">
                       <button
                         className="btn fw-bold btn-sm acces-tabla"
-                        onClick={() => setModalProps({ isOpen: true, mode: 1, bloque: null })}
+                        onClick={() => openModal(1)}
                         data-bs-toggle="modal"
                         data-bs-target="#modalManageQuestion"
                       >
@@ -425,16 +1203,36 @@ export default function SurveyBlocks() {
         </section>
       </div>
       <ModalSurveyBlocks
-          mode={modalProps.mode}
-          isOpen={modalProps.isOpen}
-          bloqueData={modalProps.bloque}
-          surveyId={id}
-          data={data}
-          setData={setData}
-          positionType={positionType}
-          referenceBlockId={referenceBlockId}
-          updateSurveyQuestions={updateSurveyQuestions}
-          onClose={() => setModalProps({ isOpen: false, mode: 1, bloque: null })}
+        operation={operation}
+        title={title}
+        descriptionText={descriptionText}
+        questionsList={questionsList}
+        handleInputChange={handleInputChange}
+        singleChoiceData={singleChoiceData}
+        multipleChoiceData={multipleChoiceData}
+        selectorData={selectorData}
+        handleSingleChoiceChange={handleSingleChoiceChange}
+        handleMultipleChoiceChange={handleMultipleChoiceChange}
+        handleSelectorChange={handleSelectorChange}
+        isChecked={isChecked}
+        listConditional={listConditional}
+        valueConditional={valueConditional}
+        conditionalHandleChange={conditionalHandleChange}
+        error={error}
+        validar={validar}
+        idToEdit={idToEdit}
+        id={id}
+        areAllFieldsCompleted={areAllFieldsCompleted}
+        handleCancel={handleCancel}
+        addNewQuestion={addNewQuestion}
+        questionCountInput={questionCountInput}
+        setQuestionCountInput={setQuestionCountInput}
+        nombreInput={nombreInput}
+        ponderacionInput={ponderacionInput}
+        posicionInput={posicionInput}
+        positionType={positionType}
+        referenceBlockId={referenceBlockId}
+        data={data}
       />
     </div>
   );
