@@ -27,7 +27,9 @@ const User = {
 
     // Obtener todos los usuarios del sistema
     getAllUsers: async () => {
-        return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type', 'created_at', 'last_visit_date', 'language');
+        // return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type', 'created_at', 'last_visit_date', 'language');
+        return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type',  'last_visit_date', 'language');
+
     },
 
     // Crear nuevo usuario
