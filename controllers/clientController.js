@@ -10,8 +10,8 @@ const clientModel = new ClientModel(knex);
 const createClient = async (req, res) => {
     try {
       const { client, state, color_tag1, color_tag2 } = req.body;
-      console.log('Datos recibidos para crear el cliente:', { client, state, color_tag1, color_tag2 });
-      console.log('Archivo recibido (logo):', req.file);
+      //console.log('Datos recibidos para crear el cliente:', { client, state, color_tag1, color_tag2 });
+      //console.log('Archivo recibido (logo):', req.file);
   
       if (!client || !state || !color_tag1 || !color_tag2) {
         return res.status(400).json({ message: 'Faltan datos requeridos' });
@@ -44,7 +44,7 @@ const createClient = async (req, res) => {
 const getClients = async (req, res) => {
     try {
         const clients = await clientModel.getAll();
-        console.log('Clientes obtenidos:', clients);
+        //console.log('Clientes obtenidos:', clients);
         if (clients.length === 0) {
             return res.status(404).json({ message: 'No se encontraron clientes' });
         }
@@ -58,7 +58,7 @@ const getClients = async (req, res) => {
 const getClientById = async (req, res) => {
     try {
         const { id } = req.params;
-        console.log('cliente enconytrado', id)
+       // console.log('cliente enconytrado', id)
         const client = await clientModel.getById(id);
         if (!client) {
             return res.status(404).json({ message: 'Cliente no encontrado' });
