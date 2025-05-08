@@ -19,7 +19,6 @@ const Agent = {
         "u.email",
         "u.state",
         "u.type",
-        "u.created_at",
         "u.last_visit_date",
         "u.language"
       )
