@@ -4,14 +4,16 @@ const Agent = require('../models/agentModel'); // Importo el modelo Agent que se
 // Obtener la lista de todos los agentes
 const getAgents = async (req, res) => {
     try {
-        const clientIds = req.user.clients_id;
+        const {clients} = req.body; // Obtengo los IDs de los clientes desde el cuerpo de la solicitud
 
-        if (!clientIds || clientIds.length === 0) {
+        const clientsArray = clients.split(','); // Divido la cadena de IDs en un array
+        console.log("reqbody",req.body); // Para depuración, imprimo el cuerpo de la solicitud
+        if (!clientsArray || clientsArray.length === 0) {
             return res.status(403).json({ message: 'No tienes clientes asociados.' });
         }
 
         // Solo traigo agentes relacionados a estos clientes
-        const agents = await Agent.getAllAgents(clientIds);
+        const agents = await Agent.getAllAgents(clientsArray);
 
         if (agents.length === 0) {
             return res.status(404).json({ message: 'No se encontraron agentes asociados a tus clientes.' });

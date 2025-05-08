@@ -73,12 +73,12 @@ const createUser = async (req, res) => {
             language,
             password: hashedPassword,
             state: 1, // Estado activo por defecto
-            accessToken: null,
-            token_Exp: null,
+            //accessToken: null,
+            //token_Exp: null,
             registration_date: new Date(),
             last_visit_date: null,
             updated_at: new Date(),
-            created_at: new Date()
+            //created_at: new Date()
         });
 
         // Devuelvo el nuevo usuario creado
@@ -170,6 +170,20 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const getClientByUserId = async (req, res) => {
+    const { id } = req.params; // Tomo el ID desde los parámetros de la ruta
+    try {
+        // Busco el usuario por ID
+        const user = await User.getClientIds(id);   
+        return res.status(200).json({
+            status: true,
+            message: 'Clientes obtenidos correctamente',
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error en el servidor', error: error.message });
+    }
+};
 // Exporto todos los controladores para poder usarlos en las rutas
 module.exports = {
     getUsers,
@@ -177,5 +191,6 @@ module.exports = {
     createUser,
     updateUser,
     toggleUserState,
-    deleteUser
+    deleteUser,
+    getClientByUserId
 };
