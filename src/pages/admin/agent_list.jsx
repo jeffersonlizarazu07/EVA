@@ -291,7 +291,7 @@ const AdminList = () => {
           </div>
           <div className="col-12">
             <div className="container-fluid mt-0 mx-auto">
-              {admins.length > 0 && (
+              {admins.length > 0 ? (
                 <TableAdmin
                   header={selectedKeys}
                   data={admins}
@@ -300,7 +300,13 @@ const AdminList = () => {
                   onUpdate={(payload) => openModal(2, payload)}
                   onView={(payload) => openModalCont(payload)}
                 />
-              )}
+              ) : 
+              (
+                <div className="text-center py-5">
+                  <h4>No hay agentes registrados</h4>
+                </div>
+              )
+              }
             </div>
           </div>
         </div>
@@ -525,6 +531,7 @@ const AdminList = () => {
                     type="text"
                     className="form-control mt-1"
                     value={email.input}
+                    readOnly
                   />
                 </div>
                 <div className="m-1 p-1">
