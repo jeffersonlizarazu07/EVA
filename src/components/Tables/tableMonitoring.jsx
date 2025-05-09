@@ -14,6 +14,7 @@ import {
 import axios from "axios";
 import Cookies from "js-cookie";
 import Swal from "sweetalert2";
+import SurveyBlocks from "../../pages/quality/surveyBlocks";
 
 const ModalRegisterUser = ({ open, handleClose, formId }) => {
   const [clients, setClients] = useState([]);
@@ -170,6 +171,14 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
             //padding: "8px", // Menos padding
             marginBottom: "10px", // Espacio abajo
           }}
+        />
+
+        <SurveyBlocks
+        title={formName}
+        idClient={selectedClient}
+        description={description}
+        creation_date={new Date().toISOString().slice(0, 19).replace("T", " ")}
+        edited_date={new Date().toISOString().slice(0, 19).replace("T", " ")}
         />
 
         <FormControl

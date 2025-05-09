@@ -193,7 +193,7 @@ const FormList = () => {
     }
     setModalOpen(true);
   };
-  console.log("idClient.input:", idClient.input);
+  // console.log("idClient.input:", idClient.input);
 
   const closeModal = () => {
     setModalOpen(false);
@@ -265,7 +265,7 @@ const FormList = () => {
                     updated_date: formatDate(form.updated_date), // Aquí aplicamos el formato
                   }))}
                   onView={openForm}
-                  onActive={{activateForm}}
+                  onActive={activateForm}
                   onRemove={deactivateForm}
                   onCreate={() => openModal("create")}
                   onUpdate={(form) => openModal("edit", form)}

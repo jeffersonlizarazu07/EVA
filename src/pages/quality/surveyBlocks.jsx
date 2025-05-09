@@ -42,7 +42,7 @@ import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 
-export default function SurveyBlocks() {
+export default function SurveyBlocks({}) {
   const { id } = useParams();
   const [data, setData] = useState([]);
   const [operation, setOperation] = useState(1);
