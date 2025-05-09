@@ -28,8 +28,12 @@ const User = {
     // Obtener todos los usuarios del sistema
     getAllUsers: async () => {
         // return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type', 'created_at', 'last_visit_date', 'language');
-        return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type',  'last_visit_date', 'language');
-
+        const users = await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type', 'last_visit_date', 'language', 'registration_date');
+        const usersWithFormattedDate = users.map(user => ({
+            ...user,
+            registration_date: new Date(user.registration_date).toLocaleDateString() // Formatea la fecha según la configuración local
+          }));
+        return usersWithFormattedDate; // Retorno los usuarios con la fecha formateada
     },
 
     // Crear nuevo usuario

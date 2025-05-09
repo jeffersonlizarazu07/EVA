@@ -19,6 +19,7 @@ const getAgents = async (req, res) => {
             return res.status(404).json({ message: 'No se encontraron agentes asociados a tus clientes.' });
         }
 
+        console.log("agents", agents); // Para depuración, imprimo los agentes encontrados
         res.status(200).json({ message: 'Agentes obtenidos correctamente', data: agents });
 
     } catch (error) {

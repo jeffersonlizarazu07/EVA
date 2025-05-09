@@ -4,7 +4,7 @@ const Agent = {
   // Obtener todos los agentes de la base de datos
   getAllAgents: async (clientIds) => {
     console.log("clientIds", clientIds); // Para depuración, imprimo los IDs de clientes recibidos
-    return await db("users as u")
+    const agentes = await db("users as u")
       // Unimos la tabla 'users' con 'user_clients' para obtener los usuarios vinculados a clientes
       .join("user_clients as uc", "u.id", "uc.idUser")
       // Filtramos solo los usuarios de tipo 4 (agentes)
@@ -21,11 +21,17 @@ const Agent = {
         "u.state",
         "u.type",
         "u.last_visit_date",
-        "u.language"
+        "u.language",
+        "u.registration_date"
       )
 
       // Agrupamos por ID para evitar duplicados si un usuario está asociado a varios clientes
       .groupBy("u.id");
+      registration_date:
+      return agentes.map(agent => ({
+      ...agent,
+      registration_date:  new Date(agent.registration_date).toLocaleDateString()  // "YYYY-MM-DD"
+      })); // Formateo la fecha de registro a un formato legible
   },
   // Buscar un agente específico por ID
   getAgentById: async (id) => {
