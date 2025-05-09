@@ -27,7 +27,7 @@ const AdminList = () => {
 
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]);
-  const [clients, setClients] = useState([]);
+  const [listClients, setListClients] = useState([]);
   const [userclients, setUserClients] = useState([]);
 
   // Estado para manejar la operación actual (ej: crear, editar, etc.)
@@ -52,7 +52,7 @@ const AdminList = () => {
   const { t, i18n } = useTranslation();
 
   // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
-  const { accessToken, languageUser } = useContext(UserContext);
+  const { accessToken, languageUser, clients } = useContext(UserContext);
 
   // Iconos para los checkboxes (vacío y seleccionado)
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -137,7 +137,7 @@ const AdminList = () => {
   const getAdmins = async () => {
     try {
       // Hago la petición a la API para traer los agentes
-      const response = await axios.get(`http://localhost:3000/api/agent`, {
+      const response = await axios.post(`http://localhost:3000/api/agent`, {clients} ,{
         withCredentials: true,
       });
       console.log("Datos recibidos:", response.data);
@@ -159,7 +159,7 @@ const AdminList = () => {
       });
 
       // Guardo los datos en el estado de clientes
-      setClients(response.data.data);
+      setListClients(response.data.data);
     } catch (error) {
       // Capturo el error si ocurre
       console.error("Error fetching data:", error);
@@ -249,7 +249,7 @@ const AdminList = () => {
     type.handleChange(admin?.type || "");
     state.handleChange(admin?.state || "");
     language.handleChange(admin?.language || "en");
-    registration_date.handleChange(admin?.created_at || "");
+    registration_date.handleChange(admin?.registration_date || "");
     last_visit_date.handleChange(admin?.last_visit_date || "Nunca");
 
     // Guardo el id del admin consultado
@@ -569,9 +569,9 @@ const AdminList = () => {
                   <ul className="form-control mt-1">
                     {selectedClients.length > 0 ? (
                       selectedClients.map((clientId) => {
-                        const client = clients.find((c) => c.id === clientId);
+                        const client = listClients.find((c) => c.id === clientId);
                         return client ? (
-                          <li key={client.id}>{client.client}</li>
+                          <li key={listClients.id}>{client.client}</li>
                         ) : null;
                       })
                     ) : (

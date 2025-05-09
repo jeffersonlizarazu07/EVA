@@ -50,6 +50,7 @@ import { initReactI18next } from "react-i18next";
               "Inactive":"Inactivo",
               "selectedColor":"Colores seleccionados",
               "colorSelect":"Selecciona dos colores representativos del cliente",
+              "Viwer" : "Agente",
             },
             formTable: {
               "id": "ID",
@@ -301,7 +302,8 @@ import { initReactI18next } from "react-i18next";
               "Active": "Active",
               "Inactive": "Inactive",
               "selectedColor": "Selected colors",
-              "colorSelect": "Select two representative colors for the client"
+              "colorSelect": "Select two representative colors for the client",
+              "Viwer" : "Agent",
             },
             formTable: {
               "id": "ID",
@@ -525,7 +527,8 @@ import { initReactI18next } from "react-i18next";
               "Active": "Attivo",
               "Inactive": "Inattivo",
               "selectedColor": "Colori selezionati",
-              "colorSelect": "Seleziona due colori rappresentativi del cliente"
+              "colorSelect": "Seleziona due colori rappresentativi del cliente",
+              "Viwer" : "Agente",
             },
             formTable: {
               "id": "ID",
@@ -727,7 +730,8 @@ import { initReactI18next } from "react-i18next";
               "Active": "Ativo",
               "Inactive": "Inativo",
               "selectedColor": "Cores selecionadas",
-              "colorSelect": "Selecione duas cores representativas do cliente"
+              "colorSelect": "Selecione duas cores representativas do cliente",
+              "Viwer" : "Agente",
             },
             formTable: {
               "id": "ID",

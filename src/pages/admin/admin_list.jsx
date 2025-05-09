@@ -25,7 +25,7 @@ const AdminList = () => {
 
   // Estados principales del componente
   const [admins, setAdmins] = useState([]); // Lista de admins cargados desde el backend
-  const [clients, setClients] = useState([]); // Lista de clientes cargados desde el backend
+  const [listClients, setListClients] = useState([]); // Lista de clientes cargados desde el backend
   const [operation, setOperation] = useState([1]); // Tipo de operación (crear o editar)
   const [title, setTitle] = useState(); // Título dinámico del modal
   const [idToEdit, setidToEdit] = useState(null); // ID del admin que se está editando
@@ -36,7 +36,7 @@ const AdminList = () => {
 
   // Traducción e idioma desde el contexto global del usuario
   const { t, i18n } = useTranslation();
-  const { accessToken, languageUser } = useContext(UserContext);
+  const { accessToken, languageUser, setClients, userId, clients } = useContext(UserContext);
 
   // Íconos para los checkboxes (Material UI)
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -113,7 +113,7 @@ const AdminList = () => {
       const response = await axios.get(`http://localhost:3000/api/clients`, {
         withCredentials: true,
       });
-      setClients(response.data.data);
+      setListClients(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -163,15 +163,29 @@ const AdminList = () => {
         rest.password = password;
       }
   
+      
       try {
         const respuesta = await axios.put(
           `${urlUsers}/${idToEdit}`,
           rest,
           config
         );
-  
-        sendClients(respuesta.data.data.id, 2);
-  
+      
+        const envioC = await sendClients(respuesta.data.data.id, 2);
+        if(envioC ){
+          if (idToEdit ==  userId){
+            try {
+              const response = await axios.get(`http://localhost:3000/api/users/${userId}/clients`, config);
+              if(response.status == 200){
+                setClients(response.data.data);
+                console.log("clientes", clients);
+                console.log("respuesta", response.data.data);
+              }
+            }catch (error) {
+              console.error("Error fetching data:", error);
+            }
+          }
+        }
         Toast.fire({
           icon: "success",
           title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
@@ -247,7 +261,9 @@ const AdminList = () => {
           parametros,
           config
         );
-        console.log("Response: ", respuesta);
+        if(respuesta.status == 200){
+         return true;
+        }
       } catch (error) {
         console.log("Error: ", error);
       }
@@ -264,12 +280,20 @@ const AdminList = () => {
     // Confirmación antes de desactivar
     smallAlertDelete
       .fire({
+
+        icon: "warning",
+        title: "🚫 Deshabilitar elemento",
         text: `${t("alertDeactivate.InitialPhrase")} ${name} ${t(
           "alertDeactivate.FinalPhrase"
         )}`,
         showCancelButton: true,
-        confirmButtonText: `${t("alertDeactivate.Confirm")}`,
-        cancelButtonText: `${t("alertDeactivate.Cancel")}`,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+        },
+
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -310,12 +334,16 @@ const AdminList = () => {
   
     smallAlertDelete
       .fire({
-        text: `${t("alertActivate.InitialPhrase")} ${name} ${t(
-          "alertActivate.FinalPhrase"
-        )}`,
+        icon: "warning",
+        title: "✅ Activar elemento",
+        text: `${name} ${t("alertActivate.FinalPhrase")}`,
         showCancelButton: true,
-        confirmButtonText: `${t("alertActivate.Confirm")}`,
-        cancelButtonText: `${t("alertActivate.Cancel")}`,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+        },
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -392,7 +420,7 @@ const AdminList = () => {
     type.handleChange(admin?.type || "");
     state.handleChange(admin?.state || "");
     language.handleChange(admin?.language || "en");
-    registration_date.handleChange(admin?.created_at || "");
+    registration_date.handleChange(admin?.registration_date || "");
 
     last_visit_date.handleChange(admin?.last_visit_date || "Nunca");
     setidToEdit(admin?.id);
@@ -422,6 +450,7 @@ const AdminList = () => {
     console.log("firstName:", firstName.input);
     console.log("email:", email.input);
     console.log("type:", type.input);
+    console.log("registration_date:", registration_date.input);
   
     // Verificación de campos vacíos
     if (
@@ -461,6 +490,7 @@ const AdminList = () => {
           type: type.input,
           cPassword: cPassword.input,
           language: "es",
+          registration_date: registration_date.input,
         };
         if (password.input.trim() !== "") {
           parametros.password = password.input;
@@ -581,11 +611,11 @@ const AdminList = () => {
                     multiple
                     limitTags={1}
                     id="checkboxes-tags-demo"
-                    options={clients}
+                    options={listClients}
                     disableCloseOnSelect
                     onChange={onChange}
                     getOptionLabel={(option) => option.client}
-                    value={clients.filter((client) =>
+                    value={listClients.filter((client) =>
                       selectedClients.includes(client.id)
                     )}
                     // renderOption={(props, option, { selected }) => (
@@ -791,7 +821,7 @@ const AdminList = () => {
                     {t("viewUserModal.RegisterDate")}
                   </span>
                   <p className="form-control mt-1">
-                    {" "}
+                    {" "} 
                     {formatDate(registration_date.input)}
                   </p>
                 </div>
@@ -858,7 +888,7 @@ const AdminList = () => {
                   <ul className="form-control mt-1">
                     {selectedClients.length > 0 ? (
                       selectedClients.map((clientId) => {
-                        const client = clients.find((c) => c.id === clientId);
+                        const client = listClients.find((c) => c.id === clientId);
                         return client ? (
                           <li key={client.id}>{client.client}</li>
                         ) : null;
