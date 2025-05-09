@@ -52,6 +52,13 @@ import AgentList from "./pages/admin/agent_list"; // Asegúrate que este path se
 
 /* ---------------------------------------------------------*/
 
+
+//boostrap imports
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'flag-icon-css/css/flag-icons.min.css';
+
+/* ---------------------------------------------------------*/
+
 export const App = () => {
   return (
     <UserProvider>

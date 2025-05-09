@@ -326,7 +326,7 @@ const SurveyList = () => {
           description: description.input,
           idClient: idClient.input,
           link: link,
-          type: "survey",
+          //type: "survey",
           state: 1,
         };
         console.log("datos del link a crear:", parametros);

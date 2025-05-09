@@ -23,6 +23,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { ThemeContext } from '../../assets/js/ThemeContext';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import LanguageIcon from '@mui/icons-material/Language';
 
 const HeaderLT1 = () => {
   const { accessToken, userId, languageUser, setLanguageUser } =
@@ -30,6 +31,9 @@ const HeaderLT1 = () => {
   const { t, i18n } = useTranslation();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
+
+
 
   useEffect(() => {
     checkinfo();
@@ -276,6 +280,27 @@ const [confirmError, setConfirmError] = useState("");
     return location.pathname === path ? 'rgb(199, 14, 143)' : '#000';
   };
 
+  const handleLanguageClick = (event) => {
+    setLanguageAnchorEl(event.currentTarget);
+  };
+  
+  const handleLanguageClose = () => {
+    setLanguageAnchorEl(null);
+  };
+  
+  const handleLanguageChange = async (lang) => {
+    language.handleChange(lang);
+    i18n.changeLanguage(lang);
+    setLanguageUser(lang);
+    const parameters = { language: lang };
+    try {
+      await axios.put(`${url}${userId}`, parameters, config);
+    } catch (error) {
+      console.error("Error al actualizar el idioma:", error);
+    }
+    handleLanguageClose();
+  };
+
   return (
     
     <header className="sticky-top">
@@ -347,6 +372,72 @@ const [confirmError, setConfirmError] = useState("");
               </MUIButton>
             </div>
             <div className="col-1 col-sm-6 col-md-1 col-lg-1 d-flex align-items-center justify-content-end">
+
+            {/*selector de idioma */}
+            <Tooltip  placement="top">
+              <MUIButton 
+                aria-controls="language-menu"
+                aria-haspopup="true"
+                onClick={handleLanguageClick}
+                disableRipple 
+                sx={{
+                  mr: 2,
+                  minWidth: 'auto',
+                  color: 'inherit',
+                  '&:hover': {
+                    background: 'transparent',
+                  }
+                }}
+              >
+              <LanguageIcon sx={{
+                fontSize: '2rem',
+                fill: 'url(#gradient-text)',
+                }}
+              />
+              <svg width="0" height="0">
+                <defs>
+                  <linearGradient id="gradient-text" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="37%" stopColor="rgba(199,14,143,1)" />
+                    <stop offset="69%" stopColor="rgba(95,9,121,1)" />
+                  </linearGradient>
+                </defs>
+            </svg> 
+            </MUIButton>
+          </Tooltip>
+
+          {/* Menú de idiomas */}
+          <Menu
+            id="language-menu"
+            anchorEl={languageAnchorEl}
+            open={Boolean(languageAnchorEl)}
+            onClose={handleLanguageClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+          >
+            <MenuItem onClick={() => handleLanguageChange("es")}>
+              <span className="flag-icon flag-icon-es me-2"></span>
+              Español
+            </MenuItem>
+            <MenuItem onClick={() => handleLanguageChange("en")}>
+              <span className="flag-icon flag-icon-us me-2"></span>
+              Inglés
+            </MenuItem>
+            <MenuItem onClick={() => handleLanguageChange("it")}>
+              <span className="flag-icon flag-icon-it me-2"></span>
+              Italiano
+            </MenuItem>
+            <MenuItem onClick={() => handleLanguageChange("pt")}>
+              <span className="flag-icon flag-icon-pt me-2"></span>
+              Portugués
+            </MenuItem>
+          </Menu>
+
               <Tooltip title="Cambiar a modo oscuro" placement="top">
                 <FormControlLabel
                   control={<MaterialUISwitch
@@ -380,7 +471,7 @@ const [confirmError, setConfirmError] = useState("");
                   "aria-labelledby": "basic-button",
                 }}
               >
-                <MenuItem
+                {/* <MenuItem
                   data-bs-toggle="modal"
                   data-bs-target="#userModalInfo2"
                   onClick={() => {
@@ -388,7 +479,7 @@ const [confirmError, setConfirmError] = useState("");
                   }}
                 >
                   Gestionar cuenta
-                </MenuItem>
+                </MenuItem> */}
                 <MenuItem
                   onClick={() => {
                     handleClose(), logout();
@@ -442,7 +533,7 @@ const [confirmError, setConfirmError] = useState("");
                       className="dropdown-menu"
                       aria-labelledby="dropdownMenuButton"
                     >
-                      <li>
+                      {/* <li>
                         <button
                           className="dropdown-item"
                           data-bs-toggle="modal"
@@ -451,7 +542,7 @@ const [confirmError, setConfirmError] = useState("");
                         >
                           {t("headerlt.Manage_account")}
                         </button>
-                      </li>
+                      </li> */}
                       <li>
                         <button
                           className="dropdown-item"
@@ -470,7 +561,7 @@ const [confirmError, setConfirmError] = useState("");
         </div>
       </nav>
       {/* <ManageUser data={fakeData}/> */}
-      <Modal isOpen={modal} toggle={openModal} centered>
+      {/* <Modal isOpen={modal} toggle={openModal} centered>
         <ModalHeader toggle={closeModal}>
           {t("headerlt.Manage_account")}
         </ModalHeader>
@@ -589,7 +680,7 @@ const [confirmError, setConfirmError] = useState("");
           <p className="lang m-2" key="titulo26">
             {t("headerlt.Language")}
           </p>
-          {/* IDIOMAAAAAAA */}
+          {/* IDIOMAAAAAAA 
           <div
             className="btn-group flex-wrap m-2"
             role="group"
@@ -736,7 +827,7 @@ const [confirmError, setConfirmError] = useState("");
             {t("headerlt.Save_changes")}
           </Button>
         </ModalFooter>
-      </Modal>
+      </Modal> */}
     </header>
   );
 };

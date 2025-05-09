@@ -249,7 +249,7 @@ const AdminList = () => {
     type.handleChange(admin?.type || "");
     state.handleChange(admin?.state || "");
     language.handleChange(admin?.language || "en");
-    registration_date.handleChange(admin?.created_at || "");
+    registration_date.handleChange(admin?.registration_date || "");
     last_visit_date.handleChange(admin?.last_visit_date || "Nunca");
 
     // Guardo el id del admin consultado
