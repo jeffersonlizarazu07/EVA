@@ -280,12 +280,20 @@ const AdminList = () => {
     // Confirmación antes de desactivar
     smallAlertDelete
       .fire({
+
+        icon: "warning",
+        title: "🚫 Deshabilitar elemento",
         text: `${t("alertDeactivate.InitialPhrase")} ${name} ${t(
           "alertDeactivate.FinalPhrase"
         )}`,
         showCancelButton: true,
-        confirmButtonText: `${t("alertDeactivate.Confirm")}`,
-        cancelButtonText: `${t("alertDeactivate.Cancel")}`,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+        },
+
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -326,12 +334,16 @@ const AdminList = () => {
   
     smallAlertDelete
       .fire({
-        text: `${t("alertActivate.InitialPhrase")} ${name} ${t(
-          "alertActivate.FinalPhrase"
-        )}`,
+        icon: "warning",
+        title: "✅ Activar elemento",
+        text: `${name} ${t("alertActivate.FinalPhrase")}`,
         showCancelButton: true,
-        confirmButtonText: `${t("alertActivate.Confirm")}`,
-        cancelButtonText: `${t("alertActivate.Cancel")}`,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+        },
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -408,7 +420,7 @@ const AdminList = () => {
     type.handleChange(admin?.type || "");
     state.handleChange(admin?.state || "");
     language.handleChange(admin?.language || "en");
-    registration_date.handleChange(admin?.created_at || "");
+    registration_date.handleChange(admin?.registration_date || "");
 
     last_visit_date.handleChange(admin?.last_visit_date || "Nunca");
     setidToEdit(admin?.id);
@@ -438,6 +450,7 @@ const AdminList = () => {
     console.log("firstName:", firstName.input);
     console.log("email:", email.input);
     console.log("type:", type.input);
+    console.log("registration_date:", registration_date.input);
   
     // Verificación de campos vacíos
     if (
@@ -477,6 +490,7 @@ const AdminList = () => {
           type: type.input,
           cPassword: cPassword.input,
           language: "es",
+          registration_date: registration_date.input,
         };
         if (password.input.trim() !== "") {
           parametros.password = password.input;
@@ -807,7 +821,7 @@ const AdminList = () => {
                     {t("viewUserModal.RegisterDate")}
                   </span>
                   <p className="form-control mt-1">
-                    {" "}
+                    {" "} 
                     {formatDate(registration_date.input)}
                   </p>
                 </div>
