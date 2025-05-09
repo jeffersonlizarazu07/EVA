@@ -3,6 +3,7 @@ const db = require("../config/db"); // Importo la configuración de la base de d
 const Agent = {
   // Obtener todos los agentes de la base de datos
   getAllAgents: async (clientIds) => {
+    console.log("clientIds", clientIds); // Para depuración, imprimo los IDs de clientes recibidos
     return await db("users as u")
       // Unimos la tabla 'users' con 'user_clients' para obtener los usuarios vinculados a clientes
       .join("user_clients as uc", "u.id", "uc.idUser")

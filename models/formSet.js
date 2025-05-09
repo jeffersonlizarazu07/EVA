@@ -7,8 +7,8 @@ const FormSet = {
       .join("users as creator", "form_set.created_by", "=", "creator.id") // Relacionamos con el creador
       .leftJoin("users as updater", "form_set.updated_by", "=", "updater.id") // Relacionamos con el editor
       .select(
-        "form_set.id",
-        "form_set.idClient",
+        "form_set.id", // Usamos 'id' en lugar de 'form_id'
+        "form_set.idClient", // Usamos 'idClient' en lugar de 'client_id'
         "form_set.title", // Usamos 'title' en lugar de 'form_name'
         "form_set.description", // Usamos 'description'
         "form_set.creation_date", // Usamos 'creation_date'
@@ -22,10 +22,11 @@ const FormSet = {
         db.raw(
           'CONCAT(creator.firstname, " ", creator.lastname) as created_by_name'
         ),
-        // Concatenamos el primer nombre y apellido del editor
+        // Concatenamos el primer nombre y apellido del editor si existe
         db.raw(
             'IFNULL(DATE_FORMAT(updated_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as updated_date'
         ),
+        // Concatenamos el primer nombre y apellido del editor si existe
         db.raw(
           `IFNULL(CONCAT(updater.firstname, " ", updater.lastname), "No actualizada") as updated_by_name`
         )

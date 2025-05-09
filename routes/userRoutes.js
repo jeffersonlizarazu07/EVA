@@ -21,4 +21,7 @@ router.patch('/users/:id', authMiddleware, userController.toggleUserState);
 // Eliminar un usuario por ID
 router.delete('/users/:id', authMiddleware, userController.deleteUser);
 
+//ruta para obtener los clientes asociados a un usuario
+router.get('/users/:id/clients', authMiddleware, userController.getClientByUserId);
+
 module.exports = router;

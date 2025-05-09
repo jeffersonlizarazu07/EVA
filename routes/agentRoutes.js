@@ -4,7 +4,7 @@ const agenteController = require('../controllers/agenteController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 // ALL CLIENTS
-router.get('/agent',authMiddleware, agenteController.getAgents);
+router.post('/agent',authMiddleware, agenteController.getAgents);
 
 //clientes por id
 router.get('/agent/:id',authMiddleware, agenteController.getAgentById);
