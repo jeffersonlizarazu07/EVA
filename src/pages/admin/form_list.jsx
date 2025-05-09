@@ -8,30 +8,55 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { smallAlertDelete, Toast } from "../../assets/js/alertConfig";
 import Cookies from "js-cookie";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 // Función para formatear las fechas
 const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  
-  const day = ("0" + date.getDate()).slice(-2);  // Asegura que el día tenga 2 dígitos
-  const month = ("0" + (date.getMonth() + 1)).slice(-2); // Los meses van de 0 a 11
-  const year = date.getFullYear();
-  
-  const hours = ("0" + date.getHours()).slice(-2);  // Asegura que las horas tengan 2 dígitos
-  const minutes = ("0" + date.getMinutes()).slice(-2);  // Asegura que los minutos tengan 2 dígitos
-  const seconds = ("0" + date.getSeconds()).slice(-2);  // Asegura que los segundos tengan 2 dígitos
+  // Check if dateString is null, undefined, or "No actualizada"
+  if (!dateString || dateString === "No actualizada" || dateString === "NULL") {
+    return "No actualizada";
+  }
 
-  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;  // Devuelve la fecha y hora en formato: dd/mm/yyyy hh:mm:ss
+  // Create Date object and check if it's valid
+  const date = new Date(dateString);
+  if (isNaN(date.getTime() || " ")) {
+    return "No actualizada";
+  }
+
+  // Proceed with your formatting logic for valid dates
+  // Ajustar manualmente para UTC-5 (restando 5 horas)
+  const utcMinus5 = new Date(date.getTime() - 5 * 60 * 60 * 1000);
+
+  // Formatear cada componente de la fecha con dos dígitos
+  const day = ("0" + utcMinus5.getDate()).slice(-2);
+  const month = ("0" + (utcMinus5.getMonth() + 1)).slice(-2);
+  const year = utcMinus5.getFullYear();
+
+  const hours = ("0" + utcMinus5.getHours()).slice(-2);
+  const minutes = ("0" + utcMinus5.getMinutes()).slice(-2);
+  const seconds = ("0" + utcMinus5.getSeconds()).slice(-2);
+
+  // Devolver en formato dd/mm/yyyy hh:mm:ss
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
 
 const FormList = () => {
-  const headersArray = [ "id", "title", "description", "client_name", "creation_date", "created_by_name", "updated_date", "updated_by_name", "state"];
+  const headersArray = [
+    "id",
+    "title",
+    "description",
+    "client_name",
+    "creation_date",
+    "created_by_name",
+    "updated_date",
+    "updated_by_name",
+    "state",
+  ];
 
   const { userType, languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const accessToken = Cookies.get('accessToken');
+  const accessToken = Cookies.get("accessToken");
   const userId = Cookies.get("userId");
 
   const [forms, setForms] = useState([]);
@@ -65,7 +90,10 @@ const FormList = () => {
   const getForms = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:3000/api/forms", config);
+      const response = await axios.get(
+        "http://localhost:3000/api/forms",
+        config
+      );
       setForms(response.data.data);
     } catch (error) {
       console.error("Error al obtener formularios:", error);
@@ -86,14 +114,43 @@ const FormList = () => {
     navigate(`/survey_blocks/${form.id}`);
   };
 
+  const activateForm = async (form) => {
+    try {
+      await axios.patch(
+        `http://localhost:3000/api/form/${form.id}`,
+        { state: 1 },
+        config
+      );
+      Toast.fire({
+        icon: "success",
+        title: `${form.title}${t("alertActivate.SuccessAlert")}`,
+      });
+      getForms();
+    } catch (error) {
+      Toast.fire({
+        icon: "error",
+        title: `${form.title}${t("alertActivate.ErrorAlert")}`,
+      });
+      console.error("Error al activar formulario:", error);
+    }
+  };
+
   const deactivateForm = async (form) => {
     smallAlertDelete
       .fire({
-        text: `${t("alertDeactivate.InitialPhrase")}"${form.title}"${t("alertDeactivate.FinalPhrase")}`,
+        icon: "warning",
+        title: "",
+        text: `El formulario ${form.title} será deshabilitado. ¿Desea continuar?`,
         showCancelButton: true,
-        confirmButtonText: t("alertDeactivate.Confirm"),
-        cancelButtonText: t("alertDeactivate.Cancel"),
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass: {
+          actions: "swal2-actions-center ",
+          text: "center",
+        },
       })
+
       .then(async (result) => {
         if (result.isConfirmed) {
           try {
@@ -116,7 +173,7 @@ const FormList = () => {
           }
         }
       });
-  };  
+  };
 
   const openModal = (mode, form = null) => {
     if (mode === "create") {
@@ -138,7 +195,6 @@ const FormList = () => {
   };
   console.log("idClient.input:", idClient.input);
 
-
   const closeModal = () => {
     setModalOpen(false);
     setIdToEdit(null);
@@ -146,28 +202,43 @@ const FormList = () => {
 
   const saveForm = async () => {
     if (!title.input || !idClient.input) {
-      alert(t("alerts.fillRequiredFields"));  // Aquí también podrías traducir el mensaje de alerta
+      alert(t("alerts.fillRequiredFields")); // Aquí también podrías traducir el mensaje de alerta
       return;
     }
-  
+
+    const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+
     const dataToSend = {
       title: title.input,
       description: description.input,
       state: parseInt(state.input),
       idClient: parseInt(idClient.input),
-      creation_date: new Date().toISOString().slice(0, 19).replace("T", " "),
-      created_by: userId,
-      updated_date: new Date().toISOString().slice(0, 19).replace("T", " "),
-      updated_by: userId
     };
-  
+
+    if (idToEdit) {
+      // Solo datos de actualización
+      dataToSend.updated_date = now;
+      dataToSend.updated_by = userId;
+    } else {
+      // Solo datos de creación
+      dataToSend.creation_date = now;
+      dataToSend.created_by = userId;
+    }
+
     try {
       if (idToEdit) {
-        await axios.put(`http://localhost:3000/api/form/${idToEdit}`, dataToSend, config);
+        await axios.put(
+          `http://localhost:3000/api/form/${idToEdit}`,
+          dataToSend,
+          config
+        );
       } else {
         await axios.post("http://localhost:3000/api/forms", dataToSend, config);
       }
-      Toast.fire({ icon: "success", title: title.input + t("alertCreateEdit.SuccessAlert") });
+      Toast.fire({
+        icon: "success",
+        title: title.input + t("alertCreateEdit.SuccessAlert"),
+      });
       getForms();
       closeModal();
     } catch (error) {
@@ -175,7 +246,6 @@ const FormList = () => {
       Toast.fire({ icon: "error", title: t("alertCreateEdit.ErrorAlert") });
     }
   };
-  
 
   return (
     <div className="App">
@@ -191,16 +261,27 @@ const FormList = () => {
                   header={headersArray}
                   data={forms.map((form) => ({
                     ...form,
-                    creation_date: formatDate(form.creation_date),  // Aquí aplicamos el formato
-                    updated_date: formatDate(form.updated_date),    // Aquí aplicamos el formato
+                    creation_date: formatDate(form.creation_date), // Aquí aplicamos el formato
+                    updated_date: formatDate(form.updated_date), // Aquí aplicamos el formato
                   }))}
                   onView={openForm}
+                  onActive={{activateForm}}
                   onRemove={deactivateForm}
                   onCreate={() => openModal("create")}
                   onUpdate={(form) => openModal("edit", form)}
                 />
               ) : (
-                <p>No hay formularios disponibles.</p>
+                <div className="text-center py-5">
+                  <h4>No existen formularios disponibles</h4>
+                  <button
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalFormList"
+                    className="btn btn-primary mt-3"
+                    onClick={() => openModal("create")}
+                  >
+                    Crear nuevo formulario
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -209,7 +290,12 @@ const FormList = () => {
 
       {/* Modal */}
       {modalOpen && (
-        <div className="modal fade show d-block" tabIndex="-1" aria-modal="true" role="dialog">
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          aria-modal="true"
+          role="dialog"
+        >
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content">
               <div className="modal-header">
@@ -243,7 +329,8 @@ const FormList = () => {
                       <select
                         className="input-new"
                         value={idClient.input}
-                        onChange={(e) => idClient.handleChange(e.target.value)}>
+                        onChange={(e) => idClient.handleChange(e.target.value)}
+                      >
                         <option value="" disabled>
                           Seleccione un cliente
                         </option>
@@ -253,7 +340,9 @@ const FormList = () => {
                           </option>
                         ))}
                       </select>
-                      <span className="labelName">{t("formModal.client_name")}</span>
+                      <span className="labelName">
+                        {t("formModal.client_name")}
+                      </span>
                     </label>
                   </div>
                 </div>
@@ -267,7 +356,9 @@ const FormList = () => {
                         className="input-new"
                         name="description"
                         value={description.input}
-                        onChange={(e) => description.handleChange(e.target.value)}
+                        onChange={(e) =>
+                          description.handleChange(e.target.value)
+                        }
                       />
                     </label>
                   </div>
