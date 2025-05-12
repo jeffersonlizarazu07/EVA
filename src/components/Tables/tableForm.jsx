@@ -169,23 +169,74 @@ const TableForms = ({
                     </ul>
                   </div>
                 ) : (
-                  <div className="d-flex justify-content-center">
+                  <div className="dropdown">
                     <button
-                      className="btn btn-rect d-flex flex-column align-items-center"
-                      onClick={() => onActive(form)} // Habilitar
+                      className="btn-rect btn-dropdown"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
                     >
-                      <i class="bi bi-check-circle-fill fs-5"></i>
-                      <span>{t("buttons.Activate")}</span>
+                      <div className="dropdown-toggle">
+                        <i className="fa-solid fa-ellipsis-vertical"></i>
+                      </div>
                     </button>
-                    {/* <button
-                      className="btn btn-rect"
-                      data-bs-toggle="modal"
-                      data-bs-target={`#${modalId2}`}
-                      onClick={() => onView(form)}
-                    >
-                      <i className="fa-solid fa-search"></i>
-                    </button> */}
+                    <ul className="dropdown-menu p-0">
+                      <li className="text-start btn-rect">
+                        <button
+                          className="btn btn-rect"
+                          onClick={() => onView(form)}
+                        >
+                          <i className="fa-solid fa-circle-question"></i>{" "}
+                          <span>{t("buttons.WatchSections")}</span>
+                        </button>
+                      </li>
+                      <li className="text-start btn-rect">
+                        <button
+                          className="btn btn-rect"
+                          onClick={() => onActive(form)}
+                        >
+                          <i className="bi bi-check-circle-fill"></i>{" "}
+                          <span>{t("buttons.Activate")}</span>
+                        </button>
+                      </li>
+                    </ul>
                   </div>
+                  //
+                  //
+                  //
+                  //
+                  // <div className="dropdown">
+                  //   <button
+                  //     className="btn-rect btn-dropdown"
+                  //     type="button"
+                  //     data-bs-toggle="dropdown"
+                  //     aria-expanded="false"
+                  //   >
+                  //     <div className="dropdown-toggle">
+                  //       <i className="fa-solid fa-ellipsis-vertical"></i>
+                  //     </div>
+                  //   </button>
+                  //   <ul className="dropdown-menu p-0">
+                  //     <li className="text-start">
+                  //       <button
+                  //         className="btn btn-rect"
+                  //         onClick={() => onView(form)}
+                  //       >
+                  //         <i className="fa-solid fa-circle-question"></i>{" "}
+                  //         <span>{t("buttons.WatchSections")}</span>
+                  //       </button>
+                  //     </li>
+                  //     <li>
+                  //       <button
+                  //         className="btn btn-rect d-flex flex-column align-items-center"
+                  //         onClick={() => onActive(form)}
+                  //       >
+                  //         <i className="bi bi-check-circle-fill"></i>
+                  //         <span>{t("buttons.Activate")}</span>
+                  //       </button>
+                  //     </li>
+                  //   </ul>
+                  // </div>
                 )}
               </td>
             </tr>

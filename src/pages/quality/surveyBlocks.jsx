@@ -1027,7 +1027,7 @@ export default function SurveyBlocks({ }) {
                       {formData ? (
                         <div className="row d-flex align-items-center">
                           <div className="col-6">
-                            <h5>Nombre del formulario: {formData.title}</h5>
+                            <p><b>Nombre del formulario: </b>{formData.title}</p>
                             <p className="fs-6"><b>Descripción:</b> {formData.description}</p>
                           </div>
                           <div className="col-6 text-end">
