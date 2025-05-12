@@ -18,7 +18,7 @@ export const getSurvey = async (id, config, setSurveyData) => {
     console.log("*** response completa", response.data);
     setSurveyData(response.data);
   }catch(error){
-    console.log('error: ',e)
+    console.log('error: ',error)
   }
  
 };

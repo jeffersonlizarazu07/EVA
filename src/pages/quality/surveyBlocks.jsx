@@ -3,7 +3,7 @@ import HeaderLT1 from "../../components/header/headerLT1";
 import axios from "axios";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   smallAlertDelete,
   loadingAlert,
@@ -41,9 +41,12 @@ import {
 import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
+import Cookies from 'js-cookie';
 
-export default function SurveyBlocks({}) {
-  const { id } = useParams();
+export default function SurveyBlocks({ }) {
+  const { id_form } = useParams();
+  const location = useLocation();
+  const [formData, setFormData] = useState(location.state?.form || null);
   const [data, setData] = useState([]);
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
@@ -147,9 +150,9 @@ export default function SurveyBlocks({}) {
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
-    getSurvey(id, config, setSurveyData);
+    getSurvey(id_form, config, setSurveyData);
     updateSurveyQuestions();
-  }, [id, languageUser]);
+  }, [id_form, languageUser]);
 
   useEffect(() => {
     setStaticData([...data]);
@@ -174,7 +177,7 @@ export default function SurveyBlocks({}) {
   };
 
   const updateSurveyQuestions = () => {
-    getSurveyQuestions(id, config)
+    getSurveyQuestions(id_form, config)
       .then(setData)
       .catch((error) => {
         console.error("Error al obtener las preguntas de la encuesta", error);
@@ -359,10 +362,10 @@ export default function SurveyBlocks({}) {
         : selectedAnswer || "";
       optionsToSave = Array.isArray(options)
         ? options
-            .map((option) =>
-              typeof option === "object" ? option.text : option
-            )
-            .join(", ")
+          .map((option) =>
+            typeof option === "object" ? option.text : option
+          )
+          .join(", ")
         : "";
     } else if (questionType.input === "textfield_s") {
       selectedAnswer = textFieldAnswer;
@@ -423,14 +426,14 @@ export default function SurveyBlocks({}) {
         section: section.input,
         selected_answer:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? selectedAnswerToString
             : " ",
         select_option:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? optionsToSave
             : "",
       };
@@ -480,16 +483,16 @@ export default function SurveyBlocks({}) {
         id_conditional: id_conditional.input,
         selected_answer:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? selectedAnswerToString.length > 1
               ? selectedAnswerToString
               : selectedAnswerToString
             : null,
         select_option:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? optionsToSave
             : null,
       };
@@ -957,6 +960,54 @@ export default function SurveyBlocks({}) {
       .catch((err) => console.error("Error en conexión:", err));
   }, []);
 
+  useEffect(() => {
+    // Si no se recibió por navegación, hacer fetch
+    if (!formData && id_form) {
+      fetchFormData();
+    }
+  }, [id_form, formData]);
+
+  const fetchFormData = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const accessToken = Cookies.get("accessToken");
+      if (!id_form || isNaN(parseInt(id_form))) {
+        throw new Error("ID de formulario inválido");
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      };
+
+      const apiUrl = `http://localhost:3000/api/forms/${id_form}`;
+      const response = await axios.get(apiUrl, config);
+
+      if (response.data && response.data.data) {
+        setFormData(response.data.data);
+      } else if (response.data) {
+        setFormData(response.data);
+      } else {
+        throw new Error("Formato de respuesta inesperado");
+      }
+    } catch (error) {
+      console.error("Error al obtener datos del formulario:", error);
+      setError(error.message || "Error de comunicación con el servidor");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const retryFetch = () => {
+    if (id_form) {
+      fetchFormData();
+    }
+  }
+
   return (
     <div className="App">
       <div id="body">
@@ -973,20 +1024,31 @@ export default function SurveyBlocks({}) {
                   </div>
                   <div className="card-body p-0 py-2">
                     <div className="container-fluid">
-                      <div className="row d-flex align-items-center">
-                        <div className="col-6">
-                          <h5>Información del Formulario</h5>
-                          <p className="fs-6">Descripción</p>
+                      {formData ? (
+                        <div className="row d-flex align-items-center">
+                          <div className="col-6">
+                            <h5>Nombre del formulario: {formData.title}</h5>
+                            <p className="fs-6"><b>Descripción:</b> {formData.description}</p>
+                          </div>
+                          <div className="col-6 text-end">
+                            <p><b>Fecha de Creación:</b> {formData.creation_date}</p>
+                            <p className="fs-6"><b>Última Actualización:</b> {formData.updated_date || "Sin actualizar"}</p>
+                          </div>
                         </div>
-                        <div className="col-6 text-end">
-                          <p className="fs-6">Fecha inicio / Fecha fin</p>
-                          <p className="fs-6">Cantidad de muestras:</p>
+                      ) : (
+                        <div className="text-center py-3">
+                          <div className="spinner-border text-secondary" role="status">
+                            <span className="visually-hidden">Cargando...</span>
+                          </div>
+                          <p className="mt-2">Cargando información del formulario...</p>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
+
+
 
               <div className="col-md-12 mt-3">
                 <div className="card p-4 card-outline card-success borderEVA bg-light">
@@ -1221,7 +1283,7 @@ export default function SurveyBlocks({}) {
         error={error}
         validar={validar}
         idToEdit={idToEdit}
-        id={id}
+        id_form={id_form}
         areAllFieldsCompleted={areAllFieldsCompleted}
         handleCancel={handleCancel}
         addNewQuestion={addNewQuestion}

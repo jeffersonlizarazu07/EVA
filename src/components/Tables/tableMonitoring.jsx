@@ -173,14 +173,6 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
           }}
         />
 
-        <SurveyBlocks
-        title={formName}
-        idClient={selectedClient}
-        description={description}
-        creation_date={new Date().toISOString().slice(0, 19).replace("T", " ")}
-        edited_date={new Date().toISOString().slice(0, 19).replace("T", " ")}
-        />
-
         <FormControl
           fullWidth
           margin="dense"
