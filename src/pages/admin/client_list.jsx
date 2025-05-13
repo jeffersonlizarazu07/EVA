@@ -28,6 +28,7 @@ export default function Client_list() {
   const [showColorPicker, setShowColorPicker] = useState(false);  // Mostrar/Ocultar el color picker 1
   const [showColorPicker2, setShowColorPicker2] = useState(false);   // Mostrar/Ocultar el color picker 2
   const { t, i18n } = useTranslation();   // Hook para traducciones
+  const url = "http://localhost:3000/api/clients"; // URL base de la API para clientes
 
   // Estados del formulario
   const client = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -52,7 +53,7 @@ export default function Client_list() {
   // Función para obtener los datos de clientes desde la API
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/clients', config);
+      const response = await axios.get(url, config);
       console.log(response.data.data);
       setData(response.data.data);
     } catch (error) {
@@ -81,12 +82,21 @@ export default function Client_list() {
 
     smallAlertDelete
       .fire({
+        icon: "warning",
+        toast: false,
+        title: "Habilitar cliente",
         text: `${t("alertActivate.InitialPhrase")} ${name} ${t(
           "alertActivate.FinalPhrase"
         )}`,
         showCancelButton: true,
         confirmButtonText: `${t("alertActivate.Confirm")}`,
         cancelButtonText: `${t("alertActivate.Cancel")}`,
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+          icon: 'icono-personalizado',
+          title: 'titulo-pequeno',
+        },
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -124,12 +134,21 @@ export default function Client_list() {
 
     smallAlertDelete
       .fire({
+        icon: "warning",
+        toast: false,
+        title: "Deshabilitar elemento",
         text: `${t("alertDeactivate.InitialPhrase")} ${name} ${t(
           "alertDeactivate.FinalPhrase"
         )}`,
         showCancelButton: true,
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+          icon: 'icono-personalizado',
+          title: 'titulo-pequeno',
+        },
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -238,21 +257,22 @@ export default function Client_list() {
     formData.append("color_tag2", colors2);
     formData.append("state", 1);
   
+    const newClientName = client.input.trim().toLowerCase();
+
     // Validación: Verificar si el nombre del cliente ya existe
     if (id == null) {
-      // Creación de cliente
-      const clientExists = data.some((item) => item.client === client.input);
-      if (clientExists) {
-        setError("El nombre del cliente ya existe");
-        Toast.fire({
+      // Aquí se crea un nuevo cliente
+      try {
+        //const clientExists = data.some((item) => item.client === client.input);
+        const clientExists = data.some(item => item.client.trim().toLowerCase() === newClientName);
+        if (clientExists) {
+          setError("El nombre del cliente ya existe");
+          Toast.fire({
           icon: "error",
           title: t("clientModal.DuplicatedUser"),
         });
-        return;
-      }
-  
-      try {
-        // Realizar la solicitud POST para crear el cliente
+          return;
+        }
         const response = await axios.post(`${urlpost}`, formData, {
           withCredentials: true,
         });
@@ -275,40 +295,33 @@ export default function Client_list() {
         }
       } catch (error) {
         console.error("Error subiendo el archivo:", error);
-        Toast.fire({
-          icon: "error",
-          title: "Hubo un problema al crear el cliente",
-        });
       }
     } else {
-      // Edición de cliente
+      // Aquí se realiza una actualización del cliente con PUT
       const urlput = `http://localhost:3000/api/clients/${id}`;
-  
+
       try {
-        // Realizar la solicitud PUT para actualizar el cliente
         const response = await axios.put(urlput, formData, {
           "Content-Type": "multipart/form-data",
           withCredentials: true,
         });
-        
-        // Si la respuesta es exitosa, se realizan las acciones de éxito
+        console.log("Respuesta del servidor:", response);
+        if (!response.data.status) {
+          alert("No se realizó la edición del cliente");
+          document.getElementById("btnCerrar").click();
+          console.log(response.data);
+        }
         Toast.fire({
           icon: "success",
-          title: `${client.input} ${t("alertCreateEdit.SuccessAlert")}`,
+          title: `El cliente ${client.input} se ha editado exitosamente`,
         });
-  
-        fetchData(); // Actualiza los datos
-        document.getElementById("btnCerrar").click(); // Cierra el modal
-  
+        fetchData();
+        document.getElementById("btnCerrar").click();
       } catch (error) {
         console.error("Error actualizando el cliente:", error);
-        Toast.fire({
-          icon: "error",
-          title: t("alertCreateEdit.ErrorAlert"),
-        });
       }
     }
-  };  
+  };
 
   const handleClose = () => {
     setDisplayColorPicker(false);
@@ -532,11 +545,20 @@ export default function Client_list() {
                   <div className="col-5 m-2 ms-5 text-center ">
                     {logoEdit && operation === 2 ? (
                       <img
-                        src={`http://localhost:3000/public/imgClientes/${logoEdit}`}
+                        src={`clientes/${logoEdit}`}
                         alt="Logo"
                         width={150}
                         height={150}
                         id="logoToEditOriginal"
+                        className="logoModal m-2"
+                      />
+                    ) : null}
+                    {selectedFile ? (
+                      <img
+                        src={previewUrl}
+                        alt="Logo"
+                        width={150}
+                        height={150}
                         className="logoModal m-2"
                       />
                     ) : null}
@@ -553,7 +575,6 @@ export default function Client_list() {
                     <input
                       type="file"
                       id="imagenLogo"
-                      name="logo"
                       accept=".jpg, .jpeg, .png"
                       onChange={handleFileChange}
                       style={{ display: "none" }} // Ocultar el input
