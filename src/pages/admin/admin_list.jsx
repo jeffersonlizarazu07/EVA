@@ -280,9 +280,9 @@ const AdminList = () => {
     // Confirmación antes de desactivar
     smallAlertDelete
       .fire({
-
+        toast: false,
         icon: "warning",
-        title: "🚫 Deshabilitar elemento",
+        title: "Deshabilitar elemento",
         text: `${t("alertDeactivate.InitialPhrase")} ${name} ${t(
           "alertDeactivate.FinalPhrase"
         )}`,
@@ -292,6 +292,8 @@ const AdminList = () => {
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
+          icon: 'icono-personalizado',
+          title: 'titulo-pequeno',
         },
 
       })
@@ -335,7 +337,8 @@ const AdminList = () => {
     smallAlertDelete
       .fire({
         icon: "warning",
-        title: "✅ Activar elemento",
+        toast: false,
+        title: "Activar elemento",
         text: `${name} ${t("alertActivate.FinalPhrase")}`,
         showCancelButton: true,
         confirmButtonText: "Confirmar",
@@ -343,6 +346,8 @@ const AdminList = () => {
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
+          icon: 'icono-personalizado',
+          title: 'titulo-pequeno',
         },
       })
       .then(async (result) => {

@@ -347,13 +347,14 @@ const Satisfaction = () => {
                           Aún no hay encuestas contestadas
                         </p>
                       ) :( 
-                        <ul style={{listStyle: 'none', padding: 0, textAlign: 'center' }}>
+                        <ul style={{listStyle: 'none', padding: 0, display: 'flex', margin: 0, justifyContent: 'center' }}>
                           {topSurveys.map((survey) => (
                             <li key={survey.survey_id} className="text-start"
                             style={{
-                              fontSize: '100%', // Tamaño de letra
-                              margin: '0.5rem 2rem', // Espaciado vertical y horizontal
+                              fontSize: '80%', // Tamaño de letra
+                              margin: '0.5rem 1.3rem', // Espaciado vertical y horizontal
                               display: 'inline-block', // Para que haya separación horizontal si los quieres en una línea
+                              textAlign: 'center', // Centrar el texto
                             }}>
                               <a
                                 href={survey.link}
@@ -371,7 +372,7 @@ const Satisfaction = () => {
                     </div>
                     
                     <div className="row">
-                      <p className="text-start ">
+                      <p className="text-start g-3">
                         {t(
                           "satisfactionSite.Rate_the_quality_of_customer_service_being_provided_by_the_agent"
                         )}
