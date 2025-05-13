@@ -19,36 +19,35 @@ const blockRoutes = require('./routes/blockRoutes');
 
 
 
-const app = express();
-const port = process.env.PORT || 3000;
+const app = express(); // Crear una instancia de Express
+const port = process.env.PORT || 3000; // Puerto por defecto
 
-const corsOptions = {
+const corsOptions = { // Configuración de CORS
 
-    origin: 'http://localhost:5174', 
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], 
-    allowedHeaders: ['Content-Type', 'Authorization'], 
-    credentials: true, 
+    origin: 'http://localhost:5174', // URL del frontend
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Métodos permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+    credentials: true, // Permitir credenciales (cookies, autenticación)
 };
 
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(cookieParser());
+app.use(cors(corsOptions)); // Configurar CORS
+app.use(express.json()); // Middleware para parsear el cuerpo de las solicitudes JSON
+app.use(cookieParser()); // Middleware para parsear cookies
 
 // Configurar rutas de API primero
-app.use('/api', authRoutes);
-app.use('/api', userRoutes);
-app.use('/api', userClientRoutes); 
-app.use('/api', surveySetRoutes);
-app.use('/api', questionRoutes); 
-app.use('/api', endUserRoutes); 
-app.use('/api', endUserClientRoutes); 
-app.use('/api', clientsRoutes);
-app.use('/api', answersRoutes);
-app.use('/api', enviarCorreos);
-app.use('/api', agentRoutes);
-app.use('/api', formSetRoutes);
-app.use('/api', blockRoutes);
-app.use("/api/blocks", blockRoutes);
+app.use('/api', authRoutes); // Rutas de autenticación
+app.use('/api', userRoutes); // Rutas de usuarios
+app.use('/api', userClientRoutes); // Rutas de usuarios para clientes
+app.use('/api', surveySetRoutes); // Rutas de encuestas
+app.use('/api', questionRoutes); // Rutas de preguntas
+app.use('/api', answersRoutes); // Rutas de respuestas
+app.use('/api', endUserRoutes); // Rutas de usuarios finales
+app.use('/api', endUserClientRoutes); // Rutas de usuarios finales para clientes
+app.use('/api', clientsRoutes); // Rutas de clientes
+app.use('/api', enviarCorreos); // Rutas de envío de correos
+app.use('/api', agentRoutes); // Rutas de agentes
+app.use('/api', formSetRoutes); // Rutas de formularios
+app.use("/api/blocks", blockRoutes); // Rutas de bloques
 
 // Hacer accesible la carpeta 'public' para el navegador
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -56,7 +55,7 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // Ruta específica para manejar enlaces de encuestas
 app.get('/survey/:encodedData', async (req, res) => {
   try {
-    const encodedData = req.params.encodedData;
+    const encodedData = req.params.encodedData; // Obtener el parámetro de la URL
     
     // Redireccionar a tu aplicación React con el parámetro link
     res.redirect(`http://localhost:5174/survey?link=${encodedData}`);
@@ -67,7 +66,8 @@ app.get('/survey/:encodedData', async (req, res) => {
     // if (!survey) return res.status(404).send('Encuesta no encontrada');
     // res.render('survey', { survey });
   } catch (error) {
-    console.error('Error al procesar la encuesta:', error);
+    // Manejo de errores
+    console.error('Error al procesar la encuesta:', error); 
     res.status(500).send('Error interno del servidor');
   }
 });
@@ -81,6 +81,6 @@ app.get('/survey/:encodedData', async (req, res) => {
 //});
 
 
-app.listen(port, () => {
-    console.log(`Servidor corriendo en http://localhost:${port}`);
+app.listen(port, () => { // Iniciar el servidor
+    console.log(`Servidor corriendo en http://localhost:${port}`); // Mensaje de inicio
 });
