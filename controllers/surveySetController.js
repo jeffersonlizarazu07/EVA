@@ -16,9 +16,9 @@ const surveySetController = {
 
     async surveys(req, res) {
         try {
-            console.log('Iniciando la consulta de encuestas...');
+            //console.log('Iniciando la consulta de encuestas...');
             const surveys = await SurveySet.getAll();
-            console.log('Encuestas obtenidas:', surveys);
+            //console.log('Encuestas obtenidas:', surveys);
     
             if (surveys.length === 0) {
                 return res.status(404).json({ status: '404', message: 'No se encontraron encuestas' });
@@ -80,11 +80,11 @@ const surveySetController = {
     
     async surveyByLink(req, res) {
         try {
-            console.log('url-----------:', req.query.link);
+            //console.log('url-----------:', req.query.link);
             const link = req.query.link;
-            console.log('Recibiendo solicitud para obtener encuesta con link:', link);
+            //console.log('Recibiendo solicitud para obtener encuesta con link:', link);
             const survey_set = await SurveySet.getByLink(link);
-            console.log('Encuesta encontrada:', survey_set);
+            //console.log('Encuesta encontrada:', survey_set);
             if (!survey_set) {
                 return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
             }
@@ -96,14 +96,14 @@ const surveySetController = {
                 question: questions
             }});
 
-            console.log({
-                status: '200',
-                message: 'Encuesta obtenida correctamente',
-                data: {
-                  survey_set,
-                  question: questions
-                }
-              });
+            // console.log({
+            //     status: '200',
+            //     message: 'Encuesta obtenida correctamente',
+            //     data: {
+            //       survey_set,
+            //       question: questions
+            //     }
+            //   });
 
             } catch (error) {
             res.status(500).json({ status: '500', message: 'Error interno del servidor', error: error.message });
@@ -130,9 +130,10 @@ const surveySetController = {
         try {
             const data = req.body;
             console.log('datos recibidos',data)
-            await SurveySet.create(data);
-            res.status(201).json({ status: '201', message: 'Encuesta creada correctamente' });
-            console.log('encuesta creada exitosamente')
+            const newSurveyId = await SurveySet.create(data);
+            res.status(201).json({ status: '201', message: 'Encuesta creada correctamente', data: { id: newSurveyId }});
+            console.log('encuesta creada exitosamente');
+            console.log('ID de la nueva encuesta:', newSurveyId);
         } catch (error) {
             res.status(500).json({ status: '500', message: 'Error al crear la encuesta', error });
             console.log('error al crear la enceesta,', error,error)
@@ -141,6 +142,7 @@ const surveySetController = {
 
     async putSurvey(req, res) {
         try {
+            console.log('lo que se va actualziar*******:', req.body);
             const updated = await SurveySet.update(req.params.id, req.body);
             if (!updated) {
                 return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
