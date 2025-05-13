@@ -3,7 +3,7 @@ const knex = require('../config/db');
 class BlockModel {
   constructor() {
     this.knex = knex;
-    this.table = 'form_set';
+    this.table = 'blocks'; // Nombre de la tabla en la base de datos
   }
 
   async createBlock(data) {

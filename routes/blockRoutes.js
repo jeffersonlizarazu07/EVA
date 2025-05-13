@@ -6,19 +6,15 @@ const blockController = require('../controllers/blockController');
 router.post('/', blockController.createBlock);
 
 // Obtener todos los bloques
-router.get('/form', blockController.getAllBlocks);
+router.get('/', blockController.getAllBlocks);
 
 // Obtener un bloque por ID
-router.get('/form/:id', blockController.getBlockById);
+router.get('/:id', blockController.getBlockById);
 
 // Actualizar un bloque por ID
-router.put('/form/:id', blockController.updateBlock);
+router.put('/:id', blockController.updateBlock);
 
 // Eliminar un bloque por ID
-router.delete('/form/:id', blockController.deleteBlock);
-
-router.get("/ping", (req, res) => {
-    res.status(200).json({ message: "pong" });
-  });
+router.delete('/:id', blockController.deleteBlock);
 
 module.exports = router;
