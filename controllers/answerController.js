@@ -381,7 +381,7 @@ class AnswerController {
         // Controlador para manejar el post de respuestas
         async postAnswer(req, res) {
             try {
-                console.log("Datos recibidos en req.body:", req.body);
+                //console.log("Datos recibidos en req.body:", req.body);
         
                 // Validación combinada (array y no vacío)
                 if (!Array.isArray(req.body) || req.body.length === 0) {
@@ -395,7 +395,7 @@ class AnswerController {
                 // Crear una nueva respuesta
                 const result = await answerModel.createAnswer(req.body);
                 
-                console.log("Resultado de la inserción:", result);
+                //console.log("Resultado de la inserción:", result);
                 
                 if (!result.success) {
                     throw new Error(result.message);

@@ -3,6 +3,7 @@ class AnswerModel {
     async createAnswer(data) {
         
         console.log('---------Datos recibidos en createAnswer:', data);
+        console.log("********************")
         // Función para formatear la fecha correctamente para MySQL
         const formatDateForMySQL = (date) => {
             return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
@@ -15,7 +16,7 @@ class AnswerModel {
             for (const answerData of data) {
               
               const validData = {
-                survey_id: answerData.survey_id,
+                //survey_id: answerData.survey_id,
                 answer: answerData.answer,
                 question_id: answerData.question_id,
                 date: answerData.date ? formatDateForMySQL(answerData.date) : formatDateForMySQL(new Date())

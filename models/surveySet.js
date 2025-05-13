@@ -53,10 +53,30 @@ const SurveySet = {
       
        
 
-    create: (data) => db('survey_set').insert(data),
+    create: async (data) =>{
+        //db('survey_set').insert(data),
+        try {
+            const [id] = await db('survey_set').insert(data);
+            return id;
+        } catch (error) {
+            console.error('Error al crear la encuesta:', error);
+            throw error; // Lanza el error para que pueda ser manejado por el controlador
+        }
+    }, 
 
-    update: (id, data) => db('survey_set').where({ id }).update(data),
-
+    update: async (id, data) => {
+        try{
+            const updatedRows = await db('survey_set').where({ id }).update(data);
+            //sino se actualzo información 
+            if (updatedRows === 0) {
+                throw new Error(`No se encontró la encuesta con ID ${id}`);
+            }
+            return { success: true, message: 'Encuesta actualizada correctamente' }
+        }catch (error) {
+            console.error('Error al actualizar la encuesta:', error);
+            return { success: false, message: 'Error al actualizar la encuesta', error: error.message };
+        }
+    },
 
     toggleState: (id) => {
         return db('survey_set')
@@ -102,22 +122,55 @@ const SurveySet = {
 
     getTopSurveys: async (id) => {
         try {
-            const result = await db('survey_set as s')
-            .join('answers as a', 's.id', 'a.survey_id')
-            .join('questions as q', 'a.question_id', 'q.id')
-            .join('user_clients as uc', 's.idClient', 'uc.idClient')
-            .where('uc.idUser', id)
-            .groupBy('s.id', 's.title', 's.link')
-            .select(
-              's.id as survey_id',
-              's.title',
-              's.link',
-              db.raw(`CEIL(COUNT(a.id) * 1.0 / NULLIF(COUNT(DISTINCT CASE WHEN q.conditional = 'no' THEN a.question_id END), 0)) AS encuestas_enviadas`)
-            )
-            .orderBy('encuestas_enviadas', 'desc')
-            .limit(5);
+        //     const result = await db('survey_set as s')
+        //     .join('answers as a', 's.id', 'a.survey_id')
+        //     .join('questions as q', 'a.question_id', 'q.id')
+        //     .join('user_clients as uc', 's.idClient', 'uc.idClient')
+        //     .where('uc.idUser', id)
+        //     .groupBy('s.id', 's.title', 's.link')
+        //     .select(
+        //       's.id as survey_id',
+        //       's.title',
+        //       's.link',
+        //       db.raw(`CEIL(COUNT(a.id) * 1.0 / NULLIF(COUNT(DISTINCT CASE WHEN q.conditional = 'no' THEN a.question_id END), 0)) AS encuestas_enviadas`)
+        //     )
+        //     .orderBy('encuestas_enviadas', 'desc')
+        //     .limit(5);
           
-          return result;
+        //   return result;
+        const surveyCompletions = db('answers as a')
+        .select('q.survey_id', 'a.date')
+        .join('questions as q', 'a.question_id', 'q.id')
+        .whereExists(function () {
+            this.select(1)
+            .from('user_clients as uc')
+            .where('uc.idUser', id)
+            .andWhere('uc.idClient', db('survey_set').select('idClient').where('id', db.ref('q.survey_id')).limit(1));
+        })
+        .groupBy('q.survey_id', 'a.date')
+        .as('sc');
+
+        const result = await db('survey_set as s')
+        .select(
+            's.id',
+            's.title',
+            's.link',
+            db.raw('COUNT(DISTINCT sc.date) as encuestas_enviadas')
+        )
+        .leftJoin(surveyCompletions, 's.id', 'sc.survey_id')
+        .join('user_clients as uc', function () {
+            this.on('s.idClient', '=', 'uc.idClient')
+            .andOn('uc.idUser', '=', db.raw('?', [id]));
+        })
+        .groupBy('s.id', 's.title', 's.link')
+        .orderBy([
+            { column: 'encuestas_enviadas', order: 'desc' },
+            { column: 's.id', order: 'asc' }
+        ])
+        .limit(5);
+        
+        return result;
+
         } catch (error) {
           console.error('Error al obtener el top de encuestas:', error );
           throw error;

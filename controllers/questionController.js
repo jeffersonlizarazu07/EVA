@@ -39,17 +39,17 @@ const questionController = {
 
     // Controlador postQuestion (backend)
 async postQuestion(req, res) {
-  console.log('Datos recibidos en postQuestion:', req.body);
+  //console.log('Datos recibidos en postQuestion:', req.body);
 
     try {
         const {
             conditional,
             conditional_answer,
-            frm_option,
+            //frm_option,
             id_conditional,
-            percentage,
+            //percentage,
             question,
-            section,
+            //section,
             survey_id,
             type,
             select_option,
@@ -72,7 +72,7 @@ async postQuestion(req, res) {
       res.status(201).json({
         status: 201,
         message: 'Pregunta creada exitosamente',
-        question: newQuestion
+        data: newQuestion
       });
     } catch (error) {
       console.error('Error al crear la pregunta:', error);
@@ -94,11 +94,11 @@ async postQuestion(req, res) {
       const {
         conditional,
         conditional_answer,
-        frm_option,
+        //frm_option,
         id_conditional,
-        percentage,
+        //percentage,
         question,
-        section,
+        //section,
         survey_id,
         type
       } = req.body;
@@ -106,11 +106,11 @@ async postQuestion(req, res) {
       const updatedQuestion = await Question.update(id, {
         conditional,
         conditional_answer,
-        frm_option,
+        //frm_option,
         id_conditional,
-        percentage,
+        //percentage,
         question,
-        section,
+        //section,
         survey_id,
         type
       });
@@ -133,11 +133,6 @@ async postQuestion(req, res) {
       });
     }
   },
-  
-  
-  
-
-
 
     async deleteQuestion(req, res) {
         try {
@@ -149,7 +144,27 @@ async postQuestion(req, res) {
         } catch (error) {
             res.status(500).json({ status: 500, message: 'Error al eliminar la pregunta', error });
         }
+    },
+
+    async putConditionalQuestion(req, res) {  
+      const { id } = req.params;
+      const { id_conditional } = req.body;
+      console.log('Id que llega----', id);
+      console.log('Id conditional:----', id_conditional);
+
+      try {
+        const updated = await Question.updateConditionalId(id, id_conditional);
+
+      if (updated === 0) {
+        return res.status(404).json({ message: 'Pregunta no encontrada' });
+      }
+      res.status(200).json({ message: 'id_conditional actualizado correctamente' });
+      } catch (error) {
+        console.error('Error al actualizar la encuesta:', error);
+        res.status(500).json({ message: 'Error al actualizar la encuesta', error: error.message });
+      }
     }
+
 };
 
 module.exports = questionController;
