@@ -30,6 +30,7 @@ const createClient = async (req, res) => {
       });
   
       return res.status(201).json({
+        status: true,
         message: 'Cliente creado correctamente',
         data: newClient
       });
