@@ -72,7 +72,7 @@ function MultipleSelector({ answers, change, id }) {
   };
   useEffect(()=>
     {
-    console.log(indicesString)
+    console.log("indicesString",indicesString)
   },[indicesString])
  
   return (
@@ -134,11 +134,11 @@ function Range_onetofive_survey({id,change}) {
 
 function Range_difficulty_survey({id,change}){
     const range = [
-        { label: 'Muy dificil', value: "Muy dificil", tooltip: 'Muy dificíl', color: 'danger' },
-        { label: 'Dificil', value: "Dificil", tooltip: 'Dificíl', color: 'danger' },
-        { label: 'Ni fácil/ni difícil', value: "Ni fácil/ni difícil", tooltip: 'Neutro', color: 'warning' },
-        { label: 'Facil', value: "Facil", tooltip: 'Satisfecho', color: 'success' },
-        { label: 'Muy facil', value: "Muy facil", tooltip: 'Muy satisfecho', color: 'success' },
+        { label: 'Muy dificil', value: "5", tooltip: 'Muy dificíl', color: 'danger' },
+        { label: 'Dificil', value: "4", tooltip: 'Dificíl', color: 'danger' },
+        { label: 'Ni fácil/ni difícil', value: "3", tooltip: 'Neutro', color: 'warning' },
+        { label: 'Facil', value: "2", tooltip: 'satisfecho', color: 'success' },
+        { label: 'Muy facil', value: "1", tooltip: 'Muy satisfecho', color: 'success' },
       ];
       const labels = { min: 'Muy insatisfecho', max: 'Muy satisfecho' };
       return <RangeSelector range={range}  change={change} labels={"Na"} name={`recomendar_${id}`} />;

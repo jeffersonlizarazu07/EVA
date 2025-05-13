@@ -375,7 +375,7 @@ const config = {
                         {console.log("-----surveyData aca", surveyData)}
                       {surveyData.data?.start_date ||  "Sin fecha"} / 
                       {surveyData.data?.end_date || "Sin fecha"}
-                        <p className="fs-6">Cantidad de muestras: {surveyData.sampleCount || 0}</p>
+                        <p className="fs-6">Cantidad de preguntas: {surveyData.sampleCount || 0}</p>
                       </div>
                     </div>
                   </div>

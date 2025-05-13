@@ -104,12 +104,12 @@ const Quality = () => {
                     <div className="card card1">
                       <div className="card-body d-grid">
                         <div className="row">
-                          <div className="col-10 card-title">
+                          <div className="col-12 card-title">
                             <span className="">
                               {t("qualitySite.Company_agents")}
                             </span>
                           </div>
-                          <div className="col-2">
+                          {/* <div className="col-2">
                             <div className="dropdown">
                               <button className="dropbtn">
                                 <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -120,12 +120,12 @@ const Quality = () => {
                                 <a href="#">Link 3</a>
                               </div>
                             </div>
-                          </div>
+                          </div> */}
                         </div>
                         <div className="row ">
                           <div className="col-12">
                             <h3 className="card-text">
-                              {t("qualitySite.Users")}
+                              Agentes
                             </h3>
                           </div>
                         </div>
@@ -152,12 +152,12 @@ const Quality = () => {
                     <div className="card card2">
                       <div className="card-body d-grid">
                         <div className="row">
-                          <div className="col-10 card-title">
+                          <div className="col-12 card-title">
                             <span className="">
                               {t("qualitySite.Monitoring_forms_to_the_agent")}
                             </span>
                           </div>
-                          <div className="col-2">
+                          {/* <div className="col-2">
                             <div className="dropdown">
                               <button className="dropbtn">
                                 <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -168,7 +168,7 @@ const Quality = () => {
                                 <a href="#">Link 3</a>
                               </div>
                             </div>
-                          </div>
+                          </div> */}
                         </div>
                         <div className="row">
                           <div className="col-12">
@@ -185,16 +185,16 @@ const Quality = () => {
                           </div>
                         </div>
                         <div className="row button-container">
-                          <div className="col-10">
+                          <div className="col-12">
                             <button className="card-btn check" onClick={() => navigate("/forms")}>
                               {t("qualitySite.Create_form")}
                             </button>
                           </div>
-                          <div className="col-2">
+                          {/* <div className="col-2">
                             <button className="btn-plus">
                               <i className="fa-solid fa-plus"></i>
                             </button>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </div>
@@ -203,14 +203,14 @@ const Quality = () => {
                     <div className="card card3">
                       <div className="card-body d-grid">
                         <div className="row">
-                          <div className="col-10 card-title">
+                          <div className="col-12 card-title">
                             <span className="">
                               {t(
                                 "qualitySite.Monitoring_forms_report_to_the_agent"
                               )}
                             </span>
                           </div>
-                          <div className="col-2">
+                          {/* <div className="col-2">
                             <div className="dropdown">
                               <button className="dropbtn">
                                 <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -221,7 +221,7 @@ const Quality = () => {
                                 <a href="#">Link 3</a>
                               </div>
                             </div>
-                          </div>
+                          </div> */}
                         </div>
                         <div className="row">
                           <div className="col-12">
@@ -239,16 +239,16 @@ const Quality = () => {
                           </div>
                         </div>
                         <div className="row button-container">
-                          <div className="col-10 ">
+                          <div className="col-12 ">
                             <button className="card-btn check">
                               {t("qualitySite.View_reports")}
                             </button>
                           </div>
-                          <div className="col-2">
+                          {/* <div className="col-2">
                             <button className="btn-plus">
                               <i className="fa-solid fa-plus"></i>
                             </button>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </div>
@@ -325,14 +325,14 @@ const Quality = () => {
                             {t("qualitySite.Agents")}
                           </span>
                         </div>
-                        <div className="col col-lg-2">
+                        <div className="col col-lg-3">
                           <a href="./agent_list">
                             <button className="card-btn">
                               {t("qualitySite.Agents_list")}
                             </button>
                           </a>
                         </div>
-                        <div className="d-none d-lg-block col-lg-1">
+                        {/* <div className="d-none d-lg-block col-lg-1">
                           <div className="dropdown">
                             <button className="dropbtn">
                               <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -343,7 +343,7 @@ const Quality = () => {
                               <a href="#">Link 3</a>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
                       </ul>
                       <ul className="list-item item-2 d-flex justify-content-between">
                         <div className="col col-lg-5">
@@ -357,17 +357,17 @@ const Quality = () => {
                           </span>
                         </div>
                         <div
-                          className="col-lg-3 col-7 d-flex justify-content-center"
+                          className="col-lg-4 col-7 d-flex justify-content-center"
                           id="content-new-form"
                         >
                           <button className="card-btn ">
                             {t("qualitySite.Create_form")}
                           </button>
-                          <button className="btn-plus ms-2">
+                          {/* <button className="btn-plus ms-2">
                             <i className="fa-solid fa-plus"></i>
-                          </button>
+                          </button> */}
                         </div>
-                        <div className="col-lg-1 d-none d-lg-block">
+                        {/* <div className="col-lg-1 d-none d-lg-block">
                           <div className="dropdown">
                             <button className="dropbtn">
                               <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -378,9 +378,9 @@ const Quality = () => {
                               <a href="#">Link 3</a>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
                       </ul>
-                      <ul className="list-item item-3 d-flex justify-content-between">
+                      <ul className="list-item item-2 d-flex justify-content-between">
                         <div className="col-6 col-lg-5">
                           <h5 className="text-white fw-bolder">
                             {t(
@@ -388,7 +388,7 @@ const Quality = () => {
                             )}
                           </h5>
                         </div>
-                        <div className="col-lg-2 ms-3 d-none d-lg-block">
+                        <div className="col-lg-3 ms-3 d-none d-lg-block">
                           <span className="text-white text-start">
                             {t("qualitySite.Generate_report")}
                           </span>
@@ -398,11 +398,11 @@ const Quality = () => {
                             {t("qualitySite.View_reports")}
                           </button>
 
-                          <button className="btn-plus ms-2">
+                          {/* <button className="btn-plus ms-2">
                             <i className="fa-solid fa-plus"></i>
-                          </button>
+                          </button> */}
                         </div>
-                        <div className="col-1 d-none d-lg-block">
+                        {/* <div className="col-1 d-none d-lg-block">
                           <div className="dropdown">
                             <button className="dropbtn">
                               <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -413,7 +413,7 @@ const Quality = () => {
                               <a href="#">Link 3</a>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
                       </ul>
                     </li>
                   </div>

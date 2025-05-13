@@ -37,7 +37,7 @@ export default function Survey() {
         
         const updatedVisibleQuestions = questions.filter(shouldRenderQuestion);
         setVisibleQuestions(updatedVisibleQuestions);
-        console.log(answers)
+        console.log("dsds",answers)
     }, [answers, questions]); 
    
 
