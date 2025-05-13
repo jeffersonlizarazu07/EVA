@@ -3,7 +3,7 @@ import HeaderLT1 from "../../components/header/headerLT1";
 import axios from "axios";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   smallAlertDelete,
   loadingAlert,
@@ -41,9 +41,12 @@ import {
 import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
+import Cookies from "js-cookie";
 
-export default function SurveyBlocks() {
-  const { id } = useParams();
+export default function SurveyBlocks({ }) {
+  const { id_form } = useParams();
+  const location = useLocation();
+  const [formData, setFormData] = useState(location.state?.form || null);
   const [data, setData] = useState([]);
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
@@ -141,19 +144,27 @@ export default function SurveyBlocks() {
   const [blocks, setBlocks] = useState([]);
   const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
+  // ID del bloque a eliminar
+  const [blockToDelete, setBlockToDelete] = useState(null);
+
   /* ***********************************************************************************************************/
   /* Component Logic*/
   /* ***********************************************************************************************************/
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
-    getSurvey(id, config, setSurveyData);
+    getSurvey(id_form, config, setSurveyData);
     updateSurveyQuestions();
-  }, [id, languageUser]);
+  }, [id_form, languageUser]);
 
   useEffect(() => {
+  if (Array.isArray(data)) {
     setStaticData([...data]);
-  }, [data]);
+  } else {
+    console.warn("La variable 'data' no es un array:", data);
+    setStaticData([]); // opcionalmente deja un arreglo vacío
+  }
+}, [data]);
 
   useEffect(() => {
     // Verificar si hay al menos una pregunta con texto y tipo
@@ -171,10 +182,11 @@ export default function SurveyBlocks() {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
+    withCredentials: true,
   };
 
   const updateSurveyQuestions = () => {
-    getSurveyQuestions(id, config)
+    getSurveyQuestions(id_form, config)
       .then(setData)
       .catch((error) => {
         console.error("Error al obtener las preguntas de la encuesta", error);
@@ -333,7 +345,7 @@ export default function SurveyBlocks() {
     setQuestionsList(preguntasConvertidas);
   };
 
-  const validar = (id, survey_idt) => {
+  const validar = async (id, survey_idt) => {
     var parametros;
     var metodo;
 
@@ -359,10 +371,10 @@ export default function SurveyBlocks() {
         : selectedAnswer || "";
       optionsToSave = Array.isArray(options)
         ? options
-            .map((option) =>
-              typeof option === "object" ? option.text : option
-            )
-            .join(", ")
+          .map((option) =>
+            typeof option === "object" ? option.text : option
+          )
+          .join(", ")
         : "";
     } else if (questionType.input === "textfield_s") {
       selectedAnswer = textFieldAnswer;
@@ -403,9 +415,9 @@ export default function SurveyBlocks() {
     const newPositionBlock = calBlockPosition();
 
     if (operation === 1) {
-      // Crear nuevo bloque
-      parametros = {
-        id: Date.now(), // Genera un ID único para el localStorage
+      parametros = 
+      {
+        id_form,
         nombreBloque: nombreInput.input,
         ponderacion: ponderacionInput.input || 0,
         posicion: newPositionBlock || 0,
@@ -421,53 +433,53 @@ export default function SurveyBlocks() {
         id_conditional: id_conditional.input,
         conditional_answer: conditional_answer.input,
         section: section.input,
-        selected_answer:
-          questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
-            ? selectedAnswerToString
-            : " ",
-        select_option:
-          questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
-            ? optionsToSave
-            : "",
+        selected_answer: ["check_opt", "radio_opt", "selector_opt"].includes(
+          questionType.input
+        )
+          ? selectedAnswerToString
+          : "",
+        select_option: ["check_opt", "radio_opt", "selector_opt"].includes(
+          questionType.input
+        )
+          ? optionsToSave
+          : "",
       };
-      metodo = "post";
 
-      let nuevosDatos;
-      if (positionType && referenceBlockId) {
-        // Si hay un bloque de referencia y un tipo de posición, reordenar los bloques
-        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
-        nuevosDatos.push(parametros); // Agregar el nuevo bloque al array
+      try {
+        console.log("📦 Parámetros enviados al backend:", parametros);
+        const response = await createBlock(parametros);
+        const newBlock = response.data.data;
 
-        // ordenar por posición asignada
-        nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
-      } else {
-        // Si no hay un bloque de referencia, simplemente agregar el nuevo bloque al final
-        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
+        const updatedList = [...data, newBlock].sort(
+          (a, b) => parseInt(a.posicion) - parseInt(b.posicion)
+        );
+
+        const bloquesReordenados = updatedList.map((bloque, index) => ({
+          ...bloque,
+          posicion: index + 1,
+        }));
+
+        setData(bloquesReordenados);
+
+        Toast.fire({
+          icon: "success",
+          title: "Bloque creado exitosamente",
+        });
+
+        setPositionType("");
+        setReferenceBlockId("");
+        document.getElementById("btnClose").click();
+        handleCancel();
+      } catch (error) {
+        console.error("Error al crear el bloque:", error);
+        Toast.fire({
+          icon: "error",
+          title: "Error al crear el bloque",
+        });
       }
 
-      setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
-      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
+      return; // importante para no seguir con `sendData()` más abajo
 
-      // Reordenar todos los bloques por su campo `posicion`
-      nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
-
-      // Asignar posiciones consecutivas para evitar duplicadas o saltos
-      const bloquesReordenados = nuevosDatos.map((bloque, index) => ({
-        ...bloque,
-        posicion: index + 1,
-      }));
-
-      setData(bloquesReordenados);
-      localStorage.setItem(
-        "bloquesGuardados",
-        JSON.stringify(bloquesReordenados)
-      );
-
-      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
     } else if (operation === 2) {
       parametros = {
         type: questionType.input,
@@ -480,16 +492,16 @@ export default function SurveyBlocks() {
         id_conditional: id_conditional.input,
         selected_answer:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? selectedAnswerToString.length > 1
               ? selectedAnswerToString
               : selectedAnswerToString
             : null,
         select_option:
           questionType.input === "check_opt" ||
-          questionType.input === "radio_opt" ||
-          questionType.input === "selector_opt"
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
             ? optionsToSave
             : null,
       };
@@ -500,9 +512,8 @@ export default function SurveyBlocks() {
         b.id === idToEdit ? { ...b, ...parametros } : b
       );
       setData(nuevosDatos);
-      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
     }
-
+    console.log("parametros", parametros);
     console.log("Parámetros a guardar:", parametros);
 
     sendData(
@@ -516,10 +527,6 @@ export default function SurveyBlocks() {
       t
     )
       .then(() => {
-        // // Actualizar preguntas después de la llamada a sendData
-        // const nuevosDatos = [...data, parametros];
-        // setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
-        // localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
         updateSurveyQuestions(); // Actualiza la lista de preguntas en el componente
         Toast.fire({
           icon: "success",
@@ -704,24 +711,11 @@ export default function SurveyBlocks() {
     return allQuestionsValid;
   };
 
-  // Localstorage temporal
-
-  // Leer al iniciar
   useEffect(() => {
-    const bloques = localStorage.getItem("bloquesGuardados");
-    if (bloques) {
-      const bloquesData = JSON.parse(bloques);
-      // Ordenar bloques por posición
-      bloquesData.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
-      setData(bloquesData);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (data.length > 0) {
-      localStorage.setItem("bloquesGuardados", JSON.stringify(data));
-    }
-  }, [data]);
+  if (Array.isArray(data) && data.length > 0) {
+    // tu lógica aquí
+  }
+}, [data]);
 
   const resetFormFields = () => {
     nombreInput.handleChange("");
@@ -865,41 +859,34 @@ export default function SurveyBlocks() {
   // Posición de bloques
 
   const calBlockPosition = () => {
-    // Si no hay selección relativa, usar la posición por defecto (última posición + 1)
-    if (!positionType || !referenceBlockId) {
-      const posiciones = data.map((bloque) => parseInt(bloque.posicion));
-      return posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+  if (!positionType || !referenceBlockId) {
+    const posiciones = data.map((bloque) => parseInt(bloque.posicion));
+    return posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+  }
+
+  const bloqueReferencia = data.find(
+    (bloque) => bloque.id == referenceBlockId
+  );
+  if (!bloqueReferencia) return 1;
+
+  const posicionReferencia = parseInt(bloqueReferencia.posicion);
+  const nuevosDatos = [...data];
+
+  const nuevaPosicion =
+    positionType === "before" ? posicionReferencia : posicionReferencia + 1;
+
+  // Ajusta las posiciones de los bloques existentes
+  nuevosDatos.forEach((bloque) => {
+    const posBloque = parseInt(bloque.posicion);
+    if (positionType === "before" && posBloque >= posicionReferencia) {
+      bloque.posicion = posBloque + 1;
+    } else if (positionType === "after" && posBloque > posicionReferencia) {
+      bloque.posicion = posBloque + 1;
     }
+  });
 
-    // Encontrar el bloque de referencia
-    const bloqueReferencia = data.find(
-      (bloque) => bloque.id == referenceBlockId
-    );
-    if (!bloqueReferencia) return 1;
-
-    const posicionReferencia = parseInt(bloqueReferencia.posicion);
-    const nuevosDatos = [...data]; // Clonar el array para no mutar el original directamente
-
-    // Calcular nueva posición basada en el tipo de posicionamiento
-    const nuevaPosicion =
-      positionType === "before" ? posicionReferencia : posicionReferencia + 1;
-
-    // Actualizar posiciones de los bloques afectados
-    nuevosDatos.forEach((bloque) => {
-      const posBloque = parseInt(bloque.posicion);
-      if (positionType === "before" && posBloque >= posicionReferencia) {
-        bloque.posicion = posBloque + 1;
-      } else if (positionType === "after" && posBloque > posicionReferencia) {
-        bloque.posicion = posBloque + 1;
-      }
-    });
-
-    // Actualizar el estado y el localStorage con los bloques reordenados
-    setData(nuevosDatos);
-    localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
-
-    return nuevaPosicion;
-  };
+  return nuevaPosicion; // 🔁 Aquí estaba el problema: no retornaba nada
+};
 
   // Obtener bloques al cargar
   useEffect(() => {
@@ -937,25 +924,91 @@ export default function SurveyBlocks() {
   };
 
   // Eliminar bloque
-  const handleDelete = async (id) => {
-    try {
-      await deleteBlock(id);
-      setBlocks(blocks.filter((b) => b.id !== id));
-    } catch (err) {
-      console.error("Error al eliminar:", err);
-    }
-  };
-  // Elimina el bloque - pendiente por revisar**
-  const onBulkEmail = (bloque) => {
-    console.log("Eliminar bloque", bloque);
+  const handleDeleteBlock = (bloque) => {
+    smallAlertDelete
+      .fire({
+        icon: "warning",
+        title: "",
+        html: `<p style="text-align:center;">El bloque <strong>${bloque.nombreBloque}</strong> será eliminado.<br>¿Desea continuar?</p>`,
+        showCancelButton: true,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass: {
+          popup: "my-swal-popup",
+          actions: "swal2-actions-center",
+          icon: "swal2-icon-center",
+          title: "swal2-title-center",
+        },
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteBlock(bloque.id); // Llamada al backend
+            const updatedList = data.filter((b) => b.id !== bloque.id);
+            setData(updatedList);
+            Toast.fire({
+              icon: "success",
+              title: "Bloque eliminado correctamente",
+            });
+          } catch (error) {
+            console.error("Error al eliminar el bloque:", error);
+            Toast.fire({
+              icon: "error",
+              title: "Error al eliminar el bloque",
+            });
+          }
+        }
+      });
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/blocks/ping")
-      .then((res) => res.json())
-      .then((data) => console.log("Conexión exitosa:", data))
-      .catch((err) => console.error("Error en conexión:", err));
-  }, []);
+    // Si no se recibió por navegación, hacer fetch
+    if (!formData && id_form) {
+      fetchFormData();
+    }
+  }, [id_form, formData]);
+
+  const fetchFormData = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const accessToken = Cookies.get("accessToken");
+      if (!id_form || isNaN(parseInt(id_form))) {
+        throw new Error("ID de formulario inválido");
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      };
+
+      const apiUrl = `http://localhost:3000/api/forms/${id_form}`
+      const response = await axios.get(apiUrl, config);
+
+      if (response.data && response.data.data) {
+        setFormData(response.data.data);
+      } else if (response.data) {
+        setFormData(response.data);
+      } else {
+        throw new Error("Formato de respuesta inesperado");
+      }
+    } catch (error) {
+      console.error("Error al obtener datos del formulario:", error);
+      setError(error.message || "Error de comunicación con el servidor");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const retryFetch = () => {
+    if (id_form) {
+      fetchFormData();
+    }
+  };
 
   return (
     <div className="App">
@@ -973,16 +1026,40 @@ export default function SurveyBlocks() {
                   </div>
                   <div className="card-body p-0 py-2">
                     <div className="container-fluid">
-                      <div className="row d-flex align-items-center">
-                        <div className="col-6">
-                          <h5>Información del Formulario</h5>
-                          <p className="fs-6">Descripción</p>
+                      {formData ? (
+                        <div className="row d-flex align-items-center">
+                          <div className="col-6">
+                            <p>
+                              <b>Nombre del formulario: </b>
+                              {formData.title}
+                            </p>
+                            <p className="fs-6">
+                              <b>Descripción:</b> {formData.description}
+                            </p>
+                          </div>
+                          <div className="col-6 text-end">
+                            <p>
+                              <b>Fecha de Creación:</b> {formData.creation_date}
+                            </p>
+                            <p className="fs-6">
+                              <b>Última Actualización:</b>{" "}
+                              {formData.updated_date || "Sin actualizar"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="col-6 text-end">
-                          <p className="fs-6">Fecha inicio / Fecha fin</p>
-                          <p className="fs-6">Cantidad de muestras:</p>
+                      ) : (
+                        <div className="text-center py-3">
+                          <div
+                            className="spinner-border text-secondary"
+                            role="status"
+                          >
+                            <span className="visually-hidden">Cargando...</span>
+                          </div>
+                          <p className="mt-2">
+                            Cargando información del formulario...
+                          </p>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1184,10 +1261,10 @@ export default function SurveyBlocks() {
                                 <button
                                   className="btn text-start"
                                   style={{ width: "100%" }}
-                                  onClick={() => onBulkEmail(bloque)}
+                                  onClick={() => handleDeleteBlock(bloque)}
                                 >
                                   <i className="fa-solid fa-trash"></i>{" "}
-                                  <span>Eliminar</span>
+                                  {t("delete_block")}
                                 </button>
                               </li>
                             </ul>
@@ -1221,7 +1298,7 @@ export default function SurveyBlocks() {
         error={error}
         validar={validar}
         idToEdit={idToEdit}
-        id={id}
+        id_form={id_form}
         areAllFieldsCompleted={areAllFieldsCompleted}
         handleCancel={handleCancel}
         addNewQuestion={addNewQuestion}
@@ -1232,7 +1309,9 @@ export default function SurveyBlocks() {
         posicionInput={posicionInput}
         positionType={positionType}
         referenceBlockId={referenceBlockId}
-        data={data}
+        data={data || []}
+        setPositionType={setPositionType}
+        setReferenceBlockId={setReferenceBlockId}
       />
     </div>
   );

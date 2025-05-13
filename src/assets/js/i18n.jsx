@@ -247,10 +247,12 @@ import { initReactI18next } from "react-i18next";
               "Edit":"Editar",
               "MassiveSend":"Envio masivo",
               "Duply":"Duplicar",
+              "Activate":"Habilitar",
               "Deactivate":"Deshabilitar",
               "Delete":"Eliminar",
               "Survey":"Encuesta",
-              "NewQuestion":"Agregar nueva pregunta"
+              "NewQuestion":"Agregar nueva pregunta",
+              "delete_block":"Eliminar bloque",
             },
             tooltips:{
 

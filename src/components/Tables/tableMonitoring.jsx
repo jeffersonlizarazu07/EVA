@@ -14,6 +14,7 @@ import {
 import axios from "axios";
 import Cookies from "js-cookie";
 import Swal from "sweetalert2";
+import SurveyBlocks from "../../pages/quality/surveyBlocks";
 
 const ModalRegisterUser = ({ open, handleClose, formId }) => {
   const [clients, setClients] = useState([]);
