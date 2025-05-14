@@ -3,14 +3,31 @@ const BlockModel = require('../models/blockModel');
 exports.createBlock = async (req, res) => {
   try {
     const data = req.body;
-    if (!data.name || !data.textQuestion) {
-      return res.status(400).json({ message: 'Faltan campos obligatorios' });
-    }
 
-    const newBlock = await BlockModel.createBlock(data);
-    res.status(201).json({ message: 'Bloque creado', data: newBlock });
+    // (opcional) puedes mapear aquí si necesitas transformar nombres:
+    const formattedData = {
+      form_id: data.form_id || data.survey_idt, // por si llega con nombre incorrecto
+      nombreBloque: data.nombreBloque,
+      ponderacion: data.ponderacion,
+      position: data.posicion || data.position, // soporte para nombre alternativo
+    };
+
+    const result = await BlockModel.createBlock(formattedData);
+    res.status(201).json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear bloque', error: error.message });
+    console.error("Error en createBlock:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.getBlocksByFormId = async (req, res) => {
+  const { formId } = req.params;
+  try {
+    const blocks = await BlockModel.getBlocksByFormId(formId);
+    res.json({ data: blocks });
+  } catch (error) {
+    console.error("Error al obtener bloques por formId:", error);
+    res.status(500).json({ message: "Error al obtener bloques por formulario" });
   }
 };
 
