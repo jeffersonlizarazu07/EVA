@@ -37,7 +37,7 @@ const ModalSurveyBlocks = ({
   error,
   validar,
   idToEdit,
-  id,
+  id_form,
   areAllFieldsCompleted,
   handleCancel,
   addNewQuestion,
@@ -363,7 +363,7 @@ const ModalSurveyBlocks = ({
             <button
               className="btn bg-gradient-guardar mr-2"
               id="btn-send-survey"
-              onClick={() => validar(idToEdit, id)}
+              onClick={() => validar(idToEdit, id_form)}
               disabled={!areAllFieldsCompleted()}
             >
               Guardar

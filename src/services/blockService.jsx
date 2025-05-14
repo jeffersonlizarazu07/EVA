@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api/form';
+const API_URL = 'http://localhost:3000/api/blocks';
 
 export const createBlock = (blockData) => {
   return axios.post(API_URL, blockData, { withCredentials: true });

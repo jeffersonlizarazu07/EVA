@@ -41,9 +41,10 @@ import {
 import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
+// import { position } from "html2canvas/dist/types/css/property-descriptors/position";
 
-export default function SurveyBlocks({ }) {
+export default function SurveyBlocks({}) {
   const { id_form } = useParams();
   const location = useLocation();
   const [formData, setFormData] = useState(location.state?.form || null);
@@ -144,15 +145,40 @@ export default function SurveyBlocks({ }) {
   const [blocks, setBlocks] = useState([]);
   const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
+  // Estado para los bloques de la encuesta
+  const [surveyBlocks, setSurveyBlocks] = useState([]); 
+
   /* ***********************************************************************************************************/
   /* Component Logic*/
   /* ***********************************************************************************************************/
 
+  // useEffect(() => {
+  //   i18n.changeLanguage(languageUser);
+  //   getSurvey(id_form, config, setSurveyData);
+  //   updateSurveyQuestions();
+  // }, [id_form, languageUser]);
+
+  const fetchFormData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/form/${id_form}`,
+        config
+      );
+      setFormData(response.data?.data || response.data);
+    } catch (err) {
+      console.error("Error al obtener datos del formulario:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
-    getSurvey(id_form, config, setSurveyData);
-    updateSurveyQuestions();
-  }, [id_form, languageUser]);
+    // Solo hacer fetch si no llegó por navegación
+    if (!formData && id_form) {
+      fetchFormData();
+    }
+  }, [id_form, formData]);
 
   useEffect(() => {
     setStaticData([...data]);
@@ -174,6 +200,7 @@ export default function SurveyBlocks({ }) {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
+    withCredentials: true,
   };
 
   const updateSurveyQuestions = () => {
@@ -335,212 +362,247 @@ export default function SurveyBlocks({ }) {
 
     setQuestionsList(preguntasConvertidas);
   };
+  
+  const validar = async (id, survey_idt) => {
+    try {
+      setError("");
+      setLoading(true); // Mostrar indicador de carga
 
-  const validar = (id, survey_idt) => {
-    var parametros;
-    var metodo;
+      // Preparar los datos según el tipo de pregunta
+      let selectedAnswer, options, selectedAnswerToString, optionsToSave;
 
-    setError("");
-
-    let selectedAnswer, options, selectedAnswerToString, optionsToSave;
-
-    if (questionType.input === "radio_opt") {
-      selectedAnswer = singleChoiceData.correctAnswer;
-      options = singleChoiceData.options;
-      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
-      optionsToSave = options.map((option) => option.text).join(", ");
-    } else if (questionType.input === "check_opt") {
-      selectedAnswer = multipleChoiceData.correctAnswers;
-      options = multipleChoiceData.options;
-      selectedAnswerToString = selectedAnswer.join(", ");
-      optionsToSave = options.map((option) => option.text).join(", ");
-    } else if (questionType.input === "selector_opt") {
-      selectedAnswer = selectorData.selectedOption;
-      options = selectorData.options;
-      selectedAnswerToString = Array.isArray(selectedAnswer)
-        ? selectedAnswer.join(", ")
-        : selectedAnswer || "";
-      optionsToSave = Array.isArray(options)
-        ? options
-          .map((option) =>
-            typeof option === "object" ? option.text : option
-          )
-          .join(", ")
-        : "";
-    } else if (questionType.input === "textfield_s") {
-      selectedAnswer = textFieldAnswer;
-      options = [];
-      selectedAnswerToString = selectedAnswer ? selectedAnswer.toString() : "";
-      optionsToSave = ""; // No hay opciones para este tipo de pregunta
-    }
-
-    // Recargar de opciones de pregunta antes de guardar
-
-    const refillQuestions = questionsList.map((q) => {
-      let select_option = "";
-      let selected_answer = "";
-
-      if (q.type === "radio_opt") {
-        select_option = singleChoiceData.options
-          .map((opt) => opt.text)
-          .join(", ");
-        selected_answer = singleChoiceData.correctAnswer?.toString() || "";
-      } else if (q.type === "check_opt") {
-        select_option = multipleChoiceData.options
-          .map((opt) => opt.text)
-          .join(", ");
-        selected_answer = multipleChoiceData.correctAnswers.join(", ");
-      } else if (q.type === "selector_opt") {
-        select_option = (q.options || [])
-          .map((opt) => (typeof opt === "object" ? opt.text : opt))
-          .join(", ");
+      switch (questionType.input) {
+        case "radio_opt":
+          selectedAnswer = singleChoiceData.correctAnswer;
+          options = singleChoiceData.options;
+          selectedAnswerToString = selectedAnswer
+            ? selectedAnswer.toString()
+            : "";
+          optionsToSave = options.map((option) => option.text).join(", ");
+          break;
+        case "check_opt":
+          selectedAnswer = multipleChoiceData.correctAnswers;
+          options = multipleChoiceData.options;
+          selectedAnswerToString = selectedAnswer.join(", ");
+          optionsToSave = options.map((option) => option.text).join(", ");
+          break;
+        case "selector_opt":
+          selectedAnswer = selectorData.selectedOption;
+          options = selectorData.options;
+          selectedAnswerToString = Array.isArray(selectedAnswer)
+            ? selectedAnswer.join(", ")
+            : selectedAnswer || "";
+          optionsToSave = Array.isArray(options)
+            ? options
+                .map((option) =>
+                  typeof option === "object" ? option.text : option
+                )
+                .join(", ")
+            : "";
+          break;
+        case "textfield_s":
+          selectedAnswer = textFieldAnswer;
+          options = [];
+          selectedAnswerToString = selectedAnswer
+            ? selectedAnswer.toString()
+            : "";
+          optionsToSave = ""; // No hay opciones para este tipo de pregunta
+          break;
+        default:
+          selectedAnswerToString = "";
+          optionsToSave = "";
       }
 
-      return {
-        ...q,
-        select_option,
-        selected_answer,
-      };
-    });
+      // Recargar opciones de pregunta antes de guardar
+      const refillQuestions = questionsList.map((q) => {
+        let select_option = "";
+        let selected_answer = "";
 
-    const newPositionBlock = calBlockPosition();
+        if (q.type === "radio_opt") {
+          select_option = singleChoiceData.options
+            .map((opt) => opt.text)
+            .join(", ");
+          selected_answer = singleChoiceData.correctAnswer?.toString() || "";
+        } else if (q.type === "check_opt") {
+          select_option = multipleChoiceData.options
+            .map((opt) => opt.text)
+            .join(", ");
+          selected_answer = multipleChoiceData.correctAnswers.join(", ");
+        } else if (q.type === "selector_opt") {
+          select_option = (q.options || [])
+            .map((opt) => (typeof opt === "object" ? opt.text : opt))
+            .join(", ");
+        }
 
-    if (operation === 1) {
-      // Crear nuevo bloque
-      parametros = {
-        id: Date.now(), // Genera un ID único para el localStorage
-        nombreBloque: nombreInput.input,
-        ponderacion: ponderacionInput.input || 0,
-        posicion: newPositionBlock || 0,
-        preguntas: refillQuestions,
-        type:
-          questionsList.length > 0 && questionsList[0].type
-            ? questionsList[0].type
-            : "",
-        conditional: valueConditional ? "SI" : "NO",
-        question: description.input,
-        survey_id: survey_idt,
-        frm_option: frm_option.input,
-        id_conditional: id_conditional.input,
-        conditional_answer: conditional_answer.input,
-        section: section.input,
-        selected_answer:
-          questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-            ? selectedAnswerToString
-            : " ",
-        select_option:
-          questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-            ? optionsToSave
-            : "",
-      };
-      metodo = "post";
-
-      let nuevosDatos;
-      if (positionType && referenceBlockId) {
-        // Si hay un bloque de referencia y un tipo de posición, reordenar los bloques
-        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
-        nuevosDatos.push(parametros); // Agregar el nuevo bloque al array
-
-        // ordenar por posición asignada
-        nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
-      } else {
-        // Si no hay un bloque de referencia, simplemente agregar el nuevo bloque al final
-        nuevosDatos = [...data, parametros]; // Clonar el array para no mutar el original directamente
-      }
-
-      setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
-      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
-
-      // Reordenar todos los bloques por su campo `posicion`
-      nuevosDatos.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
-
-      // Asignar posiciones consecutivas para evitar duplicadas o saltos
-      const bloquesReordenados = nuevosDatos.map((bloque, index) => ({
-        ...bloque,
-        posicion: index + 1,
-      }));
-
-      setData(bloquesReordenados);
-      localStorage.setItem(
-        "bloquesGuardados",
-        JSON.stringify(bloquesReordenados)
-      );
-
-      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
-    } else if (operation === 2) {
-      parametros = {
-        type: questionType.input,
-        preguntas: refillQuestions,
-        percentage: 0,
-        conditional: valueConditional ? "SI" : "NO",
-        question: description.input,
-        survey_id: survey_idt,
-        conditional_answer: conditional_answer.input,
-        id_conditional: id_conditional.input,
-        selected_answer:
-          questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-            ? selectedAnswerToString.length > 1
-              ? selectedAnswerToString
-              : selectedAnswerToString
-            : null,
-        select_option:
-          questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-            ? optionsToSave
-            : null,
-      };
-      console.log("parametros", parametros);
-      metodo = "put";
-
-      const nuevosDatos = data.map((b) =>
-        b.id === idToEdit ? { ...b, ...parametros } : b
-      );
-      setData(nuevosDatos);
-      localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
-    }
-
-    console.log("Parámetros a guardar:", parametros);
-
-    sendData(
-      metodo,
-      parametros,
-      config,
-      id,
-      setLoading,
-      setError,
-      updateSurveyQuestions,
-      t
-    )
-      .then(() => {
-        // // Actualizar preguntas después de la llamada a sendData
-        // const nuevosDatos = [...data, parametros];
-        // setData(nuevosDatos); // Actualiza el estado de bloques en pantalla
-        // localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos)); // Guarda en localStorage
-        updateSurveyQuestions(); // Actualiza la lista de preguntas en el componente
-        Toast.fire({
-          icon: "success",
-          title: "Bloque guardado correctamente",
-        });
-
-        setPositionType(""); // Limpiar tipo de posición
-        setReferenceBlockId(""); // Limpiar bloque de referencia
-
-        document.getElementById("btnClose").click();
-        setValueConditional(false);
-        setPositionType(""); // Limpiar tipo de posición
-        // setReferenceBlockId(""); // Limpiar bloque de referencia
-        handleCancel(); // Limpiar formulario
-      })
-      .catch((error) => {
-        console.error("Error en la actualización de preguntas:", error);
+        return {
+          ...q,
+          select_option,
+          selected_answer,
+        };
       });
+
+      const newPositionBlock = calBlockPosition();
+      let parametros;
+      let response;
+
+      // Procesar según la operación (crear o actualizar)
+      if (operation === 1) {
+        // Crear nuevo bloque
+        parametros = {
+          form_id: id_form,
+          nombreBloque: nombreInput.input,
+          ponderacion: parseInt(ponderacionInput.input || 0),
+          position: newPositionBlock || 0,
+          preguntas: refillQuestions,
+          type:
+            questionsList.length > 0 && questionsList[0].type
+              ? questionsList[0].type
+              : "",
+          conditional: valueConditional ? "SI" : "NO",
+          question: description.input,
+          survey_id: survey_idt,
+          frm_option: frm_option.input,
+          id_conditional: id_conditional.input,
+          conditional_answer: conditional_answer.input,
+          section: section.input,
+          selected_answer:
+            questionType.input === "check_opt" ||
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
+              ? selectedAnswerToString
+              : " ",
+          select_option:
+            questionType.input === "check_opt" ||
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
+              ? optionsToSave
+              : "",
+        };
+
+        console.log(parametros);
+
+        try {
+          response = await axios.post(
+            "http://localhost:3000/api/blocks",
+            parametros,
+            config
+          );
+
+          if (response.status === 201 || response.status === 200) {
+            const newBlock = response.data;
+
+            // Actualizar el estado con el nuevo bloque
+            setData((prevData) => {
+              const nuevosDatos = [...prevData, newBlock];
+              // Ordenar los bloques por posición
+              nuevosDatos.sort(
+                (a, b) => parseInt(a.posicion) - parseInt(b.posicion)
+              );
+              return nuevosDatos;
+            });
+
+            // Mostrar mensaje de éxito
+            Toast.fire({
+              icon: "success",
+              title: "Bloque creado exitosamente",
+            });
+            
+            // Recargar los bloques
+            // getSurveyBlocks();
+
+            // Cerrar el modal y resetear el formulario
+            document.getElementById("btnClose").click();
+            handleCancel();
+          }
+        } catch (apiError) {
+          console.error("Error al crear el bloque:", apiError);
+          setError(
+            apiError.response?.data?.message || "Error al crear el bloque"
+          );
+          Toast.fire({
+            icon: "error",
+            title:
+              apiError.response?.data?.message || "Error al crear el bloque",
+          });
+        }
+      } else if (operation === 2) {
+        // Actualizar bloque existente
+        parametros = {
+          type: questionType.input,
+          preguntas: refillQuestions,
+          percentage: 0,
+          conditional: valueConditional ? "SI" : "NO",
+          question: description.input,
+          survey_id: survey_idt,
+          conditional_answer: conditional_answer.input,
+          id_conditional: id_conditional.input,
+          selected_answer:
+            questionType.input === "check_opt" ||
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
+              ? selectedAnswerToString
+              : null,
+          select_option:
+            questionType.input === "check_opt" ||
+            questionType.input === "radio_opt" ||
+            questionType.input === "selector_opt"
+              ? optionsToSave
+              : null,
+        };
+
+        try {
+          response = await axios.put(
+            `http://localhost:3000/api/blocks/${idToEdit}`,
+            parametros,
+            config
+          );
+
+          if (response.status === 200) {
+            const updatedBlock = response.data;
+
+            // Actualizar los datos en el estado
+            setData((prevData) =>
+              prevData.map((b) =>
+                b.id === idToEdit ? { ...b, ...updatedBlock } : b
+              )
+            );
+
+            // Mostrar mensaje de éxito
+            Toast.fire({
+              icon: "success",
+              title: "Bloque actualizado correctamente",
+            });
+
+            // Limpiar estado y cerrar modal
+            setPositionType("");
+            setReferenceBlockId("");
+            document.getElementById("btnClose").click();
+            setValueConditional(false);
+            handleCancel();
+          }
+        } catch (apiError) {
+          console.error("Error al actualizar el bloque:", apiError);
+          setError(
+            apiError.response?.data?.message || "Error al actualizar el bloque"
+          );
+          Toast.fire({
+            icon: "error",
+            title:
+              apiError.response?.data?.message ||
+              "Error al actualizar el bloque",
+          });
+        }
+      }
+    } catch (generalError) {
+      console.error("Error general en la función validar:", generalError);
+      setError("Ha ocurrido un error inesperado");
+      Toast.fire({
+        icon: "error",
+        title: "Ha ocurrido un error inesperado",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSingleChoiceChange = (updatedData) => {
@@ -706,25 +768,6 @@ export default function SurveyBlocks({ }) {
 
     return allQuestionsValid;
   };
-
-  // Localstorage temporal
-
-  // Leer al iniciar
-  useEffect(() => {
-    const bloques = localStorage.getItem("bloquesGuardados");
-    if (bloques) {
-      const bloquesData = JSON.parse(bloques);
-      // Ordenar bloques por posición
-      bloquesData.sort((a, b) => parseInt(a.posicion) - parseInt(b.posicion));
-      setData(bloquesData);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (data.length > 0) {
-      localStorage.setItem("bloquesGuardados", JSON.stringify(data));
-    }
-  }, [data]);
 
   const resetFormFields = () => {
     nombreInput.handleChange("");
@@ -897,9 +940,8 @@ export default function SurveyBlocks({ }) {
       }
     });
 
-    // Actualizar el estado y el localStorage con los bloques reordenados
+    // Actualizar solo el estado
     setData(nuevosDatos);
-    localStorage.setItem("bloquesGuardados", JSON.stringify(nuevosDatos));
 
     return nuevaPosicion;
   };
@@ -954,59 +996,11 @@ export default function SurveyBlocks({ }) {
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/blocks/ping")
-      .then((res) => res.json())
-      .then((data) => console.log("Conexión exitosa:", data))
-      .catch((err) => console.error("Error en conexión:", err));
-  }, []);
-
-  useEffect(() => {
     // Si no se recibió por navegación, hacer fetch
     if (!formData && id_form) {
       fetchFormData();
     }
   }, [id_form, formData]);
-
-  const fetchFormData = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const accessToken = Cookies.get("accessToken");
-      if (!id_form || isNaN(parseInt(id_form))) {
-        throw new Error("ID de formulario inválido");
-      }
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        withCredentials: true,
-      };
-
-      const apiUrl = `http://localhost:3000/api/forms/${id_form}`;
-      const response = await axios.get(apiUrl, config);
-
-      if (response.data && response.data.data) {
-        setFormData(response.data.data);
-      } else if (response.data) {
-        setFormData(response.data);
-      } else {
-        throw new Error("Formato de respuesta inesperado");
-      }
-    } catch (error) {
-      console.error("Error al obtener datos del formulario:", error);
-      setError(error.message || "Error de comunicación con el servidor");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const retryFetch = () => {
-    if (id_form) {
-      fetchFormData();
-    }
-  }
 
   return (
     <div className="App">
@@ -1027,28 +1021,41 @@ export default function SurveyBlocks({ }) {
                       {formData ? (
                         <div className="row d-flex align-items-center">
                           <div className="col-6">
-                            <p><b>Nombre del formulario: </b>{formData.title}</p>
-                            <p className="fs-6"><b>Descripción:</b> {formData.description}</p>
+                            <p>
+                              <b>Nombre del formulario: </b>
+                              {formData.title}
+                            </p>
+                            <p className="fs-6">
+                              <b>Descripción:</b> {formData.description}
+                            </p>
                           </div>
                           <div className="col-6 text-end">
-                            <p><b>Fecha de Creación:</b> {formData.creation_date}</p>
-                            <p className="fs-6"><b>Última Actualización:</b> {formData.updated_date || "Sin actualizar"}</p>
+                            <p>
+                              <b>Fecha de Creación:</b> {formData.creation_date}
+                            </p>
+                            <p className="fs-6">
+                              <b>Última Actualización:</b>{" "}
+                              {formData.updated_date || "Sin actualizar"}
+                            </p>
                           </div>
                         </div>
                       ) : (
                         <div className="text-center py-3">
-                          <div className="spinner-border text-secondary" role="status">
+                          <div
+                            className="spinner-border text-secondary"
+                            role="status"
+                          >
                             <span className="visually-hidden">Cargando...</span>
                           </div>
-                          <p className="mt-2">Cargando información del formulario...</p>
+                          <p className="mt-2">
+                            Cargando información del formulario...
+                          </p>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
-
-
 
               <div className="col-md-12 mt-3">
                 <div className="card p-4 card-outline card-success borderEVA bg-light">
@@ -1088,96 +1095,101 @@ export default function SurveyBlocks({ }) {
                             {/* Se agregan las preguntas a la vista principal */}
 
                             <div className="mt-2 d-flex flex-column align-items-center">
-                              {bloque.preguntas.map((preg, idx) => (
-                                <div
-                                  key={idx}
-                                  className="shadowbox5 p-3 mb-3"
-                                  style={{ width: "100%" }}
-                                >
-                                  <div className="d-flex justify-content-between align-items-center">
-                                    <div className="w-100">
-                                      <p className="mb-1 mb-3 text-center fs-4">
-                                        <strong className="questionRender">
-                                          Pregunta {idx + 1}:
-                                        </strong>{" "}
-                                        {preg.text || "Sin texto"}
-                                      </p>
+                              {Array.isArray(bloque.preguntas) &&
+                                bloque.preguntas.map((preg, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="shadowbox5 p-3 mb-3"
+                                    style={{ width: "100%" }}
+                                  >
+                                    <div className="d-flex justify-content-between align-items-center">
+                                      <div className="w-100">
+                                        <p className="mb-1 mb-3 text-center fs-4">
+                                          <strong className="questionRender">
+                                            Pregunta {idx + 1}:
+                                          </strong>{" "}
+                                          {preg.text || "Sin texto"}
+                                        </p>
 
-                                      {preg.type === "radio_opt" && (
-                                        <div className="d-flex flex-column align-items-center">
-                                          <SingleChoiceView
-                                            options={preg.select_option}
-                                            correctOption={preg.selected_answer}
-                                          />
-                                        </div>
-                                      )}
-
-                                      {preg.type === "check_opt" && (
-                                        <div className="d-flex flex-column align-items-center">
-                                          <MultipleChoiceView
-                                            options={preg.select_option}
-                                            correctOption={preg.selected_answer}
-                                          />
-                                        </div>
-                                      )}
-
-                                      {preg.type === "selector_opt" && (
-                                        <div className="mb-1">
-                                          <label className="form-label">
-                                            <strong>
-                                              Selecciona una opción:
-                                            </strong>
-                                          </label>
-                                          <select className="form-select">
-                                            {(preg.select_option || "")
-                                              .split(",")
-                                              .map((opt, idx) => {
-                                                const optionText = opt.trim();
-                                                return (
-                                                  <option
-                                                    key={idx}
-                                                    value={optionText}
-                                                    selected={
-                                                      optionText ===
-                                                      preg.selected_answer
-                                                    }
-                                                  >
-                                                    {optionText}
-                                                  </option>
-                                                );
-                                              })}
-                                          </select>
-                                        </div>
-                                      )}
-
-                                      {preg.type === "textfield_s" && (
-                                        <Textfield_s
-                                          value={preg.answer || ""}
-                                          readOnly
-                                        />
-                                      )}
-                                      {preg.type === "yes_no" && (
-                                        <Yes_no
-                                          value={preg.answer || ""}
-                                          readOnly
-                                        />
-                                      )}
-
-                                      <div className="text-end me-3">
-                                        {preg.conditional === "SI" && (
-                                          <i
-                                            className="fa-solid fa-question text-primary"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            data-bs-custom-class="custom-tooltip"
-                                            data-bs-title="Esta pregunta es condicional."
-                                          ></i>
+                                        {preg.type === "radio_opt" && (
+                                          <div className="d-flex flex-column align-items-center">
+                                            <SingleChoiceView
+                                              options={preg.select_option}
+                                              correctOption={
+                                                preg.selected_answer
+                                              }
+                                            />
+                                          </div>
                                         )}
+
+                                        {preg.type === "check_opt" && (
+                                          <div className="d-flex flex-column align-items-center">
+                                            <MultipleChoiceView
+                                              options={preg.select_option}
+                                              correctOption={
+                                                preg.selected_answer
+                                              }
+                                            />
+                                          </div>
+                                        )}
+
+                                        {preg.type === "selector_opt" && (
+                                          <div className="mb-1">
+                                            <label className="form-label">
+                                              <strong>
+                                                Selecciona una opción:
+                                              </strong>
+                                            </label>
+                                            <select className="form-select">
+                                              {(preg.select_option || "")
+                                                .split(",")
+                                                .map((opt, idx) => {
+                                                  const optionText = opt.trim();
+                                                  return (
+                                                    <option
+                                                      key={idx}
+                                                      value={optionText}
+                                                      selected={
+                                                        optionText ===
+                                                        preg.selected_answer
+                                                      }
+                                                    >
+                                                      {optionText}
+                                                    </option>
+                                                  );
+                                                })}
+                                            </select>
+                                          </div>
+                                        )}
+
+                                        {preg.type === "textfield_s" && (
+                                          <Textfield_s
+                                            value={preg.answer || ""}
+                                            readOnly
+                                          />
+                                        )}
+                                        {preg.type === "yes_no" && (
+                                          <Yes_no
+                                            value={preg.answer || ""}
+                                            readOnly
+                                          />
+                                        )}
+
+                                        <div className="text-end me-3">
+                                          {preg.conditional === "SI" && (
+                                            <i
+                                              className="fa-solid fa-question text-primary"
+                                              data-bs-toggle="tooltip"
+                                              data-bs-placement="top"
+                                              data-bs-custom-class="custom-tooltip"
+                                              data-bs-title="Esta pregunta es condicional."
+                                            ></i>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
 
                               <div className="d-flex">
                                 <div
@@ -1293,7 +1305,9 @@ export default function SurveyBlocks({ }) {
         ponderacionInput={ponderacionInput}
         posicionInput={posicionInput}
         positionType={positionType}
+        setPositionType={setPositionType}
         referenceBlockId={referenceBlockId}
+        setReferenceBlockId={setReferenceBlockId}
         data={data}
       />
     </div>
