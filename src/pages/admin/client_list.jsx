@@ -44,6 +44,29 @@ export default function Client_list() {
     i18n.changeLanguage(languageUser); // Cambia el idioma
   }, [languageUser]); // Dependencia del idioma
 
+  // Añadimos un useEffect para manejar el cierre del modal
+  useEffect(() => {
+    // Agregamos un event listener para cuando se cierra el modal
+    const modalElement = document.getElementById('modalCreateClient');
+    if (modalElement) {
+      modalElement.addEventListener('hidden.bs.modal', handleModalClosed);
+    }
+    
+    // Limpieza del event listener cuando el componente se desmonta
+    return () => {
+      if (modalElement) {
+        modalElement.removeEventListener('hidden.bs.modal', handleModalClosed);
+      }
+    };
+  }, []);
+
+  // Función que maneja el cierre del modal
+  const handleModalClosed = () => {
+    resetForm();
+    fetchData(); // Actualiza los datos para asegurarnos de que todo se muestra correctamente
+  }
+
+
   // Configuración para enviar formularios con archivos y cookies
   const config = {
     withCredentials: true,
@@ -191,9 +214,15 @@ export default function Client_list() {
       }
 
       // Si está en modo editar, oculta la imagen original
-      operation === 2
-        ? (document.getElementById("logoToEditOriginal").style.display = "none")
-        : null;
+      const logoOriginal = document.getElementById("logoToEditOriginal");
+       if (operation === 2 && logoOriginal) {
+        logoOriginal.style.display = "none";
+      }
+
+      // Si está en modo editar, oculta la imagen original
+      // operation === 2
+      //   ? (document.getElementById("logoToEditOriginal").style.display = "none")
+      //   : null;
 
       // Crea una vista previa del archivo subido
       const reader = new FileReader();
@@ -201,9 +230,17 @@ export default function Client_list() {
         setPreviewUrl(reader.result);
       };
       reader.readAsDataURL(selectedFile);
-    } else {
+    } else if(selectedFile) {
       // Si el archivo no es válido
       console.log("Por favor selecciona un archivo JPEG o PNG.");
+      // Si el archivo no es válido pero existe
+      setError("Por favor selecciona un archivo JPEG o PNG.");
+      Toast.fire({
+        icon: "error",
+        title: "Por favor selecciona un archivo JPEG o PNG.",
+      });
+      // Limpiar el input para que se pueda seleccionar otro archivo
+      e.target.value = "";
     }
   };
 
@@ -229,7 +266,10 @@ export default function Client_list() {
       client.handleChange("");
       logo.handleChange("");
       setLogoToEdit("");
+      setidToEdit(null); //ID se resetea
     } else if (op == 2) {
+      setSelectedFile(null); // Añadir esta línea para limpiar cualquier archivo seleccionado previo
+      setPreviewUrl(null); // Añadir esta línea para limpiar la vista previa
       setTitle(t("clientModal.EditClient"));
       client.handleChange(clientData?.client || "");
       setLogoToEdit(clientData?.logo || "");
@@ -240,88 +280,125 @@ export default function Client_list() {
     }
   };
 
-  const validar = async (id) => {
-    const urlpost = `http://localhost:3000/api/clients`; // URL para crear cliente
-    const formData = new FormData();
-    console.log("Archivo seleccionado:", selectedFile);
-    console.log("Cliente:", client.input);
-    console.log("Color 1:", colors1);
-    console.log("Color 2:", colors2);
+  const validar = async () => {
+    // Usamos el ID del estado, no recibimos uno como parámetro
+  const id = idToEdit;
   
-    // Si hay un archivo, se agrega al FormData
-    selectedFile ? formData.append("logo", selectedFile) : null;
-  
-    // Agrega los demás campos del formulario al FormData
-    formData.append("client", client.input);
-    formData.append("color_tag1", colors1);
-    formData.append("color_tag2", colors2);
-    formData.append("state", 1);
-  
-    const newClientName = client.input.trim().toLowerCase();
+  const urlpost = `http://localhost:3000/api/clients`; // URL para crear cliente
+  const formData = new FormData();
+  console.log("Archivo seleccionado:", selectedFile);
+  console.log("Cliente:", client.input);
+  console.log("Color 1:", colors1);
+  console.log("Color 2:", colors2);
+  console.log("Operación:", operation);
+  console.log("ID a editar:", id);
 
-    // Validación: Verificar si el nombre del cliente ya existe
-    if (id == null) {
-      // Aquí se crea un nuevo cliente
-      try {
-        //const clientExists = data.some((item) => item.client === client.input);
-        const clientExists = data.some(item => item.client.trim().toLowerCase() === newClientName);
-        if (clientExists) {
-          setError("El nombre del cliente ya existe");
-          Toast.fire({
+  // Si hay un archivo, se agrega al FormData
+  selectedFile ? formData.append("logo", selectedFile) : null;
+
+  // Agrega los demás campos del formulario al FormData
+  formData.append("client", client.input);
+  formData.append("color_tag1", colors1);
+  formData.append("color_tag2", colors2);
+  formData.append("state", 1);
+
+  const newClientName = client.input.trim().toLowerCase();
+
+  // Verificamos si estamos en modo creación (1) o edición (2)
+  if (operation === 1) {
+    // Aquí se crea un nuevo cliente
+    try {
+      const clientExists = data.some(item => item.client.trim().toLowerCase() === newClientName);
+      if (clientExists) {
+        setError("El nombre del cliente ya existe");
+        Toast.fire({
           icon: "error",
           title: t("clientModal.DuplicatedUser"),
         });
-          return;
-        }
-        const response = await axios.post(`${urlpost}`, formData, {
-          withCredentials: true,
-        });
-        console.log("Respuesta del servidor:", response.data);
-  
-        // Si la respuesta es exitosa, se realizan las acciones de éxito
-        if (response.data.status) {
-          setColors1("#FFFFFF");
-          setColors2("#FFFFFF");
-          setSelectedFile(null);
-          setError("");
-          fetchData(); // Actualiza los datos
-          document.getElementById("btnCerrar").click(); // Cierra el modal
-  
-          // Muestra la alerta de éxito
-          Toast.fire({
-            icon: "success",
-            title: `${client.input} ${t("alertCreateEdit.SuccessAlert")}`,
-          });
-        }
-      } catch (error) {
-        console.error("Error subiendo el archivo:", error);
+        return;
       }
-    } else {
-      // Aquí se realiza una actualización del cliente con PUT
-      const urlput = `http://localhost:3000/api/clients/${id}`;
-
-      try {
-        const response = await axios.put(urlput, formData, {
-          "Content-Type": "multipart/form-data",
-          withCredentials: true,
+      
+      if (!selectedFile) {
+        setError("Debes seleccionar un logo");
+        Toast.fire({
+          icon: "error",
+          title: "Debes seleccionar un logo",
         });
-        console.log("Respuesta del servidor:", response);
-        if (!response.data.status) {
-          alert("No se realizó la edición del cliente");
-          document.getElementById("btnCerrar").click();
-          console.log(response.data);
-        }
+        return;
+    }
+      
+      const response = await axios.post(`${urlpost}`, formData, {
+        withCredentials: true,
+      });
+      console.log("Respuesta del servidor (CREAR):", response.data);
+
+      if (response.data.status) {
+        resetForm();
+        fetchData();
+        document.getElementById("btnCerrar").click();
+
+        Toast.fire({
+          icon: "success",
+          title: `${client.input} ${t("alertCreateEdit.SuccessAlert")}`,
+        });
+      }
+    } catch (error) {
+      console.error("Error subiendo el archivo:", error);
+    }
+  } else if (operation === 2 && id) {
+    // Aquí se realiza una actualización del cliente con PUT
+    const urlput = `http://localhost:3000/api/clients/${id}`;
+    console.log("URL de actualización:", urlput);
+
+    try {
+      const response = await axios.put(urlput, formData, {
+        "Content-Type": "multipart/form-data",
+        withCredentials: true,
+      });
+      
+      console.log("Respuesta del servidor (EDITAR):", response);
+      
+      if (!response.data.status) {
+        alert("No se realizó la edición del cliente");
+        document.getElementById("btnCerrar").click();
+        console.log(response.data);
+      } else {
         Toast.fire({
           icon: "success",
           title: `El cliente ${client.input} se ha editado exitosamente`,
         });
+        resetForm();
         fetchData();
         document.getElementById("btnCerrar").click();
-      } catch (error) {
-        console.error("Error actualizando el cliente:", error);
+
       }
+    } catch (error) {
+      console.error("Error actualizando el cliente:", error);
     }
+  } else {
+    console.error("Operación no válida o ID faltante para edición");
+  }
   };
+
+//  función para resetear el formulario
+const resetForm = () => {
+  setColors1("#FFFFFF");
+  setColors2("#FFFFFF");
+  setSelectedFile(null);
+  setPreviewUrl(null);
+  setError("");
+  setidToEdit(null);
+  client.handleChange("");
+  logo.handleChange("");
+  setLogoToEdit("");
+
+    // Resetear el input de archivo para permitir seleccionar el mismo archivo de nuevo
+  const fileInput = document.getElementById("imagenLogo");
+  if (fileInput) {
+    fileInput.value = "";
+  }
+  fetchData();
+};
 
   const handleClose = () => {
     setDisplayColorPicker(false);
@@ -523,7 +600,7 @@ export default function Client_list() {
       </div>
 
       {
-        <div id="modalCreateClient" className="modal fade" aria-hidden="true">
+        <div id="modalCreateClient" className="modal fade" aria-hidden="true" >
           <div className="modal-dialog modal-dialog-centered modal-md">
             <div className="modal-content">
               <div
@@ -649,7 +726,7 @@ export default function Client_list() {
                   {t("clientModal.Close")}
                 </button>
                 <button
-                  onClick={() => validar(idToEdit)}
+                  onClick={() => validar()}
                   className="btn-primary btn"
                 >
                   {t("clientModal.Save")}
