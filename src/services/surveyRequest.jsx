@@ -20,7 +20,6 @@ export const getSurvey = async (id, config, setSurveyData) => {
   }catch(error){
     console.log('error: ',error)
   }
- 
 };
 
 export const getSurveyQuestions = async (id, config) => {

@@ -38,7 +38,7 @@ const ModalSurveyBlocks = ({
   error,
   validar,
   idToEdit,
-  id,
+  id_form,
   areAllFieldsCompleted,
   handleCancel,
   addNewQuestion,
