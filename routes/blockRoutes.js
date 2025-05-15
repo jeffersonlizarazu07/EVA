@@ -8,6 +8,9 @@ router.post('/', blockController.createBlock);
 // Obtener todos los bloques
 router.get('/', blockController.getAllBlocks);
 
+// Obtener bloques por ID de formulario
+router.get('/form/:formId', blockController.getBlocksByFormId);
+
 // Obtener un bloque por ID
 router.get('/:id', blockController.getBlockById);
 
