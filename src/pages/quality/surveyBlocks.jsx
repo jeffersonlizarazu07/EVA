@@ -145,6 +145,7 @@ export default function SurveyBlocks({}) {
   const [blocks, setBlocks] = useState([]);
   const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
+ formulario
   // Estado para los bloques de la encuesta
   const [surveyBlocks, setSurveyBlocks] = useState([]); 
 
@@ -181,8 +182,13 @@ export default function SurveyBlocks({}) {
   }, [id_form, formData]);
 
   useEffect(() => {
+  if (Array.isArray(data)) {
     setStaticData([...data]);
-  }, [data]);
+  } else {
+    console.warn("La variable 'data' no es un array:", data);
+    setStaticData([]); // opcionalmente deja un arreglo vacío
+  }
+}, [data]);
 
   useEffect(() => {
     // Verificar si hay al menos una pregunta con texto y tipo
@@ -433,7 +439,6 @@ export default function SurveyBlocks({}) {
             .map((opt) => (typeof opt === "object" ? opt.text : opt))
             .join(", ");
         }
-
         return {
           ...q,
           select_option,
@@ -599,6 +604,7 @@ export default function SurveyBlocks({}) {
       Toast.fire({
         icon: "error",
         title: "Ha ocurrido un error inesperado",
+
       });
     } finally {
       setLoading(false);
@@ -768,7 +774,7 @@ export default function SurveyBlocks({}) {
 
     return allQuestionsValid;
   };
-
+  
   const resetFormFields = () => {
     nombreInput.handleChange("");
     ponderacionInput.handleChange("");
@@ -911,40 +917,27 @@ export default function SurveyBlocks({}) {
   // Posición de bloques
 
   const calBlockPosition = () => {
-    // Si no hay selección relativa, usar la posición por defecto (última posición + 1)
-    if (!positionType || !referenceBlockId) {
-      const posiciones = data.map((bloque) => parseInt(bloque.posicion));
-      return posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
-    }
+  if (!positionType || !referenceBlockId) {
+    const posiciones = data.map((bloque) => parseInt(bloque.posicion));
+    return posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+  }
 
-    // Encontrar el bloque de referencia
-    const bloqueReferencia = data.find(
-      (bloque) => bloque.id == referenceBlockId
-    );
-    if (!bloqueReferencia) return 1;
+  const bloqueReferencia = data.find(
+    (bloque) => bloque.id == referenceBlockId
+  );
+  if (!bloqueReferencia) return 1;
 
-    const posicionReferencia = parseInt(bloqueReferencia.posicion);
-    const nuevosDatos = [...data]; // Clonar el array para no mutar el original directamente
+  const posicionReferencia = parseInt(bloqueReferencia.posicion);
+  const nuevosDatos = [...data];
 
-    // Calcular nueva posición basada en el tipo de posicionamiento
-    const nuevaPosicion =
-      positionType === "before" ? posicionReferencia : posicionReferencia + 1;
-
-    // Actualizar posiciones de los bloques afectados
-    nuevosDatos.forEach((bloque) => {
-      const posBloque = parseInt(bloque.posicion);
-      if (positionType === "before" && posBloque >= posicionReferencia) {
-        bloque.posicion = posBloque + 1;
-      } else if (positionType === "after" && posBloque > posicionReferencia) {
-        bloque.posicion = posBloque + 1;
-      }
-    });
+  const nuevaPosicion =
+    positionType === "before" ? posicionReferencia : posicionReferencia + 1;
 
     // Actualizar solo el estado
     setData(nuevosDatos);
 
-    return nuevaPosicion;
-  };
+  return nuevaPosicion; // 🔁 Aquí estaba el problema: no retornaba nada
+};
 
   // Obtener bloques al cargar
   useEffect(() => {
@@ -982,17 +975,42 @@ export default function SurveyBlocks({}) {
   };
 
   // Eliminar bloque
-  const handleDelete = async (id) => {
-    try {
-      await deleteBlock(id);
-      setBlocks(blocks.filter((b) => b.id !== id));
-    } catch (err) {
-      console.error("Error al eliminar:", err);
-    }
-  };
-  // Elimina el bloque - pendiente por revisar**
-  const onBulkEmail = (bloque) => {
-    console.log("Eliminar bloque", bloque);
+  const handleDeleteBlock = (bloque) => {
+    smallAlertDelete
+      .fire({
+        icon: "warning",
+        title: "",
+        html: `<p style="text-align:center;">El bloque <strong>${bloque.nombreBloque}</strong> será eliminado.<br>¿Desea continuar?</p>`,
+        showCancelButton: true,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass: {
+          popup: "my-swal-popup",
+          actions: "swal2-actions-center",
+          icon: "swal2-icon-center",
+          title: "swal2-title-center",
+        },
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteBlock(bloque.id); // Llamada al backend
+            const updatedList = data.filter((b) => b.id !== bloque.id);
+            setData(updatedList);
+            Toast.fire({
+              icon: "success",
+              title: "Bloque eliminado correctamente",
+            });
+          } catch (error) {
+            console.error("Error al eliminar el bloque:", error);
+            Toast.fire({
+              icon: "error",
+              title: "Error al eliminar el bloque",
+            });
+          }
+        }
+      });
   };
 
   useEffect(() => {
@@ -1258,10 +1276,10 @@ export default function SurveyBlocks({}) {
                                 <button
                                   className="btn text-start"
                                   style={{ width: "100%" }}
-                                  onClick={() => onBulkEmail(bloque)}
+                                  onClick={() => handleDeleteBlock(bloque)}
                                 >
                                   <i className="fa-solid fa-trash"></i>{" "}
-                                  <span>Eliminar</span>
+                                  {t("delete_block")}
                                 </button>
                               </li>
                             </ul>

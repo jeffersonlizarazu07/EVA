@@ -19,6 +19,7 @@ import "../../assets/css/survey.css"
 import "../../assets/css/surveyBlocks.css";
 
 const ModalSurveyBlocks = ({
+  id_form,
   operation,
   title,
   descriptionText,
@@ -48,7 +49,9 @@ const ModalSurveyBlocks = ({
   posicionInput,
   positionType,
   referenceBlockId,
-  data
+  data = [],
+  setPositionType,
+  setReferenceBlockId,
 }) => {
     return (
     <div
