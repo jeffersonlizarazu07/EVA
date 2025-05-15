@@ -11,5 +11,8 @@ router.post('/question',authMiddleware, questionController.postQuestion);
 router.put('/question/:id',authMiddleware, questionController.putQuestion);
 router.delete('/question/:id',authMiddleware, questionController.deleteQuestion);
 
+//ruta para modificar el id de las preguntas condicionales
+router.put('/question/conditional/:id', authMiddleware, questionController.putConditionalQuestion);
+
 
 module.exports = router;
