@@ -290,15 +290,15 @@ export default function SurveyBlocks({}) {
         setIsChecked(false);
       }
 
-      if (questionDetails.type == "check_opt") {
-        const opstionsMultipleData = questionDetails.select_option.split(",");
-        const multipleAnswers = questionDetails.selected_answer.split(",");
+      // if (questionDetails.type == "check_opt") {
+      //   const opstionsMultipleData = questionDetails.select_option.split(",");
+      //   const multipleAnswers = questionDetails.selected_answer.split(",");
 
-        setMultipleChoiceData({
-          options: opstionsMultipleData,
-          correctAnswers: multipleAnswers,
-        });
-      }
+      //   setMultipleChoiceData({
+      //     options: opstionsMultipleData,
+      //     correctAnswers: multipleAnswers,
+      //   });
+      // }
       if (questionDetails.type == "radio_opt") {
         const optiosnData = questionDetails?.select_option;
         const optionsDataArray = optiosnData.split(",");
@@ -320,6 +320,11 @@ export default function SurveyBlocks({}) {
           })),
           selectedOption: selectedOption,
         });
+        if (questionDetails.type == "textfield_s") {
+          const optionsData = questionDetails?.select_option;
+          const optionsDataArray = optionsData ? optionsData.split(",") : [];
+          const selectedOption = questionDetails?.selected_answer;
+        }
 
         // Actualizar QuestionsList
 
