@@ -37,12 +37,16 @@ import {
   getAllBlocks,
   updateBlock,
   deleteBlock,
+  getBlocksByFormId,
 } from "../../services/blockService";
+import {
+  createQuestions,
+  getQuestionsByBlockId,
+} from "../../services/questionsFormServices";
 import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 import Cookies from "js-cookie";
-// import { position } from "html2canvas/dist/types/css/property-descriptors/position";
 
 export default function SurveyBlocks({}) {
   const { id_form } = useParams();
@@ -146,7 +150,7 @@ export default function SurveyBlocks({}) {
   const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
   // Estado para los bloques de la encuesta
-  const [surveyBlocks, setSurveyBlocks] = useState([]); 
+  const [surveyBlocks, setSurveyBlocks] = useState([]);
 
   /* ***********************************************************************************************************/
   /* Component Logic*/
@@ -362,124 +366,65 @@ export default function SurveyBlocks({}) {
 
     setQuestionsList(preguntasConvertidas);
   };
-  
+
   const validar = async (id, survey_idt) => {
     try {
       setError("");
-      setLoading(true); // Mostrar indicador de carga
+      setLoading(true);
 
-      // Preparar los datos según el tipo de pregunta
-      let selectedAnswer, options, selectedAnswerToString, optionsToSave;
-
-      switch (questionType.input) {
-        case "radio_opt":
-          selectedAnswer = singleChoiceData.correctAnswer;
-          options = singleChoiceData.options;
-          selectedAnswerToString = selectedAnswer
-            ? selectedAnswer.toString()
-            : "";
-          optionsToSave = options.map((option) => option.text).join(", ");
-          break;
-        case "check_opt":
-          selectedAnswer = multipleChoiceData.correctAnswers;
-          options = multipleChoiceData.options;
-          selectedAnswerToString = selectedAnswer.join(", ");
-          optionsToSave = options.map((option) => option.text).join(", ");
-          break;
-        case "selector_opt":
-          selectedAnswer = selectorData.selectedOption;
-          options = selectorData.options;
-          selectedAnswerToString = Array.isArray(selectedAnswer)
-            ? selectedAnswer.join(", ")
-            : selectedAnswer || "";
-          optionsToSave = Array.isArray(options)
-            ? options
-                .map((option) =>
-                  typeof option === "object" ? option.text : option
-                )
-                .join(", ")
-            : "";
-          break;
-        case "textfield_s":
-          selectedAnswer = textFieldAnswer;
-          options = [];
-          selectedAnswerToString = selectedAnswer
-            ? selectedAnswer.toString()
-            : "";
-          optionsToSave = ""; // No hay opciones para este tipo de pregunta
-          break;
-        default:
-          selectedAnswerToString = "";
-          optionsToSave = "";
-      }
-
-      // Recargar opciones de pregunta antes de guardar
+      // Preparar preguntas con respuestas/selecciones integradas
       const refillQuestions = questionsList.map((q) => {
         let select_option = "";
         let selected_answer = "";
 
         if (q.type === "radio_opt") {
-          select_option = singleChoiceData.options
-            .map((opt) => opt.text)
+          select_option = (q.options || [])
+            .map((opt) => opt.text || opt)
             .join(", ");
-          selected_answer = singleChoiceData.correctAnswer?.toString() || "";
+          selected_answer =
+            q.correctAnswer?.toString() || q.selected_answer || "";
         } else if (q.type === "check_opt") {
-          select_option = multipleChoiceData.options
-            .map((opt) => opt.text)
+          select_option = (q.options || [])
+            .map((opt) => opt.text || opt)
             .join(", ");
-          selected_answer = multipleChoiceData.correctAnswers.join(", ");
+          selected_answer = Array.isArray(q.correctAnswers)
+            ? q.correctAnswers.join(", ")
+            : q.selected_answer || "";
         } else if (q.type === "selector_opt") {
           select_option = (q.options || [])
-            .map((opt) => (typeof opt === "object" ? opt.text : opt))
+            .map((opt) => opt.text || opt)
             .join(", ");
+          selected_answer = q.selected_answer || "";
+        } else if (q.type === "textfield_s") {
+          select_option = "";
+          selected_answer = q.selected_answer || "";
         }
 
         return {
-          ...q,
+          text: q.text || q.question || "Sin texto", // 👈 asegúrate de capturar el campo correcto
+          type: q.type,
           select_option,
           selected_answer,
+          conditional: q.conditional || "NO",
         };
       });
 
+      console.log(refillQuestions);
+
+      // Calcular la posición del bloque
       const newPositionBlock = calBlockPosition();
-      let parametros;
       let response;
 
-      // Procesar según la operación (crear o actualizar)
+      // CREACIÓN DE BLOQUE
       if (operation === 1) {
-        // Crear nuevo bloque
-        parametros = {
+        const parametros = {
           form_id: id_form,
           nombreBloque: nombreInput.input,
           ponderacion: parseInt(ponderacionInput.input || 0),
           position: newPositionBlock || 0,
-          preguntas: refillQuestions,
-          type:
-            questionsList.length > 0 && questionsList[0].type
-              ? questionsList[0].type
-              : "",
-          conditional: valueConditional ? "SI" : "NO",
-          question: description.input,
-          survey_id: survey_idt,
-          frm_option: frm_option.input,
-          id_conditional: id_conditional.input,
-          conditional_answer: conditional_answer.input,
-          section: section.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? selectedAnswerToString
-              : " ",
-          select_option:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? optionsToSave
-              : "",
         };
 
-        console.log(parametros);
+        console.log("Datos a enviar:", parametros);
 
         try {
           response = await axios.post(
@@ -491,26 +436,24 @@ export default function SurveyBlocks({}) {
           if (response.status === 201 || response.status === 200) {
             const newBlock = response.data;
 
-            // Actualizar el estado con el nuevo bloque
+            if (refillQuestions.length > 0) {
+              await createQuestions(newBlock.id, refillQuestions);
+            }
+
+            const enrichedBlock = { ...newBlock, preguntas: refillQuestions };
+
             setData((prevData) => {
-              const nuevosDatos = [...prevData, newBlock];
-              // Ordenar los bloques por posición
+              const nuevosDatos = [...prevData, enrichedBlock];
               nuevosDatos.sort(
                 (a, b) => parseInt(a.posicion) - parseInt(b.posicion)
               );
               return nuevosDatos;
             });
 
-            // Mostrar mensaje de éxito
             Toast.fire({
               icon: "success",
               title: "Bloque creado exitosamente",
             });
-            
-            // Recargar los bloques
-            // getSurveyBlocks();
-
-            // Cerrar el modal y resetear el formulario
             document.getElementById("btnClose").click();
             handleCancel();
           }
@@ -525,29 +468,14 @@ export default function SurveyBlocks({}) {
               apiError.response?.data?.message || "Error al crear el bloque",
           });
         }
-      } else if (operation === 2) {
-        // Actualizar bloque existente
-        parametros = {
-          type: questionType.input,
-          preguntas: refillQuestions,
-          percentage: 0,
-          conditional: valueConditional ? "SI" : "NO",
-          question: description.input,
-          survey_id: survey_idt,
-          conditional_answer: conditional_answer.input,
-          id_conditional: id_conditional.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? selectedAnswerToString
-              : null,
-          select_option:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? optionsToSave
-              : null,
+      }
+
+      // 🛠️ EDICIÓN DE BLOQUE
+      else if (operation === 2) {
+        const parametros = {
+          nombreBloque: nombreInput.input,
+          ponderacion: parseInt(ponderacionInput.input || 0),
+          position: posicionInput.input || 0,
         };
 
         try {
@@ -558,26 +486,26 @@ export default function SurveyBlocks({}) {
           );
 
           if (response.status === 200) {
-            const updatedBlock = response.data;
+            const updatedBlock = response.data.data || response.data;
 
-            // Actualizar los datos en el estado
+            if (refillQuestions.length > 0) {
+              await updateQuestionsForBlock(idToEdit, refillQuestions);
+            }
+
+            const enrichedBlock = {
+              ...updatedBlock,
+              preguntas: refillQuestions,
+            };
+
             setData((prevData) =>
-              prevData.map((b) =>
-                b.id === idToEdit ? { ...b, ...updatedBlock } : b
-              )
+              prevData.map((b) => (b.id === idToEdit ? enrichedBlock : b))
             );
 
-            // Mostrar mensaje de éxito
             Toast.fire({
               icon: "success",
               title: "Bloque actualizado correctamente",
             });
-
-            // Limpiar estado y cerrar modal
-            setPositionType("");
-            setReferenceBlockId("");
             document.getElementById("btnClose").click();
-            setValueConditional(false);
             handleCancel();
           }
         } catch (apiError) {
@@ -949,16 +877,55 @@ export default function SurveyBlocks({}) {
   // Obtener bloques al cargar
   useEffect(() => {
     loadBlocks();
-  }, []);
+  }, [id_form]);
 
   const loadBlocks = async () => {
     try {
-      const res = await getAllBlocks();
-      setBlocks(res.data);
+      const res = await getBlocksByFormId(id_form); // Bloques del formulario actual
+      const bloquesMapeados = Array.isArray(res.data?.data)
+        ? res.data.data.map((bloque) => ({
+            ...bloque,
+            nombreBloque: bloque.block_name || "Sin nombre",
+            ponderacion: bloque.percentage || 0,
+            posicion: bloque.block_location || 0,
+            preguntas: bloque.preguntas || [],
+            type: bloque.type || "",
+            conditional: bloque.conditional || "NO",
+            question: bloque.question || "",
+            survey_id: bloque.survey_id || null,
+            frm_option: bloque.frm_option || "",
+            id_conditional: bloque.id_conditional || null,
+            conditional_answer: bloque.conditional_answer || "",
+            preguntas: bloque.preguntas
+              ? typeof bloque.preguntas === "string"
+                ? JSON.parse(bloque.preguntas)
+                : bloque.preguntas
+              : [],
+            select_option: bloque.select_option || "",
+            selected_answer: bloque.selected_answer || "",
+          }))
+        : [];
+
+      setData(bloquesMapeados); // Datos mapeados
     } catch (err) {
       console.error("Error al cargar bloques:", err);
     }
   };
+
+  //   const loadBlocks = async () => {
+  //   try {
+  //     const res = await getAllBlocks();
+  //     console.log("👀 Datos de bloques:", res.data);
+  //     if (Array.isArray(res.data)) {
+  //       setBlocks(res.data);
+  //       console.log(`Bloque ${i}:`, bloque);
+  //     } else {
+  //       console.warn("⚠️ La respuesta no es un array.");
+  //     }
+  //   } catch (err) {
+  //     console.error("Error al cargar bloques:", err);
+  //   }
+  // };
 
   // Crear bloque
   const handleCreate = async () => {

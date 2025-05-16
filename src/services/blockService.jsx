@@ -14,6 +14,10 @@ export const getBlockById = (id) => {
   return axios.get(`${API_URL}/${id}`, { withCredentials: true });
 };
 
+export const getBlocksByFormId = (formId) => {
+  return axios.get(`${API_URL}/form/${formId}`, { withCredentials: true });
+};
+
 export const updateBlock = (id, updatedData) => {
   return axios.put(`${API_URL}/${id}`, updatedData, { withCredentials: true });
 };
