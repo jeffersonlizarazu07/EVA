@@ -9,9 +9,8 @@ class questionsFormModel {
   async createQuestionsForBlock(blockId, questions) {
     const typeMap = {
       radio_opt: 1,
-      check_opt: 2,
-      selector_opt: 3,
-      textfield_s: 4,
+      selector_opt: 2,
+      textfield_s: 3,
     };
 
     const dataToInsert = questions.map((q) => ({
@@ -19,7 +18,7 @@ class questionsFormModel {
       id_type_question: typeMap[q.type] || null,
       conditional: q.conditional || "NO",
       id_conditional: q.id_conditional || null,
-      conditional_answer: q.conditional_answer || "",
+      conditional_answer: q.conditional_answer ?? "",
       select_option: Array.isArray(q.options)
         ? q.options.map(opt => typeof opt === 'object' ? opt.text : opt).join(",")
         : "",
@@ -29,7 +28,7 @@ class questionsFormModel {
     console.log("Insertando preguntas:", dataToInsert); // Log temporal
     await this.knex(this.table).insert(dataToInsert);
 
-    console.log("📥 Preguntas a insertar:", dataToInsert);
+    console.log("Preguntas a insertar:", dataToInsert);
   }
 
   async updateQuestionsForBlock(blockId, questions) {

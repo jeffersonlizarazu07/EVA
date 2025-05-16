@@ -2,7 +2,7 @@ const QuestionModel = require('../models/questionsFormModel');
 
 const createQuestions = async (req, res) => {
   try {
-    console.log("🧾 Preguntas recibidas:", req.body);
+    console.log("Preguntas recibidas:", req.body);
     const { block_id, preguntas } = req.body;
 
     if (!block_id || !Array.isArray(preguntas)) {
