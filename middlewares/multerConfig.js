@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Ruta absoluta 
-const uploadDir = 'C:\\Users\\moncayorojas.6\\Desktop\\Trabajos\\EVA\\tpco_transversal_EvaFe\\public\\clientes';
+const uploadDir = 'C:\\Users\\lizarazurondon.5\\tpco_transversal_EvaFe\\public\\clientes';
 
 // Ruta relativa dentro del proyecto para la carpeta imgClientes
 // const uploadDir = path.join(__dirname, '..', 'public', 'imgClientes'); // Esto genera la ruta 'miProyectoNodeJS/public/imgClientes'

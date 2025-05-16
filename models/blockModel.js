@@ -21,10 +21,17 @@ class BlockModel {
         block_name: data.nombreBloque,
         percentage: data.ponderacion,
         block_location: data.position,
-        // numberQuestions: data.numberQuestions,
-        // textQuestion: data.textQuestion,
-        // TypeAnswer: data.TypeAnswer,
-        // answersByQuestion: data.answersByQuestion, // debe venir serializado si es un array/objeto
+        // Campos adicionales
+        // question: data.question || null,
+        // preguntas: JSON.stringify(data.preguntas || []),
+        // select_option: data.select_option || "",
+        // selected_answer: data.selected_answer || "",
+        // type: data.type || "",
+        // conditional: data.conditional || "NO",
+        // survey_id: data.survey_id || null,
+        // frm_option: data.frm_option || "",
+        // id_conditional: data.id_conditional || null,
+        // conditional_answer: data.conditional_answer || "",
       });
 
       return { id, ...data };
@@ -38,10 +45,10 @@ class BlockModel {
   }
 
   async getBlocksByFormId(formId) {
-  return await this.knex(this.table)
-    .where({ form_id: formId })
-    .orderBy("block_location", "asc");
-}
+    return await this.knex(this.table)
+      .where({ form_id: formId })
+      .orderBy("block_location", "asc");
+  }
 
   async getBlockById(id) {
     const block = await this.knex(this.table).where({ id }).first();

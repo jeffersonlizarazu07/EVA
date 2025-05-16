@@ -1,10 +1,10 @@
 const BlockModel = require('../models/blockModel');
 
 exports.createBlock = async (req, res) => {
+  console.log("📥 Datos recibidos en backend:", req.body);
   try {
     const data = req.body;
 
-    // (opcional) puedes mapear aquí si necesitas transformar nombres:
     const formattedData = {
       form_id: data.form_id || data.survey_idt, // por si llega con nombre incorrecto
       nombreBloque: data.nombreBloque,
