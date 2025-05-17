@@ -7,38 +7,37 @@ class BlockModel {
   }
 
   async createBlock(data) {
-    if (
-      !data.form_id ||
-      !data.nombreBloque ||
-      !data.ponderacion ||
-      !data.position
-    ) {
-      throw new Error("Faltan campos obligatorios");
-    }
-    try {
-      const [id] = await this.knex(this.table).insert({
-        form_id: data.form_id,
-        block_name: data.nombreBloque,
-        percentage: data.ponderacion,
-        block_location: data.position,
-        // Campos adicionales
-        // question: data.question || null,
-        // preguntas: JSON.stringify(data.preguntas || []),
-        // select_option: data.select_option || "",
-        // selected_answer: data.selected_answer || "",
-        // type: data.type || "",
-        // conditional: data.conditional || "NO",
-        // survey_id: data.survey_id || null,
-        // frm_option: data.frm_option || "",
-        // id_conditional: data.id_conditional || null,
-        // conditional_answer: data.conditional_answer || "",
-      });
-
-      return { id, ...data };
-    } catch (error) {
-      throw new Error(`Error al crear el bloque: ${error.message}`);
-    }
+  if (
+    data.form_id == null ||
+    data.nombreBloque == null ||
+    data.ponderacion == null
+  ) {
+    throw new Error("Faltan campos obligatorios");
   }
+
+  // Calcular la posición automáticamente si no viene
+  if (data.position == null) {
+    const maxPos = await this.knex(this.table)
+      .where({ form_id: data.form_id })
+      .max("block_location as max")
+      .first();
+
+    data.position = (maxPos?.max || 0) + 1;
+  }
+
+  try {
+    const [id] = await this.knex(this.table).insert({
+      form_id: data.form_id,
+      block_name: data.nombreBloque,
+      percentage: data.ponderacion,
+      block_location: data.position,
+    });
+
+    return { id, ...data };
+  } catch (error) {
+    throw new Error(`Error al crear el bloque: ${error.message}`);
+  }
+}
 
   async getAllBlocks() {
     return await this.knex(this.table).select("*");

@@ -1,7 +1,9 @@
+const knex = require('../config/db');
 const BlockModel = require('../models/blockModel');
+const QuestionModel = require('../models/questionsFormModel');
 
 exports.createBlock = async (req, res) => {
-  console.log("📥 Datos recibidos en backend:", req.body);
+  console.log("Datos recibidos en backend:", req.body);
   try {
     const data = req.body;
 
@@ -20,23 +22,35 @@ exports.createBlock = async (req, res) => {
   }
 };
 
-exports.getBlocksByFormId = async (req, res) => {
-  const { formId } = req.params;
-  try {
-    const blocks = await BlockModel.getBlocksByFormId(formId);
-    res.json({ data: blocks });
-  } catch (error) {
-    console.error("Error al obtener bloques por formId:", error);
-    res.status(500).json({ message: "Error al obtener bloques por formulario" });
-  }
-};
-
 exports.getAllBlocks = async (req, res) => {
   try {
     const blocks = await BlockModel.getAllBlocks();
     res.json(blocks);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener bloques', error: error.message });
+  }
+};
+
+exports.getBlocksByFormId = async (req, res) => {
+  const { formId } = req.params;
+  try {
+    const blocks = await BlockModel.getBlocksByFormId(formId);
+
+    // Enriquecer cada bloque con sus preguntas
+    const enrichedBlocks = await Promise.all(
+      blocks.map(async (block) => {
+        const preguntas = await QuestionModel.getQuestionsByBlockId(block.id);
+        return {
+          ...block,
+          preguntas, // se agrega aquí el array
+        };
+      })
+    );
+
+    res.json({ data: enrichedBlocks });
+  } catch (error) {
+    console.error("Error al obtener bloques con preguntas:", error.message, error.stack);
+    res.status(500).json({ message: "Error al obtener bloques" });
   }
 };
 
@@ -66,3 +80,4 @@ exports.deleteBlock = async (req, res) => {
     res.status(500).json({ message: 'Error al eliminar bloque', error: error.message });
   }
 };
+
