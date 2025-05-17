@@ -406,7 +406,7 @@ export default function SurveyBlocks({}) {
         }
 
         return {
-          text: q.text || q.question || "Sin texto", // 👈 asegúrate de capturar el campo correcto
+          text: q.text || q.question || "Sin texto",
           type: q.type,
           select_option,
           selected_answer,
@@ -886,32 +886,43 @@ export default function SurveyBlocks({}) {
 
   const loadBlocks = async () => {
     try {
-      const res = await getBlocksByFormId(id_form); // Bloques del formulario actual
+      const res = await getBlocksByFormId(id_form);
       const bloquesMapeados = Array.isArray(res.data?.data)
         ? res.data.data.map((bloque) => ({
             ...bloque,
-            nombreBloque: bloque.block_name || "Sin nombre",
-            ponderacion: bloque.percentage || 0,
-            posicion: bloque.block_location || 0,
-            preguntas: bloque.preguntas || [],
-            type: bloque.type || "",
-            conditional: bloque.conditional || "NO",
-            question: bloque.question || "",
-            survey_id: bloque.survey_id || null,
-            frm_option: bloque.frm_option || "",
-            id_conditional: bloque.id_conditional || null,
-            conditional_answer: bloque.conditional_answer || "",
-            preguntas: bloque.preguntas
-              ? typeof bloque.preguntas === "string"
-                ? JSON.parse(bloque.preguntas)
-                : bloque.preguntas
+            preguntas: Array.isArray(bloque.preguntas)
+              ? bloque.preguntas.map((preg) => {
+                  const opciones = preg.select_option
+                    ? preg.select_option.split(",").map((o) => o.trim())
+                    : [];
+
+                  let tipo = preg.type || "";
+                  if (!tipo && preg.id_type_question) {
+                    const typeMap = {
+                      1: "radio_opt",
+                      2: "selector_opt",
+                      3: "textfield_s",
+                      4: "check_opt",
+                      5: "yes_no",
+                    };
+                    tipo = typeMap[preg.id_type_question] || "unknown";
+                  }
+
+                  return {
+                    text: preg.text || preg.question_name || "Sin texto",
+                    type: tipo,
+                    options: opciones,
+                    selected_answer:
+                      preg.conditional_answer || preg.selected_answer || "",
+                    conditional: preg.conditional || "NO",
+                  };
+                })
               : [],
-            select_option: bloque.select_option || "",
-            selected_answer: bloque.selected_answer || "",
           }))
         : [];
 
-      setData(bloquesMapeados); // Datos mapeados
+      console.log("Bloques mapeados:", bloquesMapeados);
+      setData(bloquesMapeados);
     } catch (err) {
       console.error("Error al cargar bloques:", err);
     }
@@ -1080,13 +1091,21 @@ export default function SurveyBlocks({}) {
                                           <strong className="questionRender">
                                             Pregunta {idx + 1}:
                                           </strong>{" "}
-                                          {preg.text || "Sin texto"}
+                                          {preg.text ||
+                                            preg.question_name ||
+                                            "Sin texto"}
                                         </p>
 
                                         {preg.type === "radio_opt" && (
                                           <div className="d-flex flex-column align-items-center">
                                             <SingleChoiceView
-                                              options={preg.select_option}
+                                              options={(
+                                                preg.options ||
+                                                preg.select_option ||
+                                                ""
+                                              )
+                                                .split(",")
+                                                .map((o) => o.trim())}
                                               correctOption={
                                                 preg.selected_answer
                                               }
@@ -1097,7 +1116,13 @@ export default function SurveyBlocks({}) {
                                         {preg.type === "check_opt" && (
                                           <div className="d-flex flex-column align-items-center">
                                             <MultipleChoiceView
-                                              options={preg.select_option}
+                                              options={(
+                                                preg.options ||
+                                                preg.select_option ||
+                                                ""
+                                              )
+                                                .split(",")
+                                                .map((o) => o.trim())}
                                               correctOption={
                                                 preg.selected_answer
                                               }
