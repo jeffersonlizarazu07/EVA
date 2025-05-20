@@ -167,16 +167,19 @@ function SingleChoiceQuestionEdit({
   return (
     <div>
       {localOptions.map((option, index) => (
-        <div key={index} className="row mx-2 form-group align-items-stretch d-flex">
-        <div className="col-1 p-1 mb-7">
-          <input
-            type="checkbox"
-            checked={option.checked}
-            onChange={() => handleCheckboxChange(index)}
-            className="form-check-input"
-            style={{ width: "100%", height: "50%"}}
-          />
-        </div>
+        <div
+          key={index}
+          className="row mx-2 form-group align-items-stretch d-flex"
+        >
+          <div className="col-1 p-1 mb-7">
+            <input
+              type="checkbox"
+              checked={option.checked}
+              onChange={() => handleCheckboxChange(index)}
+              className="form-check-input"
+              style={{ width: "100%", height: "50%" }}
+            />
+          </div>
           <div className="col">
             <label id="labelAnimation">
               <input
@@ -281,16 +284,19 @@ function MultipleChoiceQuestionEdit({
   return (
     <div>
       {localOptions.map((option, index) => (
-        <div key={index} className="row mx-2 form-group align-items-stretch d-flex">
-        <div className="col-1 p-1 mb-7">
-          <input
-            type="checkbox"
-            checked={option.checked}
-            onChange={() => handleCheckboxChange(index)}
-            className="form-check-input"
-            style={{ width: "100%", height: "50%"}}
-          />
-        </div>
+        <div
+          key={index}
+          className="row mx-2 form-group align-items-stretch d-flex"
+        >
+          <div className="col-1 p-1 mb-7">
+            <input
+              type="checkbox"
+              checked={option.checked}
+              onChange={() => handleCheckboxChange(index)}
+              className="form-check-input"
+              style={{ width: "100%", height: "50%" }}
+            />
+          </div>
           <div className="col mt-2">
             <label id="labelAnimation">
               <input
@@ -443,33 +449,34 @@ const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
   const [showFormMultiple, setShowFormMultiple] = useState(false);
   const [newMultipleAnswer, setNewMultipleAnswer] = useState("");
 
-  // Actualizar componente padre cuando responses cambie
-  useEffect(() => {
-    const formattedOptions = responses.map((response) => ({
-      text: response,
-      checked: false,
-    }));
-
-    if (onChange) {
-      onChange({
-        options: formattedOptions,
-        correctAnswers: [], // Default a sin respuestas correctas
-      });
-    }
-  }, [responses, onChange]);
-
-  // Funciones para respuestas múltiples
+  // Función para añadir nueva respuesta
   const handleAddMultipleResponse = () => {
     if (newMultipleAnswer.trim() === "") return;
+
     const updatedResponses = [...responses, newMultipleAnswer.trim()];
     setResponses(updatedResponses);
     setNewMultipleAnswer("");
     setShowFormMultiple(false);
+
+    if (onChange) {
+      onChange({
+        options: updatedResponses.map((r) => ({ text: r, checked: false })),
+        correctAnswers: [],
+      });
+    }
   };
 
+  // Función para eliminar una respuesta
   const handleRemoveResponse = (index) => {
     const updated = responses.filter((_, i) => i !== index);
     setResponses(updated);
+
+    if (onChange) {
+      onChange({
+        options: updated.map((r) => ({ text: r, checked: false })),
+        correctAnswers: [],
+      });
+    }
   };
 
   return (
@@ -495,7 +502,7 @@ const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
         ))}
       </ul>
 
-      {/* Solo un bloque para agregar opciones */}
+      {/* Botón para agregar nueva opción */}
       {!showFormMultiple ? (
         <button
           className="btn btn-link text-decoration-none p-0 mt-3"
@@ -536,7 +543,7 @@ const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
         </div>
       )}
 
-      {/* Select con respuestas creadas - solo mostrarlo si hay respuestas */}
+      {/* Select con respuestas creadas */}
       {responses.length > 0 && (
         <div className="mt-4">
           <label className="form-label">

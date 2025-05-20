@@ -188,18 +188,6 @@ export default function SurveyBlocks({}) {
     setStaticData([...data]);
   }, [data]);
 
-  useEffect(() => {
-    // Verificar si hay al menos una pregunta con texto y tipo
-    const hasValid = questionsList.some((q) => q.text && q.type);
-    setHasValidQuestions(hasValid);
-
-    // Si hay alguna pregunta válida, actualizar questionType
-    if (hasValid) {
-      const validQuestion = questionsList.find((q) => q.text && q.type);
-      questionType.handleChange(validQuestion.type);
-    }
-  }, [questionsList]);
-
   const config = {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -231,25 +219,18 @@ export default function SurveyBlocks({}) {
     setValueConditional(conditional);
   };
 
-  useEffect(() => {
-    if (valueConditional && !listConditional) {
-      setListConditional(true);
-    } else if (!valueConditional && listConditional) {
-      setListConditional(false);
-      if (
-        singleChoiceData.options.length > 0 ||
-        singleChoiceData.correctAnswer !== null
-      ) {
-        setSingleChoiceData({ options: [], correctAnswer: null });
-      }
-      if (
-        multipleChoiceData.options.length > 0 ||
-        multipleChoiceData.correctAnswers.length > 0
-      ) {
-        setMultipleChoiceData({ options: [], correctAnswers: [] });
-      }
-    }
-  }, [valueConditional, listConditional, singleChoiceData, multipleChoiceData]);
+  // useEffect(() => {
+  //   const hasValid = questionsList.some((q) => q.text && q.type);
+  //   setHasValidQuestions(hasValid);
+
+  //   // Solo actualiza questionType si está vacío y existe una pregunta válida
+  //   if (hasValid && !questionType.input) {
+  //     const validQuestion = questionsList.find((q) => q.text && q.type);
+  //     if (validQuestion) {
+  //       questionType.handleChange(validQuestion.type);
+  //     }
+  //   }
+  // }, [questionsList]);
 
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
@@ -362,14 +343,16 @@ export default function SurveyBlocks({}) {
 
     posicionInput.handleChange(nuevaPosicion.toString()); // Asigna internamente
 
-    const preguntasConvertidas = (questionDetails.preguntas || []).map((p) => ({
-      text: p.text || p.question || "", // usa el campo correcto
-      type: p.type || "",
-      options: p.options || [],
-      correctAnswers: p.correctAnswers || [],
-    }));
+    if (questionDetails && Array.isArray(questionDetails.preguntas)) {
+      const preguntasConvertidas = questionDetails.preguntas.map((p) => ({
+        text: p.text || p.question || "", // usa el campo correcto
+        type: p.type || "",
+        options: p.options || [],
+        correctAnswers: p.correctAnswers || [],
+      }));
 
-    setQuestionsList(preguntasConvertidas);
+      setQuestionsList(preguntasConvertidas);
+    }
   };
 
   const validar = async (id, survey_idt) => {
@@ -694,19 +677,29 @@ export default function SurveyBlocks({}) {
   const handleSelectorChange = (data) => {
     setSelectorData(data);
 
-    // Actualizar directamente en questionsList el tipo selector
-    setQuestionsList((prevQuestions) =>
-      prevQuestions.map((q, idx) => {
+    setQuestionsList((prevQuestions) => {
+      const updatedQuestions = prevQuestions.map((q) => {
         if (q.type === "selector_opt") {
-          return {
-            ...q,
-            options: data.options, // Guardar todas las opciones
-            selected_answer: data.selectedOption, // Guardar la respuesta seleccionada
-          };
+          const hasChanged =
+            JSON.stringify(q.options) !== JSON.stringify(data.options) ||
+            q.selected_answer !== data.selectedOption;
+
+          if (hasChanged) {
+            return {
+              ...q,
+              options: data.options,
+              selected_answer: data.selectedOption,
+            };
+          }
         }
         return q;
-      })
-    );
+      });
+
+      // Evitar actualizar si no hubo cambios reales
+      const isDifferent =
+        JSON.stringify(updatedQuestions) !== JSON.stringify(prevQuestions);
+      return isDifferent ? updatedQuestions : prevQuestions;
+    });
   };
 
   const areAllFieldsCompleted = () => {
@@ -1015,7 +1008,7 @@ export default function SurveyBlocks({}) {
   };
 
   //Actualizar bloque
-  const handleUpdate = async (id, updatedFields) => {
+  const handleUpdateBlock = async (id, updatedFields) => {
     try {
       const res = await updateBlock(id, updatedFields);
       setBlocks(blocks.map((b) => (b.id === id ? res.data.data : b)));
@@ -1025,14 +1018,46 @@ export default function SurveyBlocks({}) {
   };
 
   // Eliminar bloque
-  const handleDelete = async (id) => {
+  const handleDeleteBlock = async (id, title) => {
     try {
+      const result = await smallAlertDelete.fire({
+        icon: "warning",
+        title: "",
+        html: `<p style="text-align:center;">El bloque <strong>${title}</strong> será eliminado.<br>¿Desea continuar?</p>`,
+        showCancelButton: true,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass: {
+          popup: "my-swal-popup",
+          actions: "swal2-actions-center",
+          icon: "swal2-icon-center",
+          title: "swal2-title-center",
+        },
+        didOpen: () => {
+          const icon = document.querySelector(".swal2-icon");
+          const title = document.querySelector(".swal2-title");
+          if (icon && title) {
+            icon.style.marginRight = "10px";
+          }
+        },
+      });
+
+      if (!result.isConfirmed) return;
+
       await deleteBlock(id);
-      setBlocks(blocks.filter((b) => b.id !== id));
+      setData((prevData) => prevData.filter((block) => block.id !== id));
+
+      Toast.fire({ icon: "success", title: "Bloque eliminado exitosamente" });
     } catch (err) {
-      console.error("Error al eliminar:", err);
+      console.error("Error al eliminar el bloque:", err);
+      Toast.fire({
+        icon: "error",
+        title: "Error al eliminar el bloque seleccionado",
+      });
     }
   };
+
   // Elimina el bloque - pendiente por revisar**
   const onBulkEmail = (bloque) => {
     console.log("Eliminar bloque", bloque);
@@ -1044,6 +1069,14 @@ export default function SurveyBlocks({}) {
       fetchFormData();
     }
   }, [id_form, formData]);
+
+  useEffect(() => {
+    console.log("questionsList cambió", questionsList);
+  }, [questionsList]);
+
+  useEffect(() => {
+    console.log("questionType cambió", questionType.input);
+  }, [questionType.input]);
 
   return (
     <div className="App">
@@ -1321,7 +1354,7 @@ export default function SurveyBlocks({}) {
                                   className="btn text-start"
                                   style={{ width: "100%" }}
                                   data-bs-toggle="modal"
-                                  onClick={() => onUpdate(bloque)}
+                                  onClick={() => handleUpdateBlock(bloque.id)}
                                 >
                                   <i className="fa-solid fa-edit"></i> Editar
                                 </button>
@@ -1330,7 +1363,12 @@ export default function SurveyBlocks({}) {
                                 <button
                                   className="btn text-start"
                                   style={{ width: "100%" }}
-                                  onClick={() => onBulkEmail(bloque)}
+                                  onClick={() =>
+                                    handleDeleteBlock(
+                                      bloque.id,
+                                      bloque.block_name
+                                    )
+                                  }
                                 >
                                   <i className="fa-solid fa-trash"></i>{" "}
                                   <span>Eliminar</span>
