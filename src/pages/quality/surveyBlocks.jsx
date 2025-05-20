@@ -145,7 +145,7 @@ export default function SurveyBlocks({}) {
   const [blocks, setBlocks] = useState([]);
   const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
- formulario
+ //formulario
   // Estado para los bloques de la encuesta
   const [surveyBlocks, setSurveyBlocks] = useState([]); 
 
