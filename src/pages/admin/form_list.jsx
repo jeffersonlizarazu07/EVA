@@ -111,7 +111,7 @@ const FormList = () => {
   };
 
   const openForm = (form) => {
-    navigate(`/survey_blocks/${form.id}`, { state: { form } });
+    navigate(`/survey_blocks/${form.id}`);
   };
 
   const activateForm = async (form) => {

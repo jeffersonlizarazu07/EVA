@@ -42,13 +42,14 @@ import {
 import {
   createQuestions,
   getQuestionsByBlockId,
-} from "../../services/questionsFormServices";
+} from "../../services/questionsFormService";
+import AnswersFormService from "../../services/answersFormService";
 import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 import Cookies from "js-cookie";
 
-export default function SurveyBlocks({}) {
+export default function SurveyBlocks({ }) {
   const { id_form } = useParams();
   const location = useLocation();
   const [formData, setFormData] = useState(location.state?.form || null);
@@ -420,7 +421,7 @@ export default function SurveyBlocks({}) {
       const newPositionBlock = calBlockPosition();
       let response;
 
-      // CREACIÓN DE BLOQUE
+      // Crear bloque
       if (operation === 1) {
         const parametros = {
           form_id: id_form,
@@ -432,7 +433,7 @@ export default function SurveyBlocks({}) {
         console.log("Datos a enviar:", parametros);
 
         try {
-          response = await axios.post(
+          const response = await axios.post(
             "http://localhost:3000/api/blocks",
             parametros,
             config
@@ -442,871 +443,922 @@ export default function SurveyBlocks({}) {
             const newBlock = response.data;
 
             if (refillQuestions.length > 0) {
-              await createQuestions(newBlock.id, refillQuestions);
+              const responseQuestions = await createQuestions(
+                newBlock.id,
+                refillQuestions
+              );
+              const questionIds = responseQuestions;
+              console.log("IDs de preguntas recibidos:", questionIds);
+
+              if (!questionIds || !Array.isArray(questionIds)) {
+                throw new Error("No se recibieron los IDs de las preguntas.");
+              }
+
+              // Enviar respuestas vinculadas a cada pregunta
+              for (let i = 0; i < refillQuestions.length; i++) {
+                const question = refillQuestions[i];
+                const questionId = questionIds[i];
+
+                if (!questionId) {
+                  console.warn(`Pregunta sin ID asignado en posición ${i}`);
+                  continue;
+                }
+
+                // Acceder a la respuesta correcta según el tipo de pregunta
+                let answer = "";
+
+                if (question.type === "radio_opt" || question.type === "selector_opt") {
+                  answer = question.selected_answer || "";
+                } else if (question.type === "check_opt") {
+                  answer = Array.isArray(question.selected_answers)
+                    ? question.selected_answers.join(", ")
+                    : "";
+                } else if (question.type === "textfield_s" || question.type === "yes_no") {
+                  // Aquí puedes decidir si quieres guardar o no.
+                  // Por ejemplo, si es respuesta abierta:
+                  answer = question.selected_answer || "";
+                }
+
+                if (answer.trim() !== "") {
+                  try {
+                    await AnswersFormService.createAnswer({
+                      question_id: questionId,
+                      answer_question: answer,
+                    });
+                  } catch (err) {
+                    console.error(`Error al guardar respuesta "${answer}":`, err);
+                  }
+                }
+              }
             }
 
-            const enrichedBlock = { ...newBlock, preguntas: refillQuestions };
+          const enrichedBlock = { ...newBlock, preguntas: refillQuestions };
 
-            setData((prevData) => {
-              const nuevosDatos = [...prevData, enrichedBlock];
-              nuevosDatos.sort(
-                (a, b) => parseInt(a.posicion) - parseInt(b.posicion)
-              );
-              return nuevosDatos;
-            });
-
-            Toast.fire({
-              icon: "success",
-              title: "Bloque creado exitosamente",
-            });
-            document.getElementById("btnClose").click();
-            handleCancel();
-          }
-        } catch (apiError) {
-          console.error("Error al crear el bloque:", apiError);
-          setError(
-            apiError.response?.data?.message || "Error al crear el bloque"
-          );
-          Toast.fire({
-            icon: "error",
-            title:
-              apiError.response?.data?.message || "Error al crear el bloque",
+          setData((prevData) => {
+            const nuevosDatos = [...prevData, enrichedBlock];
+            nuevosDatos.sort(
+              (a, b) => parseInt(a.posicion) - parseInt(b.posicion)
+            );
+            return nuevosDatos;
           });
-        }
-      }
 
-      // 🛠️ EDICIÓN DE BLOQUE
+          Toast.fire({
+            icon: "success",
+            title: "Bloque creado exitosamente",
+          });
+
+          document.getElementById("btnClose").click();
+          handleCancel();
+        }
+        } catch (apiError) {
+        console.error("Error al crear el bloque:", apiError);
+        setError(
+          apiError.response?.data?.message ||
+          apiError.message ||
+          "Error al crear el bloque"
+        );
+        Toast.fire({
+          icon: "error",
+          title:
+            apiError.response?.data?.message ||
+            apiError.message ||
+            "Error al crear el bloque",
+        });
+      }
+    }
+
+      // Editar bloque
       else if (operation === 2) {
-        const parametros = {
-          nombreBloque: nombreInput.input,
-          ponderacion: parseInt(ponderacionInput.input || 0),
-          position: posicionInput.input || 0,
+    const parametros = {
+      nombreBloque: nombreInput.input,
+      ponderacion: parseInt(ponderacionInput.input || 0),
+      position: posicionInput.input || 0,
+    };
+
+    try {
+      response = await axios.put(
+        `http://localhost:3000/api/blocks/${idToEdit}`,
+        parametros,
+        config
+      );
+
+      if (response.status === 200) {
+        const updatedBlock = response.data.data || response.data;
+
+        if (refillQuestions.length > 0) {
+          await updateQuestionsForBlock(idToEdit, refillQuestions);
+        }
+
+        const enrichedBlock = {
+          ...updatedBlock,
+          preguntas: refillQuestions,
         };
 
-        try {
-          response = await axios.put(
-            `http://localhost:3000/api/blocks/${idToEdit}`,
-            parametros,
-            config
-          );
+        setData((prevData) =>
+          prevData.map((b) => (b.id === idToEdit ? enrichedBlock : b))
+        );
 
-          if (response.status === 200) {
-            const updatedBlock = response.data.data || response.data;
-
-            if (refillQuestions.length > 0) {
-              await updateQuestionsForBlock(idToEdit, refillQuestions);
-            }
-
-            const enrichedBlock = {
-              ...updatedBlock,
-              preguntas: refillQuestions,
-            };
-
-            setData((prevData) =>
-              prevData.map((b) => (b.id === idToEdit ? enrichedBlock : b))
-            );
-
-            Toast.fire({
-              icon: "success",
-              title: "Bloque actualizado correctamente",
-            });
-            document.getElementById("btnClose").click();
-            handleCancel();
-          }
-        } catch (apiError) {
-          console.error("Error al actualizar el bloque:", apiError);
-          setError(
-            apiError.response?.data?.message || "Error al actualizar el bloque"
-          );
-          Toast.fire({
-            icon: "error",
-            title:
-              apiError.response?.data?.message ||
-              "Error al actualizar el bloque",
-          });
-        }
+        Toast.fire({
+          icon: "success",
+          title: "Bloque actualizado correctamente",
+        });
+        document.getElementById("btnClose").click();
+        handleCancel();
       }
-    } catch (generalError) {
-      console.error("Error general en la función validar:", generalError);
-      setError("Ha ocurrido un error inesperado");
+    } catch (apiError) {
+      console.error("Error al actualizar el bloque:", apiError);
+      setError(
+        apiError.response?.data?.message || "Error al actualizar el bloque"
+      );
       Toast.fire({
         icon: "error",
-        title: "Ha ocurrido un error inesperado",
+        title:
+          apiError.response?.data?.message ||
+          "Error al actualizar el bloque",
       });
-    } finally {
-      setLoading(false);
     }
+  }
+} catch (generalError) {
+  console.error("Error general en la función validar:", generalError);
+  setError("Ha ocurrido un error inesperado");
+  Toast.fire({
+    icon: "error",
+    title: "Ha ocurrido un error inesperado",
+  });
+} finally {
+  setLoading(false);
+}
   };
 
-  const handleSingleChoiceChange = (updatedData) => {
-    setSingleChoiceData(updatedData);
-    console.log("updated Data:", singleChoiceData.correctAnswer);
-  };
+const handleSingleChoiceChange = (updatedData) => {
+  setSingleChoiceData(updatedData);
+  console.log("updated Data:", singleChoiceData.correctAnswer);
+};
 
-  const handleMultipleChoiceChange = (data) => {
-    setMultipleChoiceData(data)({
-      options: data.options || [],
-      correctAnswers: Array.isArray(data.correctAnswers)
-        ? data.correctAnswers
-        : [],
-    });
-  };
-  const handleSelectConditionalQuestionChange = (e) => {
-    const selectedId = e.target.value; // Captura el value (question.id)
-    const selectedType = e.target.selectedOptions[0].getAttribute("data-type");
-    const selectedAnswers =
-      e.target.selectedOptions[0].getAttribute("data-answers"); // Convertimos de vuelta a un array u objeto
-    setSelectedRangeType({
-      questionTypeRange: selectedType,
-      answersRange: selectedAnswers,
-    });
-    id_conditional.handleChange(selectedId);
-  };
+const handleMultipleChoiceChange = (data) => {
+  setMultipleChoiceData(data)({
+    options: data.options || [],
+    correctAnswers: Array.isArray(data.correctAnswers)
+      ? data.correctAnswers
+      : [],
+  });
+};
+const handleSelectConditionalQuestionChange = (e) => {
+  const selectedId = e.target.value; // Captura el value (question.id)
+  const selectedType = e.target.selectedOptions[0].getAttribute("data-type");
+  const selectedAnswers =
+    e.target.selectedOptions[0].getAttribute("data-answers"); // Convertimos de vuelta a un array u objeto
+  setSelectedRangeType({
+    questionTypeRange: selectedType,
+    answersRange: selectedAnswers,
+  });
+  id_conditional.handleChange(selectedId);
+};
 
-  /* Selector Option */
-  const rangeOptions = useMemo(
-    () =>
-      getRangeOptions(
-        selectedRangeType.questionTypeRange,
-        selectedRangeType.answersRange
-      ),
-    [selectedRangeType]
+/* Selector Option */
+const rangeOptions = useMemo(
+  () =>
+    getRangeOptions(
+      selectedRangeType.questionTypeRange,
+      selectedRangeType.answersRange
+    ),
+  [selectedRangeType]
+);
+
+/*Agregar preguntas botón + Pregunta. Si el valor es 0 el botón por defecto crea una encuesta*/
+const addNewQuestion = () => {
+  let count = parseInt(questionCountInput);
+
+  // Validar que sea un número válido mayor o igual a 1
+  if (isNaN(count) || count < 1) {
+    count = 1;
+  }
+
+  const newQuestions = Array.from({ length: count }, () => ({
+    text: "",
+    type: "",
+    options: [],
+    correctAnswers: [],
+  }));
+
+  setQuestionsList((prev) => [...prev, ...newQuestions]);
+  setQuestionCountInput(""); // Limpiar input
+};
+
+const handleInputChange = (index, key, value) => {
+  const updatedQuestions = [...questionsList];
+  updatedQuestions[index][key] = value;
+  setQuestionsList(updatedQuestions);
+};
+
+// Validar el input de preguntas del modal
+
+const validateInputs = () => {
+  // Validación de questionType: solo letras y guiones bajos
+  const questionTypeValid = /^[A-Za-z_]+$/.test(questionType);
+  const descriptionValid = description.trim() !== "";
+
+  if (!questionTypeValid) {
+    setError(
+      "El tipo de pregunta no es válido. Solo se permiten letras y guiones bajos."
+    );
+    return false;
+  }
+
+  if (!descriptionValid) {
+    setError("La descripción de la pregunta es obligatoria.");
+    return false;
+  }
+
+  // Si pasa todas las validaciones
+  setError(""); // Limpiar cualquier error previo
+  return true;
+};
+
+// Manejo el envío de pregunta
+const handleSubmit = () => {
+  if (validateInputs()) {
+    // Aquí puedes manejar el envío de los datos
+    console.log("Pregunta válida. Enviar datos...");
+  }
+};
+
+const handleSelectorChange = (data) => {
+  setSelectorData(data);
+
+  // Actualizar directamente en questionsList el tipo selector
+  setQuestionsList((prevQuestions) =>
+    prevQuestions.map((q, idx) => {
+      if (q.type === "selector_opt") {
+        return {
+          ...q,
+          options: data.options, // Guardar todas las opciones
+          selected_answer: data.selectedOption, // Guardar la respuesta seleccionada
+        };
+      }
+      return q;
+    })
   );
+};
 
-  /*Agregar preguntas botón + Pregunta. Si el valor es 0 el botón por defecto crea una encuesta*/
-  const addNewQuestion = () => {
-    let count = parseInt(questionCountInput);
+const areAllFieldsCompleted = () => {
+  // Verificación de nombre del bloque
+  if (operation === 1 && nombreInput.input.trim() === "") {
+    return false;
+  }
 
-    // Validar que sea un número válido mayor o igual a 1
-    if (isNaN(count) || count < 1) {
-      count = 1;
+  // Verificamos que existan preguntas
+  if (questionsList.length === 0) {
+    return false;
+  }
+
+  // Verificacióm para que cada pregunta tenga todos sus campos requeridos diligenciados
+  const allQuestionsValid = questionsList.every((question) => {
+    // Verificar que el texto de la pregunta no esté vacío
+    if (!question.text || question.text.trim() === "") return false;
+
+    // Verificar que tenga un tipo seleccionado
+    if (!question.type || question.type === "") return false;
+
+    // Verificaciones específicas según el tipo de pregunta
+    if (question.type === "selector_opt") {
+      // Si es un selector, debe tener opciones
+      return selectorData.options && selectorData.options.length > 0;
     }
 
-    const newQuestions = Array.from({ length: count }, () => ({
-      text: "",
-      type: "",
-      options: [],
-      correctAnswers: [],
-    }));
-
-    setQuestionsList((prev) => [...prev, ...newQuestions]);
-    setQuestionCountInput(""); // Limpiar input
-  };
-
-  const handleInputChange = (index, key, value) => {
-    const updatedQuestions = [...questionsList];
-    updatedQuestions[index][key] = value;
-    setQuestionsList(updatedQuestions);
-  };
-
-  // Validar el input de preguntas del modal
-
-  const validateInputs = () => {
-    // Validación de questionType: solo letras y guiones bajos
-    const questionTypeValid = /^[A-Za-z_]+$/.test(questionType);
-    const descriptionValid = description.trim() !== "";
-
-    if (!questionTypeValid) {
-      setError(
-        "El tipo de pregunta no es válido. Solo se permiten letras y guiones bajos."
-      );
-      return false;
-    }
-
-    if (!descriptionValid) {
-      setError("La descripción de la pregunta es obligatoria.");
-      return false;
-    }
-
-    // Si pasa todas las validaciones
-    setError(""); // Limpiar cualquier error previo
-    return true;
-  };
-
-  // Manejo el envío de pregunta
-  const handleSubmit = () => {
-    if (validateInputs()) {
-      // Aquí puedes manejar el envío de los datos
-      console.log("Pregunta válida. Enviar datos...");
-    }
-  };
-
-  const handleSelectorChange = (data) => {
-    setSelectorData(data);
-
-    // Actualizar directamente en questionsList el tipo selector
-    setQuestionsList((prevQuestions) =>
-      prevQuestions.map((q, idx) => {
-        if (q.type === "selector_opt") {
-          return {
-            ...q,
-            options: data.options, // Guardar todas las opciones
-            selected_answer: data.selectedOption, // Guardar la respuesta seleccionada
-          };
-        }
-        return q;
-      })
-    );
-  };
-
-  const areAllFieldsCompleted = () => {
-    // Verificación de nombre del bloque
-    if (operation === 1 && nombreInput.input.trim() === "") {
-      return false;
-    }
-
-    // Verificamos que existan preguntas
-    if (questionsList.length === 0) {
-      return false;
-    }
-
-    // Verificacióm para que cada pregunta tenga todos sus campos requeridos diligenciados
-    const allQuestionsValid = questionsList.every((question) => {
-      // Verificar que el texto de la pregunta no esté vacío
-      if (!question.text || question.text.trim() === "") return false;
-
-      // Verificar que tenga un tipo seleccionado
-      if (!question.type || question.type === "") return false;
-
-      // Verificaciones específicas según el tipo de pregunta
-      if (question.type === "selector_opt") {
-        // Si es un selector, debe tener opciones
-        return selectorData.options && selectorData.options.length > 0;
-      }
-
-      if (question.type === "check_opt") {
-        // Si es selección múltiple, debe tener opciones
-        return (
-          multipleChoiceData.options && multipleChoiceData.options.length > 0
-        );
-      }
-
-      if (question.type === "radio_opt") {
-        // Si es selección única, debe tener opciones
-        return singleChoiceData.options && singleChoiceData.options.length > 0;
-      }
-
-      // Para campos de texto no es necesario verificar opciones adicionales
-      return true;
-    });
-
-    // Si la operación es de edición, verificamos el tipo y descripción
-    if (operation === 2) {
+    if (question.type === "check_opt") {
+      // Si es selección múltiple, debe tener opciones
       return (
-        questionType.input.trim() !== "" &&
-        description.input.trim() !== "" &&
-        allQuestionsValid
+        multipleChoiceData.options && multipleChoiceData.options.length > 0
       );
     }
 
-    return allQuestionsValid;
+    if (question.type === "radio_opt") {
+      // Si es selección única, debe tener opciones
+      return singleChoiceData.options && singleChoiceData.options.length > 0;
+    }
+
+    // Para campos de texto no es necesario verificar opciones adicionales
+    return true;
+  });
+
+  // Si la operación es de edición, verificamos el tipo y descripción
+  if (operation === 2) {
+    return (
+      questionType.input.trim() !== "" &&
+      description.input.trim() !== "" &&
+      allQuestionsValid
+    );
+  }
+
+  return allQuestionsValid;
+};
+
+const resetFormFields = () => {
+  nombreInput.handleChange("");
+  ponderacionInput.handleChange("");
+  posicionInput.handleChange("");
+  questionType.handleChange("");
+  description.handleChange("");
+  section.handleChange("");
+  percentage.handleChange("");
+  frm_option.handleChange("");
+  conditional.handleChange("");
+  id_conditional.handleChange("0");
+  survey_id.handleChange("");
+  conditional_answer.handleChange("");
+  setTextFieldAnswer("");
+
+  // Limpiar estados de posicionamiento
+  setPositionType("");
+  setReferenceBlockId("");
+
+  setQuestionCountInput("");
+  setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+  setSelectorData({ options: [], selectedOption: null });
+  setSingleChoiceData({ options: [], correctAnswer: null });
+  setMultipleChoiceData({ options: [], correctAnswers: [] });
+  setIsChecked(false);
+  setValueConditional(false);
+  setHasValidQuestions(false);
+};
+
+// Id único para cada bloque
+
+const handleAgregarBloque = () => {
+  if (!nombreInput.value || !posicionInput.value || !ponderacionInput.value)
+    return;
+
+  const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
+
+  const nuevoBloque = {
+    blockId: generateId(),
+    nombre: nombreInput.value,
+    posicion: nuevaPosicion,
+    ponderacion: parseInt(ponderacionInput.value),
+    preguntas: [],
   };
 
-  const resetFormFields = () => {
-    nombreInput.handleChange("");
-    ponderacionInput.handleChange("");
-    posicionInput.handleChange("");
-    questionType.handleChange("");
-    description.handleChange("");
-    section.handleChange("");
-    percentage.handleChange("");
-    frm_option.handleChange("");
-    conditional.handleChange("");
-    id_conditional.handleChange("0");
-    survey_id.handleChange("");
-    conditional_answer.handleChange("");
-    setTextFieldAnswer("");
+  setBloques((prev) => [...prev, nuevoBloque]);
 
-    // Limpiar estados de posicionamiento
-    setPositionType("");
-    setReferenceBlockId("");
+  // Reset inputs
+  nombreInput.reset();
+  posicionInput.reset();
+  ponderacionInput.reset();
+};
 
-    setQuestionCountInput("");
-    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
-    setSelectorData({ options: [], selectedOption: null });
-    setSingleChoiceData({ options: [], correctAnswer: null });
-    setMultipleChoiceData({ options: [], correctAnswers: [] });
-    setIsChecked(false);
-    setValueConditional(false);
-    setHasValidQuestions(false);
-  };
+const renderRespuesta = (question) => {
+  const tipo = question.type;
+  const respuesta = question.selected_answer || "Sin respuesta";
 
-  // Id único para cada bloque
+  switch (tipo) {
+    case "textfield_s":
+    case "yes_no":
+      return (
+        <p>
+          <strong>Respuesta:</strong>{" "}
+          {respuesta !== " " ? respuesta : "Sin respuesta"}
+        </p>
+      );
 
-  const handleAgregarBloque = () => {
-    if (!nombreInput.value || !posicionInput.value || !ponderacionInput.value)
-      return;
-
-    const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
-
-    const nuevoBloque = {
-      blockId: generateId(),
-      nombre: nombreInput.value,
-      posicion: nuevaPosicion,
-      ponderacion: parseInt(ponderacionInput.value),
-      preguntas: [],
-    };
-
-    setBloques((prev) => [...prev, nuevoBloque]);
-
-    // Reset inputs
-    nombreInput.reset();
-    posicionInput.reset();
-    ponderacionInput.reset();
-  };
-
-  const renderRespuesta = (question) => {
-    const tipo = question.type;
-    const respuesta = question.selected_answer || "Sin respuesta";
-
-    switch (tipo) {
-      case "textfield_s":
-      case "yes_no":
-        return (
+    case "radio_opt":
+    case "check_opt":
+    case "selector_opt":
+      return (
+        <div>
           <p>
-            <strong>Respuesta:</strong>{" "}
-            {respuesta !== " " ? respuesta : "Sin respuesta"}
+            <strong>Respuesta:</strong> {respuesta}
           </p>
-        );
-
-      case "radio_opt":
-      case "check_opt":
-      case "selector_opt":
-        return (
-          <div>
+          {question.select_option && (
             <p>
-              <strong>Respuesta:</strong> {respuesta}
+              <small>
+                <strong>Opciones:</strong> {question.select_option}
+              </small>
             </p>
-            {question.select_option && (
-              <p>
-                <small>
-                  <strong>Opciones:</strong> {question.select_option}
-                </small>
-              </p>
-            )}
-          </div>
-        );
-
-      default:
-        return (
-          <p>
-            <em>Tipo de pregunta no soportado</em>
-          </p>
-        );
-    }
-  };
-
-  // Agregar función para manejar edición
-  const onUpdate = (bloque) => {
-    const preguntasBloque = bloque.preguntas || [];
-
-    const bloqueConPreguntas = {
-      ...bloque,
-      preguntas: preguntasBloque,
-    };
-    openModal(2, id, bloqueConPreguntas);
-    // Abrir modal después de configurar la data
-    document.getElementById("modalManageQuestion").classList.add("show");
-    document.getElementById("modalManageQuestion").style.display = "block";
-  };
-
-  // Paginador bloques
-
-  const filteredData = useMemo(() => {
-    return staticData.filter((row) => {
-      if (!searchTerm) return true;
-
-      const parsedSearchTerm = parseInt(searchTerm, 10);
-
-      if (!isNaN(parsedSearchTerm) && row.id) {
-        return row.id === parsedSearchTerm;
-      }
-
-      return Object.values(row).some(
-        (value) =>
-          value &&
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          )}
+        </div>
       );
-    });
-  }, [staticData, searchTerm]);
 
-  // Calcular el total de páginas
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+    default:
+      return (
+        <p>
+          <em>Tipo de pregunta no soportado</em>
+        </p>
+      );
+  }
+};
 
-  // Datos paginados para mostrar en la vista actual
-  const paginatedData = useMemo(() => {
-    return filteredData.slice(
-      (currentPage - 1) * recordsPerPage,
-      currentPage * recordsPerPage
+// Agregar función para manejar edición
+const onUpdate = (bloque) => {
+  const preguntasBloque = bloque.preguntas || [];
+
+  const bloqueConPreguntas = {
+    ...bloque,
+    preguntas: preguntasBloque,
+  };
+  openModal(2, id, bloqueConPreguntas);
+  // Abrir modal después de configurar la data
+  document.getElementById("modalManageQuestion").classList.add("show");
+  document.getElementById("modalManageQuestion").style.display = "block";
+};
+
+// Paginador bloques
+
+const filteredData = useMemo(() => {
+  return staticData.filter((row) => {
+    if (!searchTerm) return true;
+
+    const parsedSearchTerm = parseInt(searchTerm, 10);
+
+    if (!isNaN(parsedSearchTerm) && row.id) {
+      return row.id === parsedSearchTerm;
+    }
+
+    return Object.values(row).some(
+      (value) =>
+        value &&
+        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [filteredData, currentPage, recordsPerPage]);
+  });
+}, [staticData, searchTerm]);
 
-  // Posición de bloques
+// Calcular el total de páginas
+const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
-  const calBlockPosition = () => {
-    // Si no hay selección relativa, usar la posición por defecto (última posición + 1)
-    if (!positionType || !referenceBlockId) {
-      const posiciones = data.map((bloque) => parseInt(bloque.posicion));
-      return posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+// Datos paginados para mostrar en la vista actual
+const paginatedData = useMemo(() => {
+  return filteredData.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
+}, [filteredData, currentPage, recordsPerPage]);
+
+// Posición de bloques
+
+const calBlockPosition = () => {
+  // Si no hay selección relativa, usar la posición por defecto (última posición + 1)
+  if (!positionType || !referenceBlockId) {
+    const posiciones = data.map((bloque) => parseInt(bloque.posicion));
+    return posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+  }
+
+  // Encontrar el bloque de referencia
+  const bloqueReferencia = data.find(
+    (bloque) => bloque.id == referenceBlockId
+  );
+  if (!bloqueReferencia) return 1;
+
+  const posicionReferencia = parseInt(bloqueReferencia.posicion);
+  const nuevosDatos = [...data]; // Clonar el array para no mutar el original directamente
+
+  // Calcular nueva posición basada en el tipo de posicionamiento
+  const nuevaPosicion =
+    positionType === "before" ? posicionReferencia : posicionReferencia + 1;
+
+  // Actualizar posiciones de los bloques afectados
+  nuevosDatos.forEach((bloque) => {
+    const posBloque = parseInt(bloque.posicion);
+    if (positionType === "before" && posBloque >= posicionReferencia) {
+      bloque.posicion = posBloque + 1;
+    } else if (positionType === "after" && posBloque > posicionReferencia) {
+      bloque.posicion = posBloque + 1;
     }
+  });
 
-    // Encontrar el bloque de referencia
-    const bloqueReferencia = data.find(
-      (bloque) => bloque.id == referenceBlockId
-    );
-    if (!bloqueReferencia) return 1;
+  // Actualizar solo el estado
+  setData(nuevosDatos);
 
-    const posicionReferencia = parseInt(bloqueReferencia.posicion);
-    const nuevosDatos = [...data]; // Clonar el array para no mutar el original directamente
+  return nuevaPosicion;
+};
 
-    // Calcular nueva posición basada en el tipo de posicionamiento
-    const nuevaPosicion =
-      positionType === "before" ? posicionReferencia : posicionReferencia + 1;
+// Obtener bloques al cargar
+useEffect(() => {
+  loadBlocks();
+}, [id_form]);
 
-    // Actualizar posiciones de los bloques afectados
-    nuevosDatos.forEach((bloque) => {
-      const posBloque = parseInt(bloque.posicion);
-      if (positionType === "before" && posBloque >= posicionReferencia) {
-        bloque.posicion = posBloque + 1;
-      } else if (positionType === "after" && posBloque > posicionReferencia) {
-        bloque.posicion = posBloque + 1;
-      }
-    });
+const loadBlocks = async () => {
+  try {
+    const res = await getBlocksByFormId(id_form);
+    const bloquesMapeados = Array.isArray(res.data?.data)
+      ? res.data.data.map((bloque) => ({
+        ...bloque,
+        preguntas: Array.isArray(bloque.preguntas)
+          ? bloque.preguntas.map((preg) => {
+            const opciones = preg.select_option
+              ? preg.select_option.split(",").map((o) => o.trim())
+              : [];
 
-    // Actualizar solo el estado
-    setData(nuevosDatos);
+            let tipo = preg.type || "";
+            if (!tipo && preg.id_type_question) {
+              const typeMap = {
+                1: "radio_opt",
+                2: "selector_opt",
+                3: "textfield_s",
+                4: "check_opt",
+                5: "yes_no",
+              };
+              tipo = typeMap[preg.id_type_question] || "unknown";
+            }
 
-    return nuevaPosicion;
-  };
+            return {
+              text: preg.text || preg.question_name || "Sin texto",
+              type: tipo,
+              options: opciones,
+              selected_answer:
+                preg.conditional_answer || preg.selected_answer || "",
+              conditional: preg.conditional || "NO",
+            };
+          })
+          : [],
+      }))
+      : [];
 
-  // Obtener bloques al cargar
-  useEffect(() => {
-    loadBlocks();
-  }, [id_form]);
+    console.log("Bloques mapeados:", bloquesMapeados);
+    setData(bloquesMapeados);
+  } catch (err) {
+    console.error("Error al cargar bloques:", err);
+  }
+};
 
-  const loadBlocks = async () => {
-    try {
-      const res = await getBlocksByFormId(id_form);
-      const bloquesMapeados = Array.isArray(res.data?.data)
-        ? res.data.data.map((bloque) => ({
-            ...bloque,
-            preguntas: Array.isArray(bloque.preguntas)
-              ? bloque.preguntas.map((preg) => {
-                  const opciones = preg.select_option
-                    ? preg.select_option.split(",").map((o) => o.trim())
-                    : [];
+//   const loadBlocks = async () => {
+//   try {
+//     const res = await getAllBlocks();
+//     console.log("Datos de bloques:", res.data);
+//     if (Array.isArray(res.data)) {
+//       setBlocks(res.data);
+//       console.log(`Bloque ${i}:`, bloque);
+//     } else {
+//       console.warn("La respuesta no es un array.");
+//     }
+//   } catch (err) {
+//     console.error("Error al cargar bloques:", err);
+//   }
+// };
 
-                  let tipo = preg.type || "";
-                  if (!tipo && preg.id_type_question) {
-                    const typeMap = {
-                      1: "radio_opt",
-                      2: "selector_opt",
-                      3: "textfield_s",
-                      4: "check_opt",
-                      5: "yes_no",
-                    };
-                    tipo = typeMap[preg.id_type_question] || "unknown";
-                  }
+// Crear bloque
+const handleCreate = async () => {
+  try {
+    const res = await createBlock(newBlock);
+    setBlocks([...blocks, res.data.data]);
+    setNewBlock({ name: "", textQuestion: "" });
+  } catch (err) {
+    console.error("Error al crear bloque:", err);
+  }
+};
 
-                  return {
-                    text: preg.text || preg.question_name || "Sin texto",
-                    type: tipo,
-                    options: opciones,
-                    selected_answer:
-                      preg.conditional_answer || preg.selected_answer || "",
-                    conditional: preg.conditional || "NO",
-                  };
-                })
-              : [],
-          }))
-        : [];
+//Actualizar bloque
+const handleUpdate = async (id, updatedFields) => {
+  try {
+    const res = await updateBlock(id, updatedFields);
+    setBlocks(blocks.map((b) => (b.id === id ? res.data.data : b)));
+  } catch (err) {
+    console.error("Error al actualizar:", err);
+  }
+};
 
-      console.log("Bloques mapeados:", bloquesMapeados);
-      setData(bloquesMapeados);
-    } catch (err) {
-      console.error("Error al cargar bloques:", err);
-    }
-  };
+// Eliminar bloque
+const handleDelete = async (id) => {
+  try {
+    await deleteBlock(id);
+    setBlocks(blocks.filter((b) => b.id !== id));
+  } catch (err) {
+    console.error("Error al eliminar:", err);
+  }
+};
+// Elimina el bloque - pendiente por revisar**
+const onBulkEmail = (bloque) => {
+  console.log("Eliminar bloque", bloque);
+};
 
-  //   const loadBlocks = async () => {
-  //   try {
-  //     const res = await getAllBlocks();
-  //     console.log("👀 Datos de bloques:", res.data);
-  //     if (Array.isArray(res.data)) {
-  //       setBlocks(res.data);
-  //       console.log(`Bloque ${i}:`, bloque);
-  //     } else {
-  //       console.warn("⚠️ La respuesta no es un array.");
-  //     }
-  //   } catch (err) {
-  //     console.error("Error al cargar bloques:", err);
-  //   }
-  // };
+useEffect(() => {
+  // Si no se recibió por navegación, hacer fetch
+  if (!formData && id_form) {
+    fetchFormData();
+  }
+}, [id_form, formData]);
 
-  // Crear bloque
-  const handleCreate = async () => {
-    try {
-      const res = await createBlock(newBlock);
-      setBlocks([...blocks, res.data.data]);
-      setNewBlock({ name: "", textQuestion: "" });
-    } catch (err) {
-      console.error("Error al crear bloque:", err);
-    }
-  };
-
-  //Actualizar bloque
-  const handleUpdate = async (id, updatedFields) => {
-    try {
-      const res = await updateBlock(id, updatedFields);
-      setBlocks(blocks.map((b) => (b.id === id ? res.data.data : b)));
-    } catch (err) {
-      console.error("Error al actualizar:", err);
-    }
-  };
-
-  // Eliminar bloque
-  const handleDelete = async (id) => {
-    try {
-      await deleteBlock(id);
-      setBlocks(blocks.filter((b) => b.id !== id));
-    } catch (err) {
-      console.error("Error al eliminar:", err);
-    }
-  };
-  // Elimina el bloque - pendiente por revisar**
-  const onBulkEmail = (bloque) => {
-    console.log("Eliminar bloque", bloque);
-  };
-
-  useEffect(() => {
-    // Si no se recibió por navegación, hacer fetch
-    if (!formData && id_form) {
-      fetchFormData();
-    }
-  }, [id_form, formData]);
-
-  return (
-    <div className="App">
-      <div id="body">
-        <HeaderLT1 />
-        <section
-          style={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0 }}
-        >
-          <div className="container mt-0">
-            <div className="row">
-              <div className="col-md-12">
-                <div className="card p-4 borderEVA bg-light">
-                  <div className="text-center">
-                    <h3>Información</h3>
-                  </div>
-                  <div className="card-body p-0 py-2">
-                    <div className="container-fluid">
-                      {formData ? (
-                        <div className="row d-flex align-items-center">
-                          <div className="col-6">
-                            <p>
-                              <b>Nombre del formulario: </b>
-                              {formData.title}
-                            </p>
-                            <p className="fs-6">
-                              <b>Descripción:</b> {formData.description}
-                            </p>
-                          </div>
-                          <div className="col-6 text-end">
-                            <p>
-                              <b>Fecha de Creación:</b> {formData.creation_date}
-                            </p>
-                            <p className="fs-6">
-                              <b>Última Actualización:</b>{" "}
-                              {formData.updated_date || "Sin actualizar"}
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-3">
-                          <div
-                            className="spinner-border text-secondary"
-                            role="status"
-                          >
-                            <span className="visually-hidden">Cargando...</span>
-                          </div>
-                          <p className="mt-2">
-                            Cargando información del formulario...
+return (
+  <div className="App">
+    <div id="body">
+      <HeaderLT1 />
+      <section
+        style={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0 }}
+      >
+        <div className="container mt-0">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="card p-4 borderEVA bg-light">
+                <div className="text-center">
+                  <h3>Información</h3>
+                </div>
+                <div className="card-body p-0 py-2">
+                  <div className="container-fluid">
+                    {formData ? (
+                      <div className="row d-flex align-items-center">
+                        <div className="col-6">
+                          <p>
+                            <b>Nombre del formulario: </b>
+                            {formData.title}
+                          </p>
+                          <p className="fs-6">
+                            <b>Descripción:</b> {formData.description}
                           </p>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="col-md-12 mt-3">
-                <div className="card p-4 card-outline card-success borderEVA bg-light">
-                  <div>
-                    <h3 className="text-center">Preguntas</h3>
-                    <div className="card-tools ms-4">
-                      <button
-                        className="btn fw-bold btn-sm acces-tabla"
-                        onClick={() => openModal(1)}
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalManageQuestion"
-                      >
-                        + Crear Bloque
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="card-body ui-sorteable">
-                    {paginatedData.map((bloque, index) => (
-                      <div
-                        key={index}
-                        ref={(el) => (blockRefs.current[index] = el)}
-                        className="shadowbox5 p-3 m-3"
-                      >
-                        <div className="d-flex justify-content-between mb-2 w-100">
-                          <div className="w-100 ps-2">
-                            <div className="d-flex justify-content-between align-items-start">
-                              <h3 className="mb-3 ms-2">
-                                {bloque.nombreBloque || "Bloque sin nombre"}
-                              </h3>
-                              <span className="text-muted block-weighting me-3">
-                                {`${bloque.ponderacion}%` ||
-                                  ("0" && bloque.ponderacion > 0)}
-                              </span>
-                            </div>
-
-                            {/* Se agregan las preguntas a la vista principal */}
-
-                            <div className="mt-2 d-flex flex-column align-items-center">
-                              {Array.isArray(bloque.preguntas) &&
-                                bloque.preguntas.map((preg, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="shadowbox5 p-3 mb-3"
-                                    style={{ width: "100%" }}
-                                  >
-                                    <div className="d-flex justify-content-between align-items-center">
-                                      <div className="w-100">
-                                        <p className="mb-1 mb-3 text-center fs-4">
-                                          <strong className="questionRender">
-                                            Pregunta {idx + 1}:
-                                          </strong>{" "}
-                                          {preg.text ||
-                                            preg.question_name ||
-                                            "Sin texto"}
-                                        </p>
-
-                                        {preg.type === "radio_opt" && (
-                                          <div className="d-flex flex-column align-items-center">
-                                            <SingleChoiceView
-                                              options={(
-                                                preg.options ||
-                                                preg.select_option ||
-                                                ""
-                                              )
-                                                .split(",")
-                                                .map((o) => o.trim())}
-                                              correctOption={
-                                                preg.selected_answer
-                                              }
-                                            />
-                                          </div>
-                                        )}
-
-                                        {preg.type === "check_opt" && (
-                                          <div className="d-flex flex-column align-items-center">
-                                            <MultipleChoiceView
-                                              options={(
-                                                preg.options ||
-                                                preg.select_option ||
-                                                ""
-                                              )
-                                                .split(",")
-                                                .map((o) => o.trim())}
-                                              correctOption={
-                                                preg.selected_answer
-                                              }
-                                            />
-                                          </div>
-                                        )}
-
-                                        {preg.type === "selector_opt" && (
-                                          <div className="mb-1">
-                                            <label className="form-label">
-                                              <strong>
-                                                Selecciona una opción:
-                                              </strong>
-                                            </label>
-                                            <select className="form-select">
-                                              {(preg.select_option || "")
-                                                .split(",")
-                                                .map((opt, idx) => {
-                                                  const optionText = opt.trim();
-                                                  return (
-                                                    <option
-                                                      key={idx}
-                                                      value={optionText}
-                                                      selected={
-                                                        optionText ===
-                                                        preg.selected_answer
-                                                      }
-                                                    >
-                                                      {optionText}
-                                                    </option>
-                                                  );
-                                                })}
-                                            </select>
-                                          </div>
-                                        )}
-
-                                        {preg.type === "textfield_s" && (
-                                          <Textfield_s
-                                            value={preg.answer || ""}
-                                            readOnly
-                                          />
-                                        )}
-                                        {preg.type === "yes_no" && (
-                                          <Yes_no
-                                            value={preg.answer || ""}
-                                            readOnly
-                                          />
-                                        )}
-
-                                        <div className="text-end me-3">
-                                          {preg.conditional === "SI" && (
-                                            <i
-                                              className="fa-solid fa-question text-primary"
-                                              data-bs-toggle="tooltip"
-                                              data-bs-placement="top"
-                                              data-bs-custom-class="custom-tooltip"
-                                              data-bs-title="Esta pregunta es condicional."
-                                            ></i>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-
-                              <div className="d-flex">
-                                <div
-                                  className="page-selector btn-group"
-                                  role="group"
-                                >
-                                  <button
-                                    type="button"
-                                    className="btn btn-outline-secondary"
-                                    onClick={() =>
-                                      setCurrentPage((prev) =>
-                                        Math.max(prev - 1, 1)
-                                      )
-                                    }
-                                    disabled={currentPage === 1}
-                                  >
-                                    &lt;
-                                  </button>
-                                  <span className="btn btn-outline-secondary">
-                                    {currentPage || 1}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    className="btn btn-outline-secondary"
-                                    onClick={() =>
-                                      setCurrentPage((prev) =>
-                                        Math.min(prev + 1, totalPages)
-                                      )
-                                    }
-                                    disabled={
-                                      currentPage === totalPages ||
-                                      totalPages === 0
-                                    }
-                                  >
-                                    &gt;
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Menú de acciones (editar/eliminar) */}
-                          <div className="dropdown">
-                            <button
-                              className="btn-rect btn-dropdown"
-                              type="button"
-                              data-bs-toggle="dropdown"
-                              aria-expanded="false"
-                            >
-                              <div className="dropdown-toggle">
-                                <i className="fa-solid fa-ellipsis-vertical"></i>
-                              </div>
-                            </button>
-                            <ul className="dropdown-menu dropdown-menu-end p-0">
-                              <li className="text-start btn-rect">
-                                <button
-                                  className="btn text-start"
-                                  style={{ width: "100%" }}
-                                  data-bs-toggle="modal"
-                                  onClick={() => onUpdate(bloque)}
-                                >
-                                  <i className="fa-solid fa-edit"></i> Editar
-                                </button>
-                              </li>
-                              <li className="text-start btn-rect">
-                                <button
-                                  className="btn text-start"
-                                  style={{ width: "100%" }}
-                                  onClick={() => onBulkEmail(bloque)}
-                                >
-                                  <i className="fa-solid fa-trash"></i>{" "}
-                                  <span>Eliminar</span>
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
+                        <div className="col-6 text-end">
+                          <p>
+                            <b>Fecha de Creación:</b> {formData.creation_date}
+                          </p>
+                          <p className="fs-6">
+                            <b>Última Actualización:</b>{" "}
+                            {formData.updated_date || "Sin actualizar"}
+                          </p>
                         </div>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="text-center py-3">
+                        <div
+                          className="spinner-border text-secondary"
+                          role="status"
+                        >
+                          <span className="visually-hidden">Cargando...</span>
+                        </div>
+                        <p className="mt-2">
+                          Cargando información del formulario...
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
+
+            <div className="col-md-12 mt-3">
+              <div className="card p-4 card-outline card-success borderEVA bg-light">
+                <div>
+                  <h3 className="text-center">Preguntas</h3>
+                  <div className="card-tools ms-4">
+                    <button
+                      className="btn fw-bold btn-sm acces-tabla"
+                      onClick={() => openModal(1)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalManageQuestion"
+                    >
+                      + Crear Bloque
+                    </button>
+                  </div>
+                </div>
+
+                <div className="card-body ui-sorteable">
+                  {paginatedData.map((bloque, index) => (
+                    <div
+                      key={index}
+                      ref={(el) => (blockRefs.current[index] = el)}
+                      className="shadowbox5 p-3 m-3"
+                    >
+                      <div className="d-flex justify-content-between mb-2 w-100">
+                        <div className="w-100 ps-2">
+                          <div className="d-flex justify-content-between align-items-start">
+                            <h3 className="mb-3 ms-2">
+                              {bloque.block_name || bloque.nombre || "Sin nombre"}
+                            </h3>
+                            <span className="text-muted block-weighting me-3">
+                              {`${bloque.percentage}%` ||
+                                ("0" && bloque.ponderacion > 0)}
+                            </span>
+                          </div>
+
+                          {/* Se agregan las preguntas a la vista principal */}
+
+                          <div className="mt-2 d-flex flex-column align-items-center">
+                            {Array.isArray(bloque.preguntas) &&
+                              bloque.preguntas.map((preg, idx) => (
+                                <div
+                                  key={idx}
+                                  className="shadowbox5 p-3 mb-3"
+                                  style={{ width: "100%" }}
+                                >
+                                  <div className="d-flex justify-content-between align-items-center">
+                                    <div className="w-100">
+                                      <p className="mb-1 mb-3 text-center fs-4">
+                                        <strong className="questionRender">
+                                          Pregunta {idx + 1}:
+                                        </strong>{" "}
+                                        {preg.text ||
+                                          preg.question_name ||
+                                          "Sin texto"}
+                                      </p>
+
+                                      {preg.type === "radio_opt" && (
+                                        <div className="d-flex flex-column align-items-center">
+                                          <SingleChoiceView
+                                            options={(
+                                              preg.options ||
+                                              preg.select_option ||
+                                              ""
+                                            )
+                                              .split(",")
+                                              .map((o) => o.trim())}
+                                            correctOption={
+                                              preg.selected_answer
+                                            }
+                                          />
+                                        </div>
+                                      )}
+
+                                      {preg.type === "check_opt" && (
+                                        <div className="d-flex flex-column align-items-center">
+                                          <MultipleChoiceView
+                                            options={(
+                                              preg.options ||
+                                              preg.select_option ||
+                                              ""
+                                            )
+                                              .split(",")
+                                              .map((o) => o.trim())}
+                                            correctOption={
+                                              preg.selected_answer
+                                            }
+                                          />
+                                        </div>
+                                      )}
+
+                                      {preg.type === "selector_opt" && (
+                                        <div className="mb-1">
+                                          <label className="form-label">
+                                            <strong>
+                                              Selecciona una opción:
+                                            </strong>
+                                          </label>
+                                          <select className="form-select">
+                                            {(preg.select_option || "")
+                                              .split(",")
+                                              .map((opt, idx) => {
+                                                const optionText = opt.trim();
+                                                return (
+                                                  <option
+                                                    key={idx}
+                                                    value={optionText}
+                                                    selected={
+                                                      optionText ===
+                                                      preg.selected_answer
+                                                    }
+                                                  >
+                                                    {optionText}
+                                                  </option>
+                                                );
+                                              })}
+                                          </select>
+                                        </div>
+                                      )}
+
+                                      {preg.type === "textfield_s" && (
+                                        <Textfield_s
+                                          value={preg.answer || ""}
+                                          readOnly
+                                        />
+                                      )}
+                                      {preg.type === "yes_no" && (
+                                        <Yes_no
+                                          value={preg.answer || ""}
+                                          readOnly
+                                        />
+                                      )}
+
+                                      <div className="text-end me-3">
+                                        {preg.conditional === "SI" && (
+                                          <i
+                                            className="fa-solid fa-question text-primary"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            data-bs-custom-class="custom-tooltip"
+                                            data-bs-title="Esta pregunta es condicional."
+                                          ></i>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+
+                            <div className="d-flex">
+                              <div
+                                className="page-selector btn-group"
+                                role="group"
+                              >
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary"
+                                  onClick={() =>
+                                    setCurrentPage((prev) =>
+                                      Math.max(prev - 1, 1)
+                                    )
+                                  }
+                                  disabled={currentPage === 1}
+                                >
+                                  &lt;
+                                </button>
+                                <span className="btn btn-outline-secondary">
+                                  {currentPage || 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary"
+                                  onClick={() =>
+                                    setCurrentPage((prev) =>
+                                      Math.min(prev + 1, totalPages)
+                                    )
+                                  }
+                                  disabled={
+                                    currentPage === totalPages ||
+                                    totalPages === 0
+                                  }
+                                >
+                                  &gt;
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Menú de acciones (editar/eliminar) */}
+                        <div className="dropdown">
+                          <button
+                            className="btn-rect btn-dropdown"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            <div className="dropdown-toggle">
+                              <i className="fa-solid fa-ellipsis-vertical"></i>
+                            </div>
+                          </button>
+                          <ul className="dropdown-menu dropdown-menu-end p-0">
+                            <li className="text-start btn-rect">
+                              <button
+                                className="btn text-start"
+                                style={{ width: "100%" }}
+                                data-bs-toggle="modal"
+                                onClick={() => onUpdate(bloque)}
+                              >
+                                <i className="fa-solid fa-edit"></i> Editar
+                              </button>
+                            </li>
+                            <li className="text-start btn-rect">
+                              <button
+                                className="btn text-start"
+                                style={{ width: "100%" }}
+                                onClick={() => onBulkEmail(bloque)}
+                              >
+                                <i className="fa-solid fa-trash"></i>{" "}
+                                <span>Eliminar</span>
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-        </section>
-      </div>
-      <ModalSurveyBlocks
-        operation={operation}
-        title={title}
-        descriptionText={descriptionText}
-        questionsList={questionsList}
-        handleInputChange={handleInputChange}
-        singleChoiceData={singleChoiceData}
-        multipleChoiceData={multipleChoiceData}
-        selectorData={selectorData}
-        handleSingleChoiceChange={handleSingleChoiceChange}
-        handleMultipleChoiceChange={handleMultipleChoiceChange}
-        handleSelectorChange={handleSelectorChange}
-        isChecked={isChecked}
-        listConditional={listConditional}
-        valueConditional={valueConditional}
-        conditionalHandleChange={conditionalHandleChange}
-        error={error}
-        validar={validar}
-        idToEdit={idToEdit}
-        id_form={id_form}
-        areAllFieldsCompleted={areAllFieldsCompleted}
-        handleCancel={handleCancel}
-        addNewQuestion={addNewQuestion}
-        questionCountInput={questionCountInput}
-        setQuestionCountInput={setQuestionCountInput}
-        nombreInput={nombreInput}
-        ponderacionInput={ponderacionInput}
-        posicionInput={posicionInput}
-        positionType={positionType}
-        setPositionType={setPositionType}
-        referenceBlockId={referenceBlockId}
-        setReferenceBlockId={setReferenceBlockId}
-        data={data}
-      />
+        </div>
+      </section>
     </div>
-  );
+    <ModalSurveyBlocks
+      operation={operation}
+      title={title}
+      descriptionText={descriptionText}
+      questionsList={questionsList}
+      handleInputChange={handleInputChange}
+      singleChoiceData={singleChoiceData}
+      multipleChoiceData={multipleChoiceData}
+      selectorData={selectorData}
+      handleSingleChoiceChange={handleSingleChoiceChange}
+      handleMultipleChoiceChange={handleMultipleChoiceChange}
+      handleSelectorChange={handleSelectorChange}
+      isChecked={isChecked}
+      listConditional={listConditional}
+      valueConditional={valueConditional}
+      conditionalHandleChange={conditionalHandleChange}
+      error={error}
+      validar={validar}
+      idToEdit={idToEdit}
+      id_form={id_form}
+      areAllFieldsCompleted={areAllFieldsCompleted}
+      handleCancel={handleCancel}
+      addNewQuestion={addNewQuestion}
+      questionCountInput={questionCountInput}
+      setQuestionCountInput={setQuestionCountInput}
+      nombreInput={nombreInput}
+      ponderacionInput={ponderacionInput}
+      posicionInput={posicionInput}
+      positionType={positionType}
+      setPositionType={setPositionType}
+      referenceBlockId={referenceBlockId}
+      setReferenceBlockId={setReferenceBlockId}
+      data={data}
+    />
+  </div>
+);
 }
