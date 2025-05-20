@@ -1,4 +1,4 @@
-const QuestionModel = require('../models/questionsFormModel');
+const QuestionModel = require("../models/questionsFormModel");
 
 const createQuestions = async (req, res) => {
   try {
@@ -9,12 +9,16 @@ const createQuestions = async (req, res) => {
       return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    await QuestionModel.createQuestionsForBlock(block_id, preguntas);
+    const ids = await QuestionModel.createQuestionsForBlock(
+      block_id,
+      preguntas
+    );
 
-    res.status(201).json({ message: "Preguntas guardadas correctamente" });
+    console.log("🟢 IDs generados de preguntas:", ids);
+    return res.status(201).json({ questionIds: ids });
   } catch (error) {
     console.error("Error al guardar preguntas:", error);
-    res.status(500).json({ message: "Error al guardar preguntas" });
+    return res.status(500).json({ message: "Error al guardar preguntas" });
   }
 };
 
@@ -37,7 +41,9 @@ const updateQuestionsForBlock = async (req, res) => {
 
 const getQuestionsByBlockId = async (req, res) => {
   try {
-    const questions = await QuestionModel.getQuestionsByBlockId(req.params.blockId);
+    const questions = await QuestionModel.getQuestionsByBlockId(
+      req.params.blockId
+    );
     res.status(200).json({ data: questions });
   } catch (error) {
     console.error("Error al obtener preguntas:", error);

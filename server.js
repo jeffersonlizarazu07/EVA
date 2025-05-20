@@ -17,6 +17,7 @@ const formSetRoutes = require('./routes/formRoutes');
 const enviarCorreos = require('./routes/mailRoutes');
 const blockRoutes = require('./routes/blockRoutes');
 const questionFormRoutes = require('./routes/questionsFormRoutes');
+const answersFormRoutes = require('./routes/answersFormRoutes');
 
 
 
@@ -50,6 +51,7 @@ app.use('/api', agentRoutes); // Rutas de agentes
 app.use('/api', formSetRoutes); // Rutas de formularios
 app.use("/api/blocks", blockRoutes); // Rutas de bloques
 app.use("/api/questions", questionFormRoutes); // Rutas de preguntas de bloques
+app.use("/api/answers", answersFormRoutes); // Rutas de respuestas de bloques
 
 // Hacer accesible la carpeta 'public' para el navegador
 app.use('/public', express.static(path.join(__dirname, 'public')));

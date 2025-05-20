@@ -1,32 +1,39 @@
-const knex = require('../config/db');
-
 class AnswersFormModel {
   constructor() {
-    this.knex = knex;
-    this.table = 'answers'; // Nombre de la tabla en la base de datos
+    this.knex = require('../config/db');
+    this.table = 'answers'; // tu tabla
   }
 
   async createAnswer(data) {
-    if (!data.block_id || !data.question_id || !data.answer) {
-      throw new Error('Faltan campos obligatorios');
-    }
+  const [id] = await this.knex(this.table).insert({
+    id_question: data.question_id,
+    answer_question: data.answer_question,
+  });
+  return { id, ...data };
+}
 
-    try {
-      const [id] = await this.knex(this.table).insert({
-        block_id: data.block_id,
-        question_id: data.question_id,
-        answer: data.answer,
-      });
-
-      return { id, ...data };
-    } catch (error) {
-      throw new Error(`Error al crear la respuesta: ${error.message}`);
-    }
+  async getAllAnswers() {
+    return await this.knex(this.table).select('*');
   }
 
-    async getAnswersByBlockId(blockId) {
-        return await this.knex(this.table)
-        .where({ block_id: blockId })
-        .orderBy('question_id', 'asc');
-    }
+  async getAnswerById(id) {
+    return await this.knex(this.table).where({ id }).first();
+  }
+
+  async getAnswersByQuestionId(questionId) {
+    return await this.knex(this.table).where({ id_question: questionId });
+  }
+
+  async updateAnswer(id, data) {
+    await this.knex(this.table).where({ id }).update({
+      answer_question: data.answer,
+    });
+    return this.getAnswerById(id);
+  }
+
+  async deleteAnswer(id) {
+    return await this.knex(this.table).where({ id }).del();
+  }
 }
+
+module.exports = new AnswersFormModel();
