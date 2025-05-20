@@ -313,55 +313,63 @@ class AnswerController {
                     return acc;
                 }, {});
         
+                console.log('-- de preguntas obtenidos:', questionDetailsMap);
                 // Agrupamos y calculamos los porcentajes por tipo de respuesta
                 for (const question_id of questions) {
                     console.log(`Procesando la pregunta con ID: ${question_id}`);
-                    
-                    const percentageZeroToTen = answerModel.groupAnswersByType(answers, 'range_zerototen', question_id);
-                    const percentageYesNo = answerModel.groupAnswersByType(answers, 'yes_no', question_id);
-                    const percentageRangeDifficulty = answerModel.groupAnswersByType(answers, 'range_difficulty', question_id);
-                    const percentageOneToFive = answerModel.groupAnswersByType(answers, 'range_onetofive', question_id);
-
-                                        // Verifica los resultados de cada agrupación de tipo
-                        console.log('percentageZeroToTen:', percentageZeroToTen);
-                        console.log('percentageYesNo:', percentageYesNo);
-                        console.log('percentageRangeDifficulty:', percentageRangeDifficulty);
-                        console.log('percentageOneToFive:', percentageOneToFive);
-                            
-                                        const data = [];
-                    const labels = [];
-        
-                    // Consolidar los datos y las etiquetas
-                    if (Object.keys(percentageZeroToTen).length > 0) {
-                        data.push(percentageZeroToTen);
-                        labels.push(...Object.keys(percentageZeroToTen));
-                    }
-                    if (Object.keys(percentageYesNo).length > 0) {
-                        data.push(percentageYesNo);
-                        labels.push(...Object.keys(percentageYesNo));
-                    }
-                    if (Object.keys(percentageRangeDifficulty).length > 0) {
-                        data.push(percentageRangeDifficulty);
-                        labels.push(...Object.keys(percentageRangeDifficulty));
-                    }
-                    if (Object.keys(percentageOneToFive).length > 0) {
-                        data.push(percentageOneToFive);
-                        labels.push(...Object.keys(percentageOneToFive));
-                    }
-        
-                    // Aquí ahora accedemos a los detalles de la pregunta utilizando el `question_id`
                     const questionDetail = questionDetailsMap[question_id];
-                    if (questionDetail) {
-                        groupedResults[question_id] = {
-                            label: questionDetail.text,  // Ahora tienes el texto de la pregunta
-                            type: questionDetail.type,   // Ahora tienes el tipo de la pregunta
-                            data: data,
-                            labels: labels
-                        };
+                    if (!questionDetail) continue;
+
+                    const { type, question } = questionDetail;
+
+                    let data = [];
+                    let labels = [];
+
+                    // Agrupar según el tipo de la pregunta
+                    let result = {};
+                    switch (type) {
+                        case 'range_zerototen':
+                            result = answerModel.groupAnswersByType(answers, 'range_zerototen', question_id);
+                            break;
+                        case 'yes_no':
+                            result = answerModel.groupAnswersByType(answers, 'yes_no', question_id);
+                            break;
+                        case 'range_difficulty':
+                            result = answerModel.groupAnswersByType(answers, 'range_difficulty', question_id);
+                            break;
+                        case 'range_onetofive':
+                            result = answerModel.groupAnswersByType(answers, 'range_onetofive', question_id);
+                            break;
+                        case 'textfield_s':
+                            result = answerModel.groupAnswersByType(answers, 'textfield_s', question_id);
+                            break;
+                        case 'radio_opt':
+                            result = answerModel.groupAnswersByType(answers, 'radio_opt', question_id);
+                            break;
+                        case 'check_opt':
+                            result = answerModel.groupAnswersByType(answers, 'check_opt', question_id);
+                            break;
+                        case 'range_emoji':
+                            result = answerModel.groupAnswersByType(answers, 'range_emoji', question_id);
+                            break;
+                        default:
+                            console.log(`Tipo no soportado: ${type}`);
+                            continue;
                     }
+
+                    if (Object.keys(result).length > 0) {
+                        data.push(result);
+                        labels = Object.keys(result);
+                    }
+
+                    groupedResults[question_id] = {
+                        type: type,
+                        name: question,
+                        data: data,
+                        labels: labels
+                    };
                 }
-        
-                // Enviamos la respuesta
+
                 return res.status(200).json({
                     status: 200,
                     message: "Porcentaje de respuestas obtenido correctamente.",
