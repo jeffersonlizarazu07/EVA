@@ -42,8 +42,9 @@ export const deleteQuestion = async (
 
   smallAlertDelete
     .fire({
-      title: "🗑️ Eliminar elemento",
+      title: "Eliminar elemento",
       icon: "warning",
+      toast: false,
       text: `Esta seguro que desea eliminar la pregunta "${questiontext}"`, 
       showCancelButton: true,
       confirmButtonText: `${t("alertDeactivate.Confirm")}`,
@@ -51,6 +52,8 @@ export const deleteQuestion = async (
       confirmButtonColor: "#b62a8b",
       customClass :{
         actions: 'swal2-actions-center ', 
+        icon: 'icono-personalizado',
+        title: 'titulo-pequeno',
       },
     })
     .then(async (result) => {

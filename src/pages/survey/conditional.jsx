@@ -22,9 +22,9 @@ export default function getRangeOptions(questionType, answers = "") {
 
     case "range_difficulty":
       return [
-        { optionText: ["Dificil o muy dificil"], value: "5,4" },
+        { optionText: ["Dificil o muy dificil"], value: "4,5" },
         { optionText: ["Neutro"], value: "3" },
-        { optionText: ["Facil o muy facil"], value: "2,1" },
+        { optionText: ["Facil o muy facil"], value: "1,2" },
       ];
 
     case "range_emoji":

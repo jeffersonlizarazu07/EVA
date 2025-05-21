@@ -18,8 +18,8 @@ const TableDetalle = ({
   useEffect(()=>{
     i18n.changeLanguage(languageUser)
   },[languageUser])
- 
-  const nav = useNavigate();
+
+  const nav = useNavigate()
   const { t,i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,11 +87,12 @@ const TableDetalle = ({
         <thead>
           <tr className="table-light tr-table">
             {header.map((item, i) => (
-              <th key={i} className="text-center">
+              <th key={i} className="col text-center">
                 {t(`clientTable.${item}`)}
               </th>
+              
             ))}
-            <th className="text-center">{t("clientTable.Actions")}</th>
+            <th className="col text-center">{t("clientTable.Actions")}</th>
           </tr>
         </thead>
         <tbody>

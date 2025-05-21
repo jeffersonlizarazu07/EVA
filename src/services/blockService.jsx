@@ -2,8 +2,14 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:3000/api/blocks';
 
-export const createBlock = (blockData) => {
-  return axios.post(API_URL, blockData, { withCredentials: true });
+export const createBlock = async (data) => {
+  try {
+    const res = await axios.post('/api/blocks', data, { withCredentials: true });
+    return res.data;
+  } catch (err) {
+    console.error("Respuesta del backend:", err.response?.data); // <-- agrega esto
+    throw err;
+  }
 };
 
 export const getAllBlocks = () => {

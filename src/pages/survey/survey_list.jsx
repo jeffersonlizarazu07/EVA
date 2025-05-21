@@ -13,6 +13,7 @@ import { generateRandomLink } from "../../components/survey/encrypt";
 import { useTranslation } from "react-i18next";
 import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
 import Cookies from "js-cookie"; // si no lo has importado ya
+import { getSurveyQuestions } from "../../services/surveyRequest";
 
 import ModalEnvioMasivo from "../../components/Modals/modalEnvioMasivo";
 
@@ -146,10 +147,19 @@ const SurveyList = () => {
     };
     smallAlertDelete
       .fire({
-        text: `El usuario ${name} se activara.`,
+        title: "Activar elemento",
+        toast: false,
+        icon: "warning",
+        text: `La encuesta ${name} se activara.`,
         showCancelButton: true,
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+          icon: 'icono-personalizado',
+          title: 'titulo-pequeno',
+        },
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -187,7 +197,8 @@ const SurveyList = () => {
     smallAlertDelete
       .fire({
         icon: "warning",
-        title: "🚫 Deshabilitar elemento",
+        toast: false,
+        title: "Deshabilitar elemento",
         text: `La encuesta ${name} se deshabilitara de forma permanente.`,
         showCancelButton: true,
         confirmButtonText: "Confirmar",
@@ -195,6 +206,8 @@ const SurveyList = () => {
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
+          icon: 'icono-personalizado',
+          title: 'titulo-pequeno',
         },
       })
       .then(async (result) => {
@@ -342,7 +355,7 @@ const SurveyList = () => {
           description: description.input,
           idClient: idClient.input,
           link: link.input,
-          type: "survey",
+          //type: "survey",
         };
         metodo = "put";
       }
@@ -415,30 +428,134 @@ const SurveyList = () => {
     setShowEnvioModal(true);
   };
 
+  // Función que cuenta cuántas copias del mismo título existen
+  const countExistingCopies = (title, allSurveys) => {
+    const regex = new RegExp(`^${title} copia(?: \\((\\d+)\\))?$`);
+    const matches = allSurveys
+      .map((s) => {
+        const match = s.title.match(regex);
+        return match ? (match[1] ? parseInt(match[1]) : 1) : null;
+      })
+      .filter((val) => val !== null);
+
+    if (matches.length === 0) return '';
+    const maxNumber = Math.max(...matches);
+    return ` (${maxNumber + 1})`;
+  };
+
+  const getAllSurveys = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/surveys", config);
+      return response.data.data; // Asegúrate que el backend devuelve las encuestas dentro de .data
+    } catch (error) {
+      console.error("Error al obtener todas las encuestas", error);
+      return []; // Evita errores si falla
+    }
+  };
+
   const duplicateSurvey = (survey) => {
-    console.log(survey);
+    console.log("**DAtos encuesta a duplicar",survey);
     smallAlertDelete
       .fire({
+        icon: "warning",
+        toast: false,
+        title: "Duplicar encuesta",
         text: `La encuesta ${survey.title} se duplicará.`,
         showCancelButton: true,
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+          icon: 'icono-personalizado',
+          title: 'titulo-pequeno',
+        }
       })
       .then(async (result) => {
         if (result.isConfirmed) {
+// Obtén todas las encuestas existentes
+        const allSurveys = await getAllSurveys(); // <-- asegúrate que esta función existe
+        const suffix = countExistingCopies(survey.title, allSurveys);
+        const newTitle = `${survey.title} copia${suffix}`;
+
+          //se genera un nuevo link
           const link = generateRandomLink(survey.title, survey.idClient);
           const randomLink = link + Math.floor(Math.random() * 100) + 1;
+
+          //crea el objeto con los datos a duplicar
           const DataToDuplicate = {
             description: survey.description,
             start_date: formattedDate.dateToday,
             end_date: formattedDate.dateTomorrow,
             idClient: survey.idClient,
             state: survey.state,
-            title: `${survey.title} copia`,
-            type: survey.type,
+            title: newTitle ,
+            //type: survey.type,
             link: randomLink,
           };
-          sendData("post", DataToDuplicate);
+          // sendData("post", DataToDuplicate);
+          // getSurveys();
+
+          //crea la encuesta duplicada 
+          const response = await axios.post("http://localhost:3000/api/surveys",DataToDuplicate, config);
+
+          //obtiene el id de la encuesta duplicada
+          const newSrurveyId = response.data.data.id;
+          console.log("id de la encuesta duplicada--------------------", newSrurveyId);
+
+          //obtener las preguntas de la encuesta original
+          const originalQuestions = await getSurveyQuestions(survey.id, config);  
+          console.log("Preguntas de la encuesta original:", originalQuestions);
+
+          if (!originalQuestions || originalQuestions.length === 0) {
+            // Si no hay preguntas, solo actualiza la lista de encuestas
+            getSurveys();
+            return;
+          }
+          
+          // Objeto para mapear IDs originales a IDs duplicados
+          const questionIdMap = {};
+
+          // Itera sobre cada pregunta de la encuesta original para duplicarla en la nueva encuesta y copiarlas
+          for( const question of originalQuestions){
+              const questionToDuplicate = {
+              survey_id : newSrurveyId, // asociar a la nueva encuesta
+              question : question.question,
+              type : question.type,
+              select_option : question.select_option,
+              selected_answer : question.selected_answer,
+              id_conditional : question.id_conditional,
+              conditional_answer : question.conditional_answer,
+              conditional : question.conditional
+            };  
+            try {
+              // Envía una petición POST al backend para crear la copia de la pregunta en la nueva encuesta
+              const newQuestionResponse = await axios.post("http://localhost:3000/api/question", questionToDuplicate, config);
+            // Guarda la relación entre el ID original de la pregunta y el nuevo ID asignado a la pregunta duplicada
+              questionIdMap[question.id] = newQuestionResponse.data.data.id;
+          
+            }catch (error) {
+              console.error("error al duplicar preguntas", error);
+            }
+          }
+          
+         // Obtiene todas las preguntas de la encuesta recién duplicada, incluyendo las nuevas IDs
+         const duplicatedQuestions = await getSurveyQuestions(newSrurveyId, config);
+            
+         // Itera sobre las preguntas duplicadas para actualizar las referencias condicionales
+            for (const duplicatedQuestion of duplicatedQuestions) {
+              // Verifica si la pregunta duplicada tiene una condición asociada 
+              if (duplicatedQuestion.id_conditional) {
+                  // Utiliza el mapa de IDs para obtener el nuevo ID de la pregunta a la que hace referencia la condición
+                  duplicatedQuestion.id_conditional = questionIdMap[duplicatedQuestion.id_conditional];
+                  try {
+                    // Envía una petición PUT al backend para actualizar el id_conditional de la pregunta duplicada con el nuevo ID
+                    await axios.put(`http://localhost:3000/api/question/conditional/${duplicatedQuestion.id}`, {id_conditional: duplicatedQuestion.id_conditional},config)  
+                  } catch (error) {
+                    console.error("Error al actualizar id_conditional", error);
+                  }
+              }
+           }
           getSurveys();
         }
       });

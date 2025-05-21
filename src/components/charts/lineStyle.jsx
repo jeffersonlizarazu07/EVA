@@ -55,34 +55,115 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
   });
   const chartRef = useRef(null);
 
+  // obtener etiquetas para cada tipo de gráfico
+  const getLabelsForType = (type) => {
+    switch (type) {
+      case "range_zerototen":
+        return [
+          "0: Nada probable",
+          "1: Nada probable",
+          "2: Nada probable",
+          "3: Nada probable",
+          "4: Nada probable",
+          "5: Nada probable",
+          "6: Nada probable",
+          "7: Neutro",
+          "8: Neutro",
+          "9: Muy probable",
+          "10: Muy probable",
+        ];
+      case "range_onetofive":
+        return [
+          "1: Muy insatisfecho",
+          "2: Insatisfecho",
+          "3: Ni satisfecho / Ni insatisfecho",
+          "4: Satisfecho",
+          "5: Muy satisfecho",
+        ];
+      case "range_difficulty":
+        return [
+          "1: Muy difícil",
+          "2: Difícil",
+          "3: Ni fácil / Ni difícil",
+          "4: Fácil",
+          "5: Muy fácil",
+        ];
+      case "range_emoji":
+        return [
+          "1: Muy triste",
+          "2: Triste",
+          "3: Ni triste / Ni feliz",
+          "4: Feliz",
+          "5: Muy feliz",
+        ];
+      case "yes_no":
+        return ["No", "Sí"];
+      default:
+        return dataChart.map(item => item.name || "Sin etiqueta");
+          //       return dataChart.map(item => {
+  //   const name = item.name || "Sin etiqueta";
+  //   const words = name.split(" ");
+  //   const grouped = [];
+  //   for (let i = 0; i < words.length; i += 6) {
+  //     grouped.push(words.slice(i, i + 6).join(" "));
+  //   }
+  //   return grouped; // Chart.js mostrará esto como multilínea
+  // });
+
+    }
+  };
+
+  // aplicar filtros a los datos
   const applyFilters = (data) => {
-  return data.map((item) => {
-    // Verificamos si el item tiene una propiedad 'value'
-    const numericValue = item && item.value !== undefined ? Number(item.value) : NaN;
+    // crear un array vacío para almacenar los datos procesados
+    const processedData = [];
+    
+    // obtener etiquetas para el tipo de gráfico
+    const typeLabels = getLabelsForType(type);
+    
+    //for cada elemento en dataChart
+    data.forEach(item => {
+      let key = item.key;
+      let value = parseFloat(item.value);
+      
+      // saltar si el valor no es un número
+      if (isNaN(value)) {
+        return;
+      }
+      
+      // comprobar si el valor está dentro del rango de filtros
+      if (value >= filters.minValue && value <= filters.maxValue) {
+        // para los tipos de gráfico específicos, asignar el valor a la posición correspondiente
+        if (["range_zerototen", "range_onetofive", "range_difficulty", "range_emoji", "yes_no"].includes(type)) {
+          // para los tipos de gráfico específicos, asignar el valor a la posición correspondiente
+          if (type === "yes_no") {
+            const index = parseInt(key);
+            processedData[index] = value;
+          } else {
+            // para los rangos, asignar el valor a la posición correspondiente
+            const index = parseInt(key);
+            // ajustar el índice para que coincida con el rango
+            const adjustedIndex = type.includes("zero") ? index : index - 1;
+            processedData[adjustedIndex] = value;
+          }
+        } else {
+          // para otros tipos de gráficos, simplemente agregar el valor
+          processedData.push(value);
+        }
+      }
+    });
+    
+    return processedData;
+  };
 
-    // Comprobamos si el valor es un número
-    if (isNaN(numericValue)) {
-      console.log("Valor no numérico encontrado:", item); // Mostramos todo el objeto
-      return null; // Filtramos los valores no numéricos
-    }
+  // determinar el tipo de escala
+  const scale = 
+    type === "range_zerototen" ? "0-10" : 
+    type === "yes_no" ? "0-1" : 
+    "1-5";
 
-    // Comprobamos si el valor está dentro del rango de filtros
-    console.log("Comprobando:", numericValue, "Rango:", filters.minValue, filters.maxValue);
-    if (numericValue >= filters.minValue && numericValue <= filters.maxValue) {
-      return numericValue; // Valor dentro del rango
-    } else {
-      // Si está fuera del rango, lo convertimos a null
-      return null;
-    }
-  });
-};
-
-
-  // Determinar la escala antes de mapear colores
-  const scale =
-    dataChart.length === 2 ? "0-1" : dataChart.length === 11 ? "0-10" : "1-5";
-
-    const backgrounds =
+  // definir los colores de fondo y borde según la escala
+  const backgrounds =
     scale === "0-10"
       ? [
           "rgba(255, 0, 255, 0.6)", // 0: Fucsia oscuro
@@ -137,53 +218,55 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
           "rgba(255, 0, 255, 0.7)", // 0: Fucsia oscuro
           "rgba(255, 105, 180, 1)", // 1: Rosa fuerte
         ];
-  
-  const labels =
-    type === "range_zerototen"
-      ? [
-          "0: Nada probable",
-          "1: Nada probable",
-          "2: Nada probable",
-          "3: Nada probable",
-          "4: Nada probable",
-          "5: Nada probable",
-          "6: Nada probable",
-          "7: Neutro",
-          "8: Neutro",
-          "9: Muy probable",
-          "10: Muy probable",
-        ]
-      : type === "range_onetofive"
-      ? [
-          "Muy instisfecho",
-          "Instisfecho",
-          "Ni satisfecho / Ni insatisfecho",
-          "Satisfecho",
-          "Muy satisfecho",
-        ]
-      : type === "range_difficulty"
-      ? [
-          "Muy dificil",
-          "Dificil",
-          "Ni facil / Ni dificil",
-          "Facil",
-          "Muy facil",
-        ]
-      : ["No", "Si"];
 
+  // Función para filtrar labels y datos - solo mostrar los que tienen valores
+  const filterLabelsAndData = () => {
+    // Obtener todos los posibles labels
+    const allLabels = getLabelsForType(type);
+    // Procesar los datos
+    const processedData = applyFilters(dataChart);
+    
+    // Crear arrays para los labels y datos filtrados
+    const filteredLabels = [];
+    const filteredData = [];
+    const filteredBackgrounds = [];
+    const filteredBorders = [];
+    
+    // Iterar por todos los datos y solo incluir los que tienen valores
+    processedData.forEach((value, index) => {
+      // Solo incluir si el valor existe y no es 0
+      if (value !== undefined && value !== null && value !== 0) {
+        filteredLabels.push(allLabels[index]);
+        filteredData.push(value);
+        filteredBackgrounds.push(backgrounds[index]);
+        filteredBorders.push(borders[index]);
+      }
+    });
+    
+    return {
+      labels: filteredLabels,
+      data: filteredData,
+      backgrounds: filteredBackgrounds,
+      borders: filteredBorders
+    };
+  };
+
+  // Obtener datos y labels filtrados
+  const filteredElements = filterLabelsAndData();
+
+  // crear el objeto de datos filtrados
   const filteredData = {
-    labels: labels,
+    labels: filteredElements.labels,
     datasets: [
       {
-        label: "Data",
-        data: applyFilters(dataChart),
-        borderColor: borders,
-        backgroundColor: backgrounds,
+        label: "Datos",  // Cambiado a español
+        data: filteredElements.data,
+        borderColor: filteredElements.borders,
+        backgroundColor: filteredElements.backgrounds,
         tension: 0.2,
       },
     ],
   };
-  console.log("Datos filtrados para el gráfico:", filteredData);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -194,14 +277,20 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
   };
 
   const resetZoom = () => {
-    if (chartRef.current) {
+    if (chartRef.current?.chartInstance) {
       chartRef.current.chartInstance.resetZoom();
     }
   };
 
   useEffect(() => {
     if (!chartRef.current) return;
+    
     const ctx = chartRef.current.getContext("2d");
+    
+    // destruir el gráfico existente si existe
+    if (chartRef.current.chartInstance) {
+      chartRef.current.chartInstance.destroy();
+    }
 
     const chartInstance = new Chart(ctx, {
       type: chartType,
@@ -218,9 +307,9 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
             display: true,
             text: label,
             font: {
-              size: 15, // Tamaño de la fuente en píxeles
-              style: "italic", // Cursiva
-              weight: "bold", // Negrita
+              size: 15,
+              style: "italic",
+              weight: "bold",
             },
           },
           datalabels: {
@@ -231,7 +320,7 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             borderRadius: 3,
             formatter: (value) =>
-              value !== null ? `${value.toFixed(0)}%` : "",
+              value !== null && value !== undefined ? `${value.toFixed(0)}%` : "",
           },
           zoom: {
             pan: {
@@ -255,14 +344,14 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
                 x: {
                   title: {
                     display: true,
-                    text: "Categorías",
+                    text: "Categorías",  // Ya en español
                   },
                 },
                 y: {
                   beginAtZero: true,
                   title: {
                     display: true,
-                    text: "Valores",
+                    text: "Valores",  // Ya en español
                   },
                 },
               }
@@ -317,9 +406,9 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
           <div
             className="btn-group mb-3 d-flex justify-content-center"
             role="group"
-            aria-label="Basic example"
+            aria-label="Chart type selection"
           >
-            <MUITextTooltip title="PIE">
+            <MUITextTooltip title="Circular">
               <button
                 type="button"
                 className={`btn ${
@@ -330,7 +419,7 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
                 <FontAwesomeIcon icon={faPieChart} />
               </button>
             </MUITextTooltip>
-            <MUITextTooltip title="BAR">
+            <MUITextTooltip title="Barras">
               <button
                 type="button"
                 className={`btn ${
@@ -341,7 +430,7 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
                 <FontAwesomeIcon icon={faBarChart} />
               </button>
             </MUITextTooltip>
-            <MUITextTooltip title="LINE">
+            <MUITextTooltip title="Línea">
               <button
                 type="button"
                 className={`btn ${
@@ -355,7 +444,7 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
           </div>
         </div>
         <div className="col">
-          <MUITextTooltip title="Reset Zoom">
+          <MUITextTooltip title="Reiniciar Zoom">
             <button type="button" className="btn btn-light" onClick={resetZoom}>
               <ZoomInMapIcon />
             </button>
