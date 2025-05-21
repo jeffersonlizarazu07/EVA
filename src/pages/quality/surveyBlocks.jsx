@@ -3,7 +3,7 @@ import HeaderLT1 from "../../components/header/headerLT1";
 import axios from "axios";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   smallAlertDelete,
   loadingAlert,
@@ -37,17 +37,21 @@ import {
   getAllBlocks,
   updateBlock,
   deleteBlock,
+  getBlocksByFormId,
 } from "../../services/blockService";
+import {
+  createQuestions,
+  getQuestionsByBlockId,
+} from "../../services/questionsFormService";
+import AnswersFormService from "../../services/answersFormService";
 import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 import Cookies from "js-cookie";
-// import { position } from "html2canvas/dist/types/css/property-descriptors/position";
 
 export default function SurveyBlocks({}) {
   const { id_form } = useParams();
-  const location = useLocation();
-  const [formData, setFormData] = useState(location.state?.form || null);
+  const [formData, setFormData] = useState(null);
   const [data, setData] = useState([]);
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
@@ -147,7 +151,7 @@ export default function SurveyBlocks({}) {
 
  //formulario
   // Estado para los bloques de la encuesta
-  const [surveyBlocks, setSurveyBlocks] = useState([]); 
+  const [surveyBlocks, setSurveyBlocks] = useState([]);
 
   /* ***********************************************************************************************************/
   /* Component Logic*/
@@ -190,18 +194,6 @@ export default function SurveyBlocks({}) {
   }
 }, [data]);
 
-  useEffect(() => {
-    // Verificar si hay al menos una pregunta con texto y tipo
-    const hasValid = questionsList.some((q) => q.text && q.type);
-    setHasValidQuestions(hasValid);
-
-    // Si hay alguna pregunta válida, actualizar questionType
-    if (hasValid) {
-      const validQuestion = questionsList.find((q) => q.text && q.type);
-      questionType.handleChange(validQuestion.type);
-    }
-  }, [questionsList]);
-
   const config = {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -233,25 +225,18 @@ export default function SurveyBlocks({}) {
     setValueConditional(conditional);
   };
 
-  useEffect(() => {
-    if (valueConditional && !listConditional) {
-      setListConditional(true);
-    } else if (!valueConditional && listConditional) {
-      setListConditional(false);
-      if (
-        singleChoiceData.options.length > 0 ||
-        singleChoiceData.correctAnswer !== null
-      ) {
-        setSingleChoiceData({ options: [], correctAnswer: null });
-      }
-      if (
-        multipleChoiceData.options.length > 0 ||
-        multipleChoiceData.correctAnswers.length > 0
-      ) {
-        setMultipleChoiceData({ options: [], correctAnswers: [] });
-      }
-    }
-  }, [valueConditional, listConditional, singleChoiceData, multipleChoiceData]);
+  // useEffect(() => {
+  //   const hasValid = questionsList.some((q) => q.text && q.type);
+  //   setHasValidQuestions(hasValid);
+
+  //   // Solo actualiza questionType si está vacío y existe una pregunta válida
+  //   if (hasValid && !questionType.input) {
+  //     const validQuestion = questionsList.find((q) => q.text && q.type);
+  //     if (validQuestion) {
+  //       questionType.handleChange(validQuestion.type);
+  //     }
+  //   }
+  // }, [questionsList]);
 
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
@@ -292,15 +277,15 @@ export default function SurveyBlocks({}) {
         setIsChecked(false);
       }
 
-      if (questionDetails.type == "check_opt") {
-        const opstionsMultipleData = questionDetails.select_option.split(",");
-        const multipleAnswers = questionDetails.selected_answer.split(",");
+      // if (questionDetails.type == "check_opt") {
+      //   const opstionsMultipleData = questionDetails.select_option.split(",");
+      //   const multipleAnswers = questionDetails.selected_answer.split(",");
 
-        setMultipleChoiceData({
-          options: opstionsMultipleData,
-          correctAnswers: multipleAnswers,
-        });
-      }
+      //   setMultipleChoiceData({
+      //     options: opstionsMultipleData,
+      //     correctAnswers: multipleAnswers,
+      //   });
+      // }
       if (questionDetails.type == "radio_opt") {
         const optiosnData = questionDetails?.select_option;
         const optionsDataArray = optiosnData.split(",");
@@ -322,6 +307,11 @@ export default function SurveyBlocks({}) {
           })),
           selectedOption: selectedOption,
         });
+        if (questionDetails.type == "textfield_s") {
+          const optionsData = questionDetails?.select_option;
+          const optionsDataArray = optionsData ? optionsData.split(",") : [];
+          const selectedOption = questionDetails?.selected_answer;
+        }
 
         // Actualizar QuestionsList
 
@@ -359,135 +349,78 @@ export default function SurveyBlocks({}) {
 
     posicionInput.handleChange(nuevaPosicion.toString()); // Asigna internamente
 
-    const preguntasConvertidas = (questionDetails.preguntas || []).map((p) => ({
-      text: p.text || p.question || "", // usa el campo correcto
-      type: p.type || "",
-      options: p.options || [],
-      correctAnswers: p.correctAnswers || [],
-    }));
+    if (questionDetails && Array.isArray(questionDetails.preguntas)) {
+      const preguntasConvertidas = questionDetails.preguntas.map((p) => ({
+        text: p.text || p.question || "", // usa el campo correcto
+        type: p.type || "",
+        options: p.options || [],
+        correctAnswers: p.correctAnswers || [],
+      }));
 
-    setQuestionsList(preguntasConvertidas);
+      setQuestionsList(preguntasConvertidas);
+    }
   };
-  
+
   const validar = async (id, survey_idt) => {
     try {
       setError("");
-      setLoading(true); // Mostrar indicador de carga
+      setLoading(true);
 
-      // Preparar los datos según el tipo de pregunta
-      let selectedAnswer, options, selectedAnswerToString, optionsToSave;
-
-      switch (questionType.input) {
-        case "radio_opt":
-          selectedAnswer = singleChoiceData.correctAnswer;
-          options = singleChoiceData.options;
-          selectedAnswerToString = selectedAnswer
-            ? selectedAnswer.toString()
-            : "";
-          optionsToSave = options.map((option) => option.text).join(", ");
-          break;
-        case "check_opt":
-          selectedAnswer = multipleChoiceData.correctAnswers;
-          options = multipleChoiceData.options;
-          selectedAnswerToString = selectedAnswer.join(", ");
-          optionsToSave = options.map((option) => option.text).join(", ");
-          break;
-        case "selector_opt":
-          selectedAnswer = selectorData.selectedOption;
-          options = selectorData.options;
-          selectedAnswerToString = Array.isArray(selectedAnswer)
-            ? selectedAnswer.join(", ")
-            : selectedAnswer || "";
-          optionsToSave = Array.isArray(options)
-            ? options
-                .map((option) =>
-                  typeof option === "object" ? option.text : option
-                )
-                .join(", ")
-            : "";
-          break;
-        case "textfield_s":
-          selectedAnswer = textFieldAnswer;
-          options = [];
-          selectedAnswerToString = selectedAnswer
-            ? selectedAnswer.toString()
-            : "";
-          optionsToSave = ""; // No hay opciones para este tipo de pregunta
-          break;
-        default:
-          selectedAnswerToString = "";
-          optionsToSave = "";
-      }
-
-      // Recargar opciones de pregunta antes de guardar
+      // Preparar preguntas con respuestas/selecciones integradas
       const refillQuestions = questionsList.map((q) => {
         let select_option = "";
         let selected_answer = "";
 
         if (q.type === "radio_opt") {
-          select_option = singleChoiceData.options
-            .map((opt) => opt.text)
+          select_option = (q.options || [])
+            .map((opt) => opt.text || opt)
             .join(", ");
-          selected_answer = singleChoiceData.correctAnswer?.toString() || "";
+          selected_answer =
+            q.correctAnswer?.toString() || q.selected_answer || "";
         } else if (q.type === "check_opt") {
-          select_option = multipleChoiceData.options
-            .map((opt) => opt.text)
+          select_option = (q.options || [])
+            .map((opt) => opt.text || opt)
             .join(", ");
-          selected_answer = multipleChoiceData.correctAnswers.join(", ");
+          selected_answer = Array.isArray(q.correctAnswers)
+            ? q.correctAnswers.join(", ")
+            : q.selected_answer || "";
         } else if (q.type === "selector_opt") {
           select_option = (q.options || [])
-            .map((opt) => (typeof opt === "object" ? opt.text : opt))
+            .map((opt) => opt.text || opt)
             .join(", ");
+          selected_answer = q.selected_answer || "";
+        } else if (q.type === "textfield_s") {
+          select_option = "";
+          selected_answer = q.selected_answer || "";
         }
         return {
-          ...q,
+          text: q.text || q.question || "Sin texto",
+          type: q.type,
           select_option,
           selected_answer,
+          conditional: q.conditional || "NO",
         };
       });
 
+      console.log(refillQuestions);
+
+      // Calcular la posición del bloque
       const newPositionBlock = calBlockPosition();
-      let parametros;
       let response;
 
-      // Procesar según la operación (crear o actualizar)
+      // Crear bloque
       if (operation === 1) {
-        // Crear nuevo bloque
-        parametros = {
+        const parametros = {
           form_id: id_form,
           nombreBloque: nombreInput.input,
           ponderacion: parseInt(ponderacionInput.input || 0),
           position: newPositionBlock || 0,
-          preguntas: refillQuestions,
-          type:
-            questionsList.length > 0 && questionsList[0].type
-              ? questionsList[0].type
-              : "",
-          conditional: valueConditional ? "SI" : "NO",
-          question: description.input,
-          survey_id: survey_idt,
-          frm_option: frm_option.input,
-          id_conditional: id_conditional.input,
-          conditional_answer: conditional_answer.input,
-          section: section.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? selectedAnswerToString
-              : " ",
-          select_option:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? optionsToSave
-              : "",
         };
 
-        console.log(parametros);
+        console.log("Datos a enviar:", parametros);
 
         try {
-          response = await axios.post(
+          const response = await axios.post(
             "http://localhost:3000/api/blocks",
             parametros,
             config
@@ -496,63 +429,106 @@ export default function SurveyBlocks({}) {
           if (response.status === 201 || response.status === 200) {
             const newBlock = response.data;
 
-            // Actualizar el estado con el nuevo bloque
+            if (refillQuestions.length > 0) {
+              const responseQuestions = await createQuestions(
+                newBlock.id,
+                refillQuestions
+              );
+              const questionIds = responseQuestions;
+              console.log("IDs de preguntas recibidos:", questionIds);
+
+              if (!questionIds || !Array.isArray(questionIds)) {
+                throw new Error("No se recibieron los IDs de las preguntas.");
+              }
+
+              // Enviar respuestas vinculadas a cada pregunta
+              for (let i = 0; i < refillQuestions.length; i++) {
+                const question = refillQuestions[i];
+                const questionId = questionIds[i];
+
+                if (!questionId) {
+                  console.warn(`Pregunta sin ID asignado en posición ${i}`);
+                  continue;
+                }
+
+                // Acceder a la respuesta correcta según el tipo de pregunta
+                let answer = "";
+
+                if (
+                  question.type === "radio_opt" ||
+                  question.type === "selector_opt"
+                ) {
+                  answer = question.selected_answer || "";
+                } else if (question.type === "check_opt") {
+                  answer = Array.isArray(question.selected_answers)
+                    ? question.selected_answers.join(", ")
+                    : "";
+                } else if (
+                  question.type === "textfield_s" ||
+                  question.type === "yes_no"
+                ) {
+                  // Aquí puedes decidir si quieres guardar o no.
+                  // Por ejemplo, si es respuesta abierta:
+                  answer = question.selected_answer || "";
+                }
+
+                if (answer.trim() !== "") {
+                  try {
+                    await AnswersFormService.createAnswer({
+                      question_id: questionId,
+                      answer_question: answer,
+                    });
+                  } catch (err) {
+                    console.error(
+                      `Error al guardar respuesta "${answer}":`,
+                      err
+                    );
+                  }
+                }
+              }
+            }
+
+            const enrichedBlock = { ...newBlock, preguntas: refillQuestions };
+
             setData((prevData) => {
-              const nuevosDatos = [...prevData, newBlock];
-              // Ordenar los bloques por posición
+              const nuevosDatos = [...prevData, enrichedBlock];
               nuevosDatos.sort(
                 (a, b) => parseInt(a.posicion) - parseInt(b.posicion)
               );
               return nuevosDatos;
             });
 
-            // Mostrar mensaje de éxito
             Toast.fire({
               icon: "success",
               title: "Bloque creado exitosamente",
             });
-            
-            // Recargar los bloques
-            // getSurveyBlocks();
 
-            // Cerrar el modal y resetear el formulario
             document.getElementById("btnClose").click();
             handleCancel();
           }
         } catch (apiError) {
           console.error("Error al crear el bloque:", apiError);
           setError(
-            apiError.response?.data?.message || "Error al crear el bloque"
+            apiError.response?.data?.message ||
+              apiError.message ||
+              "Error al crear el bloque"
           );
           Toast.fire({
             icon: "error",
             title:
-              apiError.response?.data?.message || "Error al crear el bloque",
+              apiError.response?.data?.message ||
+              apiError.message ||
+              "Error al crear el bloque",
           });
         }
-      } else if (operation === 2) {
-        // Actualizar bloque existente
-        parametros = {
-          type: questionType.input,
-          preguntas: refillQuestions,
-          percentage: 0,
-          conditional: valueConditional ? "SI" : "NO",
-          question: description.input,
-          survey_id: survey_idt,
-          conditional_answer: conditional_answer.input,
-          id_conditional: id_conditional.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? selectedAnswerToString
-              : null,
-          select_option:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt" ||
-            questionType.input === "selector_opt"
-              ? optionsToSave
-              : null,
+      }
+
+      // Editar bloque
+      else if (operation === 2) {
+        const parametros = {
+          nombreBloque: nombreInput.input,
+          ponderacion: parseInt(ponderacionInput.input || 0),
+          position: posicionInput.input || 0,
         };
 
         try {
@@ -563,26 +539,26 @@ export default function SurveyBlocks({}) {
           );
 
           if (response.status === 200) {
-            const updatedBlock = response.data;
+            const updatedBlock = response.data.data || response.data;
 
-            // Actualizar los datos en el estado
+            if (refillQuestions.length > 0) {
+              await updateQuestionsForBlock(idToEdit, refillQuestions);
+            }
+
+            const enrichedBlock = {
+              ...updatedBlock,
+              preguntas: refillQuestions,
+            };
+
             setData((prevData) =>
-              prevData.map((b) =>
-                b.id === idToEdit ? { ...b, ...updatedBlock } : b
-              )
+              prevData.map((b) => (b.id === idToEdit ? enrichedBlock : b))
             );
 
-            // Mostrar mensaje de éxito
             Toast.fire({
               icon: "success",
               title: "Bloque actualizado correctamente",
             });
-
-            // Limpiar estado y cerrar modal
-            setPositionType("");
-            setReferenceBlockId("");
             document.getElementById("btnClose").click();
-            setValueConditional(false);
             handleCancel();
           }
         } catch (apiError) {
@@ -707,19 +683,29 @@ export default function SurveyBlocks({}) {
   const handleSelectorChange = (data) => {
     setSelectorData(data);
 
-    // Actualizar directamente en questionsList el tipo selector
-    setQuestionsList((prevQuestions) =>
-      prevQuestions.map((q, idx) => {
+    setQuestionsList((prevQuestions) => {
+      const updatedQuestions = prevQuestions.map((q) => {
         if (q.type === "selector_opt") {
-          return {
-            ...q,
-            options: data.options, // Guardar todas las opciones
-            selected_answer: data.selectedOption, // Guardar la respuesta seleccionada
-          };
+          const hasChanged =
+            JSON.stringify(q.options) !== JSON.stringify(data.options) ||
+            q.selected_answer !== data.selectedOption;
+
+          if (hasChanged) {
+            return {
+              ...q,
+              options: data.options,
+              selected_answer: data.selectedOption,
+            };
+          }
         }
         return q;
-      })
-    );
+      });
+
+      // Evitar actualizar si no hubo cambios reales
+      const isDifferent =
+        JSON.stringify(updatedQuestions) !== JSON.stringify(prevQuestions);
+      return isDifferent ? updatedQuestions : prevQuestions;
+    });
   };
 
   const areAllFieldsCompleted = () => {
@@ -942,16 +928,66 @@ export default function SurveyBlocks({}) {
   // Obtener bloques al cargar
   useEffect(() => {
     loadBlocks();
-  }, []);
+  }, [id_form]);
 
   const loadBlocks = async () => {
     try {
-      const res = await getAllBlocks();
-      setBlocks(res.data);
+      const res = await getBlocksByFormId(id_form);
+      const bloquesMapeados = Array.isArray(res.data?.data)
+        ? res.data.data.map((bloque) => ({
+            ...bloque,
+            preguntas: Array.isArray(bloque.preguntas)
+              ? bloque.preguntas.map((preg) => {
+                  const opciones = preg.select_option
+                    ? preg.select_option.split(",").map((o) => o.trim())
+                    : [];
+
+                  let tipo = preg.type || "";
+                  if (!tipo && preg.id_type_question) {
+                    const typeMap = {
+                      1: "radio_opt",
+                      2: "selector_opt",
+                      3: "textfield_s",
+                      4: "check_opt",
+                      5: "yes_no",
+                    };
+                    tipo = typeMap[preg.id_type_question] || "unknown";
+                  }
+
+                  return {
+                    text: preg.text || preg.question_name || "Sin texto",
+                    type: tipo,
+                    options: opciones,
+                    selected_answer:
+                      preg.conditional_answer || preg.selected_answer || "",
+                    conditional: preg.conditional || "NO",
+                  };
+                })
+              : [],
+          }))
+        : [];
+
+      console.log("Bloques mapeados:", bloquesMapeados);
+      setData(bloquesMapeados);
     } catch (err) {
       console.error("Error al cargar bloques:", err);
     }
   };
+
+  //   const loadBlocks = async () => {
+  //   try {
+  //     const res = await getAllBlocks();
+  //     console.log("Datos de bloques:", res.data);
+  //     if (Array.isArray(res.data)) {
+  //       setBlocks(res.data);
+  //       console.log(`Bloque ${i}:`, bloque);
+  //     } else {
+  //       console.warn("La respuesta no es un array.");
+  //     }
+  //   } catch (err) {
+  //     console.error("Error al cargar bloques:", err);
+  //   }
+  // };
 
   // Crear bloque
   const handleCreate = async () => {
@@ -965,7 +1001,7 @@ export default function SurveyBlocks({}) {
   };
 
   //Actualizar bloque
-  const handleUpdate = async (id, updatedFields) => {
+  const handleUpdateBlock = async (id, updatedFields) => {
     try {
       const res = await updateBlock(id, updatedFields);
       setBlocks(blocks.map((b) => (b.id === id ? res.data.data : b)));
@@ -975,12 +1011,12 @@ export default function SurveyBlocks({}) {
   };
 
   // Eliminar bloque
-  const handleDeleteBlock = (bloque) => {
-    smallAlertDelete
-      .fire({
+  const handleDeleteBlock = async (id, title) => {
+    try {
+      const result = await smallAlertDelete.fire({
         icon: "warning",
         title: "",
-        html: `<p style="text-align:center;">El bloque <strong>${bloque.nombreBloque}</strong> será eliminado.<br>¿Desea continuar?</p>`,
+        html: `<p style="text-align:center;">El bloque <strong>${title}</strong> será eliminado.<br>¿Desea continuar?</p>`,
         showCancelButton: true,
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
@@ -991,26 +1027,33 @@ export default function SurveyBlocks({}) {
           icon: "swal2-icon-center",
           title: "swal2-title-center",
         },
-      })
-      .then(async (result) => {
-        if (result.isConfirmed) {
-          try {
-            await deleteBlock(bloque.id); // Llamada al backend
-            const updatedList = data.filter((b) => b.id !== bloque.id);
-            setData(updatedList);
-            Toast.fire({
-              icon: "success",
-              title: "Bloque eliminado correctamente",
-            });
-          } catch (error) {
-            console.error("Error al eliminar el bloque:", error);
-            Toast.fire({
-              icon: "error",
-              title: "Error al eliminar el bloque",
-            });
+        didOpen: () => {
+          const icon = document.querySelector(".swal2-icon");
+          const title = document.querySelector(".swal2-title");
+          if (icon && title) {
+            icon.style.marginRight = "10px";
           }
-        }
+        },
       });
+
+      if (!result.isConfirmed) return;
+
+      await deleteBlock(id);
+      setData((prevData) => prevData.filter((block) => block.id !== id));
+
+      Toast.fire({ icon: "success", title: "Bloque eliminado exitosamente" });
+    } catch (err) {
+      console.error("Error al eliminar el bloque:", err);
+      Toast.fire({
+        icon: "error",
+        title: "Error al eliminar el bloque seleccionado",
+      });
+    }
+  };
+
+  // Elimina el bloque - pendiente por revisar**
+  const onBulkEmail = (bloque) => {
+    console.log("Eliminar bloque", bloque);
   };
 
   useEffect(() => {
@@ -1019,6 +1062,14 @@ export default function SurveyBlocks({}) {
       fetchFormData();
     }
   }, [id_form, formData]);
+
+  useEffect(() => {
+    console.log("questionsList cambió", questionsList);
+  }, [questionsList]);
+
+  useEffect(() => {
+    console.log("questionType cambió", questionType.input);
+  }, [questionType.input]);
 
   return (
     <div className="App">
@@ -1102,10 +1153,12 @@ export default function SurveyBlocks({}) {
                           <div className="w-100 ps-2">
                             <div className="d-flex justify-content-between align-items-start">
                               <h3 className="mb-3 ms-2">
-                                {bloque.nombreBloque || "Bloque sin nombre"}
+                                {bloque.block_name ||
+                                  bloque.nombre ||
+                                  "Sin nombre"}
                               </h3>
                               <span className="text-muted block-weighting me-3">
-                                {`${bloque.ponderacion}%` ||
+                                {`${bloque.percentage}%` ||
                                   ("0" && bloque.ponderacion > 0)}
                               </span>
                             </div>
@@ -1123,16 +1176,23 @@ export default function SurveyBlocks({}) {
                                     <div className="d-flex justify-content-between align-items-center">
                                       <div className="w-100">
                                         <p className="mb-1 mb-3 text-center fs-4">
-                                          <strong className="questionRender">
-                                            Pregunta {idx + 1}:
-                                          </strong>{" "}
-                                          {preg.text || "Sin texto"}
+                                          <strong>
+                                            {preg.text ||
+                                              preg.question_name ||
+                                              "Sin texto"}
+                                          </strong>
                                         </p>
 
                                         {preg.type === "radio_opt" && (
                                           <div className="d-flex flex-column align-items-center">
                                             <SingleChoiceView
-                                              options={preg.select_option}
+                                              options={(
+                                                preg.options ||
+                                                preg.select_option ||
+                                                ""
+                                              )
+                                                .split(",")
+                                                .map((o) => o.trim())}
                                               correctOption={
                                                 preg.selected_answer
                                               }
@@ -1143,7 +1203,13 @@ export default function SurveyBlocks({}) {
                                         {preg.type === "check_opt" && (
                                           <div className="d-flex flex-column align-items-center">
                                             <MultipleChoiceView
-                                              options={preg.select_option}
+                                              options={(
+                                                preg.options ||
+                                                preg.select_option ||
+                                                ""
+                                              )
+                                                .split(",")
+                                                .map((o) => o.trim())}
                                               correctOption={
                                                 preg.selected_answer
                                               }
@@ -1158,24 +1224,38 @@ export default function SurveyBlocks({}) {
                                                 Selecciona una opción:
                                               </strong>
                                             </label>
-                                            <select className="form-select">
-                                              {(preg.select_option || "")
-                                                .split(",")
-                                                .map((opt, idx) => {
-                                                  const optionText = opt.trim();
+                                            <select
+                                              className="form-select"
+                                              value={preg.selected_answer || ""}
+                                              onChange={(e) => {
+                                                const updatedQuestions = [
+                                                  ...questionsList,
+                                                ];
+                                                updatedQuestions[
+                                                  index
+                                                ].selected_answer =
+                                                  e.target.value;
+                                                setQuestionsList(
+                                                  updatedQuestions
+                                                );
+                                              }}
+                                            >
+                                              {(preg.options || []).map(
+                                                (opt, idx) => {
+                                                  const optionText =
+                                                    typeof opt === "string"
+                                                      ? opt
+                                                      : opt.text || "";
                                                   return (
                                                     <option
                                                       key={idx}
                                                       value={optionText}
-                                                      selected={
-                                                        optionText ===
-                                                        preg.selected_answer
-                                                      }
                                                     >
                                                       {optionText}
                                                     </option>
                                                   );
-                                                })}
+                                                }
+                                              )}
                                             </select>
                                           </div>
                                         )}
@@ -1267,7 +1347,7 @@ export default function SurveyBlocks({}) {
                                   className="btn text-start"
                                   style={{ width: "100%" }}
                                   data-bs-toggle="modal"
-                                  onClick={() => onUpdate(bloque)}
+                                  onClick={() => handleUpdateBlock(bloque.id)}
                                 >
                                   <i className="fa-solid fa-edit"></i> Editar
                                 </button>
@@ -1276,7 +1356,12 @@ export default function SurveyBlocks({}) {
                                 <button
                                   className="btn text-start"
                                   style={{ width: "100%" }}
-                                  onClick={() => handleDeleteBlock(bloque)}
+                                  onClick={() =>
+                                    handleDeleteBlock(
+                                      bloque.id,
+                                      bloque.block_name
+                                    )
+                                  }
                                 >
                                   <i className="fa-solid fa-trash"></i>{" "}
                                   {t("delete_block")}

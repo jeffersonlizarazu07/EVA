@@ -111,7 +111,7 @@ const FormList = () => {
   };
 
   const openForm = (form) => {
-    navigate(`/survey_blocks/${form.id}`, { state: { form } });
+    navigate(`/survey_blocks/${form.id}`);
   };
 
   const activateForm = async (form) => {
@@ -136,29 +136,30 @@ const FormList = () => {
   };
 
   const deactivateForm = async (form) => {
-    smallAlertDelete.fire({
-      icon: "warning",
-      title: '',
-      html: `<p style="text-align:center;">El formulario <strong>${form.title}</strong> será deshabilitado.<br>¿Desea continuar?</p>`,
-      showCancelButton: true,
-      confirmButtonText: "Confirmar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#b62a8b",
-      customClass: {
-        popup: 'my-swal-popup',
-        actions: 'swal2-actions-center',
-        icon: 'swal2-icon-center', // Asegura que el icono esté centrado
-        title: 'swal2-title-center', // Centra el título si lo deseas
-      },
-      didOpen: () => {
-        // Alineamos el ícono y el texto
-        const icon = document.querySelector('.swal2-icon');
-        const title = document.querySelector('.swal2-title');
-        if (icon && title) {
-          icon.style.marginRight = '10px'; // Espacio entre el ícono y el título
-        }
-      },
-    })
+    smallAlertDelete
+      .fire({
+        icon: "warning",
+        title: "",
+        html: `<p style="text-align:center;">El formulario <strong>${form.title}</strong> será deshabilitado.<br>¿Desea continuar?</p>`,
+        showCancelButton: true,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+        customClass: {
+          popup: "my-swal-popup",
+          actions: "swal2-actions-center",
+          icon: "swal2-icon-center", // Asegura que el icono esté centrado
+          title: "swal2-title-center", // Centra el título si lo deseas
+        },
+        didOpen: () => {
+          // Alineamos el ícono y el texto
+          const icon = document.querySelector(".swal2-icon");
+          const title = document.querySelector(".swal2-title");
+          if (icon && title) {
+            icon.style.marginRight = "10px"; // Espacio entre el ícono y el título
+          }
+        },
+      })
 
       .then(async (result) => {
         if (result.isConfirmed) {
