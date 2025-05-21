@@ -7,41 +7,47 @@ class BlockModel {
   }
 
   async createBlock(data) {
-    if (
-      !data.form_id ||
-      !data.nombreBloque ||
-      !data.ponderacion ||
-      !data.position
-    ) {
-      throw new Error("Faltan campos obligatorios");
-    }
-    try {
-      const [id] = await this.knex(this.table).insert({
-        form_id: data.form_id,
-        block_name: data.nombreBloque,
-        percentage: data.ponderacion,
-        block_location: data.position,
-        // numberQuestions: data.numberQuestions,
-        // textQuestion: data.textQuestion,
-        // TypeAnswer: data.TypeAnswer,
-        // answersByQuestion: data.answersByQuestion, // debe venir serializado si es un array/objeto
-      });
-
-      return { id, ...data };
-    } catch (error) {
-      throw new Error(`Error al crear el bloque: ${error.message}`);
-    }
+  if (
+    data.form_id == null ||
+    data.nombreBloque == null ||
+    data.ponderacion == null
+  ) {
+    throw new Error("Faltan campos obligatorios");
   }
+
+  // Calcular la posición automáticamente si no viene
+  if (data.position == null) {
+    const maxPos = await this.knex(this.table)
+      .where({ form_id: data.form_id })
+      .max("block_location as max")
+      .first();
+
+    data.position = (maxPos?.max || 0) + 1;
+  }
+
+  try {
+    const [id] = await this.knex(this.table).insert({
+      form_id: data.form_id,
+      block_name: data.nombreBloque,
+      percentage: data.ponderacion,
+      block_location: data.position,
+    });
+
+    return { id, ...data };
+  } catch (error) {
+    throw new Error(`Error al crear el bloque: ${error.message}`);
+  }
+}
 
   async getAllBlocks() {
     return await this.knex(this.table).select("*");
   }
 
   async getBlocksByFormId(formId) {
-  return await this.knex(this.table)
-    .where({ form_id: formId })
-    .orderBy("block_location", "asc");
-}
+    return await this.knex(this.table)
+      .where({ form_id: formId })
+      .orderBy("block_location", "asc");
+  }
 
   async getBlockById(id) {
     const block = await this.knex(this.table).where({ id }).first();
