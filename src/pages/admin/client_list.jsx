@@ -302,6 +302,15 @@ export default function Client_list() {
   formData.append("color_tag2", colors2);
   formData.append("state", 1);
 
+  if (!client.input.trim()) {
+  setError("El nombre del cliente es necesario");
+  Toast.fire({
+    icon: "error",
+    title: "El nombre del cliente es necesario",
+  });
+  return;
+}
+
   const newClientName = client.input.trim().toLowerCase();
 
   // Verificamos si estamos en modo creación (1) o edición (2)
@@ -346,6 +355,16 @@ export default function Client_list() {
       console.error("Error subiendo el archivo:", error);
     }
   } else if (operation === 2 && id) {
+
+     const clientExists = data.some(item => item.client.trim().toLowerCase() === newClientName);
+      if (clientExists) {
+        setError("El nombre del cliente ya existe");
+        Toast.fire({
+          icon: "error",
+          title: t("clientModal.DuplicatedUser"),
+        });
+        return;
+      }
     // Aquí se realiza una actualización del cliente con PUT
     const urlput = `http://localhost:3000/api/clients/${id}`;
     console.log("URL de actualización:", urlput);
