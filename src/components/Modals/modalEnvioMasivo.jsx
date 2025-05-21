@@ -122,14 +122,28 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
         }]
       };
 
-      await axios.post("http://localhost:3000/api/enviar-correos", payload, config);
+      const response = await axios.post("http://localhost:3000/api/enviar-correos", payload, config);
+
+      const { mensaje, errores } = response.data;
       
-      Toast.fire({
-        icon: "success",
-        title: "Encuesta enviada correctamente"
-      });
-      resetForm();
-      onClose();
+      if (errores && errores.length > 0) {
+        const erroresTexto = errores.map(e => `${e.email}: ${e.error}`).join('\n');
+        Toast.fire({
+          icon: "warning",
+          title: `${mensaje}\nErrores:\n${erroresTexto}`,
+          didOpen: (toast) => {
+          toast.style.width = '350%'; // Ajusta a tu preferencia
+          }  
+        });
+      } else {
+        Toast.fire({
+          icon: "success",
+          title: mensaje
+        });
+      }
+
+    resetForm();
+    onClose();
     } catch (error) {
       console.error("Error al enviar:", error);
       Toast.fire({
@@ -227,19 +241,27 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
           withCredentials: true
         };
   
-        await axios.post(
+        const response = await axios.post(
           "http://localhost:3000/api/enviar-correos",
           { users },
           config
         );
-  
+
+        const { mensaje, errores } = response.data;
+        if (errores && errores.length > 0) {
+        const erroresTexto = errores.map(e => `• ${e.email}: ${e.error}`).join('\n');
         Toast.fire({
-          icon: "success",
-          title: `Enviados ${users.length} correos exitosamente!`
+          icon: "warning",
+          title: `${mensaje}\nErrores:\n${erroresTexto}`
         });
+        } else {
+          Toast.fire({
+            icon: "success",
+            title: mensaje
+          });
+        }
         resetForm();
         onClose();
-  
       } catch (error) {
         console.error("Error completo:", error);
         Toast.fire({
