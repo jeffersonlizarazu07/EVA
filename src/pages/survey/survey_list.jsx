@@ -325,9 +325,22 @@ const SurveyList = () => {
       title.input.trim() == "" ||
       start_date.input.trim() == "" ||
       end_date.input.trim() == "" ||
-      description.input.trim() == ""
+      description.input.trim() == "" ||
+      idClient.input.trim() == "" 
     ) {
-      alert("Campos mal diligenciados");
+         smallAlertDelete
+      .fire({
+        icon: "warning",
+        toast: false,
+        text: `Todos los campos son obligatorios`,
+        confirmButtonText: "Confirmar",        
+        confirmButtonColor: "#b62a8b",
+        customClass :{
+          actions: 'swal2-actions-center ', 
+          icon: 'icono-personalizado',
+          title: 'titulo-pequeno',
+        },
+      })
     } else {
       if (operation == 1) {
         const link = generateRandomLink(title.input, idClient.input);
