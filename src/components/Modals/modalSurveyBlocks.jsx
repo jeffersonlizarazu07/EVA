@@ -7,7 +7,7 @@ import {
   SingleChoiceQuestionEdit,
   SelectorQuestion,
   SelectorQuestionEdit,
-} from "../../pages/survey/singleChoiceQuestion"
+} from "../../pages/survey/singleChoiceQuestion";
 
 import {
   Yes_no,
@@ -15,7 +15,7 @@ import {
   SingleChoiceView,
   MultipleChoiceView,
 } from "../../pages/survey/questions";
-import "../../assets/css/survey.css"
+import "../../assets/css/survey.css";
 import "../../assets/css/surveyBlocks.css";
 
 const ModalSurveyBlocks = ({
@@ -48,9 +48,9 @@ const ModalSurveyBlocks = ({
   posicionInput,
   positionType,
   referenceBlockId,
-  data
+  data,
 }) => {
-    return (
+  return (
     <div
       className="modal fade"
       id="modalManageQuestion"
@@ -59,9 +59,7 @@ const ModalSurveyBlocks = ({
       aria-hidden="true"
     >
       <div
-        className={`${
-          operation === 1 ? "modal-dialog modal-xl" : ""
-        } modal-dialog-centered`}
+        className="modal-dialog modal-xl modal-dialog-centered"
       >
         <div className="modal-content">
           <div className="modal-header">
@@ -88,9 +86,7 @@ const ModalSurveyBlocks = ({
                       className="input-new"
                       placeholder=" "
                       value={nombreInput.input}
-                      onChange={(e) =>
-                        nombreInput.handleChange(e.target.value)
-                      }
+                      onChange={(e) => nombreInput.handleChange(e.target.value)}
                       required
                     />
                     <span className="labelName">Nombre de bloque</span>
@@ -140,8 +136,7 @@ const ModalSurveyBlocks = ({
                       <label
                         htmlFor="positionTypeSelect"
                         className="form-label"
-                      >
-                      </label>
+                      ></label>
                       <select
                         id="positionTypeSelect"
                         className="form-select"
@@ -158,8 +153,10 @@ const ModalSurveyBlocks = ({
                       </select>
                     </div>
                     <div className="form-group flex-fill">
-                      <label htmlFor="referenceBlock" className="form-label">
-                      </label>
+                      <label
+                        htmlFor="referenceBlock"
+                        className="form-label"
+                      ></label>
                       <select
                         id="referenceBlock"
                         className="form-select"
@@ -187,8 +184,8 @@ const ModalSurveyBlocks = ({
                       {positionType === "before"
                         ? "antes del"
                         : "después del"}{" "}
-                      bloque seleccionado y se actualizarán automáticamente
-                      las posiciones de los demás bloques.
+                      bloque seleccionado y se actualizarán automáticamente las
+                      posiciones de los demás bloques.
                     </div>
                   )}
                 </div>
@@ -204,10 +201,7 @@ const ModalSurveyBlocks = ({
                   {/* Input para cantidad de preguntas */}
                   <div className="col-sm-5">
                     <div className="form-group">
-                      <label
-                        htmlFor="questionConditional"
-                        id="labelAnimation"
-                      >
+                      <label htmlFor="questionConditional" id="labelAnimation">
                         <input
                           type="number"
                           className="input-new conditionalQuestionSelect"
@@ -250,9 +244,7 @@ const ModalSurveyBlocks = ({
                             handleInputChange(index, "text", e.target.value)
                           }
                         />
-                        <span className="labelName">
-                          Texto de la pregunta:
-                        </span>
+                        <span className="labelName">Texto de la pregunta:</span>
                       </label>
                     </div>
 
@@ -318,7 +310,7 @@ const ModalSurveyBlocks = ({
 
                     {operation === 2 && (
                       <>
-                        <div className="form-check form-switch">
+                        {/* <div className="form-check form-switch">
                           <input
                             className="form-check-input"
                             type="checkbox"
@@ -328,7 +320,7 @@ const ModalSurveyBlocks = ({
                               conditionalHandleChange(e.target.checked)
                             }
                           />
-                        </div>
+                        </div> */}
 
                         {isChecked && listConditional && valueConditional && (
                           <div
@@ -336,13 +328,11 @@ const ModalSurveyBlocks = ({
                             style={{ borderLeft: "5px solid gray" }}
                           ></div>
                         )}
-                        
+
                         <div className="mt-2 mb-2">
                           {q.type === "yes_no" ? <Yes_no /> : null}
                           {q.type === "textfield_s" ? <Textfield_s /> : null}
-                          {q.type === "radio_opt" ? (
-                            <SingleChoiceView />
-                          ) : null}
+                          {q.type === "radio_opt" ? <SingleChoiceView /> : null}
                           {q.type === "check_opt" ? (
                             <MultipleChoiceView />
                           ) : null}
