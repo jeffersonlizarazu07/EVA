@@ -41,13 +41,13 @@ class questionsFormModel {
 
     const ids = insertedQuestions.map((q) => q.id);
 
-    console.log("✅ IDs insertados:", ids);
+    console.log("IDs insertados:", ids);
     return ids;
   }
 
   async updateQuestionsForBlock(blockId, questions) {
     await this.knex(this.table).where({ block_id: blockId }).del();
-    await this.createQuestionsForBlock(blockId, questions); // Reutilizamos la lógica
+    await this.createQuestionsForBlock(blockId, questions);
   }
 
   async getQuestionsByBlockId(blockId) {

@@ -26,6 +26,8 @@ const updateQuestionsForBlock = async (req, res) => {
   const { blockId } = req.params;
   const { preguntas } = req.body;
 
+  console.log("🛠️ Datos recibidos para actualizar preguntas:", req.body);
+
   if (!blockId || !Array.isArray(preguntas)) {
     return res.status(400).json({ message: "Datos inválidos" });
   }
