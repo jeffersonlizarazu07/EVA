@@ -336,6 +336,8 @@ export default function SurveyBlocks({}) {
       setError("");
       setLoading(true);
 
+      console.log("questionsList para actualizar:", questionsList);
+
       // Preparar preguntas con respuestas/selecciones integradas
       const typeMap = {
         radio_opt: 1,
@@ -505,7 +507,8 @@ export default function SurveyBlocks({}) {
           if (response.status === 200) {
             // Actualizar preguntas si existen
             if (refillQuestions.length > 0) {
-              await updateQuestionsForBlock(idToEdit, refillQuestions);
+              console.log("Actualizando preguntas del bloque...");
+              await updateQuestions(idToEdit, refillQuestions);
             }
 
             await loadBlocks(); // Cargar bloques después de editar uno existente
@@ -546,49 +549,15 @@ export default function SurveyBlocks({}) {
   const updateQuestionsForBlock = async (blockId, preguntas) => {
     try {
       console.log("Actualizando preguntas para bloque:", blockId);
+      console.log("Preguntas a actualizar:", preguntas);
 
-      // Si hay preguntas nuevas, crearlas
-      if (preguntas && preguntas.length > 0) {
-        // Filtrar solo preguntas que no tengan ID (nuevas)
-        const newQuestions = questions.filter((q) => !q.id);
+      // Llamar al servicio de actualización de preguntas
+      const response = await updateQuestions(blockId, preguntas);
 
-        if (newQuestions.length > 0) {
-          console.log("Creando nuevas preguntas:", newQuestions.length);
-          const responseQuestions = await createQuestions(
-            blockId,
-            newQuestions
-          );
-
-          // Crear respuestas para las nuevas preguntas
-          if (responseQuestions && Array.isArray(responseQuestions)) {
-            for (let i = 0; i < newQuestions.length; i++) {
-              const question = newQuestions[i];
-              const questionId = responseQuestions[i];
-
-              if (
-                question.selected_answer &&
-                question.selected_answer.trim() !== "" &&
-                questionId
-              ) {
-                try {
-                  await AnswersFormService.createAnswer({
-                    question_id: questionId,
-                    answer_question: question.selected_answer,
-                  });
-                } catch (answerError) {
-                  console.error(`Error al crear respuesta:`, answerError);
-                }
-              }
-            }
-          }
-        }
-
-        // Para preguntas existentes con ID, aquí podrías agregar lógica de actualización
-        // si tienes una función updateQuestion disponible
+      if (response.status === 200) {
+        console.log("Preguntas actualizadas exitosamente");
+        return { success: true };
       }
-
-      console.log("Preguntas actualizadas exitosamente");
-      return { success: true };
     } catch (error) {
       console.error("Error al actualizar preguntas del bloque:", error);
       throw error;
