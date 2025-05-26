@@ -306,7 +306,7 @@ const config = {
       )
         .then(() => {
           // Actualizar preguntas después de la llamada a sendData
-          updateSurveyQuestions();
+          //updateSurveyQuestions();
           document.getElementById("btnClose").click();
           setValueConditional(false);
         })

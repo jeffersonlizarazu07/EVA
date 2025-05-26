@@ -348,8 +348,8 @@ const Satisfaction = () => {
                         </p>
                       ) :( 
                         <ul style={{listStyle: 'none', padding: 0, display: 'flex', margin: 0, justifyContent: 'center' }}>
-                          {topSurveys.map((survey) => (
-                            <li key={survey.survey_id} className="text-start"
+                          {topSurveys.map((survey, index) => (
+                            <li key={survey.survey_id || `survey-${index}`} className="text-start"
                             style={{
                               fontSize: '80%', // Tamaño de letra
                               margin: '0.5rem 1.3rem', // Espaciado vertical y horizontal
