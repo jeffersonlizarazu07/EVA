@@ -356,7 +356,7 @@ export default function Client_list() {
     }
   } else if (operation === 2 && id) {
 
-     const clientExists = data.some(item => item.client.trim().toLowerCase() === newClientName);
+     const clientExists = data.some(item => item.client.trim().toLowerCase() === newClientName && item.id !== id);
       if (clientExists) {
         setError("El nombre del cliente ya existe");
         Toast.fire({

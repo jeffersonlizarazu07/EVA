@@ -326,7 +326,7 @@ const SurveyList = () => {
       start_date.input.trim() == "" ||
       end_date.input.trim() == "" ||
       description.input.trim() == "" ||
-      idClient.input.trim() == "" 
+      !idClient.input || idClient.input == "" 
     ) {
          smallAlertDelete
       .fire({
