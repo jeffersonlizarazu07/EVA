@@ -1,5 +1,5 @@
-// Importo bcryptjs para poder encriptar las contraseñas de los usuarios
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); // Importo bcryptjs para poder encriptar las contraseñas de los usuarios
+const UserDTO = require('../dtos/userDTO'); // Importo el DTO de usuario para validar los datos de entrada
 
 // Importo el modelo de usuario para acceder a las funciones que interactúan con la base de datos
 const User = require('../models/user');
@@ -29,6 +29,13 @@ const getUsers = async (req, res) => {
 
 // Controlador para obtener un usuario por su ID
 const getUserById = async (req, res) => {
+
+    const validarId = UserDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
+
     const { id } = req.params; // Tomo el ID desde los parámetros de la ruta
     try {
         // Busco el usuario por ID
@@ -52,12 +59,13 @@ const getUserById = async (req, res) => {
 
 // Controlador para crear un nuevo usuario
 const createUser = async (req, res) => {
-    const { firstname, middlename, lastname, email, type, language, password } = req.body;
-
-    // Verifico que todos los campos obligatorios estén presentes
-    if (!firstname || !lastname || !email || !type || !language || !password) {
-        return res.status(400).json({ message: 'Faltan campos requeridos.' });
+    
+    const validacionUsurio = UserDTO.validateCreateUser(req.body);
+    if(!validacionUsurio.status){
+        return res.status(400).json(validacionUsurio);
     }
+    
+    const { firstname, middlename, lastname, email, type, language, password } = req.body;
 
     try {
         // Encripto la contraseña antes de guardarla en la base de datos
@@ -94,6 +102,18 @@ const createUser = async (req, res) => {
 
 // Controlador para actualizar los datos de un usuario
 const updateUser = async (req, res) => {
+    const validacionUsurio = UserDTO.validateCreateUser(req.body);
+    
+    if(!validacionUsurio.status){
+        return res.status(400).json(validacionUsurio);
+    }
+
+    const validarId = UserDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
+
     const { id } = req.params;
     const userData = req.body;
 
@@ -137,6 +157,12 @@ const updateUser = async (req, res) => {
 
 // Controlador para cambiar el estado de un usuario (activo/inactivo)
 const toggleUserState = async (req, res) => {
+    const validarId = UserDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
+
     const { id } = req.params;
     try {
         const updatedUser = await User.toggleUserState(id);
@@ -155,6 +181,12 @@ const toggleUserState = async (req, res) => {
 
 // Controlador para eliminar un usuario
 const deleteUser = async (req, res) => {
+    const validarId = UserDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
+    
     const { id } = req.params;
     try {
         const deletedUser = await User.deleteUser(id);

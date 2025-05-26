@@ -8,7 +8,7 @@ const SurveySet = {
        
         try {
             const result = await db('survey_set').where({ id }).first();
-            console.log('Resultado completo:', result);
+            //console.log('Resultado completo:', result);
             //convierte la fecha a formato YYYY-MM-DD
             if(result){
                 result.start_date = result.start_date.toISOString().split('T')[0];

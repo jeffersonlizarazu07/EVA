@@ -1,5 +1,6 @@
 const SurveySet = require('../models/surveySet');
 const Question  = require('../models/question');
+const SurveyDTO = require('../dtos/surveyDTO')
 
 const surveySetController = {
    /* async surveys(req, res) {
@@ -55,7 +56,7 @@ const surveySetController = {
             console.log('Recibiendo solicitud para obtener encuesta con ID:', req.params.id);
     
             const id = req.params.id;  // Asegúrate de que el ID se pase desde los parámetros de la solicitud
-            console.log('ID de encuesta:', id);
+            //console.log('ID de encuesta:', id);
     
             const survey = await SurveySet.getById(id);
     
@@ -66,7 +67,7 @@ const surveySetController = {
             }
     
             // Si la encuesta fue encontrada, imprimir los datos
-            console.log('Encuesta encontrada:', survey);
+            //console.log('Encuesta encontrada:', survey);
     
             // Responder con los datos de la encuesta
             res.json({ status: '200', message: 'Encuesta obtenida correctamente', data: survey });
@@ -127,6 +128,11 @@ const surveySetController = {
     },
 
     async postSurvey(req, res) {
+        const validarSurvey = await SurveyDTO.validateSurvey(req.body);
+        
+        if(!validarSurvey.status){
+            return res.status(400).json(validarSurvey);
+        }
         try {
             const data = req.body;
             console.log('datos recibidos',data)
@@ -141,6 +147,13 @@ const surveySetController = {
     },
 
     async putSurvey(req, res) {
+        
+        const validarId = SurveyDTO.validarId(req.params.id);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+
         try {
             console.log('lo que se va actualziar*******:', req.body);
             const updated = await SurveySet.update(req.params.id, req.body);
@@ -154,6 +167,13 @@ const surveySetController = {
     },
 
     async patchSurvey(req, res) {
+        
+        const validarId = SurveyDTO.validarId(req.params.id);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+
         try {
             const updated = await SurveySet.toggleState(req.params.id);
             if (!updated) {
@@ -166,6 +186,13 @@ const surveySetController = {
     },
 
     async deleteSurvey(req, res) {
+                
+        const validarId = SurveyDTO.validarId(req.params.id);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+
         try {
             const deleted = await SurveySet.delete(req.params.id);
             if (!deleted) {
@@ -178,6 +205,13 @@ const surveySetController = {
     },
 
     async surveysByUser(req, res) {
+                
+        const validarId = SurveyDTO.validarId(req.params.id);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+
         const { id } = req.params;
         try{
             console.log('ID del usuario:', id); // Imprimir el ID del usuario   
@@ -191,6 +225,13 @@ const surveySetController = {
 
     //funcion para obtener las encuestas mas contestadas
     async topSurveys(req, res) {
+
+        const validarId = SurveyDTO.validarId(req.params.userId);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+
         try {
             const userId = req.params.userId;
             console.log('ID del usuario:', userId); // Imprimir el ID del usuario
