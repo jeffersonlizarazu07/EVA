@@ -58,9 +58,7 @@ const ModalSurveyBlocks = ({
       aria-labelledby="staticBackdropLabel"
       aria-hidden="true"
     >
-      <div
-        className="modal-dialog modal-xl modal-dialog-centered"
-      >
+      <div className="modal-dialog modal-xl modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="text-start m-2 modal-title">
@@ -285,7 +283,6 @@ const ModalSurveyBlocks = ({
 
                     {operation === 1 && (
                       <div className="mt-2 mb-2">
-                        {q.type === "yes_no" && <Yes_no />}
                         {q.type === "textfield_s" && <Textfield_s />}
                         {q.type === "radio_opt" && (
                           <SingleChoiceQuestion
@@ -310,33 +307,72 @@ const ModalSurveyBlocks = ({
 
                     {operation === 2 && (
                       <>
-                        {/* <div className="form-check form-switch">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={`flexSwitchCheckChecked_${index}`}
-                            checked={isChecked}
-                            onChange={(e) =>
-                              conditionalHandleChange(e.target.checked)
-                            }
+                        {q.type === "selector_opt" && (
+                          <SelectorQuestionEdit
+                            options={q.options}
+                            selectedOption={q.selected_answer}
+                            onChange={(data) => {
+                              handleInputChange(index, "options", data.options);
+                              handleInputChange(
+                                index,
+                                "selected_answer",
+                                data.selectedOption
+                              );
+                            }}
                           />
-                        </div> */}
-
-                        {isChecked && listConditional && valueConditional && (
-                          <div
-                            className="col-6 p-2 shadowbox5"
-                            style={{ borderLeft: "5px solid gray" }}
-                          ></div>
                         )}
 
-                        <div className="mt-2 mb-2">
-                          {q.type === "yes_no" ? <Yes_no /> : null}
-                          {q.type === "textfield_s" ? <Textfield_s /> : null}
-                          {q.type === "radio_opt" ? <SingleChoiceView /> : null}
-                          {q.type === "check_opt" ? (
-                            <MultipleChoiceView />
-                          ) : null}
-                        </div>
+                        {q.type === "radio_opt" && (
+                          <SingleChoiceQuestionEdit
+                            options={q.options}
+                            correctAnswer={q.correctAnswer || q.selected_answer}
+                            onChange={(data) => {
+                              handleInputChange(index, "options", data.options);
+                              handleInputChange(
+                                index,
+                                "correctAnswer",
+                                data.correctAnswer
+                              );
+                            }}
+                          />
+                        )}
+
+                        {q.type === "check_opt" && (
+                          <MultipleChoiceQuestionEdit
+                            options={q.options}
+                            correctAnswers={
+                              Array.isArray(q.correctAnswers)
+                                ? q.correctAnswers
+                                : q.selected_answer?.split(",") || []
+                            }
+                            onChange={(data) => {
+                              handleInputChange(index, "options", data.options);
+                              handleInputChange(
+                                index,
+                                "correctAnswers",
+                                data.correctAnswers
+                              );
+                            }}
+                          />
+                        )}
+
+                        {q.type === "textfield_s" && (
+                          <Textfield_s
+                            value={q.selected_answer || ""}
+                            onChange={(val) =>
+                              handleInputChange(index, "selected_answer", val)
+                            }
+                          />
+                        )}
+
+                        {q.type === "yes_no" && (
+                          <Yes_no
+                            value={q.selected_answer || ""}
+                            onChange={(val) =>
+                              handleInputChange(index, "selected_answer", val)
+                            }
+                          />
+                        )}
                       </>
                     )}
 

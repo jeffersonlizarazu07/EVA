@@ -161,7 +161,7 @@ export default function SurveyBlocks({}) {
 
   // useEffect(() => {
   //   i18n.changeLanguage(languageUser);
-  //   getSurvey(id_form, config, setSurveyData);
+  //   getSurveyBlocks(id_form, config, setSurveyBlocks);
   //   updateSurveyQuestions();
   // }, [id_form, languageUser]);
 
@@ -227,19 +227,6 @@ export default function SurveyBlocks({}) {
     setIsChecked(conditional);
     setValueConditional(conditional);
   };
-
-  // useEffect(() => {
-  //   const hasValid = questionsList.some((q) => q.text && q.type);
-  //   setHasValidQuestions(hasValid);
-
-  //   // Solo actualiza questionType si está vacío y existe una pregunta válida
-  //   if (hasValid && !questionType.input) {
-  //     const validQuestion = questionsList.find((q) => q.text && q.type);
-  //     if (validQuestion) {
-  //       questionType.handleChange(validQuestion.type);
-  //     }
-  //   }
-  // }, [questionsList]);
 
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
@@ -315,6 +302,32 @@ export default function SurveyBlocks({}) {
         }));
 
         setQuestionsList(preguntasFormateadas);
+
+        // Asignar estado auxiliar para los datos de la primera pregunta si existe
+        if (preguntasFormateadas.length > 0) {
+          const first = preguntasFormateadas[0];
+
+          if (first.type === "radio_opt") {
+            setSingleChoiceData({
+              options: first.options || [],
+              correctAnswer: first.selected_answer || first.correctAnswer || "",
+            });
+          } else if (first.type === "check_opt") {
+            setMultipleChoiceData({
+              options: first.options || [],
+              correctAnswers:
+                first.correctAnswers ||
+                (first.selected_answer
+                  ? first.selected_answer.split(",").map((o) => o.trim())
+                  : []),
+            });
+          } else if (first.type === "selector_opt") {
+            setSelectorData({
+              options: first.options || [],
+              selectedOption: first.selected_answer || "",
+            });
+          }
+        }
       }
       setidToEdit(questionDetails.id);
     }
@@ -349,11 +362,11 @@ export default function SurveyBlocks({}) {
         let select_option = "";
         let selected_answer = "";
 
-        // Procesar opciones y respuestas según tipo de pregunta
+        // Procesa opciones y respuestas según tipo de pregunta
         if (
           q.type === "radio_opt" ||
-          q.type === "check_opt" ||
-          q.type === "selector_opt"
+          q.type === "selector_opt" ||
+          q.type === "textfield_s"
         ) {
           select_option = Array.isArray(q.options)
             ? q.options
@@ -430,10 +443,6 @@ export default function SurveyBlocks({}) {
                     question.type === "selector_opt"
                   ) {
                     answer = question.selected_answer || "";
-                  } else if (question.type === "check_opt") {
-                    answer = Array.isArray(question.selected_answers)
-                      ? question.selected_answers.join(", ")
-                      : "";
                   } else if (question.type === "textfield_s") {
                     // Decidir si se quiere guardar o no.
                     answer = question.selected_answer || "";
@@ -964,8 +973,6 @@ export default function SurveyBlocks({}) {
                   1: "radio_opt",
                   2: "selector_opt",
                   3: "textfield_s",
-                  4: "check_opt",
-                  5: "yes_no",
                 };
                 tipo = typeMap[preg.id_type_question] || "unknown";
               }
@@ -1443,6 +1450,9 @@ export default function SurveyBlocks({}) {
         referenceBlockId={referenceBlockId}
         setReferenceBlockId={setReferenceBlockId}
         data={data}
+        options={multipleChoiceData.options}
+        correctAnswers={multipleChoiceData.correctAnswers}
+        onChange={handleMultipleChoiceChange}
       />
     </div>
   );

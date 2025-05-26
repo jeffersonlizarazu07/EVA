@@ -562,118 +562,152 @@ const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
   );
 };
 
-function SelectorQuestionEdit({ options, correctAnswer, onChange }) {
-  const [localOptions, setLocalOptions] = useState(options);
-  const [localCorrectAnswer, setLocalCorrectAnswer] = useState(correctAnswer);
+const SelectorQuestionEdit = ({
+  options = [],
+  selectedOption = "",
+  onChange,
+}) => {
+  const [responses, setResponses] = useState(
+    options.map((opt) => (typeof opt === "string" ? opt : opt.text || ""))
+  );
+  const [currentSelection, setCurrentSelection] = useState(selectedOption || "");
+  const [showForm, setShowForm] = useState(false);
+  const [newAnswer, setNewAnswer] = useState("");
 
   useEffect(() => {
-    if (
-      JSON.stringify(localOptions) !== JSON.stringify(options) ||
-      localCorrectAnswer !== correctAnswer
-    ) {
-      setLocalOptions(options);
-      setLocalCorrectAnswer(correctAnswer);
-    }
-  }, [options, correctAnswer]);
+    setResponses(
+      options.map((opt) => (typeof opt === "string" ? opt : opt.text || ""))
+    );
+    setCurrentSelection(selectedOption || "");
+  }, [options, selectedOption]);
 
-  const removeOption = (index) => {
-    const newOptions = localOptions.filter((_, i) => i !== index);
-    if (JSON.stringify(newOptions) !== JSON.stringify(localOptions)) {
-      setLocalOptions(newOptions);
+  const handleAddResponse = () => {
+    if (newAnswer.trim() === "") return;
 
-      const newCorrectAnswers = newOptions
-        .map((option, i) => (option.checked ? i : -1))
-        .filter((index) => index !== -1);
+    const updated = [...responses, newAnswer.trim()];
+    setResponses(updated);
+    setNewAnswer("");
+    setShowForm(false);
 
-      setLocalCorrectAnswer(newCorrectAnswers);
-      onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
-    }
+    onChange?.({
+      options: updated.map((r) => ({ text: r })),
+      selectedOption: currentSelection,
+    });
   };
 
-  // Añadir una nueva opción
-  const addOption = () => {
-    const newOptions = [...localOptions, { text: "", checked: false }];
-    setLocalOptions(newOptions);
-    onChange({ options: newOptions, correctAnswer: localCorrectAnswer });
+  const handleRemoveResponse = (index) => {
+    const updated = responses.filter((_, i) => i !== index);
+    const newSelected =
+      responses[index] === currentSelection ? "" : currentSelection;
+
+    setResponses(updated);
+    setCurrentSelection(newSelected);
+
+    onChange?.({
+      options: updated.map((r) => ({ text: r })),
+      selectedOption: newSelected,
+    });
   };
 
-  // Cambiar el valor del texto de una opción
-  const handleOptionChange = (index, value) => {
-    const newOptions = [...localOptions];
-    newOptions[index].text = value;
-    setLocalOptions(newOptions);
-    onChange({ options: newOptions, correctAnswer: localCorrectAnswer });
-  };
+  const handleSelectChange = (e) => {
+    const selected = e.target.value;
+    setCurrentSelection(selected);
 
-  // Cambiar el estado de la opción seleccionada
-  const handleCheckboxChange = (index) => {
-    const newOptions = localOptions.map((option, i) => ({
-      ...option,
-      checked: i === index ? !option.checked : false, // Solo permite una opción seleccionada
-    }));
-
-    const newCorrectAnswer = newOptions[index].checked ? index : null;
-
-    // Solo actualiza el estado si hay un cambio real
-    if (
-      JSON.stringify(newOptions) !== JSON.stringify(localOptions) ||
-      newCorrectAnswer !== localCorrectAnswer
-    ) {
-      setLocalOptions(newOptions);
-      setLocalCorrectAnswer(newCorrectAnswer);
-
-      // Llama a onChange solo si hay un cambio
-      if (onChange) {
-        onChange({ options: newOptions, correctAnswer: newCorrectAnswer });
-      }
-    }
+    onChange?.({
+      options: responses.map((r) => ({ text: r })),
+      selectedOption: selected,
+    });
   };
 
   return (
-    <div>
-      {localOptions.map((option, index) => (
-        <div
-          key={index}
-          className="row mx-2 form-group align-items-stretch d-flex"
-        >
-          <div className="col-1 p-1 mb-7">
-            <input
-              type="checkbox"
-              checked={option.checked}
-              onChange={() => handleCheckboxChange(index)}
-              className="form-check-input"
-              style={{ width: "100%", height: "50%" }}
-            />
-          </div>
-          <div className="col">
-            <label id="labelAnimation">
-              <input
-                type="text"
-                value={option.text}
-                onChange={(e) => handleOptionChange(index, e.target.value)}
-                placeholder=" "
-                className="input-new"
-              />
-              <span className="labelName">Opción de respuesta</span>
-            </label>
-          </div>
-          <div className="col-1 me-2">
+    <div
+      className="p-4 border rounded shadow-sm"
+      style={{ width: "94%", margin: "auto" }}
+    >
+      {/* Lista de respuestas existentes */}
+      <ul className="list-group">
+        {responses.map((res, index) => (
+          <li
+            key={index}
+            className="list-group-item d-flex justify-content-between align-items-center"
+          >
+            {res}
             <button
-              onClick={() => removeOption(index)}
-              className="btn btn-rect"
+              className="btn btn-sm btn-danger"
+              onClick={() => handleRemoveResponse(index)}
             >
-              <i className="fa-solid fa-delete-left"></i>
+              Eliminar
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {/* Botón para agregar nueva opción */}
+      {!showForm ? (
+        <button
+          className="btn btn-link text-decoration-none p-0 mt-3"
+          onClick={() => setShowForm(true)}
+        >
+          + Agregar opción personalizada
+        </button>
+      ) : (
+        <div className="d-flex flex-column gap-2 mt-3">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Escribe la nueva respuesta"
+            value={newAnswer}
+            onChange={(e) => setNewAnswer(e.target.value)}
+          />
+          <div className="d-flex justify-content-center gap-2 mb-4">
+            <button
+              className="btn btn-success"
+              style={{
+                backgroundColor: "rgba(175, 14, 110, 0.717)",
+                color: "white",
+              }}
+              onClick={handleAddResponse}
+            >
+              Guardar
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setShowForm(false);
+                setNewAnswer("");
+              }}
+            >
+              Cancelar
             </button>
           </div>
         </div>
-      ))}
-      <button onClick={addOption} className="btn btn-primary m-2">
-        + opción
-      </button>
+      )}
+
+      {/* Select con respuestas creadas */}
+      {responses.length > 0 && (
+        <div className="mt-4">
+          <label className="form-label">
+            Selecciona una respuesta guardada:
+          </label>
+          <select
+            className="form-select"
+            value={currentSelection}
+            onChange={handleSelectChange}
+          >
+            <option value="">Seleccione una opción</option>
+            {responses.map((res, idx) => (
+              <option key={idx} value={res}>
+                {res}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   );
-}
+};
 
+export default SelectorQuestionEdit;
 export {
   SingleChoiceQuestion,
   MultipleChoiceQuestion,
