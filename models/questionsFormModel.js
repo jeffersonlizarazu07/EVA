@@ -64,13 +64,12 @@ class questionsFormModel {
           radio_opt: 1,
           selector_opt: 2,
           textfield_s: 3,
-          check_opt: 4,
-          yes_no: 5,
         };
 
         const dataToInsert = questions.map((q) => ({
           question_name: q.question_name || q.text || "Sin texto",
-          id_type_question: typeMap[q.id_type_question] || typeMap[q.type] || null,
+          id_type_question:
+            typeMap[q.id_type_question] || typeMap[q.type] || null,
           conditional: q.conditional || "NO",
           id_conditional: q.id_conditional || null,
           conditional_answer: q.conditional_answer ?? "",
@@ -92,7 +91,6 @@ class questionsFormModel {
       // Confirmar transacción
       await trx.commit();
       console.log("Actualización de preguntas completada exitosamente");
-
     } catch (error) {
       // Revertir cambios si hay error
       await trx.rollback();
