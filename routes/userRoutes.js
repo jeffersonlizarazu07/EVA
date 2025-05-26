@@ -7,19 +7,19 @@ const authMiddleware = require('../middlewares/authMiddleware');
 router.get('/users', authMiddleware, userController.getUsers);
 
 // Obtener un usuario por ID
-router.get('/users/:id', authMiddleware, userController.getUserById);
+router.get('/users/:id?', authMiddleware, userController.getUserById);
 
 // Crear un nuevo usuario
 router.post('/users', authMiddleware, userController.createUser);
 
 // Actualizar un usuario por ID
-router.put('/users/:id', authMiddleware, userController.updateUser);
+router.put('/users/:id?', authMiddleware, userController.updateUser);
 
 // Cambiar el estado de un usuario 
-router.patch('/users/:id', authMiddleware, userController.toggleUserState);
+router.patch('/users/:id?', authMiddleware, userController.toggleUserState);
 
 // Eliminar un usuario por ID
-router.delete('/users/:id', authMiddleware, userController.deleteUser);
+router.delete('/users/:id?', authMiddleware, userController.deleteUser);
 
 //ruta para obtener los clientes asociados a un usuario
 router.get('/users/:id/clients', authMiddleware, userController.getClientByUserId);

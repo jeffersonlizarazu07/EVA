@@ -1,5 +1,5 @@
 
-
+const AnswersDTO = require('../dtos/answersDTO');
 const AnswerModel = require('../models/answerModel');
 const { createAnswer } =  require('../models/answerModel')
 const answerModel = new AnswerModel();  // Importamos el modelo
@@ -99,6 +99,12 @@ class AnswerController {
 
     // Obtiene una respuesta por ID
     async getAnswerById(req, res) {
+        const validarId = AnswersDTO.validarId(req.params.id);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+
         const { id } = req.params;
         console.log(`id recibido: ${id}`);
         try {
@@ -116,6 +122,12 @@ class AnswerController {
 
     // Método para obtener respuestas por ID de pregunta
         async answersByQuestion(req, res) {
+            const validarId = AnswersDTO.validarId(req.params.id);
+
+            if(!validarId.status){
+                return res.status(400).json(validarId);
+            }
+
             const { id } = req.params;  // Obtiene el 'id' de la URL
             console.log(`ID recibido del front: ${id}. Se hará la consulta para question_id.`);
 
@@ -157,6 +169,12 @@ class AnswerController {
 
         // Método para obtener los porcentajes de respuestas por tipo de pregunta
     async answersByQuestionPercentage(req, res) {
+        const validarId = AnswersDTO.validarId(req.params.id);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+
         const { id } = req.params;  // Obtiene el ID de la pregunta desde los parámetros de la URL
         console.log(`ID de la pregunta recibido: ${id}`); // Log del ID recibido
 
@@ -268,6 +286,17 @@ class AnswerController {
 
         // Controlador para obtener los porcentajes de respuestas por encuesta
         async percentagesXSurvey(req, res) {
+            const validarId = AnswersDTO.validarId(req.params.id);
+
+            if(!validarId.status){
+                return res.status(400).json(validarId);
+            }
+
+            const validarFecha = AnswersDTO.validateDates(req.query);
+            if(!validarFecha.status){
+                return res.status(400).json(validarFecha);
+            }
+
             const { id } = req.params;
             const { startDate, endDate } = req.query; // Obtenemos las fechas del query params
         
@@ -392,12 +421,17 @@ class AnswerController {
                 //console.log("Datos recibidos en req.body:", req.body);
         
                 // Validación combinada (array y no vacío)
-                if (!Array.isArray(req.body) || req.body.length === 0) {
-                    return res.status(400).json({
-                        status: 400,
-                        message: 'El campo answer es requerido'
-                    });
-                }      
+                // if (!Array.isArray(req.body) || req.body.length === 0) {
+                //     return res.status(400).json({
+                //         status: 400,
+                //         message: 'El campo answer es requerido'
+                //     });
+                // }      
+
+                const validarAnswer = await AnswersDTO.validateAnswers(req.body);
+                if(!validarAnswer.status){
+                    return res.status(400).json(validarAnswer);
+                }
         
                 console.log("---respuesta hacia el modeleo", req.body);
                 // Crear una nueva respuesta
@@ -488,6 +522,12 @@ class AnswerController {
         }
     }*/
         async updateAnswer(req, res) {
+            const validarId = AnswersDTO.validarId(req.params.id);
+
+            if(!validarId.status){
+                return res.status(400).json(validarId);
+            }
+
             const { id } = req.params; // Asumiendo que el id se pasa en los parámetros de la URL
             const data = req.body; // Los nuevos datos que se deben actualizar
         
@@ -506,6 +546,12 @@ class AnswerController {
 
     // Elimina una respuesta
     async deleteAnswer(req, res) {
+        const validarId = AnswerModel.validarId(req.params.id);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+        
         const { id } = req.params;
         try {
             const deleted = await answerModel.delete(id);
