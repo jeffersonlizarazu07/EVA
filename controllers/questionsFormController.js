@@ -1,6 +1,13 @@
 const QuestionModel = require("../models/questionsFormModel");
+const QuestionFormsDTO = require("../dtos/questionFormsDTO") 
 
 const createQuestions = async (req, res) => {
+
+  const validateQuestionsForm = await QuestionFormsDTO.validateQuestionForm(req.body);
+  if(!validateQuestionsForm.status){
+    return res.status(400).json(validateQuestionsForm);
+  }
+
   try {
     console.log("Preguntas recibidas:", req.body);
     const { block_id, preguntas } = req.body;
@@ -23,6 +30,17 @@ const createQuestions = async (req, res) => {
 };
 
 const updateQuestionsForBlock = async (req, res) => {
+  
+  // const idValidation = QuestionFormsDTO.validarId(req.params.blockId);
+  // if (!idValidation.status) {
+  //   return res.status(400).json(idValidation);
+  // }
+
+  // const validateQuestionsForm = await QuestionFormsDTO.validateQuestionForm(req.body);
+  // if(!validateQuestionsForm.status){
+  //   return res.status(400).json(validateQuestionsForm);
+  // }
+
   const { blockId } = req.params;
   const { preguntas } = req.body;
 
@@ -40,6 +58,11 @@ const updateQuestionsForBlock = async (req, res) => {
 };
 
 const getQuestionsByBlockId = async (req, res) => {
+  const idValidation = QuestionFormsDTO.validarId(req.params.blockId);
+  if (!idValidation.status) {
+    return res.status(400).json(idValidation);
+  }
+
   try {
     const questions = await QuestionModel.getQuestionsByBlockId(
       req.params.blockId

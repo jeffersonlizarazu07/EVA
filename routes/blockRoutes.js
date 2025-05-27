@@ -9,15 +9,15 @@ router.post('/', blockController.createBlock);
 router.get('/', blockController.getAllBlocks);
 
 // Obtener bloques por ID de formulario
-router.get('/form/:formId', blockController.getBlocksByFormId);
+router.get('/form/:formId?', blockController.getBlocksByFormId);
 
 // Obtener un bloque por ID
-router.get('/:id', blockController.getBlockById);
+router.get('/:id?', blockController.getBlockById);
 
 // Actualizar un bloque por ID
-router.put('/:id', blockController.updateBlock);
+router.put('/:id?', blockController.updateBlock);
 
 // Eliminar un bloque por ID
-router.delete('/:id', blockController.deleteBlock);
+router.delete('/:id?', blockController.deleteBlock);
 
 module.exports = router;

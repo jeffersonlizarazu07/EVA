@@ -51,7 +51,7 @@ class BlockModel {
 
   async getBlockById(id) {
     const block = await this.knex(this.table).where({ id }).first();
-    if (!block) throw new Error("Bloque no encontrado");
+    //if (!block) throw new Error("Bloque no encontrado");
     return block;
   }
 

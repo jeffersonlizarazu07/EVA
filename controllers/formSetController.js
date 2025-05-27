@@ -1,4 +1,5 @@
 const FormSet = require('../models/formSet');
+const FormDTO = require('../dtos/formDTO');
 
 const formSetController = {
     async forms(req, res) {
@@ -24,6 +25,11 @@ const formSetController = {
     },
 
     async formByID(req, res) {
+        const idValidation = FormDTO.validarId(req.params.id);
+        if (!idValidation.status) {
+            return res.status(400).json(idValidation);
+        }
+
         try {
             const id = req.params.id;
             const form = await FormSet.getById(id);
@@ -54,6 +60,12 @@ const formSetController = {
 
     async postForm(req, res) {
         try {
+            //console.log('Datos recibidos en para crear formulario: --- ', req.body);
+            const validarForm = await FormDTO.validateForm(req.body);        
+            if(!validarForm.status){
+                return res.status(400).json(validarForm);
+            }
+
             const data = req.body;
             await FormSet.create(data);
             res.status(201).json({ status: '201', message: 'Formulario creado correctamente' });
@@ -64,6 +76,17 @@ const formSetController = {
 
     async putForm(req, res) {
         try {
+            console.log('Datos recibidos para actualizar formulario: --- ', req.body);
+            const validarForm = await FormDTO.validateForm(req.body);
+            if(!validarForm.status){
+                return res.status(400).json(validarForm);
+            }
+
+            const idValidation = FormDTO.validarId(req.params.id);
+            if (!idValidation.status) {
+                return res.status(400).json(idValidation);
+            }
+
             const updated = await FormSet.update(req.params.id, req.body);
             if (!updated) {
                 return res.status(404).json({ status: '404', message: 'Formulario no encontrado' });
@@ -75,6 +98,11 @@ const formSetController = {
     },
 
     async patchForm(req, res) {
+        const idValidation = FormDTO.validarId(req.params.id);
+        if (!idValidation.status) {
+            return res.status(400).json(idValidation);
+        }
+
         try {
             const updated = await FormSet.toggleState(req.params.id);
             if (!updated) {
@@ -87,6 +115,10 @@ const formSetController = {
     },
 
     async deleteForm(req, res) {
+        const idValidation = FormDTO.validarId(req.params.id);
+        if (!idValidation.status) {
+            return res.status(400).json(idValidation);
+        }
         try {
             const deleted = await FormSet.delete(req.params.id);
             if (!deleted) {
