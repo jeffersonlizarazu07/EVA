@@ -33,3 +33,16 @@ export const getQuestionsByBlockId = (blockId) => {
     withCredentials: true,
   });
 };
+
+export const updateQuestions = async (blockId, preguntas) => {
+  try {
+    return await axios.put(
+      `http://localhost:3000/api/questions/${blockId}`,
+      { preguntas },
+      { withCredentials: true }
+    );
+  } catch (error) {
+    console.error("Error al actualizar preguntas:", error);
+    throw error;
+  }
+};

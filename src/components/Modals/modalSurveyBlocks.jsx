@@ -7,15 +7,14 @@ import {
   SingleChoiceQuestionEdit,
   SelectorQuestion,
   SelectorQuestionEdit,
-} from "../../pages/survey/singleChoiceQuestion"
+} from "../../pages/survey/singleChoiceQuestion";
 
 import {
-  Yes_no,
   Textfield_s,
   SingleChoiceView,
   MultipleChoiceView,
 } from "../../pages/survey/questions";
-import "../../assets/css/survey.css"
+import "../../assets/css/survey.css";
 import "../../assets/css/surveyBlocks.css";
 
 const ModalSurveyBlocks = ({
@@ -48,9 +47,11 @@ const ModalSurveyBlocks = ({
   posicionInput,
   positionType,
   referenceBlockId,
-  data
+  data,
+  migrateQuestionData,
+  setPositionType
 }) => {
-    return (
+  return (
     <div
       className="modal fade"
       id="modalManageQuestion"
@@ -58,11 +59,7 @@ const ModalSurveyBlocks = ({
       aria-labelledby="staticBackdropLabel"
       aria-hidden="true"
     >
-      <div
-        className={`${
-          operation === 1 ? "modal-dialog modal-xl" : ""
-        } modal-dialog-centered`}
-      >
+      <div className="modal-dialog modal-xl modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="text-start m-2 modal-title">
@@ -88,9 +85,7 @@ const ModalSurveyBlocks = ({
                       className="input-new"
                       placeholder=" "
                       value={nombreInput.input}
-                      onChange={(e) =>
-                        nombreInput.handleChange(e.target.value)
-                      }
+                      onChange={(e) => nombreInput.handleChange(e.target.value)}
                       required
                     />
                     <span className="labelName">Nombre de bloque</span>
@@ -140,8 +135,7 @@ const ModalSurveyBlocks = ({
                       <label
                         htmlFor="positionTypeSelect"
                         className="form-label"
-                      >
-                      </label>
+                      ></label>
                       <select
                         id="positionTypeSelect"
                         className="form-select"
@@ -158,8 +152,10 @@ const ModalSurveyBlocks = ({
                       </select>
                     </div>
                     <div className="form-group flex-fill">
-                      <label htmlFor="referenceBlock" className="form-label">
-                      </label>
+                      <label
+                        htmlFor="referenceBlock"
+                        className="form-label"
+                      ></label>
                       <select
                         id="referenceBlock"
                         className="form-select"
@@ -187,8 +183,8 @@ const ModalSurveyBlocks = ({
                       {positionType === "before"
                         ? "antes del"
                         : "después del"}{" "}
-                      bloque seleccionado y se actualizarán automáticamente
-                      las posiciones de los demás bloques.
+                      bloque seleccionado y se actualizarán automáticamente las
+                      posiciones de los demás bloques.
                     </div>
                   )}
                 </div>
@@ -204,10 +200,7 @@ const ModalSurveyBlocks = ({
                   {/* Input para cantidad de preguntas */}
                   <div className="col-sm-5">
                     <div className="form-group">
-                      <label
-                        htmlFor="questionConditional"
-                        id="labelAnimation"
-                      >
+                      <label htmlFor="questionConditional" id="labelAnimation">
                         <input
                           type="number"
                           className="input-new conditionalQuestionSelect"
@@ -250,9 +243,7 @@ const ModalSurveyBlocks = ({
                             handleInputChange(index, "text", e.target.value)
                           }
                         />
-                        <span className="labelName">
-                          Texto de la pregunta:
-                        </span>
+                        <span className="labelName">Texto de la pregunta:</span>
                       </label>
                     </div>
 
@@ -267,9 +258,39 @@ const ModalSurveyBlocks = ({
                           name={`questionType_${index}`}
                           id={`questionType_${index}`}
                           value={q.type}
-                          onChange={(e) =>
-                            handleInputChange(index, "type", e.target.value)
-                          }
+                          onChange={(e) => {
+                            const newType = e.target.value;
+                            const oldType = q.type;
+
+                            // Actualizar el tipo
+                            handleInputChange(index, "type", newType);
+
+                            // Si cambió el tipo, limpiar datos del tipo anterior
+                            if (newType !== oldType) {
+                              // Limpiar todos los datos específicos de tipo
+                              handleInputChange(index, "selectorOptions", []);
+                              handleInputChange(
+                                index,
+                                "selectorSelectedOption",
+                                ""
+                              );
+                              handleInputChange(index, "radioOptions", []);
+                              handleInputChange(
+                                index,
+                                "radioCorrectAnswer",
+                                null
+                              );
+                              handleInputChange(index, "checkboxOptions", []);
+                              handleInputChange(
+                                index,
+                                "checkboxCorrectAnswers",
+                                []
+                              );
+                              handleInputChange(index, "textfieldValue", "");
+                              handleInputChange(index, "yesNoValue", "");
+                              handleInputChange(index, "type", e.target.value);
+                            }
+                          }}
                         >
                           <option value="" disabled>
                             Seleccione opción
@@ -293,7 +314,6 @@ const ModalSurveyBlocks = ({
 
                     {operation === 1 && (
                       <div className="mt-2 mb-2">
-                        {q.type === "yes_no" && <Yes_no />}
                         {q.type === "textfield_s" && <Textfield_s />}
                         {q.type === "radio_opt" && (
                           <SingleChoiceQuestion
@@ -318,35 +338,322 @@ const ModalSurveyBlocks = ({
 
                     {operation === 2 && (
                       <>
-                        <div className="form-check form-switch">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={`flexSwitchCheckChecked_${index}`}
-                            checked={isChecked}
-                            onChange={(e) =>
-                              conditionalHandleChange(e.target.checked)
-                            }
-                          />
-                        </div>
-
-                        {isChecked && listConditional && valueConditional && (
-                          <div
-                            className="col-6 p-2 shadowbox5"
-                            style={{ borderLeft: "5px solid gray" }}
-                          ></div>
+                        {/* Selector */}
+                        {q.type === "selector_opt" && (
+                          <div>
+                            <SelectorQuestionEdit
+                              options={q.selectorOptions || q.options || []}
+                              selectedOption={
+                                q.selectorSelectedOption || q.selected_answer
+                              }
+                              onChange={(data) => {
+                                handleInputChange(
+                                  index,
+                                  "selectorOptions",
+                                  data.options
+                                );
+                                handleInputChange(
+                                  index,
+                                  "selectorSelectedOption",
+                                  data.selectedOption
+                                );
+                                // Limpiar datos de otros tipos si cambiaron
+                                if (q.type !== "selector_opt") {
+                                  handleInputChange(index, "radioOptions", []);
+                                  handleInputChange(
+                                    index,
+                                    "radioCorrectAnswer",
+                                    null
+                                  );
+                                  handleInputChange(
+                                    index,
+                                    "checkboxOptions",
+                                    []
+                                  );
+                                  handleInputChange(
+                                    index,
+                                    "checkboxCorrectAnswers",
+                                    []
+                                  );
+                                }
+                              }}
+                            />
+                            {/* Vista de respuesta seleccionada */}
+                            {(q.selectorSelectedOption ||
+                              q.selected_answer) && (
+                              <div className="mt-3 p-3 bg-light border rounded">
+                                <h6 className="text-muted mb-2">
+                                  Respuesta seleccionada:
+                                </h6>
+                                <div className="alert alert-success mb-0">
+                                  <i className="fa-solid fa-check-circle me-2"></i>
+                                  <strong>
+                                    {q.selectorSelectedOption ||
+                                      q.selected_answer}
+                                  </strong>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
-                        
-                        <div className="mt-2 mb-2">
-                          {q.type === "yes_no" ? <Yes_no /> : null}
-                          {q.type === "textfield_s" ? <Textfield_s /> : null}
-                          {q.type === "radio_opt" ? (
-                            <SingleChoiceView />
-                          ) : null}
-                          {q.type === "check_opt" ? (
-                            <MultipleChoiceView />
-                          ) : null}
-                        </div>
+
+                        {/* Radio */}
+                        {q.type === "radio_opt" && (
+                          <div>
+                            <SingleChoiceQuestionEdit
+                              key={`selector-${index}-${idToEdit}`} // forzar rerender al cambiar bloque
+                              options={(q.radioOptions || []).map((opt) =>
+                                typeof opt === "object" ? opt.text : opt
+                              )}
+                              correctAnswer={
+                                q.radioCorrectAnswer || q.correctAnswer
+                              }
+                              idToEdit={idToEdit}
+                              onChange={(data) => {
+                                handleInputChange(
+                                  index,
+                                  "radioOptions",
+                                  data.options.map((text) => ({ text }))
+                                );
+                                handleInputChange(
+                                  index,
+                                  "radioCorrectAnswer",
+                                  data.correctAnswer
+                                );
+                                // Limpiar datos de otros tipos
+                                if (q.type !== "radio_opt") {
+                                  handleInputChange(
+                                    index,
+                                    "selectorOptions",
+                                    []
+                                  );
+                                  handleInputChange(
+                                    index,
+                                    "selectorSelectedOption",
+                                    ""
+                                  );
+                                  handleInputChange(
+                                    index,
+                                    "checkboxOptions",
+                                    []
+                                  );
+                                  handleInputChange(
+                                    index,
+                                    "checkboxCorrectAnswers",
+                                    []
+                                  );
+                                }
+                              }}
+                            />
+                            {/* Vista de respuesta correcta */}
+                            {q.radioCorrectAnswer !== null &&
+                              q.radioCorrectAnswer !== undefined && (
+                                <div className="mt-3 p-3 bg-light border rounded">
+                                  <h6 className="text-muted mb-2">
+                                    Respuesta correcta:
+                                  </h6>
+                                  <div className="alert alert-warning mb-0">
+                                    <i className="fa-solid fa-star me-2"></i>
+                                    <strong>
+                                      {q.radioOptions &&
+                                      q.radioOptions[q.radioCorrectAnswer]
+                                        ? typeof q.radioOptions[
+                                            q.radioCorrectAnswer
+                                          ] === "object"
+                                          ? q.radioOptions[q.radioCorrectAnswer]
+                                              .text
+                                          : q.radioOptions[q.radioCorrectAnswer]
+                                        : `Opción ${q.radioCorrectAnswer + 1}`}
+                                    </strong>
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        )}
+
+                        {/* Checkbox */}
+                        {q.type === "check_opt" && (
+                          <div>
+                            <MultipleChoiceQuestionEdit
+                              key={`selector-${index}-${idToEdit}`} // forzar rerender al cambiar bloque
+                              options={(q.checkboxOptions || []).map((opt) =>
+                                typeof opt === "object" ? opt.text : opt
+                              )}
+                              correctAnswers={
+                                Array.isArray(q.checkboxCorrectAnswers)
+                                  ? q.checkboxCorrectAnswers
+                                  : q.selected_answer?.split(",") || []
+                              }
+                              idToEdit={idToEdit}
+                              onChange={(data) => {
+                                handleInputChange(
+                                  index,
+                                  "checkboxOptions",
+                                  data.options.map((text) => ({ text }))
+                                );
+                                handleInputChange(
+                                  index,
+                                  "checkboxCorrectAnswers",
+                                  data.correctAnswers
+                                );
+                                // Limpiar datos de otros tipos
+                                if (q.type !== "check_opt") {
+                                  handleInputChange(
+                                    index,
+                                    "selectorOptions",
+                                    []
+                                  );
+                                  handleInputChange(
+                                    index,
+                                    "selectorSelectedOption",
+                                    ""
+                                  );
+                                  handleInputChange(index, "radioOptions", []);
+                                  handleInputChange(
+                                    index,
+                                    "radioCorrectAnswer",
+                                    null
+                                  );
+                                }
+                              }}
+                            />
+                            {/* Vista de respuestas correctas */}
+                            {q.checkboxCorrectAnswers &&
+                              q.checkboxCorrectAnswers.length > 0 && (
+                                <div className="mt-3 p-3 bg-light border rounded">
+                                  <h6 className="text-muted mb-2">
+                                    Respuestas correctas:
+                                  </h6>
+                                  <div className="d-flex flex-wrap gap-2">
+                                    {q.checkboxCorrectAnswers.map(
+                                      (answerIndex, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="alert alert-success py-2 px-3 mb-0 small"
+                                        >
+                                          <i className="fa-solid fa-check me-2"></i>
+                                          <strong>
+                                            {q.checkboxOptions &&
+                                            q.checkboxOptions[answerIndex]
+                                              ? typeof q.checkboxOptions[
+                                                  answerIndex
+                                                ] === "object"
+                                                ? q.checkboxOptions[answerIndex]
+                                                    .text
+                                                : q.checkboxOptions[answerIndex]
+                                              : `Opción ${answerIndex + 1}`}
+                                          </strong>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        )}
+
+                        {/* Campo texto */}
+                        {q.type === "textfield_s" && (
+                          <div>
+                            <Textfield_s
+                              value={
+                                q.textfieldValue || q.selected_answer || ""
+                              }
+                              onChange={(val) => {
+                                handleInputChange(index, "textfieldValue", val);
+                                // Limpiar datos de otros tipos
+                                handleInputChange(index, "selectorOptions", []);
+                                handleInputChange(
+                                  index,
+                                  "selectorSelectedOption",
+                                  ""
+                                );
+                                handleInputChange(index, "radioOptions", []);
+                                handleInputChange(
+                                  index,
+                                  "radioCorrectAnswer",
+                                  null
+                                );
+                                handleInputChange(index, "checkboxOptions", []);
+                                handleInputChange(
+                                  index,
+                                  "checkboxCorrectAnswers",
+                                  []
+                                );
+                              }}
+                            />
+                            {/* Vista de respuesta */}
+                            {(q.textfieldValue || q.selected_answer) && (
+                              <div className="mt-3 p-3 bg-light border rounded">
+                                <h6 className="text-muted mb-2">
+                                  Respuesta guardada:
+                                </h6>
+                                <div className="alert alert-info mb-0">
+                                  <i className="fa-solid fa-edit me-2"></i>
+                                  {q.textfieldValue || q.selected_answer}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Sí / No */}
+                        {q.type === "yes_no" && (
+                          <div>
+                            <Yes_no
+                              value={q.yesNoValue || q.selected_answer || ""}
+                              onChange={(val) => {
+                                handleInputChange(index, "yesNoValue", val);
+                                // Limpiar datos de otros tipos
+                                handleInputChange(index, "selectorOptions", []);
+                                handleInputChange(
+                                  index,
+                                  "selectorSelectedOption",
+                                  ""
+                                );
+                                handleInputChange(index, "radioOptions", []);
+                                handleInputChange(
+                                  index,
+                                  "radioCorrectAnswer",
+                                  null
+                                );
+                                handleInputChange(index, "checkboxOptions", []);
+                                handleInputChange(
+                                  index,
+                                  "checkboxCorrectAnswers",
+                                  []
+                                );
+                              }}
+                            />
+                            {/* Vista de respuesta */}
+                            {(q.yesNoValue || q.selected_answer) && (
+                              <div className="mt-3 p-3 bg-light border rounded">
+                                <h6 className="text-muted mb-2">
+                                  Respuesta seleccionada:
+                                </h6>
+                                <div
+                                  className={`alert mb-0 ${
+                                    (q.yesNoValue || q.selected_answer) === "Sí"
+                                      ? "alert-success"
+                                      : "alert-danger"
+                                  }`}
+                                >
+                                  <i
+                                    className={`fa-solid ${
+                                      (q.yesNoValue || q.selected_answer) ===
+                                      "Sí"
+                                        ? "fa-thumbs-up"
+                                        : "fa-thumbs-down"
+                                    } me-2`}
+                                  ></i>
+                                  <strong>
+                                    {q.yesNoValue || q.selected_answer}
+                                  </strong>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </>
                     )}
 
