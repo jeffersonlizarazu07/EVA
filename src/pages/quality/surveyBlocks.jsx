@@ -318,6 +318,12 @@ export default function SurveyBlocks({}) {
       setidToEdit(questionDetails.id);
     }
 
+    const posiciones = data.map((bloque) =>
+      parseInt(bloque.block_location || bloque.posicion || 0)
+    );
+    const nuevaPosicion =
+      posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
+
     if (op === 1) {
       posicionInput.handleChange(nuevaPosicion.toString());
     }
@@ -561,13 +567,14 @@ export default function SurveyBlocks({}) {
   };
 
   const handleMultipleChoiceChange = (data) => {
-    setMultipleChoiceData(data)({
-      options: data.options || [],
-      correctAnswers: Array.isArray(data.correctAnswers)
-        ? data.correctAnswers
-        : [],
-    });
-  };
+  setMultipleChoiceData({
+    options: data.options || [],
+    correctAnswers: Array.isArray(data.correctAnswers)
+      ? data.correctAnswers
+      : [],
+  });
+};
+
   const handleSelectConditionalQuestionChange = (e) => {
     const selectedId = e.target.value; // Captura el value (question.id)
     const selectedType = e.target.selectedOptions[0].getAttribute("data-type");
@@ -983,8 +990,8 @@ export default function SurveyBlocks({}) {
               let tipo = preg.type || "";
               if (!tipo && preg.id_type_question) {
                 const typeMap = {
-                  1: "radio_opt",
-                  2: "selector_opt",
+                  1: "selector_opt",
+                  2: "radio_opt",
                   3: "textfield_s",
                 };
                 tipo = typeMap[preg.id_type_question] || "unknown";
@@ -1130,17 +1137,17 @@ export default function SurveyBlocks({}) {
   };
 
   const handleAnswerChange = (blockId, questionIndex, newValue) => {
-  setData((prev) =>
-    prev.map((bloque) => {
-      if (bloque.id !== blockId) return bloque;
-      const updatedPreguntas = bloque.preguntas.map((preg, idx) => {
-        if (idx !== questionIndex) return preg;
-        return { ...preg, selected_answer: newValue };
-      });
-      return { ...bloque, preguntas: updatedPreguntas };
-    })
-  );
-};
+    setData((prev) =>
+      prev.map((bloque) => {
+        if (bloque.id !== blockId) return bloque;
+        const updatedPreguntas = bloque.preguntas.map((preg, idx) => {
+          if (idx !== questionIndex) return preg;
+          return { ...preg, selected_answer: newValue };
+        });
+        return { ...bloque, preguntas: updatedPreguntas };
+      })
+    );
+  };
 
   return (
     <div className="App">
@@ -1171,11 +1178,13 @@ export default function SurveyBlocks({}) {
                           </div>
                           <div className="col-6 text-end">
                             <p>
-                              <b>Fecha de Creación:</b> {formatDateTimeShort(formData.creation_date)}
+                              <b>Fecha de Creación:</b>{" "}
+                              {formatDateTimeShort(formData.creation_date)}
                             </p>
                             <p className="fs-6">
                               <b>Última Actualización:</b>{" "}
-                              {formatDateTimeShort(formData.updated_date) || "Sin actualizar"}
+                              {formatDateTimeShort(formData.updated_date) ||
+                                "Sin actualizar"}
                             </p>
                           </div>
                         </div>
