@@ -50,6 +50,8 @@ import getRangeOptions from "../survey/conditional";
 import "../../assets/css/surveyBlocks.css";
 import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 import Cookies from "js-cookie";
+import { updateFormMetadata } from "../../services/form_listService";
+import { formatDateTimeShort } from "../../utils/dateUtils";
 
 export default function SurveyBlocks({}) {
   const { id_form } = useParams();
@@ -103,7 +105,7 @@ export default function SurveyBlocks({}) {
   });
 
   const { t, i18n } = useTranslation();
-  const { accessToken, languageUser } = useContext(UserContext);
+  const { accessToken, languageUser, user } = useContext(UserContext);
 
   /* Estado de listas de preguntas del botón + Pregunta */
   const [questionsList, setQuestionsList] = useState([
@@ -144,7 +146,7 @@ export default function SurveyBlocks({}) {
   const blockRefs = useRef([]);
 
   // Estados para manejo de posicionamiento relativo de bloques
-  const [positionType, setPositionType] = useState(""); // 'before' o 'after'
+  const [positionType, setPositionType] = useState(""); // 'Antes o despues de'
   const [referenceBlockId, setReferenceBlockId] = useState(""); // ID del bloque de referencia
 
   // Estados para manejo de bloques
@@ -154,6 +156,8 @@ export default function SurveyBlocks({}) {
   //formulario
   // Estado para los bloques de la encuesta
   const [surveyBlocks, setSurveyBlocks] = useState([]);
+
+  const [collapsedQuestions, setCollapsedQuestions] = useState({}); // Estado para manejar el colapso de preguntas
 
   /* ***********************************************************************************************************/
   /* Component Logic*/
@@ -255,9 +259,8 @@ export default function SurveyBlocks({}) {
       setHasValidQuestions(false);
     } else if (op === 2) {
       console.log({ questionDetails });
-      setSingleChoiceData({ options: [], correctAnswer: null });
-      setMultipleChoiceData({ options: [], correctAnswers: [] });
       setTitle("Editar bloque");
+
       // Cargar datos básicos del bloque
       nombreInput.handleChange(
         questionDetails.block_name || questionDetails.nombre || ""
@@ -276,7 +279,8 @@ export default function SurveyBlocks({}) {
           0
         ).toString()
       );
-      if (questionDetails.conditional == "SI") {
+
+      if (questionDetails.conditional === "SI") {
         setValueConditional(true);
         setIsChecked(true);
       } else {
@@ -284,6 +288,7 @@ export default function SurveyBlocks({}) {
         setIsChecked(false);
       }
 
+      // Formatear preguntas individuales
       if (
         questionDetails.preguntas &&
         Array.isArray(questionDetails.preguntas)
@@ -295,49 +300,23 @@ export default function SurveyBlocks({}) {
             p.options ||
             (p.select_option
               ? p.select_option.split(",").map((o) => o.trim())
-              : []),
-          correctAnswers: p.correctAnswers || [],
+              : []
+            ).map((opt) =>
+              typeof opt === "string" ? { text: opt } : { ...opt }
+            ),
+          correctAnswers: Array.isArray(p.correctAnswers)
+            ? p.correctAnswers
+            : p.selected_answer?.split(",") || [],
+          correctAnswer: p.correctAnswer || p.selected_answer || "",
           selected_answer: p.selected_answer || "",
           conditional: p.conditional || "NO",
         }));
 
         setQuestionsList(preguntasFormateadas);
-
-        // Asignar estado auxiliar para los datos de la primera pregunta si existe
-        if (preguntasFormateadas.length > 0) {
-          const first = preguntasFormateadas[0];
-
-          if (first.type === "radio_opt") {
-            setSingleChoiceData({
-              options: first.options || [],
-              correctAnswer: first.selected_answer || first.correctAnswer || "",
-            });
-          } else if (first.type === "check_opt") {
-            setMultipleChoiceData({
-              options: first.options || [],
-              correctAnswers:
-                first.correctAnswers ||
-                (first.selected_answer
-                  ? first.selected_answer.split(",").map((o) => o.trim())
-                  : []),
-            });
-          } else if (first.type === "selector_opt") {
-            setSelectorData({
-              options: first.options || [],
-              selectedOption: first.selected_answer || "",
-            });
-          }
-        }
       }
+
       setidToEdit(questionDetails.id);
     }
-
-    // Calcular posición para nuevos bloques
-    const posiciones = data.map((bloque) =>
-      parseInt(bloque.block_location || bloque.posicion || 0)
-    );
-    const nuevaPosicion =
-      posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
 
     if (op === 1) {
       posicionInput.handleChange(nuevaPosicion.toString());
@@ -520,6 +499,9 @@ export default function SurveyBlocks({}) {
               await updateQuestions(idToEdit, refillQuestions);
             }
 
+            await updateFormMetadata(id_form, user?.id); // Actualizar metadatos del formulario
+            await fetchFormData();
+
             await loadBlocks(); // Cargar bloques después de editar uno existente
 
             Toast.fire({
@@ -596,6 +578,37 @@ export default function SurveyBlocks({}) {
       answersRange: selectedAnswers,
     });
     id_conditional.handleChange(selectedId);
+  };
+
+  const migrateQuestionData = (question) => {
+    // Si ya tiene datos específicos por tipo, no migrar
+    if (
+      question.selectorOptions ||
+      question.radioOptions ||
+      question.checkboxOptions
+    ) {
+      return question;
+    }
+
+    // Migrar datos según el tipo actual
+    const migrated = { ...question };
+
+    if (question.type === "selector_opt" && question.options) {
+      migrated.selectorOptions = question.options;
+      migrated.selectorSelectedOption = question.selected_answer;
+    } else if (question.type === "radio_opt" && question.options) {
+      migrated.radioOptions = question.options;
+      migrated.radioCorrectAnswer = question.correctAnswer;
+    } else if (question.type === "check_opt" && question.options) {
+      migrated.checkboxOptions = question.options;
+      migrated.checkboxCorrectAnswers = question.correctAnswers;
+    } else if (question.type === "textfield_s") {
+      migrated.textfieldValue = question.selected_answer;
+    } else if (question.type === "yes_no") {
+      migrated.yesNoValue = question.selected_answer;
+    }
+
+    return migrated;
   };
 
   /* Selector Option */
@@ -1108,6 +1121,27 @@ export default function SurveyBlocks({}) {
     setLoading(false);
   };
 
+  const toggleCollapse = (blockId, questionIndex) => {
+    const key = `${blockId}-${questionIndex}`;
+    setCollapsedQuestions((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const handleAnswerChange = (blockId, questionIndex, newValue) => {
+  setData((prev) =>
+    prev.map((bloque) => {
+      if (bloque.id !== blockId) return bloque;
+      const updatedPreguntas = bloque.preguntas.map((preg, idx) => {
+        if (idx !== questionIndex) return preg;
+        return { ...preg, selected_answer: newValue };
+      });
+      return { ...bloque, preguntas: updatedPreguntas };
+    })
+  );
+};
+
   return (
     <div className="App">
       <div id="body">
@@ -1137,11 +1171,11 @@ export default function SurveyBlocks({}) {
                           </div>
                           <div className="col-6 text-end">
                             <p>
-                              <b>Fecha de Creación:</b> {formData.creation_date}
+                              <b>Fecha de Creación:</b> {formatDateTimeShort(formData.creation_date)}
                             </p>
                             <p className="fs-6">
                               <b>Última Actualización:</b>{" "}
-                              {formData.updated_date || "Sin actualizar"}
+                              {formatDateTimeShort(formData.updated_date) || "Sin actualizar"}
                             </p>
                           </div>
                         </div>
@@ -1154,7 +1188,7 @@ export default function SurveyBlocks({}) {
                             <span className="visually-hidden">Cargando...</span>
                           </div>
                           <p className="mt-2">
-                            Cargando información del formulario...
+                            Sesión caducada, por favor incie sesion nuevamente.
                           </p>
                         </div>
                       )}
@@ -1204,41 +1238,79 @@ export default function SurveyBlocks({}) {
 
                             <div className="mt-2 d-flex flex-column align-items-center">
                               {Array.isArray(bloque.preguntas) &&
-                                bloque.preguntas.map((preg, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="shadowbox5 p-3 mb-3"
-                                    style={{ width: "100%" }}
-                                  >
-                                    <div className="d-flex justify-content-between align-items-center">
-                                      <div className="w-100">
-                                        <p className="mb-1 mb-3 text-center fs-4">
+                                bloque.preguntas.map((preg, idx) => {
+                                  const isCollapsed =
+                                    collapsedQuestions[`${bloque.id}-${idx}`];
+
+                                  return (
+                                    <div
+                                      key={idx}
+                                      className="shadowbox5 p-3 mb-3"
+                                      style={{ width: "100%" }}
+                                    >
+                                      <div className="d-flex justify-content-between align-items-center">
+                                        <p className="mb-1 fs-5">
                                           <strong>
                                             {preg.text ||
                                               preg.question_name ||
                                               "Sin texto"}
                                           </strong>
                                         </p>
+                                        <button
+                                          className="btn btn-sm btn-outline-secondary"
+                                          onClick={() =>
+                                            toggleCollapse(bloque.id, idx)
+                                          }
+                                        >
+                                          {isCollapsed ? "+" : "-"}
+                                        </button>
+                                      </div>
 
-                                        {preg.type === "radio_opt" && (
-                                          <div className="d-flex flex-column align-items-center">
-                                            <SingleChoiceView
-                                              options={(
-                                                preg.options ||
-                                                preg.select_option ||
-                                                ""
-                                              )
-                                                .split(",")
-                                                .map((o) => o.trim())}
-                                              correctOption={
-                                                preg.selected_answer
-                                              }
-                                            />
-                                          </div>
-                                        )}
+                                      {!isCollapsed && (
+                                        <>
+                                          {preg.type === "radio_opt" && (
+                                            <div className="mb-2">
+                                              <strong>
+                                                Selecciona una opción:
+                                              </strong>
+                                              {(preg.options || []).map(
+                                                (opt, i) => {
+                                                  const optionText =
+                                                    typeof opt === "string"
+                                                      ? opt
+                                                      : opt.text || "";
+                                                  return (
+                                                    <div
+                                                      key={i}
+                                                      className="form-check"
+                                                    >
+                                                      <input
+                                                        className="form-check-input"
+                                                        type="radio"
+                                                        name={`radio-${bloque.id}-${idx}`}
+                                                        checked={
+                                                          preg.selected_answer ===
+                                                          optionText
+                                                        }
+                                                        onChange={() =>
+                                                          handleAnswerChange(
+                                                            bloque.id,
+                                                            idx,
+                                                            optionText
+                                                          )
+                                                        }
+                                                      />
+                                                      <label className="form-check-label">
+                                                        {optionText}
+                                                      </label>
+                                                    </div>
+                                                  );
+                                                }
+                                              )}
+                                            </div>
+                                          )}
 
-                                        {preg.type === "check_opt" && (
-                                          <div className="d-flex flex-column align-items-center">
+                                          {preg.type === "check_opt" && (
                                             <MultipleChoiceView
                                               options={(
                                                 preg.options ||
@@ -1251,80 +1323,66 @@ export default function SurveyBlocks({}) {
                                                 preg.selected_answer
                                               }
                                             />
-                                          </div>
-                                        )}
-
-                                        {preg.type === "selector_opt" && (
-                                          <div className="mb-1">
-                                            <label className="form-label">
-                                              <strong>
-                                                Selecciona una opción:
-                                              </strong>
-                                            </label>
-                                            <select
-                                              className="form-select"
-                                              value={preg.selected_answer || ""}
-                                              onChange={(e) => {
-                                                const updatedQuestions = [
-                                                  ...questionsList,
-                                                ];
-                                                updatedQuestions[
-                                                  index
-                                                ].selected_answer =
-                                                  e.target.value;
-                                                setQuestionsList(
-                                                  updatedQuestions
-                                                );
-                                              }}
-                                            >
-                                              {(preg.options || []).map(
-                                                (opt, idx) => {
-                                                  const optionText =
-                                                    typeof opt === "string"
-                                                      ? opt
-                                                      : opt.text || "";
-                                                  return (
-                                                    <option
-                                                      key={idx}
-                                                      value={optionText}
-                                                    >
-                                                      {optionText}
-                                                    </option>
-                                                  );
-                                                }
-                                              )}
-                                            </select>
-                                          </div>
-                                        )}
-
-                                        {preg.type === "textfield_s" && (
-                                          <Textfield_s
-                                            value={preg.answer || ""}
-                                            readOnly
-                                          />
-                                        )}
-                                        {preg.type === "yes_no" && (
-                                          <Yes_no
-                                            value={preg.answer || ""}
-                                            readOnly
-                                          />
-                                        )}
-
-                                        <div className="text-end me-3">
-                                          {preg.conditional === "SI" && (
-                                            <i
-                                              className="fa-solid fa-question text-primary"
-                                              data-bs-toggle="tooltip"
-                                              data-bs-placement="top"
-                                              data-bs-custom-class="custom-tooltip"
-                                              data-bs-title="Esta pregunta es condicional."
-                                            ></i>
                                           )}
-                                        </div>
-                                      </div>
+
+                                          {preg.type === "selector_opt" && (
+                                            <div className="mb-1">
+                                              <label className="form-label">
+                                                <strong>
+                                                  Selecciona una opción:
+                                                </strong>
+                                              </label>
+                                              <select
+                                                className="form-select"
+                                                value={
+                                                  preg.selected_answer || ""
+                                                }
+                                                onChange={(e) =>
+                                                  handleAnswerChange(
+                                                    bloque.id,
+                                                    idx,
+                                                    e.target.value
+                                                  )
+                                                }
+                                              >
+                                                {(preg.options || []).map(
+                                                  (opt, i) => {
+                                                    const optionText =
+                                                      typeof opt === "string"
+                                                        ? opt
+                                                        : opt.text || "";
+                                                    return (
+                                                      <option
+                                                        key={i}
+                                                        value={optionText}
+                                                      >
+                                                        {optionText}
+                                                      </option>
+                                                    );
+                                                  }
+                                                )}
+                                              </select>
+                                            </div>
+                                          )}
+
+                                          {preg.type === "textfield_s" && (
+                                            <Textfield_s
+                                              value={preg.selected_answer || ""}
+                                              readOnly
+                                            />
+                                          )}
+
+                                          {preg.type === "yes_no" && (
+                                            <Yes_no
+                                              value={preg.selected_answer || ""}
+                                              readOnly
+                                            />
+                                          )}
+                                        </>
+                                      )}
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
 
                               <div className="d-flex">
                                 <div
@@ -1453,6 +1511,7 @@ export default function SurveyBlocks({}) {
         options={multipleChoiceData.options}
         correctAnswers={multipleChoiceData.correctAnswers}
         onChange={handleMultipleChoiceChange}
+        migrateQuestionData={migrateQuestionData}
       />
     </div>
   );
