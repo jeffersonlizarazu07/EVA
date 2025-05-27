@@ -1,4 +1,5 @@
 const Question = require('../models/question');
+const QuestionsDTO = require('../dtos/questionsDTO');
 
 const questionController = {
     async questions(req, res) {
@@ -14,6 +15,11 @@ const questionController = {
     },
 
     async questionByID(req, res) {
+      const validarId = QuestionsDTO.validarId(req.params.id);
+
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
         try {
             const question = await Question.getById(req.params.id);
             if (!question) {
@@ -39,7 +45,11 @@ const questionController = {
 
     // Controlador postQuestion (backend)
 async postQuestion(req, res) {
-  //console.log('Datos recibidos en postQuestion:', req.body);
+    //console.log('------Datos recibidos en postQuestion:', req.body);
+    const validarQuestion = await QuestionsDTO.validateQuestion(req.body);
+    if(!validarQuestion.status){
+      return res.status(400).json(validarQuestion);
+    }
 
     try {
         const {
@@ -87,6 +97,11 @@ async postQuestion(req, res) {
     
 
   async putQuestion(req, res) {
+    const validarId = QuestionsDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+      return res.status(400).json(validarId);
+    }
     try {
       const { id } = req.params;
   
@@ -135,6 +150,12 @@ async postQuestion(req, res) {
   },
 
     async deleteQuestion(req, res) {
+      const validarId = QuestionsDTO.validarId(req.params.id);
+
+        if(!validarId.status){
+          return res.status(400).json(validarId);
+        }
+
         try {
             const deleted = await Question.delete(req.params.id);
             if (!deleted) {
@@ -147,6 +168,11 @@ async postQuestion(req, res) {
     },
 
     async putConditionalQuestion(req, res) {  
+      const validarId = QuestionsDTO.validarId(req.params.id);
+
+      if(!validarId.status){
+        return res.status(400).json(validarId);
+      }
       const { id } = req.params;
       const { id_conditional } = req.body;
       console.log('Id que llega----', id);
