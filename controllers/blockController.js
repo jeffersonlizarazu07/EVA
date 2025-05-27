@@ -55,7 +55,7 @@ exports.getBlocksByFormId = async (req, res) => {
         const preguntas = await QuestionModel.getQuestionsByBlockId(block.id);
         return {
           ...block,
-          preguntas, // se agrega aquí el array
+          preguntas, // se agrega el array
         };
       })
     );
@@ -95,9 +95,11 @@ exports.updateBlock = async (req, res) => {
   }
 
   try {
+    console.log("Datos recibidos para actualizar:", req.body);
     const updatedBlock = await BlockModel.updateBlock(req.params.id, req.body);
     res.json({ message: 'Bloque actualizado', data: updatedBlock });
   } catch (error) {
+    console.error("Error en updateBlock:", error);
     res.status(500).json({ message: 'Error al actualizar bloque', error: error.message });
   }
 };

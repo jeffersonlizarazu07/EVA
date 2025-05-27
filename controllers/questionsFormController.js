@@ -21,7 +21,7 @@ const createQuestions = async (req, res) => {
       preguntas
     );
 
-    console.log("🟢 IDs generados de preguntas:", ids);
+    console.log("IDs generados de preguntas:", ids);
     return res.status(201).json({ questionIds: ids });
   } catch (error) {
     console.error("Error al guardar preguntas:", error);
@@ -29,6 +29,7 @@ const createQuestions = async (req, res) => {
   }
 };
 
+// Actualiza las preguntas del bloque seleccionado
 const updateQuestionsForBlock = async (req, res) => {
   
   // const idValidation = QuestionFormsDTO.validarId(req.params.blockId);
@@ -44,11 +45,17 @@ const updateQuestionsForBlock = async (req, res) => {
   const { blockId } = req.params;
   const { preguntas } = req.body;
 
+  console.log("Datos recibidos para actualizar preguntas:", {
+    blockId,
+    preguntas
+  });
+
   if (!blockId || !Array.isArray(preguntas)) {
     return res.status(400).json({ message: "Datos inválidos" });
   }
 
   try {
+    // Llamar al modelo para actualizar las preguntas
     await QuestionModel.updateQuestionsForBlock(blockId, preguntas);
     res.status(200).json({ message: "Preguntas actualizadas correctamente" });
   } catch (error) {
