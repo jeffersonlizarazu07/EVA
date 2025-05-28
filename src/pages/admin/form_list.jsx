@@ -198,7 +198,7 @@ const FormList = () => {
       setIdToEdit(form.id);
       title.handleChange(form.title || "");
       description.handleChange(form.description || "");
-      state.handleChange(String(form.state) || "1");
+      state.handleChange(1);
       idClient.handleChange(form.idClient || "");
     }
     setModalOpen(true);

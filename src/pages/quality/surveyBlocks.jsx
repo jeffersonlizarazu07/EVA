@@ -990,8 +990,8 @@ export default function SurveyBlocks({}) {
               let tipo = preg.type || "";
               if (!tipo && preg.id_type_question) {
                 const typeMap = {
-                  1: "selector_opt",
-                  2: "radio_opt",
+                  1: "radio_opt",
+                  2: "selector_opt",
                   3: "textfield_s",
                 };
                 tipo = typeMap[preg.id_type_question] || "unknown";
