@@ -47,6 +47,31 @@ class BlockDTO {
         }
         return {status : true}
     }
+
+    static async validateBlockUpdate(data){
+        const { block_name, percentage, block_location} = data;
+
+        if(!block_name || percentage === "" || block_location === ""){
+            return {status : false, message : "Todos los campos son obligatorios"};
+        }
+
+        //valida que el form_id sea un numero y este en la base de datos}
+
+        if(typeof block_name !== 'string'){
+            return {status : false, message : "El nombre del bloque debe ser un texto y no puede estar vacía"};
+        }
+
+        const ponderacionNum = parseInt(percentage);
+        if(isNaN(ponderacionNum) || !Number.isInteger(ponderacionNum)){
+            return {status : false, message : "Se debe ingresar una ponderación válida"};
+        }
+        
+        const positionNum = parseInt(block_location);
+        if(isNaN(positionNum) || !Number.isInteger(positionNum)){
+            return {status : false, message : "Se debe ingresar una posición válida"};
+        }
+        return {status : true};
+    }
 }
 
 module.exports = BlockDTO;

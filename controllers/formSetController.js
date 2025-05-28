@@ -60,14 +60,19 @@ const formSetController = {
 
     async postForm(req, res) {
         try {
-            //console.log('Datos recibidos en para crear formulario: --- ', req.body);
+            console.log('Datos recibidos en para crear formulario: --- ', req.body);
             const validarForm = await FormDTO.validateForm(req.body);        
             if(!validarForm.status){
                 return res.status(400).json(validarForm);
             }
 
-            const data = req.body;
-            await FormSet.create(data);
+            // const data = req.body; 
+            // await FormSet.create(data);
+            
+            const { title, description, state, idClient, creation_date, created_by } =req.body;
+            
+            await FormSet.create({title, description, state, idClient, creation_date, created_by});
+          
             res.status(201).json({ status: '201', message: 'Formulario creado correctamente' });
         } catch (error) {
             res.status(500).json({ status: '500', message: 'Error al crear el formulario', error });
@@ -77,7 +82,7 @@ const formSetController = {
     async putForm(req, res) {
         try {
             console.log('Datos recibidos para actualizar formulario: --- ', req.body);
-            const validarForm = await FormDTO.validateForm(req.body);
+            const validarForm = await FormDTO.validateUpdate(req.body);
             if(!validarForm.status){
                 return res.status(400).json(validarForm);
             }

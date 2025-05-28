@@ -30,14 +30,14 @@ class QuestionFormsDTO {
 
         //iteramos cada elemento de preguntas para validar 
         for(const pregunta of preguntas){
-            const { text, type, select_option, selected_answer, conditional } = pregunta;
+            const { question_name, id_type_question, select_option, selected_answer, conditional, id_conditional, conditional_answer } = pregunta;
 
             //validar que los capos son obligatorios
-            if(!text || typeof text !== 'string' || text.trim() === ""){
+            if(!question_name || typeof question_name !== 'string' || question_name.trim() === ""){
                 return {status : false, message : "El titulo debe ser un texto y no puede estar vacio"};                
             }
 
-            if(!allowedTypes.includes(type)){
+            if(!allowedTypes.includes(id_type_question)){
                 return {status : false, message : "Debe ingresar un tipo valido"};        
             }
             
@@ -65,6 +65,42 @@ class QuestionFormsDTO {
             return { status: false, message: "Debe ingresar un ID válido " };
         }
         return {status : true}
+    }
+
+    static async validateQuestionFormUpdate(data){
+        const { preguntas } = data;
+        const allowedTypes = ["radio_opt", "textfield_s", "selector_opt"];
+        const allowedConditional = ["SI", "NO"];
+
+        //valida que todos los campos sean obligatorios
+
+        if(!Array.isArray(preguntas) || preguntas.length === 0){
+            return {status : false, message : "Todos los campos son obligatorios"};
+        }
+
+        //iteramos cada elemento de preguntas para validar 
+        for(const pregunta of preguntas){
+            const { question_name, id_type_question, select_option, selected_answer, conditional, id_conditional, conditional_answer } = pregunta;
+
+            //validar que los capos son obligatorios
+            if(!question_name || typeof question_name !== 'string' || question_name.trim() === ""){
+                return {status : false, message : "El titulo debe ser un texto y no puede estar vacio"};                
+            }
+
+            if(!allowedTypes.includes(id_type_question)){
+                return {status : false, message : "Debe ingresar un tipo valido"};        
+            }
+            
+            if(!conditional || typeof conditional !== 'string' || conditional.trim() === ""){
+                return {status : false, message : "El conditional debe ser un texto y no puede estar vacio"};                
+            }      
+            
+            if(!allowedConditional.includes(conditional)){
+                return {status : false, message : "Debe ingresar un conditional valido"};        
+            }
+        }
+
+        return {status : true};
     }
 }
 

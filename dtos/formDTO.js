@@ -8,10 +8,14 @@ class FormDTO {
         const allowedStates = [0, 1];
         const clientService = new ClientModel(knex);  // Instancia de la clase ClientModel
         
+    // console.log("Info en el DTO", data)
+    // console.log("Datos del DTO", title, description, state, idClient, creation_date, created_by)
+      
         //validar que todos los campos obligatorios estén presentes
         if(!title || !description || !state || !idClient || !creation_date || !created_by){
             return {status : false, message : "Todos los campos son obligatorios"};
         }
+
 
         if(typeof title !== 'string'){
             return {status : false, message : "El título debe ser un texto"};
@@ -73,6 +77,67 @@ class FormDTO {
         }
         return {status : true}
     }
+
+    static async validateUpdate(data){
+        const { title, description, state, idClient, updated_date, updated_by } = data;
+        const allowedStates = [0, 1];
+        const clientService = new ClientModel(knex);  // Instancia de la clase ClientModel
+        
+    console.log("Info en el DTO", data)
+    console.log("Datos del DTO", title, description, state, idClient, updated_date, updated_by)
+        //validar que todos los campos obligatorios estén presentes
+        if(!title || !description || !state || !idClient || !updated_date || !updated_by){
+            return {status : false, message : "Todos los campos son obligatorios"};
+        }
+
+
+        if(typeof title !== 'string'){
+            return {status : false, message : "El título debe ser un texto"};
+        }
+
+        if(typeof description !== 'string'){
+            return {status : false, message : "La descripción debe ser un texto"};
+        }
+
+        const numState = parseInt(state);
+        if(isNaN(numState) || !Number.isInteger(numState)){
+            return {status : false, message : "Se debe ingresar un estado valido"};
+        }
+
+        if (!allowedStates.includes(numState)) {
+            return { status: false, message: "Debe proporcionar un estado valido" };
+        }
+
+        const numIdClient = parseInt(idClient);
+        if(isNaN(numIdClient) || !Number.isInteger(numIdClient)){
+            return {status : false, message : "Se debe ingresar un cliente valido"};
+        }
+        //validar que el cliente exista en la base de datos
+        const existClient = await clientService.getById(numIdClient);
+        if(!existClient){
+            return {status : false, message : "El cliente no existe"};
+        }
+
+        const dateStr = updated_date.replace(' ','T'); // Reemplazar espacio por 'T' para formato ISO
+        const startDateObj = new Date(dateStr); // Convertir a objeto de fecha
+        if (isNaN(startDateObj.getTime())) {
+            return { status: false, message: "La fecha de creación no es una fecha válida." };
+        }
+
+        const numCreatedBy = parseInt(updated_by);
+        if(isNaN(numCreatedBy) || !Number.isInteger(numCreatedBy)){
+            return {status : false, message : "Se debe ingresar un usuario valido"};
+        }
+
+        //valida que el usuario exista en la base de datos
+        const existUser = await User.findById(numCreatedBy);
+        if(!existUser){
+            return {status : false, message : "El usuario no existe"};
+        }
+
+        return {status : true}
+    }    
 }
+
 
 module.exports = FormDTO;
