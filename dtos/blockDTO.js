@@ -72,7 +72,6 @@ class BlockDTO {
         }
         return {status : true};
     }
-
 }
 
 module.exports = BlockDTO;

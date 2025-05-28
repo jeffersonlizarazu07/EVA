@@ -4,19 +4,23 @@ const path = require('path');
 const fs = require('fs');
 const knex = require('../config/db');
 const clientModel = new ClientModel(knex);
+const ClientsDTO = require('../dtos/clientsDTO');
 
 
 // Método para crear un cliente
 const createClient = async (req, res) => {
+    
+    const validacionUsurio = ClientsDTO.validateCleint(req.body);
+    
+    if(!validacionUsurio.status){
+        return res.status(400).json(validacionUsurio);
+    }
+
     try {
       const { client, state, color_tag1, color_tag2 } = req.body;
       //console.log('Datos recibidos para crear el cliente:', { client, state, color_tag1, color_tag2 });
       //console.log('Archivo recibido (logo):', req.file);
-  
-      if (!client || !state || !color_tag1 || !color_tag2) {
-        return res.status(400).json({ message: 'Faltan datos requeridos' });
-      }
-  
+    
       // Si hay una imagen, obtenemos su nombre
       let logo = req.file ? req.file.filename : null;
   
@@ -57,6 +61,12 @@ const getClients = async (req, res) => {
 
 // Obtener un cliente por ID
 const getClientById = async (req, res) => {
+    const validarId = ClientsDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
+
     try {
         const { id } = req.params;
        // console.log('cliente enconytrado', id)
@@ -72,6 +82,19 @@ const getClientById = async (req, res) => {
 
 // Actualizar cliente
 const updateClient = async (req, res) => {
+    
+    const validarId = ClientsDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
+
+    const validacionUsurio = ClientsDTO.validateCleint(req.body);
+    
+    if(!validacionUsurio.status){
+        return res.status(400).json(validacionUsurio);
+    }
+
     try {
        const { id } = req.params;
        const { client, state, color_tag1, color_tag2 } = req.body;
@@ -89,7 +112,7 @@ const updateClient = async (req, res) => {
            
            if (existingClient && existingClient.logo) {
               // Construye la ruta absoluta de la imagen antigua
-              const oldImagePath = path.join('C:\\Users\\ospinomontoya.6\\Documents\\GitHub\\tpco_transversal_EvaFe\\public\\clientes', existingClient.logo);
+              const oldImagePath = path.join('C:\\Users\\moncayorojas.6\\Desktop\\Trabajos\\EVA\\tpco_transversal_EvaFe\\public\\clientes', existingClient.logo);
               if (fs.existsSync(oldImagePath)) {
                   fs.unlinkSync(oldImagePath); 
               }
@@ -114,6 +137,12 @@ const updateClient = async (req, res) => {
 
 // Cambiar el estado del cliente
 const toggleClientState = async (req, res) => {
+    
+    const validarId = ClientsDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
     try {
         const { id } = req.params;
         console.log('id recibido para actualizar el esatdo del cliente', id);
@@ -130,6 +159,11 @@ const toggleClientState = async (req, res) => {
 
 // Eliminar cliente
 const deleteClient = async (req, res) => {
+     const validarId = ClientsDTO.validarId(req.params.id);
+
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
     try {
         const { id } = req.params;
         console.log('id recibido para eliminar un cliente', id);

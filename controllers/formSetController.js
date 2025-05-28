@@ -72,6 +72,7 @@ const formSetController = {
             const { title, description, state, idClient, creation_date, created_by } =req.body;
             
             await FormSet.create({title, description, state, idClient, creation_date, created_by});
+          
             res.status(201).json({ status: '201', message: 'Formulario creado correctamente' });
         } catch (error) {
             res.status(500).json({ status: '500', message: 'Error al crear el formulario', error });

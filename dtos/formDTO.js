@@ -10,6 +10,7 @@ class FormDTO {
         
     // console.log("Info en el DTO", data)
     // console.log("Datos del DTO", title, description, state, idClient, creation_date, created_by)
+      
         //validar que todos los campos obligatorios estén presentes
         if(!title || !description || !state || !idClient || !creation_date || !created_by){
             return {status : false, message : "Todos los campos son obligatorios"};

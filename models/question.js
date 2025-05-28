@@ -3,7 +3,16 @@ const db = require('../config/db');
 const  Question = {
     getAll: () => db('questions').select('*'),
 
-    getById: (id) => db('questions').where({ id }).first(),
+    // getById: (id) => db('questions').where({ id }).first(),
+    getById : async (id) => {
+        try {
+            const question = await db('questions').where({ id }).first();
+            return question;
+        } catch (error) {
+            console.error('Error al obtener la pregunta por ID:', error);
+            throw new Error('No se pudo obtener la pregunta.');
+        }
+    },
 
     getBySurvey: (surveyId) => db('questions').where({ survey_id: surveyId }).select('*'),
 
