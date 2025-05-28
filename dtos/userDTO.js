@@ -1,0 +1,68 @@
+
+class UserDTO {
+    
+    static validateCreateUser(data) {
+        const { firstname, lastname, email, type, language, password } = data;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const allowedTypes = [1, 2, 3, 4];
+
+        // Verifico que todos los campos obligatorios estén presentes
+        if (!firstname || !lastname || !email || !type || !language || !password) {
+            return {status : false, message : "Todos los campos son obligatorios"};
+        }
+        
+        const numType = parseInt(type);
+
+        //Verificar que los campos sean del tipo correcto
+        if(typeof firstname !== 'string'){
+            return {status : false, message : "El primer nombre debe ser un texto"};
+        }
+
+        if(typeof lastname !== 'string'){
+            return {status : false, message : "El apellido debe ser un texto"};
+        }
+
+        if (typeof email !== 'string' || !emailRegex.test(email.trim()) ) {
+            return {status : false, message : "Debes ingresar un correo valido"};
+        }
+        
+        if(isNaN(numType) || !Number.isInteger(numType)){
+            return {status : false, message : "Debe ingresar un rol valido"};
+        }
+
+        if (!allowedTypes.includes(numType)) {
+            return { status: false, message: "Debe ingresar un rol válido" };
+        }
+
+        if(typeof language !== 'string'){
+            return {status : false, message : "Debe ingresar un idioma valido"};
+        }
+
+        if(typeof password !== 'string'){
+            return {status : false, message : "La contraseña tiene un formato invalido"};
+        }
+
+        return {status : true}
+
+    }
+
+    static validarId(id) {
+                 
+        //validamos que el no sea null, undifined o vacio
+        if(id === undefined || id === null || id === "") {
+            return {status : false, message : "El ID es obligatorio"};
+        }
+
+        const numberId = parseInt(id); //para validar que sea un numero
+
+        if (isNaN(numberId) || !Number.isInteger(numberId)) {
+            return { status: false, message: "Debe ingresar un ID válido " };
+        }
+
+        return {status : true}
+    }
+   
+
+}
+
+module.exports = UserDTO;

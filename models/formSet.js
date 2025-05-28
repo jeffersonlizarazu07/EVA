@@ -39,7 +39,17 @@ const FormSet = {
     return db("form_set").whereIn("idClient", clientIdsArray).select("*");
   },
 
-  create: (data) => db("form_set").insert(data),
+  // create: (data) => db("form_set").insert(data),
+
+  create: async(data) => {
+    try {
+    const [id] = await db("form_set").insert(data)
+    return {id, ...data}
+  } catch (error){
+    console.error("Error al insertar datos")
+    throw error
+  }
+  },
 
   update: (id, data) => db("form_set").where({ id }).update(data),
 
