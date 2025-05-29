@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import HeaderLT1 from "../../components/header/headerLT1";
 import axios from "axios";
 import useInput from "../../components/hooks/useInput";
@@ -567,13 +568,13 @@ export default function SurveyBlocks({}) {
   };
 
   const handleMultipleChoiceChange = (data) => {
-  setMultipleChoiceData({
-    options: data.options || [],
-    correctAnswers: Array.isArray(data.correctAnswers)
-      ? data.correctAnswers
-      : [],
-  });
-};
+    setMultipleChoiceData({
+      options: data.options || [],
+      correctAnswers: Array.isArray(data.correctAnswers)
+        ? data.correctAnswers
+        : [],
+    });
+  };
 
   const handleSelectConditionalQuestionChange = (e) => {
     const selectedId = e.target.value; // Captura el value (question.id)
@@ -606,14 +607,14 @@ export default function SurveyBlocks({}) {
     } else if (question.type === "radio_opt" && question.options) {
       migrated.radioOptions = question.options;
       migrated.radioCorrectAnswer = question.correctAnswer;
-    } else if (question.type === "check_opt" && question.options) {
-      migrated.checkboxOptions = question.options;
-      migrated.checkboxCorrectAnswers = question.correctAnswers;
+    // } else if (question.type === "check_opt" && question.options) {
+    //   migrated.checkboxOptions = question.options;
+    //   migrated.checkboxCorrectAnswers = question.correctAnswers;
     } else if (question.type === "textfield_s") {
       migrated.textfieldValue = question.selected_answer;
-    } else if (question.type === "yes_no") {
-      migrated.yesNoValue = question.selected_answer;
-    }
+    } //else if (question.type === "yes_no") {
+    //   migrated.yesNoValue = question.selected_answer;
+    // }
 
     return migrated;
   };
@@ -739,11 +740,11 @@ export default function SurveyBlocks({}) {
         return selectorData.options && selectorData.options.length > 0;
       }
 
-      if (question.type === "check_opt") {
-        return (
-          multipleChoiceData.options && multipleChoiceData.options.length > 0
-        );
-      }
+      // if (question.type === "check_opt") {
+      //   return (
+      //     multipleChoiceData.options && multipleChoiceData.options.length > 0
+      //   );
+      // }
 
       if (question.type === "radio_opt") {
         return singleChoiceData.options && singleChoiceData.options.length > 0;
@@ -823,7 +824,7 @@ export default function SurveyBlocks({}) {
         );
 
       case "radio_opt":
-      case "check_opt":
+      // case "check_opt":
       case "selector_opt":
         return (
           <div>
@@ -1149,20 +1150,36 @@ export default function SurveyBlocks({}) {
     );
   };
 
+  //Implementación del Drag and Drop
+  const handleDragEnd = (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
+
+    const reorderedData = Array.from(data);
+    const [removed] = reorderedData.splice(source.index, 1);
+    reorderedData.splice(destination.index, 0, removed);
+
+    // Actualizar block_location como orden lógico
+    setData(reorderedData);
+    setStaticData(reorderedData);
+  };
   return (
     <div className="App">
       <div id="body">
         <HeaderLT1 />
+
         <section
           style={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0 }}
         >
           <div className="container mt-0">
             <div className="row">
+              {/* Sección de Información del Formulario */}
               <div className="col-md-12">
                 <div className="card p-4 borderEVA bg-light">
                   <div className="text-center">
                     <h3>Información</h3>
                   </div>
+
                   <div className="card-body p-0 py-2">
                     <div className="container-fluid">
                       {formData ? (
@@ -1206,11 +1223,13 @@ export default function SurveyBlocks({}) {
                 </div>
               </div>
 
+              {/* Sección de Preguntas y Bloques */}
               <div className="col-md-12 mt-3">
                 <div className="card p-4 card-outline card-success borderEVA bg-light">
+                  {/* Header de la sección de preguntas */}
                   <div>
                     <h3 className="text-center">Preguntas</h3>
-                    <div className="card-tools ms-4">
+                    <div className="card-tools d-flex justify-content-end me-4">
                       <button
                         className="btn fw-bold btn-sm acces-tabla"
                         onClick={() => openModal(1)}
@@ -1222,268 +1241,325 @@ export default function SurveyBlocks({}) {
                     </div>
                   </div>
 
-                  <div className="card-body ui-sorteable">
-                    {paginatedData.map((bloque, index) => (
-                      <div
-                        key={index}
-                        ref={(el) => (blockRefs.current[index] = el)}
-                        className="shadowbox5 p-3 m-3"
-                      >
-                        <div className="d-flex justify-content-between mb-2 w-100">
-                          <div className="w-100 ps-2">
-                            <div className="d-flex justify-content-between align-items-start">
-                              <h3 className="mb-3 ms-2">
-                                {bloque.block_name ||
-                                  bloque.nombre ||
-                                  "Sin nombre"}
-                              </h3>
-                              <span className="text-muted block-weighting me-3">
-                                {`${bloque.percentage}%` ||
-                                  ("0" && bloque.ponderacion > 0)}
-                              </span>
-                            </div>
-
-                            {/* Se agregan las preguntas a la vista principal */}
-
-                            <div className="mt-2 d-flex flex-column align-items-center">
-                              {Array.isArray(bloque.preguntas) &&
-                                bloque.preguntas.map((preg, idx) => {
-                                  const isCollapsed =
-                                    collapsedQuestions[`${bloque.id}-${idx}`];
-
-                                  return (
-                                    <div
-                                      key={idx}
-                                      className="shadowbox5 p-3 mb-3"
-                                      style={{ width: "100%" }}
-                                    >
-                                      <div className="d-flex justify-content-between align-items-center">
-                                        <p className="mb-1 fs-5">
-                                          <strong>
-                                            {preg.text ||
-                                              preg.question_name ||
-                                              "Sin texto"}
-                                          </strong>
-                                        </p>
-                                        <button
-                                          className="btn btn-sm btn-outline-secondary"
-                                          onClick={() =>
-                                            toggleCollapse(bloque.id, idx)
-                                          }
-                                        >
-                                          {isCollapsed ? "+" : "-"}
-                                        </button>
+                  {/* Drag and Drop Context para los bloques */}
+                  <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="blocksDroppable">
+                      {(provided) => (
+                        <div
+                          className="card-body ui-sorteable"
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {/* Mapeo de bloques arrastrables */}
+                          {data.map((bloque, index) => (
+                            <Draggable
+                              key={bloque.id}
+                              draggableId={String(bloque.id)}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className="shadowbox5 p-3 m-3"
+                                >
+                                  {/* Header del bloque con título y ponderación */}
+                                  <div className="d-flex justify-content-between mb-2 w-100">
+                                    <div className="w-100 ps-2">
+                                      <div className="d-flex justify-content-between align-items-start">
+                                        <h3 className="mb-3 ms-2">
+                                          {bloque.block_name ||
+                                            bloque.nombre ||
+                                            "Sin nombre"}
+                                        </h3>
+                                        <span className="text-muted block-weighting me-3">
+                                          {`${bloque.percentage}%` ||
+                                            ("0" && bloque.ponderacion > 0)}
+                                        </span>
                                       </div>
 
-                                      {!isCollapsed && (
-                                        <>
-                                          {preg.type === "radio_opt" && (
-                                            <div className="mb-2">
-                                              <strong>
-                                                Selecciona una opción:
-                                              </strong>
-                                              {(preg.options || []).map(
-                                                (opt, i) => {
-                                                  const optionText =
-                                                    typeof opt === "string"
-                                                      ? opt
-                                                      : opt.text || "";
-                                                  return (
-                                                    <div
-                                                      key={i}
-                                                      className="form-check"
-                                                    >
-                                                      <input
-                                                        className="form-check-input"
-                                                        type="radio"
-                                                        name={`radio-${bloque.id}-${idx}`}
-                                                        checked={
-                                                          preg.selected_answer ===
-                                                          optionText
-                                                        }
-                                                        onChange={() =>
-                                                          handleAnswerChange(
-                                                            bloque.id,
-                                                            idx,
-                                                            optionText
-                                                          )
+                                      {/* Contenedor de preguntas del bloque */}
+                                      <div className="mt-2 d-flex flex-column align-items-center">
+                                        {/* Mapeo de preguntas dentro del bloque */}
+                                        {Array.isArray(bloque.preguntas) &&
+                                          bloque.preguntas.map((preg, idx) => {
+                                            const isCollapsed =
+                                              collapsedQuestions[
+                                                `${bloque.id}-${idx}`
+                                              ];
+
+                                            return (
+                                              <div
+                                                key={idx}
+                                                className="shadowbox5 p-3 mb-3"
+                                                style={{ width: "100%" }}
+                                              >
+                                                {/* Header de la pregunta con botón de colapso */}
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                  <p className="mb-1 fs-5">
+                                                    <strong>
+                                                      {preg.text ||
+                                                        preg.question_name ||
+                                                        "Sin texto"}
+                                                    </strong>
+                                                  </p>
+                                                  <button
+                                                    className="btn btn-sm btn-outline-secondary"
+                                                    onClick={() =>
+                                                      toggleCollapse(
+                                                        bloque.id,
+                                                        idx
+                                                      )
+                                                    }
+                                                  >
+                                                    {isCollapsed ? "+" : "-"}
+                                                  </button>
+                                                </div>
+
+                                                {/* Contenido expandible de la pregunta */}
+                                                {!isCollapsed && (
+                                                  <>
+                                                    {/* Pregunta tipo Radio Button */}
+                                                    {preg.type ===
+                                                      "radio_opt" && (
+                                                      <div className="mb-2">
+                                                        <strong>
+                                                          Selecciona una opción:
+                                                        </strong>
+                                                        {(
+                                                          preg.options || []
+                                                        ).map((opt, i) => {
+                                                          const optionText =
+                                                            typeof opt ===
+                                                            "string"
+                                                              ? opt
+                                                              : opt.text || "";
+                                                          return (
+                                                            <div
+                                                              key={i}
+                                                              className="form-check"
+                                                            >
+                                                              <input
+                                                                className="form-check-input"
+                                                                type="radio"
+                                                                name={`radio-${bloque.id}-${idx}`}
+                                                                checked={
+                                                                  preg.selected_answer ===
+                                                                  optionText
+                                                                }
+                                                                onChange={() =>
+                                                                  handleAnswerChange(
+                                                                    bloque.id,
+                                                                    idx,
+                                                                    optionText
+                                                                  )
+                                                                }
+                                                              />
+                                                              <label className="form-check-label">
+                                                                {optionText}
+                                                              </label>
+                                                            </div>
+                                                          );
+                                                        })}
+                                                      </div>
+                                                    )}
+
+                                                    {/* Pregunta tipo Checkbox/Opción múltiple */}
+                                                    {/* {preg.type ===
+                                                      "check_opt" && (
+                                                      <MultipleChoiceView
+                                                        options={(
+                                                          preg.options ||
+                                                          preg.select_option ||
+                                                          ""
+                                                        )
+                                                          .split(",")
+                                                          .map((o) => o.trim())}
+                                                        correctOption={
+                                                          preg.selected_answer
                                                         }
                                                       />
-                                                      <label className="form-check-label">
-                                                        {optionText}
-                                                      </label>
-                                                    </div>
-                                                  );
-                                                }
-                                              )}
-                                            </div>
-                                          )}
+                                                    )} */}
 
-                                          {preg.type === "check_opt" && (
-                                            <MultipleChoiceView
-                                              options={(
-                                                preg.options ||
-                                                preg.select_option ||
-                                                ""
-                                              )
-                                                .split(",")
-                                                .map((o) => o.trim())}
-                                              correctOption={
-                                                preg.selected_answer
-                                              }
-                                            />
-                                          )}
+                                                    {/* Pregunta tipo Selector/Dropdown */}
+                                                    {preg.type ===
+                                                      "selector_opt" && (
+                                                      <div className="mb-1">
+                                                        <label className="form-label">
+                                                          <strong>
+                                                            Selecciona una
+                                                            opción:
+                                                          </strong>
+                                                        </label>
+                                                        <select
+                                                          className="form-select"
+                                                          value={
+                                                            preg.selected_answer ||
+                                                            ""
+                                                          }
+                                                          onChange={(e) =>
+                                                            handleAnswerChange(
+                                                              bloque.id,
+                                                              idx,
+                                                              e.target.value
+                                                            )
+                                                          }
+                                                        >
+                                                          {(
+                                                            preg.options || []
+                                                          ).map((opt, i) => {
+                                                            const optionText =
+                                                              typeof opt ===
+                                                              "string"
+                                                                ? opt
+                                                                : opt.text ||
+                                                                  "";
+                                                            return (
+                                                              <option
+                                                                key={i}
+                                                                value={
+                                                                  optionText
+                                                                }
+                                                              >
+                                                                {optionText}
+                                                              </option>
+                                                            );
+                                                          })}
+                                                        </select>
+                                                      </div>
+                                                    )}
 
-                                          {preg.type === "selector_opt" && (
-                                            <div className="mb-1">
-                                              <label className="form-label">
-                                                <strong>
-                                                  Selecciona una opción:
-                                                </strong>
-                                              </label>
-                                              <select
-                                                className="form-select"
-                                                value={
-                                                  preg.selected_answer || ""
-                                                }
-                                                onChange={(e) =>
-                                                  handleAnswerChange(
-                                                    bloque.id,
-                                                    idx,
-                                                    e.target.value
-                                                  )
-                                                }
-                                              >
-                                                {(preg.options || []).map(
-                                                  (opt, i) => {
-                                                    const optionText =
-                                                      typeof opt === "string"
-                                                        ? opt
-                                                        : opt.text || "";
-                                                    return (
-                                                      <option
-                                                        key={i}
-                                                        value={optionText}
-                                                      >
-                                                        {optionText}
-                                                      </option>
-                                                    );
-                                                  }
+                                                    {/* Pregunta tipo Campo de texto corto */}
+                                                    {preg.type ===
+                                                      "textfield_s" && (
+                                                      <Textfield_s
+                                                        value={
+                                                          preg.selected_answer ||
+                                                          ""
+                                                        }
+                                                        readOnly
+                                                      />
+                                                    )}
+
+                                                    {/* Pregunta tipo Sí/No */}
+                                                    {preg.type === "yes_no" && (
+                                                      <Yes_no
+                                                        value={
+                                                          preg.selected_answer ||
+                                                          ""
+                                                        }
+                                                        readOnly
+                                                      />
+                                                    )}
+                                                  </>
                                                 )}
-                                              </select>
-                                            </div>
-                                          )}
+                                              </div>
+                                            );
+                                          })}
 
-                                          {preg.type === "textfield_s" && (
-                                            <Textfield_s
-                                              value={preg.selected_answer || ""}
-                                              readOnly
-                                            />
-                                          )}
-
-                                          {preg.type === "yes_no" && (
-                                            <Yes_no
-                                              value={preg.selected_answer || ""}
-                                              readOnly
-                                            />
-                                          )}
-                                        </>
-                                      )}
+                                        {/* Paginación */}
+                                        <div className="d-flex">
+                                          <div
+                                            className="page-selector btn-group"
+                                            role="group"
+                                          >
+                                            <button
+                                              type="button"
+                                              className="btn btn-outline-secondary"
+                                              onClick={() =>
+                                                setCurrentPage((prev) =>
+                                                  Math.max(prev - 1, 1)
+                                                )
+                                              }
+                                              disabled={currentPage === 1}
+                                            >
+                                              &lt;
+                                            </button>
+                                            <span className="btn btn-outline-secondary">
+                                              {currentPage || 1}
+                                            </span>
+                                            <button
+                                              type="button"
+                                              className="btn btn-outline-secondary"
+                                              onClick={() =>
+                                                setCurrentPage((prev) =>
+                                                  Math.min(prev + 1, totalPages)
+                                                )
+                                              }
+                                              disabled={
+                                                currentPage === totalPages ||
+                                                totalPages === 0
+                                              }
+                                            >
+                                              &gt;
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
-                                  );
-                                })}
 
-                              <div className="d-flex">
-                                <div
-                                  className="page-selector btn-group"
-                                  role="group"
-                                >
-                                  <button
-                                    type="button"
-                                    className="btn btn-outline-secondary"
-                                    onClick={() =>
-                                      setCurrentPage((prev) =>
-                                        Math.max(prev - 1, 1)
-                                      )
-                                    }
-                                    disabled={currentPage === 1}
-                                  >
-                                    &lt;
-                                  </button>
-                                  <span className="btn btn-outline-secondary">
-                                    {currentPage || 1}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    className="btn btn-outline-secondary"
-                                    onClick={() =>
-                                      setCurrentPage((prev) =>
-                                        Math.min(prev + 1, totalPages)
-                                      )
-                                    }
-                                    disabled={
-                                      currentPage === totalPages ||
-                                      totalPages === 0
-                                    }
-                                  >
-                                    &gt;
-                                  </button>
+                                    {/* Menú desplegable de acciones (editar/eliminar) */}
+                                    <div className="dropdown">
+                                      <button
+                                        className="btn-rect btn-dropdown"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                      >
+                                        <div className="dropdown-toggle">
+                                          <i className="fa-solid fa-ellipsis-vertical"></i>
+                                        </div>
+                                      </button>
+                                      <ul className="dropdown-menu dropdown-menu-end p-0">
+                                        <li className="text-start btn-rect">
+                                          <button
+                                            className="btn text-start"
+                                            style={{ width: "100%" }}
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalManageQuestion"
+                                            onClick={() => onUpdate(bloque)}
+                                          >
+                                            <i className="fa-solid fa-edit"></i>{" "}
+                                            Editar
+                                          </button>
+                                        </li>
+                                        <li className="text-start btn-rect">
+                                          <button
+                                            className="btn text-start"
+                                            style={{ width: "100%" }}
+                                            onClick={() =>
+                                              handleDeleteBlock(
+                                                bloque.id,
+                                                bloque.block_name
+                                              )
+                                            }
+                                          >
+                                            <i className="fa-solid fa-trash"></i>{" "}
+                                            {t("delete_block")}
+                                          </button>
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                          </div>
+                              )}
+                            </Draggable>
+                          ))}
 
-                          {/* Menú de acciones (editar/eliminar) */}
-                          <div className="dropdown">
-                            <button
-                              className="btn-rect btn-dropdown"
-                              type="button"
-                              data-bs-toggle="dropdown"
-                              aria-expanded="false"
-                            >
-                              <div className="dropdown-toggle">
-                                <i className="fa-solid fa-ellipsis-vertical"></i>
-                              </div>
-                            </button>
-                            <ul className="dropdown-menu dropdown-menu-end p-0">
-                              <li className="text-start btn-rect">
-                                <button
-                                  className="btn text-start"
-                                  style={{ width: "100%" }}
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#modalManageQuestion"
-                                  onClick={() => onUpdate(bloque)}
-                                >
-                                  <i className="fa-solid fa-edit"></i> Editar
-                                </button>
-                              </li>
-                              <li className="text-start btn-rect">
-                                <button
-                                  className="btn text-start"
-                                  style={{ width: "100%" }}
-                                  onClick={() =>
-                                    handleDeleteBlock(
-                                      bloque.id,
-                                      bloque.block_name
-                                    )
-                                  }
-                                >
-                                  <i className="fa-solid fa-trash"></i>{" "}
-                                  {t("delete_block")}
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
+                          {provided.placeholder}
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 </div>
               </div>
             </div>
           </div>
         </section>
       </div>
+
+      {/* Modal para gestión de bloques de encuesta */}
       <ModalSurveyBlocks
         operation={operation}
         title={title}
