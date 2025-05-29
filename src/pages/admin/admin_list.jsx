@@ -165,39 +165,52 @@ const AdminList = () => {
   
       
       try {
-        const respuesta = await axios.put(
-          `${urlUsers}/${idToEdit}`,
-          rest,
-          config
-        );
+        const respuesta = await axios.put(`${urlUsers}/${idToEdit}`, rest, config);
       
-        const envioC = await sendClients(respuesta.data.data.id, 2);
-        if(envioC ){
-          if (idToEdit ==  userId){
-            try {
-              const response = await axios.get(`http://localhost:3000/api/users/${userId}/clients`, config);
-              if(response.status == 200){
-                setClients(response.data.data);
-                console.log("clientes", clients);
-                console.log("respuesta", response.data.data);
+        if (respuesta.status >= 200 && respuesta.status < 300) {
+          const envioC = await sendClients(respuesta.data.data.id, 2);
+          if(envioC.success ){
+            if (idToEdit ==  userId){
+              try {
+                const response = await axios.get(`http://localhost:3000/api/users/${userId}/clients`, config);
+                if(response.status == 200){
+                  setClients(response.data.data);
+                  console.log("clientes", clients);
+                  console.log("respuesta", response.data.data);
+                }
+              }catch (error) {
+                console.error("Error fetching data:", error);
               }
-            }catch (error) {
-              console.error("Error fetching data:", error);
             }
-          }
+             Toast.fire({
+            icon: "success",
+            title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
+          });
+    
+          document.getElementById("btnCerrar").click();
+          getAdmins();
+          }else {
+          // Error al asignar clientes - mostrar mensaje del servidor
+          Toast.fire({
+            icon: "error",
+            title: `Usuario actualizado, pero error al asignar clientes: ${envioC.error}`,
+          });
+          
+          // Refrescar la lista para mostrar el usuario actualizado
+          getAdmins();
         }
-        Toast.fire({
-          icon: "success",
-          title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
-        });
-  
-        document.getElementById("btnCerrar").click();
-        getAdmins();
+         
+        }  
       } catch (error) {
         console.error("Error:", error);
+              
+        let errorMessage = `${nombre} - ${t("alertCreateEdit.ErrorAlert")}`;
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }      
         Toast.fire({
           icon: "error",
-          title: `${nombre} - ${t("alertCreateEdit.ErrorAlert")}`,
+          title: errorMessage,
         });
       }
     }
@@ -216,57 +229,85 @@ const AdminList = () => {
       try {
         const respuesta = await axios.post(`${urlUsers}`, { ...rest, password }, config);
   
-        sendClients(respuesta.data.data.id, 1);
-  
-        Toast.fire({
-          icon: "success",
-          title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
-        });
-  
-        document.getElementById("btnCerrar").click();
-        getAdmins();
+        if (respuesta.status >= 200 && respuesta.status < 300) {
+          const envioC = await sendClients(respuesta.data.data.id, 1);
+          if (envioC.success) {
+          Toast.fire({
+            icon: "success",
+            title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
+          });
+    
+          document.getElementById("btnCerrar").click();
+          getAdmins();
+        }else {
+          // Error al asignar clientes - mostrar mensaje del servidor
+          Toast.fire({
+            icon: "error",
+            title: `Usuario creado, pero error al asignar clientes: ${envioC.error}`,
+          });
+          
+          // Refrescar la lista para mostrar el usuario creado
+          getAdmins();
+        }
+        }  
       } catch (error) {
         console.error("Error: ", error);
+        let errorMessage = `${nombre} - ${t("alertCreateEdit.ErrorAlert")}`;
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      
         Toast.fire({
           icon: "error",
-          title: `${nombre} - ${t("alertCreateEdit.ErrorAlert")}`,
+          title: errorMessage,
         });
       }
     }
   };
 
   const sendClients = async (id, metodo) => {
+    try{      
     if (metodo == 1) {
       const parametros = selectedClients.map((client) => ({
         idUser: id,
         clientId: client,
       }));
-      try {
+      
         const respuesta = await axios.post(
           `${urlUsersClients}`,
           parametros,
           config
         );
         console.log("Response: ", respuesta);
-      } catch (error) {
-        console.log("Error: ", error);
-      }
+        if (respuesta.status >= 200 && respuesta.status < 300) {
+          return { success: true, data: respuesta.data };
+        }
     } else if (metodo == 2) {
       const parametros = {
         clientIds: selectedClients.map((client) => client),
-      };
-      try {
+      };      
         const respuesta = await axios.put(
           `${urlUsersClients}/${id}`,
           parametros,
           config
         );
-        if(respuesta.status == 200){
-         return true;
-        }
-      } catch (error) {
-        console.log("Error: ", error);
+        if (respuesta.status >= 200 && respuesta.status < 300) {
+        return { success: true, data: respuesta.data };
+      }      
+    }
+    }catch (error) {
+      console.error("Error: ", error);
+      // Obtener mensaje de error del servidor
+      let errorMessage = "Error al asignar clientes al usuario";
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
       }
+      
+      return { 
+        success: false, 
+        error: errorMessage,
+        status: error.response ? error.response.status : 500
+      };
     }
   };
   const deactivateUser = (admin) => {
@@ -381,6 +422,7 @@ const AdminList = () => {
   
   //MODALS//
   const openModal = (op, admin) => {
+    setSelectedClients([]);
     setOperation(op);
     if (op == 1) {
       setTitle(t("UserModal.RegisterUser"));
