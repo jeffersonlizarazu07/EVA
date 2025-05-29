@@ -7,7 +7,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 router.post('/agent',authMiddleware, agenteController.getAgents);
 
 //clientes por id
-router.get('/agent/:id',authMiddleware, agenteController.getAgentById);
+router.get('/agent/:id?',authMiddleware, agenteController.getAgentById);
 
 
 module.exports = router;
