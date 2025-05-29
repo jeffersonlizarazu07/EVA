@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { getDateTimeForSQL } = require("../helpers/dateHelper");
 
 const FormSet = {
   getAll: () => {
@@ -24,7 +25,7 @@ const FormSet = {
         ),
         // Concatenamos el primer nombre y apellido del editor si existe
         db.raw(
-            'IFNULL(DATE_FORMAT(updated_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as updated_date'
+          'IFNULL(DATE_FORMAT(updated_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as updated_date'
         ),
         // Concatenamos el primer nombre y apellido del editor si existe
         db.raw(
@@ -41,17 +42,25 @@ const FormSet = {
 
   // create: (data) => db("form_set").insert(data),
 
-  create: async(data) => {
+  create: async (data) => {
     try {
-    const [id] = await db("form_set").insert(data)
-    return {id, ...data}
-  } catch (error){
-    console.error("Error al insertar datos")
-    throw error
-  }
+      if (!data.creation_date) {
+        data.creation_date = getDateTimeForSQL(); // Genera la fecha actual
+      }
+
+      const [id] = await db("form_set").insert(data);
+      return { id, ...data };
+    } catch (error) {
+      console.error("Error al insertar datos");
+      throw error;
+    }
   },
 
-  update: (id, data) => db("form_set").where({ id }).update(data),
+  update: (id, data) => {
+    data.updated_date = getDateTimeForSQL(); // Fecha actual al actualizar
+    
+    return db("form_set").where({ id }).update(data);
+  },
 
   toggleState: (id) => {
     return db("form_set")
