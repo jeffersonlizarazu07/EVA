@@ -1,4 +1,5 @@
 const UserClient = require('../models/userClient');
+const UserClientDTO = require('../dtos/userClientDTO');
 
 const userClientController = {
     async userClients(req, res) {
@@ -14,6 +15,11 @@ const userClientController = {
     },
 
     async userClientByID(req, res) {
+        const validarId = UserClientDTO.validarId(req.params.id);
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+
         try {
             const { id } = req.params;
             const userClient = await UserClient.getByUserId(id);
@@ -28,10 +34,14 @@ const userClientController = {
 
     async postUserClient(req, res) {
         try {
-            const associations = req.body;
-            if (!Array.isArray(associations)) {
-                return res.status(400).json({ status: '400', message: 'Datos inválidos' });
+            const validaUserClient = await UserClientDTO.validateUserClient(req.body);
+            if(!validaUserClient.status){
+            return res.status(400).json(validaUserClient);
             }
+            const associations = req.body;
+            // if (!Array.isArray(associations)) {
+            //     return res.status(400).json({ status: '400', message: 'Datos inválidos' });
+            // }
             await UserClient.create(associations);
             res.status(201).json({ status: '201', message: 'Asociaciones creadas correctamente' });
         } catch (error) {
@@ -40,6 +50,17 @@ const userClientController = {
     },
 
     async putUserClient(req, res) {
+        console.log("lo que llaga a actusalizar---", req.body);
+        const validarId = UserClientDTO.validarId(req.params.idUser);
+        if(!validarId.status){
+            return res.status(400).json(validarId);
+        }
+        
+        const validaUserClient = await UserClientDTO.validateUserClientUpdate(req.body);
+        if(!validaUserClient.status){
+            return res.status(400).json(validaUserClient);
+        }        
+        console.log("lo que llaga a actusalizar---", req.body);
         try {
             const { idUser } = req.params;
             const { clientIds } = req.body;

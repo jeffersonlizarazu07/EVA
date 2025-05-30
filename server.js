@@ -8,8 +8,6 @@ const userRoutes = require('./routes/userRoutes');
 const userClientRoutes = require('./routes/userClientRoutes');
 const surveySetRoutes = require('./routes/surveyRoutes');
 const questionRoutes = require('./routes/questionRoutes');
-const endUserRoutes = require('./routes/endUserRoutes');
-const endUserClientRoutes = require('./routes/endUserClientRoutes');
 const clientsRoutes = require('./routes/clientRoutes');
 const answersRoutes = require('./routes/answerRoutes');
 const agentRoutes = require('./routes/agentRoutes');
@@ -43,8 +41,6 @@ app.use('/api', userClientRoutes); // Rutas de usuarios para clientes
 app.use('/api', surveySetRoutes); // Rutas de encuestas
 app.use('/api', questionRoutes); // Rutas de preguntas
 app.use('/api', answersRoutes); // Rutas de respuestas
-app.use('/api', endUserRoutes); // Rutas de usuarios finales
-app.use('/api', endUserClientRoutes); // Rutas de usuarios finales para clientes
 app.use('/api', clientsRoutes); // Rutas de clientes
 app.use('/api', enviarCorreos); // Rutas de envío de correos
 app.use('/api', agentRoutes); // Rutas de agentes
