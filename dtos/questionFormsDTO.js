@@ -4,7 +4,7 @@ const BlockModel = require('../models/blockModel');
 class QuestionFormsDTO {
     static async validateQuestionForm(data){
         const { block_id, preguntas } = data;
-        const allowedTypes = ["radio_opt", "textfield_s", "selector_opt"];
+        const allowedTypes = ["check_opt", "textfield_s", "selector_opt"];
         const allowedConditional = ["SI", "NO"];
 
         //valida que todos los campos sean obligatorios
@@ -69,7 +69,7 @@ class QuestionFormsDTO {
 
     static async validateQuestionFormUpdate(data){
         const { preguntas } = data;
-        const allowedTypes = ["radio_opt", "textfield_s", "selector_opt"];
+        const allowedTypes = ["check_opt", "textfield_s", "selector_opt"];
         const allowedConditional = ["SI", "NO"];
 
         //valida que todos los campos sean obligatorios
