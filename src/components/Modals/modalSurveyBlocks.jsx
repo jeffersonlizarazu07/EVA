@@ -49,7 +49,7 @@ const ModalSurveyBlocks = ({
   referenceBlockId,
   data,
   migrateQuestionData,
-  setPositionType
+  setPositionType,
 }) => {
   return (
     <div
@@ -274,12 +274,6 @@ const ModalSurveyBlocks = ({
                                 "selectorSelectedOption",
                                 ""
                               );
-                              handleInputChange(index, "radioOptions", []);
-                              handleInputChange(
-                                index,
-                                "radioCorrectAnswer",
-                                null
-                              );
                               handleInputChange(index, "checkboxOptions", []);
                               handleInputChange(
                                 index,
@@ -315,13 +309,13 @@ const ModalSurveyBlocks = ({
                     {operation === 1 && (
                       <div className="mt-2 mb-2">
                         {q.type === "textfield_s" && <Textfield_s />}
-                        {q.type === "radio_opt" && (
-                          <SingleChoiceQuestion
-                            options={singleChoiceData.options}
-                            correctOption={singleChoiceData.correctAnswer}
-                            onChange={handleSingleChoiceChange}
-                          />
-                        )}
+                        (
+                        <SingleChoiceQuestion
+                          options={singleChoiceData.options}
+                          correctOption={singleChoiceData.correctAnswer}
+                          onChange={handleSingleChoiceChange}
+                        />
+                        )
                         {q.type === "check_opt" && (
                           <MultipleChoiceQuestion
                             options={multipleChoiceData.options || []}
@@ -359,12 +353,6 @@ const ModalSurveyBlocks = ({
                                 );
                                 // Limpiar datos de otros tipos si cambiaron
                                 if (q.type !== "selector_opt") {
-                                  handleInputChange(index, "radioOptions", []);
-                                  handleInputChange(
-                                    index,
-                                    "radioCorrectAnswer",
-                                    null
-                                  );
                                   handleInputChange(
                                     index,
                                     "checkboxOptions",
@@ -394,80 +382,6 @@ const ModalSurveyBlocks = ({
                                 </div>
                               </div>
                             )}
-                          </div>
-                        )}
-
-                        {/* Radio */}
-                        {q.type === "radio_opt" && (
-                          <div>
-                            <SingleChoiceQuestionEdit
-                              key={`selector-${index}-${idToEdit}`} // forzar rerender al cambiar bloque
-                              options={(q.radioOptions || []).map((opt) =>
-                                typeof opt === "object" ? opt.text : opt
-                              )}
-                              correctAnswer={
-                                q.radioCorrectAnswer || q.correctAnswer
-                              }
-                              idToEdit={idToEdit}
-                              onChange={(data) => {
-                                handleInputChange(
-                                  index,
-                                  "radioOptions",
-                                  data.options.map((text) => ({ text }))
-                                );
-                                handleInputChange(
-                                  index,
-                                  "radioCorrectAnswer",
-                                  data.correctAnswer
-                                );
-                                // Limpiar datos de otros tipos
-                                if (q.type !== "radio_opt") {
-                                  handleInputChange(
-                                    index,
-                                    "selectorOptions",
-                                    []
-                                  );
-                                  handleInputChange(
-                                    index,
-                                    "selectorSelectedOption",
-                                    ""
-                                  );
-                                  handleInputChange(
-                                    index,
-                                    "checkboxOptions",
-                                    []
-                                  );
-                                  handleInputChange(
-                                    index,
-                                    "checkboxCorrectAnswers",
-                                    []
-                                  );
-                                }
-                              }}
-                            />
-                            {/* Vista de respuesta correcta */}
-                            {q.radioCorrectAnswer !== null &&
-                              q.radioCorrectAnswer !== undefined && (
-                                <div className="mt-3 p-3 bg-light border rounded">
-                                  <h6 className="text-muted mb-2">
-                                    Respuesta correcta:
-                                  </h6>
-                                  <div className="alert alert-warning mb-0">
-                                    <i className="fa-solid fa-star me-2"></i>
-                                    <strong>
-                                      {q.radioOptions &&
-                                      q.radioOptions[q.radioCorrectAnswer]
-                                        ? typeof q.radioOptions[
-                                            q.radioCorrectAnswer
-                                          ] === "object"
-                                          ? q.radioOptions[q.radioCorrectAnswer]
-                                              .text
-                                          : q.radioOptions[q.radioCorrectAnswer]
-                                        : `Opción ${q.radioCorrectAnswer + 1}`}
-                                    </strong>
-                                  </div>
-                                </div>
-                              )}
                           </div>
                         )}
 
@@ -507,12 +421,6 @@ const ModalSurveyBlocks = ({
                                     index,
                                     "selectorSelectedOption",
                                     ""
-                                  );
-                                  handleInputChange(index, "radioOptions", []);
-                                  handleInputChange(
-                                    index,
-                                    "radioCorrectAnswer",
-                                    null
                                   );
                                 }
                               }}
@@ -568,12 +476,6 @@ const ModalSurveyBlocks = ({
                                   "selectorSelectedOption",
                                   ""
                                 );
-                                handleInputChange(index, "radioOptions", []);
-                                handleInputChange(
-                                  index,
-                                  "radioCorrectAnswer",
-                                  null
-                                );
                                 handleInputChange(index, "checkboxOptions", []);
                                 handleInputChange(
                                   index,
@@ -610,12 +512,6 @@ const ModalSurveyBlocks = ({
                                   index,
                                   "selectorSelectedOption",
                                   ""
-                                );
-                                handleInputChange(index, "radioOptions", []);
-                                handleInputChange(
-                                  index,
-                                  "radioCorrectAnswer",
-                                  null
                                 );
                                 handleInputChange(index, "checkboxOptions", []);
                                 handleInputChange(

@@ -339,7 +339,7 @@ export default function SurveyBlocks({}) {
 
       // Preparar preguntas con respuestas/selecciones integradas
       const typeMap = {
-        radio_opt: 1,
+        check_opt: 1,
         selector_opt: 2,
         textfield_s: 3,
       };
@@ -350,7 +350,7 @@ export default function SurveyBlocks({}) {
 
         // Procesa opciones y respuestas según tipo de pregunta
         if (
-          q.type === "radio_opt" ||
+          q.type === "check_opt" ||
           q.type === "selector_opt" ||
           q.type === "textfield_s"
         ) {
@@ -425,7 +425,7 @@ export default function SurveyBlocks({}) {
                   let answer = "";
 
                   if (
-                    question.type === "radio_opt" ||
+                    question.type === "vheck_opt" ||
                     question.type === "selector_opt"
                   ) {
                     answer = question.selected_answer || "";
@@ -592,7 +592,7 @@ export default function SurveyBlocks({}) {
     // Si ya tiene datos específicos por tipo, no migrar
     if (
       question.selectorOptions ||
-      question.radioOptions ||
+      question.checkOptions ||
       question.checkboxOptions
     ) {
       return question;
@@ -604,9 +604,9 @@ export default function SurveyBlocks({}) {
     if (question.type === "selector_opt" && question.options) {
       migrated.selectorOptions = question.options;
       migrated.selectorSelectedOption = question.selected_answer;
-    } else if (question.type === "radio_opt" && question.options) {
-      migrated.radioOptions = question.options;
-      migrated.radioCorrectAnswer = question.correctAnswer;
+    } else if (question.type === "check_opt" && question.options) {
+      migrated.checkOptions = question.options;
+      migrated.checkCorrectAnswer = question.correctAnswer;
     // } else if (question.type === "check_opt" && question.options) {
     //   migrated.checkboxOptions = question.options;
     //   migrated.checkboxCorrectAnswers = question.correctAnswers;
@@ -746,7 +746,7 @@ export default function SurveyBlocks({}) {
       //   );
       // }
 
-      if (question.type === "radio_opt") {
+      if (question.type === "check_opt") {
         return singleChoiceData.options && singleChoiceData.options.length > 0;
       }
 
@@ -822,9 +822,6 @@ export default function SurveyBlocks({}) {
             {respuesta !== " " ? respuesta : "Sin respuesta"}
           </p>
         );
-
-      case "radio_opt":
-      // case "check_opt":
       case "selector_opt":
         return (
           <div>
@@ -991,7 +988,7 @@ export default function SurveyBlocks({}) {
               let tipo = preg.type || "";
               if (!tipo && preg.id_type_question) {
                 const typeMap = {
-                  1: "radio_opt",
+                  1: "check_opt",
                   2: "selector_opt",
                   3: "textfield_s",
                 };
@@ -1322,7 +1319,7 @@ export default function SurveyBlocks({}) {
                                                   <>
                                                     {/* Pregunta tipo Radio Button */}
                                                     {preg.type ===
-                                                      "radio_opt" && (
+                                                      "check_opt" && (
                                                       <div className="mb-2">
                                                         <strong>
                                                           Selecciona una opción:
@@ -1342,7 +1339,7 @@ export default function SurveyBlocks({}) {
                                                             >
                                                               <input
                                                                 className="form-check-input"
-                                                                type="radio"
+                                                                type="checkbox"
                                                                 name={`radio-${bloque.id}-${idx}`}
                                                                 checked={
                                                                   preg.selected_answer ===
