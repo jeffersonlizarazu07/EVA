@@ -27,6 +27,9 @@ const FormSet = {
         db.raw(
           'IFNULL(DATE_FORMAT(updated_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as updated_date'
         ),
+        db.raw(
+           'IFNULL(DATE_FORMAT(creation_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as creation_date'
+        ),
         // Concatenamos el primer nombre y apellido del editor si existe
         db.raw(
           `IFNULL(CONCAT(updater.firstname, " ", updater.lastname), "No actualizada") as updated_by_name`
@@ -45,12 +48,13 @@ const FormSet = {
   create: async (data) => {
     try {
         const date = getDateTimeForSQL(); // Genera la fecha actual
-
       const [id] = await db("form_set").insert({
         title: data.title,
         description: data.description,
-        updated_date: date,
-        updated_by: data.update_by,
+        creation_date: date,
+        created_by: data.created_by,
+        state: 1,
+        idClient: data.idClient,
       });
       return { id, ...data };
     } catch (error) {
@@ -59,16 +63,25 @@ const FormSet = {
     }
   },
 
-  update: (id, data) => {
-    data.updated_date = getDateTimeForSQL(); // Fecha actual al actualizar
-    // console.log("Fecha update", data_updated)
+  update: async (id, data) => {
+    const date = getDateTimeForSQL(); // Fecha actual al actualizar
+    console.log("----------------------------------------")
+    console.log("Date", data)
+    console.log("----------------------------------------")
+
    try {
-      
+    const updated = await db("form_set").where({ id }).update({
+      title: data.title,
+      description: data.description,
+      updated_date: date,
+      updated_by: data.updated_by,
+    });
+    console.log("Updated", updated)
+    return updated;
    } catch(error) {
     console.log("Error", error)
-      return 
+    return false;
    } 
-    return db("form_set").where({ id }).update(data);
   },
 
   toggleState: (id) => {
