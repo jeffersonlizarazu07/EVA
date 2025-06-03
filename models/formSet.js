@@ -44,11 +44,14 @@ const FormSet = {
 
   create: async (data) => {
     try {
-      if (!data.creation_date) {
-        data.creation_date = getDateTimeForSQL(); // Genera la fecha actual
-      }
+        const date = getDateTimeForSQL(); // Genera la fecha actual
 
-      const [id] = await db("form_set").insert(data);
+      const [id] = await db("form_set").insert({
+        title: data.title,
+        description: data.description,
+        updated_date: date,
+        updated_by: data.update_by,
+      });
       return { id, ...data };
     } catch (error) {
       console.error("Error al insertar datos");
@@ -58,7 +61,13 @@ const FormSet = {
 
   update: (id, data) => {
     data.updated_date = getDateTimeForSQL(); // Fecha actual al actualizar
-    
+    // console.log("Fecha update", data_updated)
+   try {
+      
+   } catch(error) {
+    console.log("Error", error)
+      return 
+   } 
     return db("form_set").where({ id }).update(data);
   },
 

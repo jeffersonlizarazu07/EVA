@@ -4,7 +4,7 @@ const User = require('../models/user')
 
 class FormDTO {
     static async validateForm(data){
-        const { title, description, state, idClient, creation_date, created_by } = data;
+        const { title, description, state, idClient, created_by } = data;
         const allowedStates = [0, 1];
         const clientService = new ClientModel(knex);  // Instancia de la clase ClientModel
         
@@ -12,7 +12,7 @@ class FormDTO {
     // console.log("Datos del DTO", title, description, state, idClient, creation_date, created_by)
       
         //validar que todos los campos obligatorios estén presentes
-        if(!title || !description || !state || !idClient || !creation_date || !created_by){
+        if(!title || !description || !state || !idClient || !created_by){
             return {status : false, message : "Todos los campos son obligatorios"};
         }
 
@@ -83,10 +83,10 @@ class FormDTO {
         const allowedStates = [0, 1];
         const clientService = new ClientModel(knex);  // Instancia de la clase ClientModel
         
-    console.log("Info en el DTO", data)
-    console.log("Datos del DTO", title, description, state, idClient, updated_date, updated_by)
+    // console.log("Info en el DTO", data)
+    // console.log("Datos del DTO", title, description, state, idClient, updated_by)
         //validar que todos los campos obligatorios estén presentes
-        if(!title || !description || !state || !idClient || !updated_date || !updated_by){
+        if(!title || !description || !state || !idClient || !updated_by){
             return {status : false, message : "Todos los campos son obligatorios"};
         }
 
