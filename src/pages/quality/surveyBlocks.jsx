@@ -56,6 +56,7 @@ import { formatDateTimeShort } from "../../utils/dateUtils";
 
 export default function SurveyBlocks({}) {
   const { id_form } = useParams();
+  const { userId } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const [data, setData] = useState([]);
   const [operation, setOperation] = useState(1);
@@ -305,9 +306,22 @@ export default function SurveyBlocks({}) {
             ).map((opt) =>
               typeof opt === "string" ? { text: opt } : { ...opt }
             ),
-          correctAnswers: Array.isArray(p.correctAnswers)
-            ? p.correctAnswers
-            : p.selected_answer?.split(",") || [],
+          checkboxOptions: Array.isArray(p.options)
+            ? p.options.map((opt) =>
+                typeof opt === "string" ? { text: opt } : opt
+              )
+            : [],
+          checkboxCorrectAnswers: Array.isArray(p.selected_answer)
+            ? p.selected_answer
+            : (p.selected_answer || "")
+                .split(",")
+                .map((ans) => {
+                  const index = p.options?.findIndex(
+                    (o) => (typeof o === "string" ? o : o.text) === ans.trim()
+                  );
+                  return index >= 0 ? index : null;
+                })
+                .filter((i) => i !== null),
           correctAnswer: p.correctAnswer || p.selected_answer || "",
           selected_answer: p.selected_answer || "",
           conditional: p.conditional || "NO",
@@ -344,9 +358,21 @@ export default function SurveyBlocks({}) {
         textfield_s: 3,
       };
 
+      console.log("=== DEBUG VALIDAR ===");
+      console.log("questionsList original:", questionsList);
+
       const refillQuestions = questionsList.map((q) => {
         let select_option = "";
         let selected_answer = "";
+
+        const safeString = (value) => {
+          if (value === null || value === undefined) return "";
+          if (typeof value === "string") return value;
+          if (typeof value === "object") {
+            return value.text || value.label || value.value || "";
+          }
+          return String(value);
+        };
 
         // Procesa opciones y respuestas según tipo de pregunta
         if (
@@ -354,26 +380,70 @@ export default function SurveyBlocks({}) {
           q.type === "selector_opt" ||
           q.type === "textfield_s"
         ) {
-          select_option = Array.isArray(q.options)
-            ? q.options
-                .map((opt) => (typeof opt === "object" ? opt.text : opt))
-                .join(",")
-            : "";
+          if (q.type === "check_opt") {
+            // ARREGLO: Verificar que checkboxOptions existe y es array
+            if (Array.isArray(q.checkboxOptions)) {
+              const validOptions = q.checkboxOptions
+                .map(safeString)
+                .filter(
+                  (text) =>
+                    text && typeof text === "string" && text.trim() !== ""
+                );
+              select_option = validOptions.join(",");
+            }
 
-          selected_answer =
-            q.selected_answer ||
-            (Array.isArray(q.correctAnswers)
-              ? q.correctAnswers.join(",")
-              : q.correctAnswer) ||
-            "";
-        } else if (q.type === "textfield_s") {
-          select_option = "";
-          selected_answer = q.selected_answer || "";
+            // Manejar respuestas correctas
+            if (
+              Array.isArray(q.checkboxCorrectAnswers) &&
+              Array.isArray(q.checkboxOptions)
+            ) {
+              const validAnswers = q.checkboxCorrectAnswers
+                .map((i) => {
+                  const option = q.checkboxOptions?.[i];
+                  return safeString(option);
+                })
+                .filter(
+                  (text) =>
+                    text && typeof text === "string" && text.trim() !== ""
+                );
+              selected_answer = validAnswers.join(",");
+            } else {
+              selected_answer = safeString(q.checkboxCorrectAnswers);
+            }
+          } else if (q.type === "selector_opt") {
+            // ARREGLO: Usar la misma lógica segura para selector
+            if (Array.isArray(q.selectorOptions)) {
+              const validOptions = q.selectorOptions
+                .map(safeString)
+                .filter(
+                  (text) =>
+                    text && typeof text === "string" && text.trim() !== ""
+                );
+              select_option = validOptions.join(",");
+            }
+            selected_answer = safeString(q.selectorSelectedOption);
+          } else if (q.type === "textfield_s") {
+            select_option = "";
+            selected_answer = safeString(q.textfieldValue);
+          }
         }
+
+        console.log("Pregunta procesada:", {
+          question_name: q.text || q.question || "Sin texto",
+          id_type_question: q.type || typeMap[q.type] || null,
+          select_option,
+          selected_answer,
+          conditional: q.conditional || "NO",
+          id_conditional: q.id_conditional || null,
+          conditional_answer: q.conditional_answer || "",
+          // DEBUG adicional:
+          originalCheckboxOptions: q.checkboxOptions,
+          isCheckboxOptionsArray: Array.isArray(q.checkboxOptions),
+        });
 
         return {
           question_name: q.text || q.question || "Sin texto",
-          id_type_question: q.type,
+          id_type_question: q.type || typeMap[q.type] || null,
           select_option,
           selected_answer,
           conditional: q.conditional || "NO",
@@ -448,7 +518,7 @@ export default function SurveyBlocks({}) {
                     }
                   }
                 }
-                console.log("📤 Preguntas a guardar:", refillQuestions);
+                console.log("Preguntas a guardar:", refillQuestions);
 
                 // Actualizar el bloque con las preguntas vinculadas
                 const updatedBlocks = await getBlocksByFormId(id_form);
@@ -506,7 +576,10 @@ export default function SurveyBlocks({}) {
               await updateQuestions(idToEdit, refillQuestions);
             }
 
-            await updateFormMetadata(id_form, user?.id); // Actualizar metadatos del formulario
+            console.log("user:", user);
+            console.log("userId:", userId);
+
+            await updateFormMetadata(id_form, userId); // Actualizar metadatos del formulario
             await fetchFormData();
 
             await loadBlocks(); // Cargar bloques después de editar uno existente
@@ -607,9 +680,9 @@ export default function SurveyBlocks({}) {
     } else if (question.type === "check_opt" && question.options) {
       migrated.checkOptions = question.options;
       migrated.checkCorrectAnswer = question.correctAnswer;
-    // } else if (question.type === "check_opt" && question.options) {
-    //   migrated.checkboxOptions = question.options;
-    //   migrated.checkboxCorrectAnswers = question.correctAnswers;
+      // } else if (question.type === "check_opt" && question.options) {
+      //   migrated.checkboxOptions = question.options;
+      //   migrated.checkboxCorrectAnswers = question.correctAnswers;
     } else if (question.type === "textfield_s") {
       migrated.textfieldValue = question.selected_answer;
     } //else if (question.type === "yes_no") {
@@ -985,6 +1058,8 @@ export default function SurveyBlocks({}) {
                 ? preg.select_option.split(",").map((o) => o.trim())
                 : [];
 
+              const optionObjects = opciones.map((opt) => ({ text: opt }));
+
               let tipo = preg.type || "";
               if (!tipo && preg.id_type_question) {
                 const typeMap = {
@@ -999,7 +1074,7 @@ export default function SurveyBlocks({}) {
                 id: preg.id,
                 text: preg.text || preg.question_name || "Sin texto",
                 type: tipo,
-                options: opciones,
+                options: optionObjects,
                 select_option: preg.select_option || "",
                 selected_answer:
                   preg.conditional_answer || preg.selected_answer || "",
@@ -1317,7 +1392,7 @@ export default function SurveyBlocks({}) {
                                                 {/* Contenido expandible de la pregunta */}
                                                 {!isCollapsed && (
                                                   <>
-                                                    {/* Pregunta tipo Radio Button */}
+
                                                     {preg.type ===
                                                       "check_opt" && (
                                                       <div className="mb-2">
@@ -1329,9 +1404,11 @@ export default function SurveyBlocks({}) {
                                                         ).map((opt, i) => {
                                                           const optionText =
                                                             typeof opt ===
-                                                            "string"
-                                                              ? opt
-                                                              : opt.text || "";
+                                                              "object" &&
+                                                            opt !== null
+                                                              ? opt.text
+                                                              : String(opt);
+
                                                           return (
                                                             <div
                                                               key={i}
@@ -1340,11 +1417,18 @@ export default function SurveyBlocks({}) {
                                                               <input
                                                                 className="form-check-input"
                                                                 type="checkbox"
-                                                                name={`radio-${bloque.id}-${idx}`}
-                                                                checked={
-                                                                  preg.selected_answer ===
-                                                                  optionText
-                                                                }
+                                                                name={`check-${bloque.id}-${idx}`}
+                                                                checked={(
+                                                                  preg.selected_answer ||
+                                                                  ""
+                                                                )
+                                                                  .split(",")
+                                                                  .map((v) =>
+                                                                    v.trim()
+                                                                  )
+                                                                  .includes(
+                                                                    optionText
+                                                                  )}
                                                                 onChange={() =>
                                                                   handleAnswerChange(
                                                                     bloque.id,
@@ -1361,23 +1445,6 @@ export default function SurveyBlocks({}) {
                                                         })}
                                                       </div>
                                                     )}
-
-                                                    {/* Pregunta tipo Checkbox/Opción múltiple */}
-                                                    {/* {preg.type ===
-                                                      "check_opt" && (
-                                                      <MultipleChoiceView
-                                                        options={(
-                                                          preg.options ||
-                                                          preg.select_option ||
-                                                          ""
-                                                        )
-                                                          .split(",")
-                                                          .map((o) => o.trim())}
-                                                        correctOption={
-                                                          preg.selected_answer
-                                                        }
-                                                      />
-                                                    )} */}
 
                                                     {/* Pregunta tipo Selector/Dropdown */}
                                                     {preg.type ===

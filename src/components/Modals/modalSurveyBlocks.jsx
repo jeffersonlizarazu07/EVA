@@ -309,13 +309,13 @@ const ModalSurveyBlocks = ({
                     {operation === 1 && (
                       <div className="mt-2 mb-2">
                         {q.type === "textfield_s" && <Textfield_s />}
-                        (
+
                         <SingleChoiceQuestion
                           options={singleChoiceData.options}
                           correctOption={singleChoiceData.correctAnswer}
                           onChange={handleSingleChoiceChange}
                         />
-                        )
+
                         {q.type === "check_opt" && (
                           <MultipleChoiceQuestion
                             options={multipleChoiceData.options || []}
@@ -403,7 +403,11 @@ const ModalSurveyBlocks = ({
                                 handleInputChange(
                                   index,
                                   "checkboxOptions",
-                                  data.options.map((text) => ({ text }))
+                                  data.options.map((opt) =>
+                                    typeof opt === "string"
+                                      ? { text: opt }
+                                      : opt
+                                  )
                                 );
                                 handleInputChange(
                                   index,
