@@ -16,7 +16,7 @@ class BlockModel {
   }
 
   // Calcular la posición automáticamente si no viene
-  if (data.position == null) {
+  if (data.position == null || data.position === '' || data.position === 0) {
     const maxPos = await this.knex(this.table)
       .where({ form_id: data.form_id })
       .max("block_location as max")
