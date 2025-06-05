@@ -15,7 +15,7 @@ router.get('/block/:blockId', answersFormController.getAnswersByBlockId);
 router.get('/question/:questionId', answersFormController.getAnswersByQuestionId);
 
 // Obtener respuesta por ID de pregunta y bloque
-router.get('/question/:questionId/block/:blockId', answersFormController.getAnswersByQuestionAndBlockId);
+router.get('/block/full/:blockId', answersFormController.getQuestionsAndAnswersByBlockId);
 
 // Crear una nueva respuesta
 router.post('/', answersFormController.createAnswer);

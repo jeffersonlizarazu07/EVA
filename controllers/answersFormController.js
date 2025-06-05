@@ -1,5 +1,5 @@
-const knex = require('../config/db');
-const AnswersFormModel = require('../models/answersFormModel');
+const knex = require("../config/db");
+const AnswersFormModel = require("../models/answersFormModel");
 
 exports.createAnswer = async (req, res) => {
   try {
@@ -7,117 +7,167 @@ exports.createAnswer = async (req, res) => {
 
     console.log("🟡 Respuesta recibida en backend:", req.body);
 
+    console.log("Insertando en BD:", {
+      id_question: question_id,
+      answer_question,
+    });
+
     if (!question_id || !answer_question) {
-      console.log("🔴 Faltan campos");
-      return res.status(400).json({ message: 'Faltan campos obligatorios' });
+      console.log("Faltan campos");
+      return res.status(400).json({ message: "Faltan campos obligatorios" });
     }
 
-    const result = await AnswersFormModel.createAnswer({ question_id, answer_question });
+    const result = await AnswersFormModel.createAnswer({
+      question_id,
+      answer_question,
+    });
 
-    console.log("🟢 Respuesta guardada en DB:", result);
+    console.log("Respuesta guardada en DB:", result);
 
     res.status(201).json(result);
   } catch (error) {
-    console.error('❌ Error en createAnswer:', error);
-    res.status(500).json({ message: 'Error al guardar la respuesta' });
+    console.error("Error en createAnswer:", error);
+    res.status(500).json({ message: "Error al guardar la respuesta" });
   }
 };
 exports.getAllAnswers = async (req, res) => {
-    try {
-        const answers = await AnswersFormModel.getAllAnswers();
-        res.json(answers);
-    } catch (error) {
-        console.error('Error al obtener todas las respuestas:', error.message);
-        res.status(500).json({ message: 'Error al obtener respuestas' });
-    }
+  try {
+    const answers = await AnswersFormModel.getAllAnswers();
+    res.json(answers);
+  } catch (error) {
+    console.error("Error al obtener todas las respuestas:", error.message);
+    res.status(500).json({ message: "Error al obtener respuestas" });
+  }
 };
 
 exports.getAnswerById = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const answer = await AnswersFormModel.getAnswerById(id);
-        
-        if (!answer) {
-            return res.status(404).json({ message: 'Respuesta no encontrada' });
-        }
-        
-        res.json(answer);
-    } catch (error) {
-        console.error('Error al obtener respuesta por ID:', error.message);
-        res.status(500).json({ message: 'Error al obtener respuesta' });
+  const { id } = req.params;
+  try {
+    const answer = await AnswersFormModel.getAnswerById(id);
+
+    if (!answer) {
+      return res.status(404).json({ message: "Respuesta no encontrada" });
     }
-}
+
+    res.json(answer);
+  } catch (error) {
+    console.error("Error al obtener respuesta por ID:", error.message);
+    res.status(500).json({ message: "Error al obtener respuesta" });
+  }
+};
 
 exports.getAnswersByBlockId = async (req, res) => {
-    const { blockId } = req.params;
-    try {
-        const answers = await AnswersFormModel.getAnswersByBlockId(blockId);
-        res.json(answers);
-    } catch (error) {
-        console.error('Error al obtener respuestas por bloque:', error.message, error.stack);
-        res.status(500).json({ message: 'Error al obtener respuestas' });
-    }
+  const { blockId } = req.params;
+  try {
+    const answers = await AnswersFormModel.getAnswersByBlockId(blockId);
+    res.json(answers);
+  } catch (error) {
+    console.error(
+      "Error al obtener respuestas por bloque:",
+      error.message,
+      error.stack
+    );
+    res.status(500).json({ message: "Error al obtener respuestas" });
+  }
 };
 
 exports.getAnswersByQuestionId = async (req, res) => {
-    const { questionId } = req.params;
-    try {
-        const answers = await AnswersFormModel.getAnswersByQuestionId(questionId);
-        res.json(answers);
-    } catch (error) {
-        console.error('Error al obtener respuestas por pregunta:', error.message);
-        res.status(500).json({ message: 'Error al obtener respuestas' });
-    }
+  const { questionId } = req.params;
+  try {
+    const answers = await AnswersFormModel.getAnswersByQuestionId(questionId);
+    res.json(answers);
+  } catch (error) {
+    console.error("Error al obtener respuestas por pregunta:", error.message);
+    res.status(500).json({ message: "Error al obtener respuestas" });
+  }
 };
 
 exports.getAnswersByQuestionAndBlockId = async (req, res) => {
-    const { questionId, blockId } = req.params;
-    try {
-        const answer = await AnswersFormModel.getAnswersByQuestionAndBlockId(questionId, blockId);
-        if (!answer) {
-            return res.status(404).json({ message: 'Respuesta no encontrada' });
-        }
-        res.json(answer);
-    } catch (error) {
-        console.error('Error al obtener respuesta específica:', error.message);
-        res.status(500).json({ message: 'Error al obtener respuesta' });
+  const { questionId, blockId } = req.params;
+  try {
+    const answer = await AnswersFormModel.getAnswersByQuestionAndBlockId(
+      questionId,
+      blockId
+    );
+    if (!answer) {
+      return res.status(404).json({ message: "Respuesta no encontrada" });
     }
+    res.json(answer);
+  } catch (error) {
+    console.error("Error al obtener respuesta específica:", error.message);
+    res.status(500).json({ message: "Error al obtener respuesta" });
+  }
 };
 
 exports.updateAnswer = async (req, res) => {
-    const { id } = req.params;
-    const data = req.body;
-    
-    try {
-        // Verificar si la respuesta existe
-        const existingAnswers = await knex('answers').where({ id }).first();
-        
-        if (!existingAnswers) {
-            return res.status(404).json({ message: 'Respuesta no encontrada' });
-        }
-        
-        // Actualizar la respuesta
-        const updatedAnswer = await AnswersFormModel.updateAnswer(id, data);
-        res.json(updatedAnswer);
-    } catch (error) {
-        console.error('Error al actualizar respuesta:', error.message);
-        res.status(500).json({ message: 'Error al actualizar respuesta' });
+  const { id } = req.params;
+  const data = req.body;
+
+  try {
+    // Verificar si la respuesta existe
+    const existingAnswers = await knex("answers").where({ id }).first();
+
+    if (!existingAnswers) {
+      return res.status(404).json({ message: "Respuesta no encontrada" });
     }
+
+    // Actualizar la respuesta
+    const updatedAnswer = await AnswersFormModel.updateAnswer(id, data);
+    res.json(updatedAnswer);
+  } catch (error) {
+    console.error("Error al actualizar respuesta:", error.message);
+    res.status(500).json({ message: "Error al actualizar respuesta" });
+  }
 };
 
 exports.deleteAnswer = async (req, res) => {
-    const { id } = req.params;
-    
-    try {
-        const deleted = await AnswersFormModel.deleteAnswer(id);
-        
-        if (!deleted) {
-            return res.status(404).json({ message: 'Respuesta no encontrada' });
-        }
-        
-        res.json({ message: 'Respuesta eliminada correctamente' });
-    } catch (error) {
-        console.error('Error al eliminar respuesta:', error.message);
-        res.status(500).json({ message: 'Error al eliminar respuesta' });
+  const { id } = req.params;
+
+  try {
+    const deleted = await AnswersFormModel.deleteAnswer(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Respuesta no encontrada" });
     }
+
+    res.json({ message: "Respuesta eliminada correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar respuesta:", error.message);
+    res.status(500).json({ message: "Error al eliminar respuesta" });
+  }
+};
+
+exports.getQuestionsAndAnswersByBlockId = async (req, res) => {
+  const { blockId } = req.params;
+
+  try {
+    const questions = await knex("questions_form")
+      .where({ block_id: blockId })
+      .orderBy("id");
+
+    const questionIds = questions.map((q) => q.id);
+
+    let answers = [];
+    if (questionIds.length > 0) {
+      answers = await knex("answers")
+        .whereIn("question_id", questionIds)
+        .select("question_id", "answer as answer_question");
+    }
+
+    const merged = questions.map((q) => {
+      const relatedAnswers = answers
+        .filter((a) => a.question_id === q.id)
+        .map((a) => a.answer_question);
+
+      return {
+        ...q,
+        answers: relatedAnswers
+      };
+    });
+
+    res.status(200).json(merged);
+  } catch (error) {
+    console.error("Error al obtener preguntas + respuestas:", error);
+    res.status(500).json({ message: "Error interno" });
+  }
 };
