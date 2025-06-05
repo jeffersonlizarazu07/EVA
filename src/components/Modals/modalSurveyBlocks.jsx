@@ -73,6 +73,7 @@ const ModalSurveyBlocks = ({
       tabIndex="-1"
       aria-labelledby="staticBackdropLabel"
       aria-hidden="true"
+      data-bs-toggle="false"
     >
       <div className="modal-dialog modal-xl modal-dialog-centered">
         <div className="modal-content">

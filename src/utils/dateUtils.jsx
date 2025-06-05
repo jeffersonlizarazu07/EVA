@@ -40,26 +40,28 @@ export const formatDateTime = (dateString) => {
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
 
-// Función para formato más corto (sin segundos) - ideal para mostrar "Última Actualización"
-export const formatDateTimeShort = (dateString) => {
+export const formatDateTimeShort = (dateString = new Date()) => {
+  // Si se pasa new Date() o una fecha actual, convertirla a string primero
+  if (dateString instanceof Date) {
+    dateString = dateString.toISOString();
+  }
+  
   if (!dateString || dateString === "No actualizada" || dateString === "NULL") {
     return "Sin actualizar";
   }
-
+  
   const date = new Date(dateString);
   if (isNaN(date.getTime())) {
     return "Sin actualizar";
   }
-
-  const utcMinus5 = new Date(date.getTime() - 5 * 60 * 60 * 1000);
   
-  const day = ("0" + utcMinus5.getDate()).slice(-2);
-  const month = ("0" + (utcMinus5.getMonth() + 1)).slice(-2);
-  const year = utcMinus5.getFullYear();
-  const hours = ("0" + utcMinus5.getHours()).slice(-2);
-  const minutes = ("0" + utcMinus5.getMinutes()).slice(-2);
-  const seconds = ("0" + utcMinus5.getSeconds()).slice(-2);
-
+  const day = ("0" + date.getDate()).slice(-2);
+  const month = ("0" + (date.getMonth() + 1)).slice(-2);
+  const year = date.getFullYear();
+  const hours = ("0" + date.getHours()).slice(-2);
+  const minutes = ("0" + date.getMinutes()).slice(-2);
+  const seconds = ("0" + date.getSeconds()).slice(-2);
+  
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
 

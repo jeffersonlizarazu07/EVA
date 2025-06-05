@@ -378,7 +378,6 @@ export default function SurveyBlocks({}) {
         console.log(
           "Preguntas formateadas para edición:",
           preguntasFormateadas
-          
         );
 
         // Aplicar migración y establecer la lista de preguntas
@@ -653,7 +652,11 @@ export default function SurveyBlocks({}) {
             console.log("user:", user);
             console.log("userId:", userId);
 
-            await updateFormMetadata(id_form, userId); // Actualizar metadatos del formulario
+            // Actualizar metadatos del formulario
+            const updatedForm = await updateFormMetadata(id_form, userId);
+            if (updatedForm) {
+              setFormData(updatedForm); // 👈 Esto actualizará la fecha en tu UI
+            }
             await fetchFormData();
 
             await loadBlocks(); // Cargar bloques después de editar uno existente
@@ -962,60 +965,60 @@ export default function SurveyBlocks({}) {
   // };
 
   const areAllFieldsCompleted = () => {
-  return operation === 2 ? validateEditMode() : validateCreateMode();
-};
+    return operation === 2 ? validateEditMode() : validateCreateMode();
+  };
 
   const validateEditMode = () => {
-  const basicBlocksInputs =
-    nombreInput.input.trim() !== "" &&
-    ponderacionInput.input.trim() !== "" &&
-    posicionInput.input.trim() !== "";
+    const basicBlocksInputs =
+      nombreInput.input.trim() !== "" &&
+      ponderacionInput.input.trim() !== "" &&
+      posicionInput.input.trim() !== "";
 
-  if (questionsList.length === 0) return false;
+    if (questionsList.length === 0) return false;
 
-  const allQuestionsValid = questionsList.every((question) => {
-    if (!question.text || question.text.trim() === "") return false;
-    if (!question.type || question.type.trim() === "") return false;
+    const allQuestionsValid = questionsList.every((question) => {
+      if (!question.text || question.text.trim() === "") return false;
+      if (!question.type || question.type.trim() === "") return false;
 
-    if (question.type === "selector_opt") {
-      return question.selectorOptions && question.selectorOptions.length > 0;
-    }
+      if (question.type === "selector_opt") {
+        return question.selectorOptions && question.selectorOptions.length > 0;
+      }
 
-    if (question.type === "check_opt") {
-      return question.checkboxOptions && question.checkboxOptions.length > 0;
-    }
+      if (question.type === "check_opt") {
+        return question.checkboxOptions && question.checkboxOptions.length > 0;
+      }
 
-    return true;
-  });
+      return true;
+    });
 
-  return basicBlocksInputs && allQuestionsValid;
-};
+    return basicBlocksInputs && allQuestionsValid;
+  };
 
-const validateCreateMode = () => {
-  const basicBlocksInputs =
-    nombreInput.input.trim() !== "" &&
-    ponderacionInput.input.trim() !== "" &&
-    posicionInput.input.trim() !== "";
+  const validateCreateMode = () => {
+    const basicBlocksInputs =
+      nombreInput.input.trim() !== "" &&
+      ponderacionInput.input.trim() !== "" &&
+      posicionInput.input.trim() !== "";
 
-  if (questionsList.length === 0) return false;
+    if (questionsList.length === 0) return false;
 
-  const allQuestionsValid = questionsList.every((question) => {
-    if (!question.text || question.text.trim() === "") return false;
-    if (!question.type || question.type.trim() === "") return false;
+    const allQuestionsValid = questionsList.every((question) => {
+      if (!question.text || question.text.trim() === "") return false;
+      if (!question.type || question.type.trim() === "") return false;
 
-    if (question.type === "selector_opt") {
-      return question.selectorOptions && question.selectorOptions.length > 0;
-    }
+      if (question.type === "selector_opt") {
+        return question.selectorOptions && question.selectorOptions.length > 0;
+      }
 
-    if (question.type === "check_opt") {
-      return question.checkboxOptions && question.checkboxOptions.length > 0;
-    }
+      if (question.type === "check_opt") {
+        return question.checkboxOptions && question.checkboxOptions.length > 0;
+      }
 
-    return true;
-  });
+      return true;
+    });
 
-  return basicBlocksInputs && allQuestionsValid;
-};
+    return basicBlocksInputs && allQuestionsValid;
+  };
 
   const resetFormFields = () => {
     nombreInput.handleChange("");
