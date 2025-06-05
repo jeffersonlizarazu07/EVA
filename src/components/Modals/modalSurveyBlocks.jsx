@@ -7,6 +7,7 @@ import {
   SingleChoiceQuestionEdit,
   SelectorQuestion,
   SelectorQuestionEdit,
+  MultipleChoiceQuestionEditWrapper
 } from "../../pages/survey/singleChoiceQuestion";
 
 import {
@@ -51,6 +52,20 @@ const ModalSurveyBlocks = ({
   migrateQuestionData,
   setPositionType,
 }) => {
+  console.log("=== DEBUG MODAL DATOS ===");
+  questionsList.forEach((q, index) => {
+    if (q.type === "check_opt") {
+      console.log(`Pregunta ${index}:`, {
+        text: q.text,
+        type: q.type,
+        checkboxOptions: q.checkboxOptions,
+        checkboxCorrectAnswers: q.checkboxCorrectAnswers,
+        selected_answer: q.selected_answer,
+        options: q.options,
+      });
+    }
+  });
+
   return (
     <div
       className="modal fade"
@@ -265,8 +280,8 @@ const ModalSurveyBlocks = ({
                             // Actualizar el tipo
                             handleInputChange(index, "type", newType);
 
-                            // Si cambió el tipo, limpiar datos del tipo anterior
-                            if (newType !== oldType) {
+                            // Solo limpiar datos si esta en modo creación Y el tipo cambió
+                            if (operation === 1 && newType !== oldType) {
                               // Limpiar todos los datos específicos de tipo
                               handleInputChange(index, "selectorOptions", []);
                               handleInputChange(
@@ -281,8 +296,6 @@ const ModalSurveyBlocks = ({
                                 []
                               );
                               handleInputChange(index, "textfieldValue", "");
-                              handleInputChange(index, "yesNoValue", "");
-                              handleInputChange(index, "type", e.target.value);
                             }
                           }}
                         >
@@ -338,7 +351,9 @@ const ModalSurveyBlocks = ({
                             <SelectorQuestionEdit
                               options={q.selectorOptions || q.options || []}
                               selectedOption={
-                                q.selectorSelectedOption || q.selected_answer
+                                q.selectorSelectedOption ||
+                                q.selected_answer ||
+                                ""
                               }
                               onChange={(data) => {
                                 handleInputChange(
@@ -351,19 +366,6 @@ const ModalSurveyBlocks = ({
                                   "selectorSelectedOption",
                                   data.selectedOption
                                 );
-                                // Limpiar datos de otros tipos si cambiaron
-                                if (q.type !== "selector_opt") {
-                                  handleInputChange(
-                                    index,
-                                    "checkboxOptions",
-                                    []
-                                  );
-                                  handleInputChange(
-                                    index,
-                                    "checkboxCorrectAnswers",
-                                    []
-                                  );
-                                }
                               }}
                             />
                             {/* Vista de respuesta seleccionada */}
@@ -388,79 +390,24 @@ const ModalSurveyBlocks = ({
                         {/* Checkbox */}
                         {q.type === "check_opt" && (
                           <div>
-                            <MultipleChoiceQuestionEdit
-                              key={`selector-${index}-${idToEdit}`} // forzar rerender al cambiar bloque
-                              options={(q.checkboxOptions || []).map((opt) =>
-                                typeof opt === "object" ? opt.text : opt
-                              )}
-                              correctAnswers={
-                                Array.isArray(q.checkboxCorrectAnswers)
-                                  ? q.checkboxCorrectAnswers
-                                  : q.selected_answer?.split(",") || []
-                              }
-                              idToEdit={idToEdit}
+                            <MultipleChoiceQuestionEditWrapper
+                              options={q.checkboxOptions || q.options || []}
+                              correctAnswers={q.checkboxCorrectAnswers || []}
+                              idToEdit={q.id}
                               onChange={(data) => {
                                 handleInputChange(
                                   index,
                                   "checkboxOptions",
-                                  data.options.map((opt) =>
-                                    typeof opt === "string"
-                                      ? { text: opt }
-                                      : opt
-                                  )
+                                  data.options
                                 );
                                 handleInputChange(
                                   index,
                                   "checkboxCorrectAnswers",
                                   data.correctAnswers
                                 );
-                                // Limpiar datos de otros tipos
-                                if (q.type !== "check_opt") {
-                                  handleInputChange(
-                                    index,
-                                    "selectorOptions",
-                                    []
-                                  );
-                                  handleInputChange(
-                                    index,
-                                    "selectorSelectedOption",
-                                    ""
-                                  );
-                                }
                               }}
                             />
-                            {/* Vista de respuestas correctas */}
-                            {q.checkboxCorrectAnswers &&
-                              q.checkboxCorrectAnswers.length > 0 && (
-                                <div className="mt-3 p-3 bg-light border rounded">
-                                  <h6 className="text-muted mb-2">
-                                    Respuestas correctas:
-                                  </h6>
-                                  <div className="d-flex flex-wrap gap-2">
-                                    {q.checkboxCorrectAnswers.map(
-                                      (answerIndex, idx) => (
-                                        <div
-                                          key={idx}
-                                          className="alert alert-success py-2 px-3 mb-0 small"
-                                        >
-                                          <i className="fa-solid fa-check me-2"></i>
-                                          <strong>
-                                            {q.checkboxOptions &&
-                                            q.checkboxOptions[answerIndex]
-                                              ? typeof q.checkboxOptions[
-                                                  answerIndex
-                                                ] === "object"
-                                                ? q.checkboxOptions[answerIndex]
-                                                    .text
-                                                : q.checkboxOptions[answerIndex]
-                                              : `Opción ${answerIndex + 1}`}
-                                          </strong>
-                                        </div>
-                                      )
-                                    )}
-                                  </div>
-                                </div>
-                              )}
+                            
                           </div>
                         )}
 
@@ -473,19 +420,6 @@ const ModalSurveyBlocks = ({
                               }
                               onChange={(val) => {
                                 handleInputChange(index, "textfieldValue", val);
-                                // Limpiar datos de otros tipos
-                                handleInputChange(index, "selectorOptions", []);
-                                handleInputChange(
-                                  index,
-                                  "selectorSelectedOption",
-                                  ""
-                                );
-                                handleInputChange(index, "checkboxOptions", []);
-                                handleInputChange(
-                                  index,
-                                  "checkboxCorrectAnswers",
-                                  []
-                                );
                               }}
                             />
                             {/* Vista de respuesta */}
@@ -497,58 +431,6 @@ const ModalSurveyBlocks = ({
                                 <div className="alert alert-info mb-0">
                                   <i className="fa-solid fa-edit me-2"></i>
                                   {q.textfieldValue || q.selected_answer}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Sí / No */}
-                        {q.type === "yes_no" && (
-                          <div>
-                            <Yes_no
-                              value={q.yesNoValue || q.selected_answer || ""}
-                              onChange={(val) => {
-                                handleInputChange(index, "yesNoValue", val);
-                                // Limpiar datos de otros tipos
-                                handleInputChange(index, "selectorOptions", []);
-                                handleInputChange(
-                                  index,
-                                  "selectorSelectedOption",
-                                  ""
-                                );
-                                handleInputChange(index, "checkboxOptions", []);
-                                handleInputChange(
-                                  index,
-                                  "checkboxCorrectAnswers",
-                                  []
-                                );
-                              }}
-                            />
-                            {/* Vista de respuesta */}
-                            {(q.yesNoValue || q.selected_answer) && (
-                              <div className="mt-3 p-3 bg-light border rounded">
-                                <h6 className="text-muted mb-2">
-                                  Respuesta seleccionada:
-                                </h6>
-                                <div
-                                  className={`alert mb-0 ${
-                                    (q.yesNoValue || q.selected_answer) === "Sí"
-                                      ? "alert-success"
-                                      : "alert-danger"
-                                  }`}
-                                >
-                                  <i
-                                    className={`fa-solid ${
-                                      (q.yesNoValue || q.selected_answer) ===
-                                      "Sí"
-                                        ? "fa-thumbs-up"
-                                        : "fa-thumbs-down"
-                                    } me-2`}
-                                  ></i>
-                                  <strong>
-                                    {q.yesNoValue || q.selected_answer}
-                                  </strong>
                                 </div>
                               </div>
                             )}

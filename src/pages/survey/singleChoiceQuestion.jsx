@@ -327,6 +327,131 @@ function MultipleChoiceQuestionEdit({
   );
 }
 
+function MultipleChoiceQuestionEditWrapper({
+  options,
+  correctAnswers,
+  idToEdit,
+  onChange,
+}) {
+    console.log('=== WRAPPER PROPS ===');
+  console.log('options:', options);
+  console.log('correctAnswers:', correctAnswers);
+  const [localOptions, setLocalOptions] = useState([]);
+  const [localCorrectAnswers, setLocalCorrectAnswers] = useState([]);
+
+  // Inicializar una sola vez con los datos correctos
+  useEffect(() => {
+      console.log('=== PROCESSING OPTIONS ===');
+    console.log('options recibidas:', options);
+    if (options && options.length > 0) {
+      // Si las opciones ya vienen con estructura {text, checked}
+      if (typeof options[0] === 'object' && options[0].hasOwnProperty('text')) {
+        console.log('Opciones son objetos:', options);
+        setLocalOptions(options);
+        const correctIndexes = options
+          .map((opt, idx) => opt.checked ? idx : -1)
+          .filter(idx => idx !== -1);
+        setLocalCorrectAnswers(correctIndexes);
+      } else {
+        console.log('Opciones son strings:', options);
+        // Si las opciones son strings simples, convertir
+        const processedOptions = options.map((opt, idx) => ({
+          text: typeof opt === 'string' ? opt : opt.text || '',
+          checked: correctAnswers.includes(idx)
+        }));
+        console.log('Opciones procesadas:', processedOptions);
+        setLocalOptions(processedOptions);
+        setLocalCorrectAnswers(correctAnswers || []);
+      }
+    }
+  }, [options, correctAnswers]); // Solo cuando cambien las props iniciales
+
+  const addOption = () => {
+    const newOptions = [...localOptions, { text: "", checked: false }];
+    setLocalOptions(newOptions);
+    onChange({ options: newOptions, correctAnswers: localCorrectAnswers });
+  };
+
+  const handleOptionChange = (index, value) => {
+    const newOptions = [...localOptions];
+    newOptions[index].text = value;
+    setLocalOptions(newOptions);
+    onChange({ options: newOptions, correctAnswers: localCorrectAnswers });
+  };
+
+  const handleCheckboxChange = (index) => {
+    const newOptions = [...localOptions];
+    newOptions[index].checked = !newOptions[index].checked;
+    setLocalOptions(newOptions);
+
+    const newCorrectAnswers = newOptions
+      .map((option, i) => (option.checked ? i : -1))
+      .filter((index) => index !== -1);
+
+    setLocalCorrectAnswers(newCorrectAnswers);
+    onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
+  };
+
+  const removeOption = (index) => {
+    const newOptions = localOptions.filter((_, i) => i !== index);
+    setLocalOptions(newOptions);
+
+    const newCorrectAnswers = newOptions
+      .map((option, i) => (option.checked ? i : -1))
+      .filter((index) => index !== -1);
+
+    setLocalCorrectAnswers(newCorrectAnswers);
+    onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
+  };
+   console.log('=== RENDER ===');
+  console.log('localOptions:', localOptions);
+
+  return (
+    <div>
+      {localOptions.map((option, index) => (
+        <div
+          key={index}
+          className="row mx-2 form-group align-items-stretch d-flex"
+        >
+          <div className="col-1 p-1 mb-7">
+            <input
+              type="checkbox"
+              checked={option.checked || false}
+              onChange={() => handleCheckboxChange(index)}
+              className="form-check-input"
+              style={{ width: "100%", height: "50%" }}
+            />
+          </div>
+          <div className="col mt-2">
+            <label id="labelAnimation">
+              <input
+                type="text"
+                value={option.text || ''}
+                onChange={(e) => handleOptionChange(index, e.target.value)}
+                placeholder=" "
+                className="input-new"
+              />
+              <span className="labelName">Opción de respuesta</span>
+            </label>
+          </div>
+          <div className="col-1 me-2">
+            <button
+              onClick={() => removeOption(index)}
+              className="btn btn-rect"
+            >
+              <i className="fa-solid fa-delete-left"></i>
+            </button>
+          </div>
+        </div>
+      ))}
+      <button onClick={addOption} className="btn btn-primary m-2">
+        + opción
+      </button>
+      <div>Respuestas correctas: {localCorrectAnswers.join(", ")}</div>
+    </div>
+  );
+}
+
 function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
   const [localOptions, setLocalOptions] = useState(options);
   const [localCorrectAnswers, setLocalCorrectAnswers] =
@@ -715,4 +840,5 @@ export {
   SingleChoiceQuestionEdit,
   SelectorQuestion,
   SelectorQuestionEdit,
+  MultipleChoiceQuestionEditWrapper
 };
