@@ -7,7 +7,7 @@ import {
   SingleChoiceQuestionEdit,
   SelectorQuestion,
   SelectorQuestionEdit,
-  MultipleChoiceQuestionEditWrapper
+  MultipleChoiceQuestionEditWrapper,
 } from "../../pages/survey/singleChoiceQuestion";
 
 import {
@@ -52,20 +52,6 @@ const ModalSurveyBlocks = ({
   migrateQuestionData,
   setPositionType,
 }) => {
-  console.log("=== DEBUG MODAL DATOS ===");
-  questionsList.forEach((q, index) => {
-    if (q.type === "check_opt") {
-      console.log(`Pregunta ${index}:`, {
-        text: q.text,
-        type: q.type,
-        checkboxOptions: q.checkboxOptions,
-        checkboxCorrectAnswers: q.checkboxCorrectAnswers,
-        selected_answer: q.selected_answer,
-        options: q.options,
-      });
-    }
-  });
-
   return (
     <div
       className="modal fade"
@@ -109,27 +95,68 @@ const ModalSurveyBlocks = ({
                 </div>
 
                 <div className="form-group m-2 mt-2 mb-4">
-                  <label id="labelAnimation" htmlFor="question">
+                  <label id="labelAnimation" htmlFor="ponderacion">
                     <input
                       type="number"
-                      name="question"
-                      id="question"
+                      name="ponderacion"
+                      id="ponderacion"
                       className="input-new"
                       placeholder=" "
                       value={ponderacionInput.input}
-                      onChange={(e) =>
-                        ponderacionInput.handleChange(e.target.value)
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Permitir campo vacío para poder escribir
+                        if (value === "") {
+                          ponderacionInput.handleChange(value);
+                          return;
+                        }
+
+                        const numValue = parseFloat(value);
+                        // Solo actualizar si está en el rango válido
+                        if (
+                          !isNaN(numValue) &&
+                          numValue >= 0 &&
+                          numValue <= 100
+                        ) {
+                          ponderacionInput.handleChange(value);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        const invalidKeys = ["e", "E", "+", "-"];
+
+                        if (invalidKeys.includes(e.key)) {
+                          e.preventDefault();
+                          return;
+                        }
+                        // Prevenir entrada de más de 3 caracteres (considerando el punto decimal)
+                        if (
+                          e.target.value.length >= 3 &&
+                          e.key !== "Backspace" &&
+                          e.key !== "Delete" &&
+                          e.key !== "Tab"
+                        ) {
+                          // Permitir punto decimal si no existe
+                          if (e.key === "." && !e.target.value.includes(".")) {
+                            return;
+                          }
+                          e.preventDefault();
+                        }
+                      }}
+                      min="0"
+                      max="100"
                       required
                     />
-                    <span className="labelName">Ponderación</span>
+                    <span className="labelName">
+                      Ponderación <span style={{ color: "#dc3545" }}>*</span>
+                      <small style={{ color: "#6c757d" }}> (0-100)</small>
+                    </span>
                   </label>
                 </div>
 
                 <div className="form-group m-2 mt-2 mb-4">
                   <label id="labelAnimation" htmlFor="question">
                     <input
-                      type="text"
+                      type="number"
                       name="question"
                       id="question"
                       className="input-new"
@@ -324,11 +351,13 @@ const ModalSurveyBlocks = ({
                       <div className="mt-2 mb-2">
                         {q.type === "textfield_s" && <Textfield_s />}
 
-                        <SingleChoiceQuestion
-                          options={singleChoiceData.options}
-                          correctOption={singleChoiceData.correctAnswer}
-                          onChange={handleSingleChoiceChange}
-                        />
+                        {q.type === "single_opt" && (
+                          <SingleChoiceQuestion
+                            options={singleChoiceData.options}
+                            correctOption={singleChoiceData.correctAnswer}
+                            onChange={handleSingleChoiceChange}
+                          />
+                        )}
 
                         {q.type === "check_opt" && (
                           <MultipleChoiceQuestion
@@ -408,7 +437,6 @@ const ModalSurveyBlocks = ({
                                 );
                               }}
                             />
-                            
                           </div>
                         )}
 
