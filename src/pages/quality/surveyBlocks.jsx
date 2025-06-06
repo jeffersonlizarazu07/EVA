@@ -18,14 +18,6 @@ import {
   getSurvey,
   getSurveyQuestions,
 } from "../../services/surveyRequest";
-import {
-  SingleChoiceQuestion,
-  MultipleChoiceQuestion,
-  MultipleChoiceQuestionEdit,
-  SingleChoiceQuestionEdit,
-  SelectorQuestion,
-  SelectorQuestionEdit,
-} from "../../pages/survey/singleChoiceQuestion";
 import "../../assets/css/survey.css";
 import {
   Yes_no,
@@ -56,6 +48,7 @@ import { formatDateTimeShort } from "../../utils/dateUtils";
 
 export default function SurveyBlocks({}) {
   const { id_form } = useParams();
+  const { userId } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const [data, setData] = useState([]);
   const [operation, setOperation] = useState(1);
@@ -164,11 +157,9 @@ export default function SurveyBlocks({}) {
   /* Component Logic*/
   /* ***********************************************************************************************************/
 
-  // useEffect(() => {
-  //   i18n.changeLanguage(languageUser);
-  //   getSurveyBlocks(id_form, config, setSurveyBlocks);
-  //   updateSurveyQuestions();
-  // }, [id_form, languageUser]);
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, [languageUser]);
 
   const fetchFormData = async () => {
     setLoading(true);
@@ -195,7 +186,6 @@ export default function SurveyBlocks({}) {
   useEffect(() => {
     if (Array.isArray(data)) {
       setStaticData([...data]);
-      console.log("Static data actualizado", data);
     } else {
       console.warn("La variable 'data' no es un array:", data);
       setStaticData([]); // opcionalmente deja un arreglo vacío
@@ -235,8 +225,9 @@ export default function SurveyBlocks({}) {
 
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
+
     if (op === 1) {
-      resetFormFields(); // Limpia todo el estado base
+      resetFormFields();
       setTitle("Crear Bloque");
       setDescriptionText("");
       description.handleChange("");
@@ -248,18 +239,15 @@ export default function SurveyBlocks({}) {
       id_conditional.handleChange(0);
       conditional_answer.handleChange("NO");
       survey_id.handleChange(idsurvey);
-      // Limpia inputs adicionales
-      setQuestionCountInput(""); // limpia el input de cantidad de preguntas
-      setSelectorData({ options: [], selectedOption: null }); // limpia selectores
+      setQuestionCountInput("");
+      setSelectorData({ options: [], selectedOption: null });
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
-      setSelectorData({ options: [], selectedOption: null });
       setQuestionsList([
         { text: "", type: "", options: [], correctAnswers: [] },
       ]);
       setHasValidQuestions(false);
     } else if (op === 2) {
-      console.log({ questionDetails });
       setTitle("Editar bloque");
 
       // Cargar datos básicos del bloque
@@ -289,57 +277,124 @@ export default function SurveyBlocks({}) {
         setIsChecked(false);
       }
 
-      // Formatear preguntas individuales
+      // Formatear preguntas individuales con mapeo mejorado
       if (
         questionDetails.preguntas &&
         Array.isArray(questionDetails.preguntas)
       ) {
-        const preguntasFormateadas = questionDetails.preguntas.map((p) => ({
-          text: p.text || p.question_name || "",
-          type: p.type || "",
-          options:
-            p.options ||
-            (p.select_option
-              ? p.select_option.split(",").map((o) => o.trim())
-              : []
-            ).map((opt) =>
-              typeof opt === "string" ? { text: opt } : { ...opt }
-            ),
-          correctAnswers: Array.isArray(p.correctAnswers)
-            ? p.correctAnswers
-            : p.selected_answer?.split(",") || [],
-          correctAnswer: p.correctAnswer || p.selected_answer || "",
-          selected_answer: p.selected_answer || "",
-          conditional: p.conditional || "NO",
-        }));
+        const preguntasFormateadas = questionDetails.preguntas.map((p) => {
+          const typeMap = {
+            1: "check_opt",
+            2: "selector_opt",
+            3: "textfield_s",
+          };
 
-        setQuestionsList(preguntasFormateadas);
+          const tipo = p.type || typeMap[p.id_type_question] || "";
+
+          const preguntaBase = {
+            text: p.text || p.question_name || "",
+            type: tipo,
+            conditional: p.conditional || "NO",
+          };
+
+          // Mapear datos específicos según el tipo de pregunta
+          switch (tipo) {
+            case "selector_opt":
+              // Para selector - opciones y respuesta seleccionada
+              const selectorOptions = p.select_option
+                ? p.select_option.split(",").map((o) => o.trim())
+                : [];
+
+              preguntaBase.selectorOptions = selectorOptions;
+              preguntaBase.selectorSelectedOption = p.selected_answer || "";
+              preguntaBase.options = selectorOptions;
+
+              // Actualizar el estado del selector
+              setSelectorData({
+                options: selectorOptions,
+                selectedOption: p.selected_answer || "",
+              });
+              break;
+
+            case "check_opt":
+              const checkboxOptions = p.select_option
+                ? p.select_option
+                    .split(",")
+                    .map((o) => ({ text: o.trim(), checked: false }))
+                : [];
+
+              const selectedAnswers = (p.selected_answer || "")
+                .split(",")
+                .map((s) => s.trim())
+                .filter((s) => s !== "");
+
+              const checkboxCorrectAnswers = [];
+
+              selectedAnswers.forEach((ans) => {
+                const idx = checkboxOptions.findIndex(
+                  (opt) => opt.text === ans
+                );
+                if (idx >= 0) {
+                  checkboxCorrectAnswers.push(idx);
+                  checkboxOptions[idx].checked = true;
+                }
+              });
+
+              preguntaBase.checkboxOptions = checkboxOptions;
+              preguntaBase.checkboxCorrectAnswers = checkboxCorrectAnswers;
+
+              preguntaBase.options = checkboxOptions.map((opt) => opt.text);
+
+              // IMPORTANTE: Actualizar el estado del checkbox múltiple
+              setMultipleChoiceData({
+                options: checkboxOptions,
+                correctAnswers: checkboxCorrectAnswers,
+              });
+              break;
+
+            case "textfield_s":
+              preguntaBase.textfieldValue = p.selected_answer || "";
+
+              // IMPORTANTE: Actualizar el estado del campo de texto
+              setTextFieldAnswer(p.selected_answer || "");
+              break;
+
+            default:
+              preguntaBase.options = p.options || [];
+              preguntaBase.selected_answer = p.selected_answer || "";
+              break;
+          }
+
+          return preguntaBase;
+        });
+
+        // Aplicar migración y establecer la lista de preguntas
+        const preguntasMigradas = preguntasFormateadas.map(migrateQuestionData);
+        setQuestionsList(preguntasMigradas);
+
+        // Actualizar el contador de preguntas
+        setQuestionCountInput(preguntasFormateadas.length.toString());
+
+        // IMPORTANTE: Actualizar estados específicos para cada tipo de pregunta
+        updateQuestionStatesForEdit(preguntasFormateadas);
+      } else {
+        setQuestionsList([
+          { text: "", type: "", options: [], correctAnswers: [] },
+        ]);
+        setQuestionCountInput("1");
       }
 
       setidToEdit(questionDetails.id);
     }
-
-    const posiciones = data.map((bloque) =>
-      parseInt(bloque.block_location || bloque.posicion || 0)
-    );
-    const nuevaPosicion =
-      posiciones.length > 0 ? Math.max(...posiciones) + 1 : 1;
-
-    if (op === 1) {
-      posicionInput.handleChange(nuevaPosicion.toString());
-    }
   };
-
   const validar = async (idToEdit, id_form) => {
     try {
       setError("");
       setLoading(true);
 
-      console.log("questionsList para actualizar:", questionsList);
-
       // Preparar preguntas con respuestas/selecciones integradas
       const typeMap = {
-        radio_opt: 1,
+        check_opt: 1,
         selector_opt: 2,
         textfield_s: 3,
       };
@@ -348,32 +403,72 @@ export default function SurveyBlocks({}) {
         let select_option = "";
         let selected_answer = "";
 
+        const safeString = (value) => {
+          if (value === null || value === undefined) return "";
+          if (typeof value === "string") return value;
+          if (typeof value === "object") {
+            return value.text || value.label || value.value || "";
+          }
+          return String(value);
+        };
+
         // Procesa opciones y respuestas según tipo de pregunta
         if (
-          q.type === "radio_opt" ||
+          q.type === "check_opt" ||
           q.type === "selector_opt" ||
           q.type === "textfield_s"
         ) {
-          select_option = Array.isArray(q.options)
-            ? q.options
-                .map((opt) => (typeof opt === "object" ? opt.text : opt))
-                .join(",")
-            : "";
+          if (q.type === "check_opt") {
+            // ARREGLO: Verificar que checkboxOptions existe y es array
+            if (Array.isArray(q.checkboxOptions)) {
+              const validOptions = q.checkboxOptions
+                .map(safeString)
+                .filter(
+                  (text) =>
+                    text && typeof text === "string" && text.trim() !== ""
+                );
+              select_option = validOptions.join(",");
+            }
 
-          selected_answer =
-            q.selected_answer ||
-            (Array.isArray(q.correctAnswers)
-              ? q.correctAnswers.join(",")
-              : q.correctAnswer) ||
-            "";
-        } else if (q.type === "textfield_s") {
-          select_option = "";
-          selected_answer = q.selected_answer || "";
+            // Manejar respuestas correctas
+            if (
+              Array.isArray(q.checkboxCorrectAnswers) &&
+              Array.isArray(q.checkboxOptions)
+            ) {
+              const validAnswers = q.checkboxCorrectAnswers
+                .map((i) => {
+                  const option = q.checkboxOptions?.[i];
+                  return safeString(option);
+                })
+                .filter(
+                  (text) =>
+                    text && typeof text === "string" && text.trim() !== ""
+                );
+              selected_answer = validAnswers.join(",");
+            } else {
+              selected_answer = safeString(q.checkboxCorrectAnswers);
+            }
+          } else if (q.type === "selector_opt") {
+            // ARREGLO: Usar la misma lógica segura para selector
+            if (Array.isArray(q.selectorOptions)) {
+              const validOptions = q.selectorOptions
+                .map(safeString)
+                .filter(
+                  (text) =>
+                    text && typeof text === "string" && text.trim() !== ""
+                );
+              select_option = validOptions.join(",");
+            }
+            selected_answer = safeString(q.selectorSelectedOption);
+          } else if (q.type === "textfield_s") {
+            select_option = "";
+            selected_answer = safeString(q.textfieldValue);
+          }
         }
 
         return {
           question_name: q.text || q.question || "Sin texto",
-          id_type_question: q.type,
+          id_type_question: q.type || typeMap[q.type] || null,
           select_option,
           selected_answer,
           conditional: q.conditional || "NO",
@@ -391,7 +486,7 @@ export default function SurveyBlocks({}) {
           form_id: id_form,
           nombreBloque: nombreInput.input,
           ponderacion: parseInt(ponderacionInput.input || 0),
-          position: newPositionBlock || 0,
+          position: newPositionBlock || 0 || "",
         };
 
         try {
@@ -421,11 +516,29 @@ export default function SurveyBlocks({}) {
                     continue;
                   }
 
+                  for (let i = 0; i < preguntas.length; i++) {
+                    const pregunta = preguntas[i];
+                    const question_id = questionIds[i]; // IDs que devuelve createQuestionsForBlock
+
+                    const respuesta =
+                      pregunta.selected_answer ||
+                      pregunta.selectorSelectedOption ||
+                      pregunta.textfieldValue ||
+                      ""; // Para tipo texto o seleccionador
+
+                    if (respuesta.trim() !== "") {
+                      await AnswersFormService.createAnswer({
+                        question_id,
+                        answer_question: respuesta,
+                      });
+                    }
+                  }
+
                   // Acceder a la respuesta correcta según el tipo de pregunta
                   let answer = "";
 
                   if (
-                    question.type === "radio_opt" ||
+                    question.type === "check_opt" ||
                     question.type === "selector_opt"
                   ) {
                     answer = question.selected_answer || "";
@@ -448,12 +561,10 @@ export default function SurveyBlocks({}) {
                     }
                   }
                 }
-                console.log("📤 Preguntas a guardar:", refillQuestions);
 
                 // Actualizar el bloque con las preguntas vinculadas
                 const updatedBlocks = await getBlocksByFormId(id_form);
                 setData(updatedBlocks.data.data);
-                console.log("Bloques actualizados:", updatedBlocks.data.data);
               }
             }
 
@@ -502,11 +613,14 @@ export default function SurveyBlocks({}) {
           if (response.status === 200) {
             // Actualizar preguntas si existen
             if (refillQuestions.length > 0) {
-              console.log("Actualizando preguntas del bloque...");
               await updateQuestions(idToEdit, refillQuestions);
             }
 
-            await updateFormMetadata(id_form, user?.id); // Actualizar metadatos del formulario
+            // Actualizar metadatos del formulario
+            const updatedForm = await updateFormMetadata(id_form, userId);
+            if (updatedForm) {
+              setFormData(updatedForm); // 👈 Esto actualizará la fecha en tu UI
+            }
             await fetchFormData();
 
             await loadBlocks(); // Cargar bloques después de editar uno existente
@@ -543,17 +657,41 @@ export default function SurveyBlocks({}) {
     }
   };
 
+  const updateQuestionStatesForEdit = (preguntas) => {
+    preguntas.forEach((pregunta, index) => {
+      switch (pregunta.type) {
+        case "selector_opt":
+          if (pregunta.selectorOptions && pregunta.selectorOptions.length > 0) {
+            setSelectorData({
+              options: pregunta.selectorOptions,
+              selectedOption: pregunta.selectorSelectedOption || "",
+            });
+          }
+          break;
+
+        case "check_opt":
+          if (pregunta.checkboxOptions && pregunta.checkboxOptions.length > 0) {
+            setMultipleChoiceData({
+              options: pregunta.checkboxOptions,
+              correctAnswers: pregunta.checkboxCorrectAnswers || [],
+            });
+          }
+          break;
+
+        case "textfield_s":
+          setTextFieldAnswer(pregunta.textfieldValue || "");
+          break;
+      }
+    });
+  };
+
   // Actualiza las preguntas de un bloque específico
   const updateQuestionsForBlock = async (blockId, preguntas) => {
     try {
-      console.log("Actualizando preguntas para bloque:", blockId);
-      console.log("Preguntas a actualizar:", preguntas);
-
       // Llamar al servicio de actualización de preguntas
       const response = await updateQuestions(blockId, preguntas);
 
       if (response.status === 200) {
-        console.log("Preguntas actualizadas exitosamente");
         return { success: true };
       }
     } catch (error) {
@@ -564,7 +702,6 @@ export default function SurveyBlocks({}) {
 
   const handleSingleChoiceChange = (updatedData) => {
     setSingleChoiceData(updatedData);
-    console.log("updated Data:", singleChoiceData.correctAnswer);
   };
 
   const handleMultipleChoiceChange = (data) => {
@@ -575,46 +712,58 @@ export default function SurveyBlocks({}) {
         : [],
     });
   };
-
-  const handleSelectConditionalQuestionChange = (e) => {
-    const selectedId = e.target.value; // Captura el value (question.id)
-    const selectedType = e.target.selectedOptions[0].getAttribute("data-type");
-    const selectedAnswers =
-      e.target.selectedOptions[0].getAttribute("data-answers"); // Convertimos de vuelta a un array u objeto
-    setSelectedRangeType({
-      questionTypeRange: selectedType,
-      answersRange: selectedAnswers,
-    });
-    id_conditional.handleChange(selectedId);
-  };
-
   const migrateQuestionData = (question) => {
-    // Si ya tiene datos específicos por tipo, no migrar
-    if (
-      question.selectorOptions ||
-      question.radioOptions ||
-      question.checkboxOptions
-    ) {
-      return question;
-    }
-
-    // Migrar datos según el tipo actual
     const migrated = { ...question };
 
-    if (question.type === "selector_opt" && question.options) {
-      migrated.selectorOptions = question.options;
-      migrated.selectorSelectedOption = question.selected_answer;
-    } else if (question.type === "radio_opt" && question.options) {
-      migrated.radioOptions = question.options;
-      migrated.radioCorrectAnswer = question.correctAnswer;
-    // } else if (question.type === "check_opt" && question.options) {
-    //   migrated.checkboxOptions = question.options;
-    //   migrated.checkboxCorrectAnswers = question.correctAnswers;
-    } else if (question.type === "textfield_s") {
-      migrated.textfieldValue = question.selected_answer;
-    } //else if (question.type === "yes_no") {
-    //   migrated.yesNoValue = question.selected_answer;
-    // }
+    // Ya migrado
+    if (
+      migrated.selectorOptions ||
+      migrated.checkboxOptions ||
+      migrated.textfieldValue ||
+      migrated.yesNoValue
+    ) {
+      return migrated;
+    }
+
+    // Selector
+    if (migrated.type === "selector_opt" && migrated.options) {
+      migrated.selectorOptions = migrated.options;
+      migrated.selectorSelectedOption = migrated.selected_answer || "";
+    }
+
+    // Selección múltiple
+    if (migrated.type === "check_opt" && migrated.options) {
+      migrated.checkboxOptions = migrated.options.map((opt) =>
+        typeof opt === "string" ? { text: opt } : opt
+      );
+
+      // Asegurar que las respuestas correctas estén en índice
+      if (Array.isArray(migrated.selected_answer)) {
+        migrated.checkboxCorrectAnswers = migrated.selected_answer;
+      } else if (typeof migrated.selected_answer === "string") {
+        migrated.checkboxCorrectAnswers = migrated.selected_answer
+          .split(",")
+          .map((ans) => {
+            const index = migrated.checkboxOptions.findIndex(
+              (opt) => (typeof opt === "string" ? opt : opt.text) === ans.trim()
+            );
+            return index >= 0 ? index : null;
+          })
+          .filter((i) => i !== null);
+      } else {
+        migrated.checkboxCorrectAnswers = [];
+      }
+    }
+
+    // Campo de texto
+    if (migrated.type === "textfield_s") {
+      migrated.textfieldValue = migrated.selected_answer || "";
+    }
+
+    // Sí/No
+    if (migrated.type === "yes_no") {
+      migrated.yesNoValue = migrated.selected_answer || "";
+    }
 
     return migrated;
   };
@@ -649,10 +798,15 @@ export default function SurveyBlocks({}) {
     setQuestionCountInput(""); // Limpiar input
   };
 
-  const handleInputChange = (index, key, value) => {
-    const updatedQuestions = [...questionsList];
-    updatedQuestions[index][key] = value;
-    setQuestionsList(updatedQuestions);
+  const handleInputChange = (index, field, value) => {
+    setQuestionsList((prev) => {
+      const newList = [...prev];
+      newList[index] = {
+        ...newList[index],
+        [field]: value,
+      };
+      return newList;
+    });
   };
 
   // Validar el input de preguntas del modal
@@ -677,14 +831,6 @@ export default function SurveyBlocks({}) {
     // Si pasa todas las validaciones
     setError(""); // Limpiar cualquier error previo
     return true;
-  };
-
-  // Manejo el envío de pregunta
-  const handleSubmit = () => {
-    if (validateInputs()) {
-      // Aquí puedes manejar el envío de los datos
-      console.log("Pregunta válida. Enviar datos...");
-    }
   };
 
   const handleSelectorChange = (data) => {
@@ -716,41 +862,54 @@ export default function SurveyBlocks({}) {
   };
 
   const areAllFieldsCompleted = () => {
+    return operation === 2 ? validateEditMode() : validateCreateMode();
+  };
+
+  const validateEditMode = () => {
     const basicBlocksInputs =
       nombreInput.input.trim() !== "" &&
-      ponderacionInput.input.trim() !== "" &&
-      posicionInput.input.trim() !== "";
+      ponderacionInput.input.trim() !== ""
 
-    // Si está en modo edición (operation === 2), solo validamos los campos del bloque
-    if (operation === 2) {
-      return basicBlocksInputs;
-    }
+    if (questionsList.length === 0) return false;
 
-    // En creación, se requiere al menos una pregunta válida
-    if (questionsList.length === 0) {
-      return false;
-    }
-
-    // Validación completa de preguntas solo para creación
     const allQuestionsValid = questionsList.every((question) => {
       if (!question.text || question.text.trim() === "") return false;
-      if (!question.type || question.type === "") return false;
+      if (!question.type || question.type.trim() === "") return false;
 
       if (question.type === "selector_opt") {
-        return selectorData.options && selectorData.options.length > 0;
+        return question.selectorOptions && question.selectorOptions.length > 0;
       }
 
-      // if (question.type === "check_opt") {
-      //   return (
-      //     multipleChoiceData.options && multipleChoiceData.options.length > 0
-      //   );
-      // }
-
-      if (question.type === "radio_opt") {
-        return singleChoiceData.options && singleChoiceData.options.length > 0;
+      if (question.type === "check_opt") {
+        return question.checkboxOptions && question.checkboxOptions.length > 0;
       }
 
-      return true; // Campo de texto, yes_no, etc.
+      return true;
+    });
+
+    return basicBlocksInputs && allQuestionsValid;
+  };
+
+  const validateCreateMode = () => {
+    const basicBlocksInputs =
+      nombreInput.input.trim() !== "" &&
+      ponderacionInput.input.trim() !== ""
+
+    if (questionsList.length === 0) return false;
+
+    const allQuestionsValid = questionsList.every((question) => {
+      if (!question.text || question.text.trim() === "") return false;
+      if (!question.type || question.type.trim() === "") return false;
+
+      if (question.type === "selector_opt") {
+        return question.selectorOptions && question.selectorOptions.length > 0;
+      }
+
+      if (question.type === "check_opt") {
+        return question.checkboxOptions && question.checkboxOptions.length > 0;
+      }
+
+      return true;
     });
 
     return basicBlocksInputs && allQuestionsValid;
@@ -787,68 +946,26 @@ export default function SurveyBlocks({}) {
 
   // Id único para cada bloque
 
-  const handleAgregarBloque = () => {
-    if (!nombreInput.value || !posicionInput.value || !ponderacionInput.value)
-      return;
+  // const handleAgregarBloque = () => {
+  //   if (!nombreInput.value || !ponderacionInput.value) return;
 
-    const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
+  //   const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
 
-    const nuevoBloque = {
-      blockId: generateId(),
-      nombre: nombreInput.value,
-      posicion: nuevaPosicion,
-      ponderacion: parseInt(ponderacionInput.value),
-      preguntas: [],
-    };
+  //   const nuevoBloque = {
+  //     blockId: generateId(),
+  //     nombre: nombreInput.value,
+  //     posicion: nuevaPosicion,
+  //     ponderacion: parseInt(ponderacionInput.value),
+  //     preguntas: [],
+  //   };
 
-    setBloques((prev) => [...prev, nuevoBloque]);
+  //   setBloques((prev) => [...prev, nuevoBloque]);
 
-    // Reset inputs
-    nombreInput.reset();
-    posicionInput.reset();
-    ponderacionInput.reset();
-  };
-
-  const renderRespuesta = (question) => {
-    const tipo = question.type;
-    const respuesta = question.selected_answer || "Sin respuesta";
-
-    switch (tipo) {
-      case "textfield_s":
-      case "yes_no":
-        return (
-          <p>
-            <strong>Respuesta:</strong>{" "}
-            {respuesta !== " " ? respuesta : "Sin respuesta"}
-          </p>
-        );
-
-      case "radio_opt":
-      // case "check_opt":
-      case "selector_opt":
-        return (
-          <div>
-            <p>
-              <strong>Respuesta:</strong> {respuesta}
-            </p>
-            {question.select_option && (
-              <p>
-                <small>
-                  <strong>Opciones:</strong> {question.select_option}
-                </small>
-              </p>
-            )}
-          </div>
-        );
-
-      default:
-        return (
-          <p>
-            <em>Tipo de pregunta no soportado</em>
-          </p>
-        );
-    }
-  };
+  //   // Reset inputs
+  //   nombreInput.reset();
+  //   posicionInput.reset();
+  //   ponderacionInput.reset();
+  // };
 
   // Obtener preguntas por ID de bloque (si no existe)
   const getQuestionsByBlockId = async (blockId) => {
@@ -873,8 +990,11 @@ export default function SurveyBlocks({}) {
 
       // Si el bloque no tiene preguntas cargadas, obtenerlas
       if (!bloqueCompleto.preguntas || bloqueCompleto.preguntas.length === 0) {
-        const preguntasResponse = await getQuestionsByBlockId(bloque.id);
-        bloqueCompleto.preguntas = preguntasResponse || [];
+        const preguntasResponse =
+          await AnswersFormService.getQuestionsAndAnswersByBlockId(bloque.id);
+        bloqueCompleto.preguntas = preguntasResponse;
+
+        preguntasResponse || [];
       }
 
       openModal(2, id_form, bloqueCompleto);
@@ -947,7 +1067,7 @@ export default function SurveyBlocks({}) {
     // Actualizar solo el estado
     setData(nuevosDatos);
 
-    return nuevaPosicion; // 🔁 Aquí estaba el problema: no retornaba nada
+    return nuevaPosicion; //
   };
 
   // Obtener bloques al cargar
@@ -988,10 +1108,12 @@ export default function SurveyBlocks({}) {
                 ? preg.select_option.split(",").map((o) => o.trim())
                 : [];
 
+              const optionObjects = opciones.map((opt) => ({ text: opt }));
+
               let tipo = preg.type || "";
               if (!tipo && preg.id_type_question) {
                 const typeMap = {
-                  1: "radio_opt",
+                  1: "check_opt",
                   2: "selector_opt",
                   3: "textfield_s",
                 };
@@ -1002,7 +1124,7 @@ export default function SurveyBlocks({}) {
                 id: preg.id,
                 text: preg.text || preg.question_name || "Sin texto",
                 type: tipo,
-                options: opciones,
+                options: optionObjects,
                 select_option: preg.select_option || "",
                 selected_answer:
                   preg.conditional_answer || preg.selected_answer || "",
@@ -1025,8 +1147,6 @@ export default function SurveyBlocks({}) {
           posicion: bloque.block_location || bloque.posicion,
         };
       });
-
-      console.log("Bloques mapeados correctamente:", bloquesMapeados);
 
       // Ordenar por posición
       bloquesMapeados.sort(
@@ -1111,7 +1231,6 @@ export default function SurveyBlocks({}) {
 
   // Elimina el bloque - pendiente por revisar**
   const onBulkEmail = (bloque) => {
-    console.log("Eliminar bloque", bloque);
   };
 
   useEffect(() => {
@@ -1297,7 +1416,7 @@ export default function SurveyBlocks({}) {
                                               >
                                                 {/* Header de la pregunta con botón de colapso */}
                                                 <div className="d-flex justify-content-between align-items-center">
-                                                  <p className="mb-1 fs-5">
+                                                  <p className="mb-3 fs-5">
                                                     <strong>
                                                       {preg.text ||
                                                         preg.question_name ||
@@ -1320,9 +1439,8 @@ export default function SurveyBlocks({}) {
                                                 {/* Contenido expandible de la pregunta */}
                                                 {!isCollapsed && (
                                                   <>
-                                                    {/* Pregunta tipo Radio Button */}
                                                     {preg.type ===
-                                                      "radio_opt" && (
+                                                      "check_opt" && (
                                                       <div className="mb-2">
                                                         <strong>
                                                           Selecciona una opción:
@@ -1332,9 +1450,11 @@ export default function SurveyBlocks({}) {
                                                         ).map((opt, i) => {
                                                           const optionText =
                                                             typeof opt ===
-                                                            "string"
-                                                              ? opt
-                                                              : opt.text || "";
+                                                              "object" &&
+                                                            opt !== null
+                                                              ? opt.text
+                                                              : String(opt);
+
                                                           return (
                                                             <div
                                                               key={i}
@@ -1342,12 +1462,19 @@ export default function SurveyBlocks({}) {
                                                             >
                                                               <input
                                                                 className="form-check-input"
-                                                                type="radio"
-                                                                name={`radio-${bloque.id}-${idx}`}
-                                                                checked={
-                                                                  preg.selected_answer ===
-                                                                  optionText
-                                                                }
+                                                                type="checkbox"
+                                                                name={`check-${bloque.id}-${idx}`}
+                                                                checked={(
+                                                                  preg.selected_answer ||
+                                                                  ""
+                                                                )
+                                                                  .split(",")
+                                                                  .map((v) =>
+                                                                    v.trim()
+                                                                  )
+                                                                  .includes(
+                                                                    optionText
+                                                                  )}
                                                                 onChange={() =>
                                                                   handleAnswerChange(
                                                                     bloque.id,
@@ -1364,23 +1491,6 @@ export default function SurveyBlocks({}) {
                                                         })}
                                                       </div>
                                                     )}
-
-                                                    {/* Pregunta tipo Checkbox/Opción múltiple */}
-                                                    {/* {preg.type ===
-                                                      "check_opt" && (
-                                                      <MultipleChoiceView
-                                                        options={(
-                                                          preg.options ||
-                                                          preg.select_option ||
-                                                          ""
-                                                        )
-                                                          .split(",")
-                                                          .map((o) => o.trim())}
-                                                        correctOption={
-                                                          preg.selected_answer
-                                                        }
-                                                      />
-                                                    )} */}
 
                                                     {/* Pregunta tipo Selector/Dropdown */}
                                                     {preg.type ===

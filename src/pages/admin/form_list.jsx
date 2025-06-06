@@ -270,8 +270,8 @@ const FormList = () => {
                   header={headersArray}
                   data={forms.map((form) => ({
                     ...form,
-                    creation_date: formatDateTime(form.creation_date), // Aquí aplicamos el formato
-                    updated_date: formatDateTime(form.updated_date), // Aquí aplicamos el formato
+                    creation_date: form.creation_date, // Aquí aplicamos el formato
+                    updated_date: form.updated_date, // Aquí aplicamos el formato
                   }))}
                   onView={openForm}
                   onActive={activateForm}

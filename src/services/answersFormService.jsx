@@ -90,6 +90,16 @@ class AnswersFormService {
       throw error;
     }
   }
+
+  async getQuestionsAndAnswersByBlockId(blockId) {
+    try {
+      const response = await axios.get(`${API_URL}/block/full/${blockId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error al obtener preguntas y respuestas para el bloque ${blockId}:`, error);
+      throw error;
+    }
+  }
 }
 
 export default new AnswersFormService();
