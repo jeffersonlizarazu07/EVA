@@ -160,9 +160,9 @@ const config = {
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
     if (op === 1) {
-      setTitle("Nueva Pregunta");
+      setTitle(t("vistaEncuestas.nueva_pregunta"));
       setDescriptionText(
-        "Elige un tipo de pregunta de acuerdo a tus necesidades."
+        (t("vistaEncuestas.descripcion_pregunta"))
       );
       description.handleChange("");
       questionType.handleChange("");
@@ -179,8 +179,8 @@ const config = {
       console.log({ questionDetails });
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
-      setTitle("Editar pregunta");
-      setDescriptionText("Modifica la pregunta de acuerdo a tus necesidades.");
+      setTitle(t("vistaEncuestas.editar_pregunta"));
+      setDescriptionText(t("vistaEncuestas.descripcion_pregunta"));
       if (questionDetails.conditional == "SI") {
         setValueConditional(true);
         setIsChecked(true);
@@ -361,7 +361,7 @@ const config = {
               </button>
               <div className="card p-4 borderEVA bg-light">             
                 <div className="text-center">
-                  <h3>Información Encuesta</h3>
+                  <h3>{t("vistaEncuestas.informacion_encuesta")}</h3>
                 </div>
                 <div className="card-body p-0 py-2">
                   <div className="container-fluid">
@@ -375,7 +375,7 @@ const config = {
                         {console.log("-----surveyData aca", surveyData)}
                       {surveyData.data?.start_date ||  "Sin fecha"} / 
                       {surveyData.data?.end_date || "Sin fecha"}
-                        <p className="fs-6">Cantidad de preguntas: {surveyData.sampleCount || 0}</p>
+                        <p className="fs-6">{t("vistaEncuestas.cantidad_preguntas")}: {surveyData.sampleCount || 0}</p>
                       </div>
                     </div>
                   </div>
@@ -385,9 +385,9 @@ const config = {
             <div className="col-md-12 mt-3">
               <div className="card p-4 card-outline card-success borderEVA bg-light">
                 <div>
-                  <h3 className="text-center">Preguntas de Encuesta</h3>
+                  <h3 className="text-center">{t("vistaEncuestas.preguntas_encuesta")}</h3>
                   <div className="card-tools">
-                    <button className="btn fw-bold btn-sm acces-tabla" data-bs-toggle="modal"  data-bs-target="#modalManageQuestion" onClick={() => openModal(1,id)}> + Agregar Nueva pregunta</button>
+                    <button className="btn fw-bold btn-sm acces-tabla" data-bs-toggle="modal"  data-bs-target="#modalManageQuestion" onClick={() => openModal(1,id)}> + {t("vistaEncuestas.agregar_pregunta")}</button>
                   </div>
                 </div>
             
@@ -421,7 +421,7 @@ const config = {
                                   data-bs-target="#modalManageQuestion"
                                   onClick={() => openModal(2, id, question)}
                                 >
-                                  Editar
+                                  {t("survey.editar")}
                                 </button>
                               </li>
                               <li>
@@ -437,7 +437,7 @@ const config = {
                                     )
                                   }
                                 >
-                                  Eliminar
+                                  {t("vistaEncuestas.eliminar")}
                                 </button>
                               </li>
                             </ul>
@@ -477,7 +477,7 @@ const config = {
                               data-bs-placement="top"
                               data-bs-custom-class="custom-tooltip"
                               data-bs-title="This top tooltip is themed via CSS variables."
-                            ></i> Pregunta condicional</div>
+                            ></i> {t("vistaEncuestas.pregunta_condicionals")}</div>
                           ) : (
                             ""
                           )}
@@ -518,24 +518,24 @@ const config = {
                       onChange={(e) => description.handleChange(e.target.value)}
                     required
                   />
-                      <span className="labelName" >Pregunta:</span>
+                      <span className="labelName" >{t("vistaEncuestas.pregunta")}:</span>
                       </label>
               </div>
               <div className="form-group m-2 ">
            
                 <label htmlFor="middlename" id="labelAnimation">
                 <select   className="input-new text-center" placeholder=" "   name='questionType' onChange={(e)=> questionType.handleChange(e.target.value)} value={questionType.input} >
-                  <option value="" disabled>Seleccione una pregunta</option>
-                  <option value="yes_no">Si/No</option>
-                  <option value="range_emoji">Rango de emojis</option>
-                  <option value="range_onetofive">Rango de 1/5</option>
-                  <option value="range_zerototen">Rango de 0/10</option>
-                  <option value="range_difficulty">Rango de dificultad</option>
-                  <option value="textfield_s">Campo de texto</option>
-                  <option value="radio_opt">Seleccion unica</option>
-                  <option value="check_opt">Seleccion multiple</option>
+                  <option value="" disabled>{t("vistaEncuestas.seleccione_pregunta")}</option>
+                  <option value="yes_no">{t("vistaEncuestas.si_no")}</option>
+                  <option value="range_emoji">{t("vistaEncuestas.rango_emoji")}</option>
+                  <option value="range_onetofive">{t("vistaEncuestas.rango_1_5")}</option>
+                  <option value="range_zerototen">{t("vistaEncuestas.rango_0_10")}</option>
+                  <option value="range_difficulty">{t("vistaEncuestas.rango_dificultad")}</option>
+                  <option value="textfield_s">{t("vistaEncuestas.campo_texto")}</option>
+                  <option value="radio_opt">{t("vistaEncuestas.seleccion_unica")}</option>
+                  <option value="check_opt">{t("vistaEncuestas.seleccion_multiple")}</option>
                 </select>
-                <span className="labelName">Tipo de pregunta:</span>
+                <span className="labelName">{t("vistaEncuestas.tipo_pregunta")}:</span>
                 </label>
               </div>
               {questionType.input==="radio_opt" && operation==1? (<SingleChoiceQuestion   options={singleChoiceData.options}  correctAnswer={singleChoiceData.correctAnswer}  onChange={handleSingleChoiceChange}/>)
@@ -567,12 +567,12 @@ const config = {
                 <div className="col-6  p-2 shadowbox5 " style={{borderLeft:"5px solid gray"}}>
                   {operation===2 && data.length>=1?( <div className="form-check form-switch  m-2">
                     <input className="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked={isChecked} onChange={(e)=> conditionalHandleChange(e.target.checked)}/>
-                    <label className="form-check-label" htmlFor="flexSwitchCheckChecked">Añadir como pregunta condicional</label>
+                    <label className="form-check-label" htmlFor="flexSwitchCheckChecked">{t("vistaEncuestas.pregunta_condicional")}</label>
                       </div>):(" ") }
                       {listConditional && valueConditional? (
                       <>
                           <div className="text ms-2 p-0">
-                            <span> Si la respuesta de la pregunta: </span>
+                            <span> {t("vistaEncuestas.respuesta_pregunta_condicional")}</span>
                           </div>
 
                           <div className="form-group  mt-3 m-2 ">
@@ -587,7 +587,7 @@ const config = {
                                 value={id_conditional.input}
                               >
                                 <option value="0" selected hidden>
-                                  Seleccionar:
+                                  {t("vistaEncuestas.seleccionar")}
                                 </option>
                                 {data.map((question) =>
                                   question.type == "textfield_s" ||
@@ -612,7 +612,7 @@ const config = {
                           {id_conditional.input && (
                             <div className="mt-2">
                               <div className="text ms-2 mt-2 p-0">
-                                <span> Es: </span>
+                                <span> {t("vistaEncuestas.es")}</span>
                               </div>
                               <div className="form-group mt-3 m-2">
                                 <label id="labelAnimation">
@@ -628,7 +628,7 @@ const config = {
                                     value={conditional_answer.input}
                                   >
                                     <option value="0" selected hidden>
-                                      Seleccionar opcion
+                                      {t("vistaEncuestas.seleccionar_opcion")}
                                     </option>
                                     {rangeOptions.map((option, index) => (
                                       <option key={index} value={option.value}>
@@ -636,7 +636,7 @@ const config = {
                                       </option>
                                     ))}
                                   </select>
-                                  <span className="labelName">Respuesta:</span>
+                                  <span className="labelName">{t("vistaEncuestas.respuesta")}</span>
                                 </label>
                               </div>
                             </div>
@@ -675,7 +675,7 @@ const config = {
                   id="btn-send-survey"
                   onClick={() => validar(idToEdit, id)}
                 >
-                  Guardar
+                  {t("buttons.guardar")}
                 </button>
               )}
               <button
@@ -685,7 +685,7 @@ const config = {
                 id="btnClose"
                 onClick={handleCancel}
               >
-                Cancelar
+                {t("buttons.cancelar")}
               </button>
             </div>
           </div>

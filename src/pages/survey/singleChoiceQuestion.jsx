@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+
 
 //Funcion para recorrer options y marcarlas como seleccionadas o no seleccionadas al editar
 function getCorrectOptions(optionsT, indexOption) {
@@ -18,6 +20,8 @@ function getCorrectOptions(optionsT, indexOption) {
 }
 
 function SingleChoiceQuestion({ options, correctAnswer, onChange }) {
+  const { t } = useTranslation();
+
   const [localOptions, setLocalOptions] = useState(options);
   const [localCorrectAnswer, setLocalCorrectAnswer] = useState(correctAnswer);
 
@@ -78,13 +82,13 @@ function SingleChoiceQuestion({ options, correctAnswer, onChange }) {
                 className="input-new form-control"
                 sx={{ paddingBottom: "5px" }} // Ajusta el padding del input
               />
-              <span className="labelName">Opción de respuesta</span>
+              <span className="labelName">{t("vistaEncuestas.opcion_respuesta")}</span>
             </label>
           </div>
         </div>
       ))}
       <button onClick={moreOption} className="btn btn-primary m-2">
-        + opción
+        + {t("vistaEncuestas.opcion")}
       </button>
     </div>
   );
@@ -96,6 +100,7 @@ function SingleChoiceQuestionEdit({
   idToEdit,
   onChange,
 }) {
+  const { t } = useTranslation();
   const [localOptions, setLocalOptions] = useState(options);
   const [localCorrectAnswer, setLocalCorrectAnswer] = useState(correctAnswer);
   console.log("idToEdit", idToEdit);
@@ -189,7 +194,7 @@ function SingleChoiceQuestionEdit({
                 placeholder=" "
                 className="input-new"
               />
-              <span className="labelName">Opción de respuesta</span>
+              <span className="labelName">{t("vistaEncuestas.opcion_respuesta")}</span>
             </label>
           </div>
           <div className="col-1 me-2">
@@ -203,7 +208,7 @@ function SingleChoiceQuestionEdit({
         </div>
       ))}
       <button onClick={moreOption} className="btn btn-primary m-2">
-        + opción
+        + {t("vistaEncuestas.opcion")}
       </button>
     </div>
   );
@@ -215,6 +220,7 @@ function MultipleChoiceQuestionEdit({
   idToEdit,
   onChange,
 }) {
+  const { t } = useTranslation();
   const [localOptions, setLocalOptions] = useState(options);
   const [localCorrectAnswers, setLocalCorrectAnswers] =
     useState(correctAnswers);
@@ -306,7 +312,7 @@ function MultipleChoiceQuestionEdit({
                 placeholder=" "
                 className="input-new"
               />
-              <span className="labelName">Opción de respuesta</span>
+              <span className="labelName">{t("vistaEncuestas.opcion_respuesta")}</span>
             </label>
           </div>
           <div className="col-1 me-2">
@@ -320,14 +326,15 @@ function MultipleChoiceQuestionEdit({
         </div>
       ))}
       <button onClick={addOption} className="btn btn-primary m-2">
-        + opción
+        + {t("vistaEncuestas.opcion")}
       </button>
-      <div>Respuestas correctas: {localCorrectAnswers.join(", ")}</div>
+      <div>{t("vistaEncuestas.respuestas_correctas")}: {localCorrectAnswers.join(", ")}</div>
     </div>
   );
 }
 
 function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
+  const { t } = useTranslation();
   const [localOptions, setLocalOptions] = useState(options);
   const [localCorrectAnswers, setLocalCorrectAnswers] =
     useState(correctAnswers);
@@ -420,7 +427,7 @@ function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
                 placeholder=" "
                 className="input-new"
               />
-              <span className="labelName">Opción de respuesta</span>
+              <span className="labelName">{t("vistaEncuestas.opcion_respuesta")}</span>
             </label>
           </div>
           <div className="col-1 me-2">
@@ -434,9 +441,9 @@ function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
         </div>
       ))}
       <button onClick={moreOption} className="btn btn-primary m-2">
-        + opción
+        + {t("vistaEncuestas.opcion")}
       </button>
-      <div>Respuestas correctas: {localCorrectAnswers.join(", ")}</div>
+      <div>{t("vistaEncuestas.respuestas_correctas")}: {localCorrectAnswers.join(", ")}</div>
     </div>
   );
 }

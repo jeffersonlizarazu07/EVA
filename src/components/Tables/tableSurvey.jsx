@@ -86,6 +86,13 @@ const TableSurvey = ({
     indexOfLastRecord
   );
   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+
+  const headerTranslations = {
+  "Title": t("survey.titulo"),
+  "Start_date": t("survey.fecha_inicio"), 
+  "End_date": t("survey.fecha_fin"),
+  "state": t("survey.estado")
+};
   return (
     <div className="table-container">
       <div className="row d-flex mb-3">
@@ -97,7 +104,7 @@ const TableSurvey = ({
           </button>
           <input
             className="w-50 inp-search"
-            placeholder="Buscar"
+            placeholder={(t("survey.buscar"))}
             value={searchTerm}
             onChange={handleSearch}
           />
@@ -109,7 +116,7 @@ const TableSurvey = ({
             data-bs-target={`#${modalId}`}
             onClick={() => onCreate()}
           >
-            <i className="fa fa-plus"></i> Encuesta
+            <i className="fa fa-plus"></i> {t("survey.encuestas")}
           </button>
         </div>
       </div>
@@ -118,10 +125,10 @@ const TableSurvey = ({
           <tr className="table-light tr-table">
             {header.map((item, i) => (
               <th key={i} className="col text-center">
-                {capitalize(item)}
+                {headerTranslations[item] || capitalize(item)}
               </th>
             ))}
-            <th className="col text-center">Actions</th>
+            <th className="col text-center">{t("survey.acciones")}</th>
           </tr>
         </thead>
         <tbody>
@@ -157,7 +164,7 @@ const TableSurvey = ({
                           onClick={() => onCheck(item)}
                         >
                           <i className="fa-solid fa-circle-question"></i>{" "}
-                          <span> Ver preguntas</span>
+                          <span> {t("survey.ver_preguntas")} </span>
                         </button>
                       </li>
                       <li className="text-start btn-rect">
@@ -167,7 +174,7 @@ const TableSurvey = ({
                           onClick={() => onCopyLink(item)}
                         >
                           <i className="fa-solid fa-link"></i>{" "}
-                          <span> Copiar enlace</span>
+                          <span> {t("survey.copiar_enlace")}</span>
                         </button>
                       </li>
                       <li className="text-start  btn-rect">
@@ -178,7 +185,7 @@ const TableSurvey = ({
                           data-bs-target={`#${modalId}`}
                           onClick={() => onUpdate(item)}
                         >
-                          <i className="fa-solid fa-edit"></i> Editar
+                          <i className="fa-solid fa-edit"></i> {(t("survey.editar"))}
                         </button>
                       </li>
 
@@ -189,7 +196,7 @@ const TableSurvey = ({
                           style={{ width: "100%" }}
                         >
                           <i className="fa-solid fa-envelopes-bulk"></i>
-                          <span> Envio masivo</span>
+                          <span> {t("survey.envio_masivo")}</span>
                         </button>
                       </li>
                       <li className="text-start btn-rect">
@@ -199,7 +206,7 @@ const TableSurvey = ({
                           style={{ width: "100%" }}
                         >
                           <i className="fa-solid fa-clone"></i>{" "}
-                          <span>Duplicar</span>
+                          <span>{(t("survey.duplicar"))}</span>
                         </button>
                       </li>
                       <li className="text-start  btn-rect">
@@ -210,7 +217,7 @@ const TableSurvey = ({
                           onClick={() => onRemove(item)}
                         >
                           <i className="fa-solid fa-power-off"></i>{" "}
-                          <span> Deshabilitar</span>
+                          <span> {t("survey.deshabilitar")}</span>
                         </button>
                       </li>
                     </ul>
@@ -248,7 +255,7 @@ const TableSurvey = ({
       <div className="row d-flex ps-5 pe-5 mt-3">
         <div className="col-6 col-sm-6 col-md-6 col-lg-6">
           <label>
-            Mostrar
+            {t("survey.Mostrar")}
             <button
               className="dropdown-toggle inp-search"
               type="button"
@@ -270,7 +277,7 @@ const TableSurvey = ({
                 </li>
               ))}
             </ul>
-            registros
+            {t("survey.Registros")}
           </label>
         </div>
         <div className="d-grid col-6 col-sm-6 col-md-6 col-lg-6 justify-content-end">

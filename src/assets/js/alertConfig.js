@@ -28,7 +28,7 @@ export const smallAlertDeactivateConfirm = Swal.mixin({
   toast: true,
   position: "top-end",
   showConfirmButton: false,
-  timer: 3000,
+  timer: 4000,
   timerProgressBar: true,
   icon: "success", // Icono para indicar éxito
   didOpen: (toast) => {
@@ -68,7 +68,7 @@ export const Toast = Swal.mixin({
   toast: true,
   position: "top-end",
   showConfirmButton: false,
-  timer: 3000,
+  timer: 4000,
   timerProgressBar: true,
   didOpen: (toast) => {
     toast.onmouseenter = Swal.stopTimer;
@@ -80,7 +80,7 @@ export const Toast2 = Swal.mixin({
   toast: true,
   position: "bottom-end",
   showConfirmButton: false,
-  timer: 1000,
+  timer: 4000,
   timerProgressBar: true,
   didOpen: (toast) => {
     toast.onmouseleave = Swal.resumeTimer;

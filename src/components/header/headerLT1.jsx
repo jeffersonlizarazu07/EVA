@@ -294,7 +294,7 @@ const [confirmError, setConfirmError] = useState("");
     setLanguageUser(lang);
     const parameters = { language: lang };
     try {
-      await axios.put(`${url}${userId}`, parameters, config);
+      await axios.patch(`http://localhost:3000/api/language/${userId}`, parameters, config);
     } catch (error) {
       console.error("Error al actualizar el idioma:", error);
     }
@@ -485,7 +485,7 @@ const [confirmError, setConfirmError] = useState("");
                     handleClose(), logout();
                   }}
                 >
-                  Cerrar sesión
+                  {t("headerlt.Logout")}
                 </MenuItem>
               </Menu>
             </div>
