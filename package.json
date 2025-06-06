@@ -45,7 +45,7 @@
     "react-select": "^5.8.0",
     "reactstrap": "^9.2.2",
     "solid-toast": "^0.5.0",
-    "sweetalert2": "^11.17.2",
+    "sweetalert2": "^11.22.0",
     "uuid": "^11.1.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
