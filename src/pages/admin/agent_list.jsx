@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useParams } from "react-router-dom";
 import AsyncSelect from "react-select/async";
 // import Select from "react-select";
 import makeAnimated from "react-select/animated";
@@ -53,6 +54,10 @@ const AdminList = () => {
 
   // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const { accessToken, languageUser, clients } = useContext(UserContext);
+
+  const { id } = useParams();
+
+  const [userName, setUserName] = useState("");
 
   // Iconos para los checkboxes (vacío y seleccionado)
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -137,9 +142,13 @@ const AdminList = () => {
   const getAdmins = async () => {
     try {
       // Hago la petición a la API para traer los agentes
-      const response = await axios.post(`http://localhost:3000/api/agent`, {clients} ,{
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `http://localhost:3000/api/agent`,
+        { clients },
+        {
+          withCredentials: true,
+        }
+      );
       console.log("Datos recibidos:", response.data);
 
       // Guardo los datos de los admins en el estado
@@ -177,7 +186,7 @@ const AdminList = () => {
       const responseData = response.data.data;
 
       // Imprimo los datos recibidos
-      console.log("respues", response.data.data);
+      console.log("respuesta", response.data.data);
 
       // Guardo los IDs de los clientes seleccionados en el estado
       setSelectedClients(responseData.map((client) => client.idClient));
@@ -188,6 +197,25 @@ const AdminList = () => {
       console.error("Error fetching data:", error);
     }
   };
+
+  useEffect(() => {
+    const getUserById = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/api/users/${id}`,
+          { withCredentials: true }
+        );
+        const user = response.data.data;
+        setUserName(user.name);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error al obtener el usuario:', error);
+        setLoading(false);
+      }
+    };
+
+    if (id) getUserById();
+  }, [id]);
 
   // MODALS //
 
@@ -300,13 +328,11 @@ const AdminList = () => {
                   onUpdate={(payload) => openModal(2, payload)}
                   onView={(payload) => openModalCont(payload)}
                 />
-              ) : 
-              (
+              ) : (
                 <div className="text-center py-5">
                   <h4>No hay agentes registrados</h4>
                 </div>
-              )
-              }
+              )}
             </div>
           </div>
         </div>
@@ -318,7 +344,7 @@ const AdminList = () => {
           <div className="modal-content">
             <div className="modal-header">
               <label className="h5">
-                Jeidy Sanchez Zapata <span className="text-muted">5445856</span>
+                Jefferson Lizarazu {idToEdit}<span className="text-muted">5445856</span>
               </label>
               <button
                 type="button"
@@ -343,7 +369,7 @@ const AdminList = () => {
                 <div className="col-md-6">
                   <label className="form-label">Monitor Client</label>
                   <select className="form-select">
-                    <option>EPS SURA</option>
+                    <option>DirectTv</option>
                   </select>
                 </div>
 
@@ -399,7 +425,7 @@ const AdminList = () => {
                   <input
                     type="email"
                     className="form-control"
-                    value="Lina.PosadaBedoya@teleperformance.com"
+                    value="jeffersonlizarazu@hotmail.com"
                     readOnly
                   />
                 </div>
@@ -569,7 +595,9 @@ const AdminList = () => {
                   <ul className="form-control mt-1">
                     {selectedClients.length > 0 ? (
                       selectedClients.map((clientId) => {
-                        const client = listClients.find((c) => c.id === clientId);
+                        const client = listClients.find(
+                          (c) => c.id === clientId
+                        );
                         return client ? (
                           <li key={listClients.id}>{client.client}</li>
                         ) : null;

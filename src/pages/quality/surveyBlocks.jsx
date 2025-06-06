@@ -54,6 +54,7 @@ export default function SurveyBlocks({}) {
   const [operation, setOperation] = useState(1);
   const [title, setTitle] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
+  const [surveyData, setSurveyData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [idToEdit, setidToEdit] = useState(null);
   const [error, setError] = useState("");
@@ -123,19 +124,32 @@ export default function SurveyBlocks({}) {
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [options, setOptions] = useState([]);
   const [correctAnswers, setCorrectAnswers] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  // State para manejo de preguntas validas
+  const [hasValidQuestions, setHasValidQuestions] = useState(false);
+  const [textFieldAnswer, setTextFieldAnswer] = useState("");
+
+  //Id bloque creado
+  const [bloques, setBloques] = useState([]);
 
   // Paginador
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(3); // Número de bloques por página
   const [searchTerm, setSearchTerm] = useState(""); // Para filtrado
   const [staticData, setStaticData] = useState([]); // Copia de los datos para filtrado
+  const blockRefs = useRef([]);
 
   // Estados para manejo de posicionamiento relativo de bloques
   const [positionType, setPositionType] = useState(""); // 'Antes o despues de'
   const [referenceBlockId, setReferenceBlockId] = useState(""); // ID del bloque de referencia
 
-  // Estado para manejo de bloques
+  // Estados para manejo de bloques
   const [blocks, setBlocks] = useState([]);
+  const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
+
+  //formulario
+  // Estado para los bloques de la encuesta
+  const [surveyBlocks, setSurveyBlocks] = useState([]);
 
   const [collapsedQuestions, setCollapsedQuestions] = useState({}); // Estado para manejar el colapso de preguntas
 
@@ -183,6 +197,14 @@ export default function SurveyBlocks({}) {
       Authorization: `Bearer ${accessToken}`,
     },
     withCredentials: true,
+  };
+
+  const updateSurveyQuestions = () => {
+    getSurveyQuestions(id_form, config)
+      .then(setData)
+      .catch((error) => {
+        console.error("Error al obtener las preguntas de la encuesta", error);
+      });
   };
 
   const handleCancel = () => {
@@ -287,7 +309,7 @@ export default function SurveyBlocks({}) {
               preguntaBase.selectorSelectedOption = p.selected_answer || "";
               preguntaBase.options = selectorOptions;
 
-              // IMPORTANTE: Actualizar el estado del selector
+              // Actualizar el estado del selector
               setSelectorData({
                 options: selectorOptions,
                 selectedOption: p.selected_answer || "",
@@ -663,6 +685,21 @@ export default function SurveyBlocks({}) {
     });
   };
 
+  // Actualiza las preguntas de un bloque específico
+  const updateQuestionsForBlock = async (blockId, preguntas) => {
+    try {
+      // Llamar al servicio de actualización de preguntas
+      const response = await updateQuestions(blockId, preguntas);
+
+      if (response.status === 200) {
+        return { success: true };
+      }
+    } catch (error) {
+      console.error("Error al actualizar preguntas del bloque:", error);
+      throw error;
+    }
+  };
+
   const handleSingleChoiceChange = (updatedData) => {
     setSingleChoiceData(updatedData);
   };
@@ -770,6 +807,30 @@ export default function SurveyBlocks({}) {
       };
       return newList;
     });
+  };
+
+  // Validar el input de preguntas del modal
+
+  const validateInputs = () => {
+    // Validación de questionType: solo letras y guiones bajos
+    const questionTypeValid = /^[A-Za-z_]+$/.test(questionType);
+    const descriptionValid = description.trim() !== "";
+
+    if (!questionTypeValid) {
+      setError(
+        "El tipo de pregunta no es válido. Solo se permiten letras y guiones bajos."
+      );
+      return false;
+    }
+
+    if (!descriptionValid) {
+      setError("La descripción de la pregunta es obligatoria.");
+      return false;
+    }
+
+    // Si pasa todas las validaciones
+    setError(""); // Limpiar cualquier error previo
+    return true;
   };
 
   const handleSelectorChange = (data) => {
@@ -882,6 +943,29 @@ export default function SurveyBlocks({}) {
     setValueConditional(false);
     setHasValidQuestions(false);
   };
+
+  // Id único para cada bloque
+
+  // const handleAgregarBloque = () => {
+  //   if (!nombreInput.value || !ponderacionInput.value) return;
+
+  //   const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
+
+  //   const nuevoBloque = {
+  //     blockId: generateId(),
+  //     nombre: nombreInput.value,
+  //     posicion: nuevaPosicion,
+  //     ponderacion: parseInt(ponderacionInput.value),
+  //     preguntas: [],
+  //   };
+
+  //   setBloques((prev) => [...prev, nuevoBloque]);
+
+  //   // Reset inputs
+  //   nombreInput.reset();
+  //   posicionInput.reset();
+  //   ponderacionInput.reset();
+  // };
 
   // Obtener preguntas por ID de bloque (si no existe)
   const getQuestionsByBlockId = async (blockId) => {
@@ -1089,6 +1173,17 @@ export default function SurveyBlocks({}) {
     }
   };
 
+  // Crear bloque
+  const handleCreate = async () => {
+    try {
+      const res = await createBlock(newBlock);
+      setBlocks([...blocks, res.data.data]);
+      setNewBlock({ name: "", textQuestion: "" });
+    } catch (err) {
+      console.error("Error al crear bloque:", err);
+    }
+  };
+
   //Actualizar bloque
   const updateBlock = async (id, updatedFields) => {
     try {
@@ -1134,12 +1229,24 @@ export default function SurveyBlocks({}) {
     }
   };
 
+  // Elimina el bloque - pendiente por revisar**
+  const onBulkEmail = (bloque) => {
+  };
+
   useEffect(() => {
     // Si no se recibió por navegación, hacer fetch
     if (!formData && id_form) {
       fetchFormData();
     }
   }, [id_form, formData]);
+
+  // Limpiar el modal al cerrar
+  const handleModalClose = () => {
+    handleCancel();
+    resetFormFields();
+    setError("");
+    setLoading(false);
+  };
 
   const toggleCollapse = (blockId, questionIndex) => {
     const key = `${blockId}-${questionIndex}`;
