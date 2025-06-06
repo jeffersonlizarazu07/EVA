@@ -61,6 +61,28 @@ class UserDTO {
 
         return {status : true}
     }
+
+    static validateLanguage (data){
+        const { language } = data;
+        const allowedLanguages = ['es', 'en', 'it', 'pt']; // Ejemplo de idiomas permitidos
+
+        // Verifico que el campo de idioma esté presente
+        if (!language) {
+            return { status: false, message: "El campo de idioma es obligatorio" };
+        }
+
+        // Verifico que el idioma sea un string
+        if (typeof language !== 'string') {
+            return { status: false, message: "El idioma debe ser un texto" };
+        }
+
+        // Verifico que el idioma esté en la lista de idiomas permitidos
+        if (!allowedLanguages.includes(language)) {
+            return { status: false, message: "Debe ingresar un udioma valido" };
+        }
+        
+        return { status: true };
+    }
    
 
 }

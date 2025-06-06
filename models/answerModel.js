@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const {getDateTimeForSQL} = require('../helpers/dateHelper');
 class AnswerModel {
     async createAnswer(data) {
         
@@ -8,6 +9,8 @@ class AnswerModel {
         const formatDateForMySQL = (date) => {
             return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
         };
+
+        const fecha = getDateTimeForSQL(); // Genera la fecha actual
         
         try {
             const insertedAnswers = [];
@@ -19,7 +22,7 @@ class AnswerModel {
                 //survey_id: answerData.survey_id,
                 answer: answerData.answer,
                 question_id: answerData.question_id,
-                date: answerData.date ? formatDateForMySQL(answerData.date) : formatDateForMySQL(new Date())
+                date: fecha
               };
         
               // Realiza la inserción y obtén el ID del registro insertado
@@ -105,8 +108,8 @@ class AnswerModel {
             const answers = await db('answers')
                 .join('questions', 'answers.question_id', '=', 'questions.id')
                 .where('questions.survey_id', surveyId)
-                .andWhere('answers.date', '>=', startDate)
-                .andWhere('answers.date', '<=', formattedEndDate)
+            .andWhere(db.raw('DATE(answers.date) >= ?', [startDate]))
+            .andWhere(db.raw('DATE(answers.date) <= ?', [endDate]))
                 .select('answers.question_id', 'questions.type', 'answers.answer', 'questions.question');
             return answers;
         } catch (error) {
