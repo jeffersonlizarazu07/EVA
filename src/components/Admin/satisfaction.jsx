@@ -169,7 +169,7 @@ const Satisfaction = () => {
                         <div className="row d-flex align-items-start justify-content-start mb-2">
                           <div className="col card-second-text  ">
                             <span className="">
-                              Gestionar encuestas
+                              {t("satisfaction.gestionar_encuestas")}
                             </span>
                           </div>
                         </div>
@@ -177,7 +177,7 @@ const Satisfaction = () => {
                           <div className="col">
                             <a href="/survey_list">
                               <button className="card-btn check">
-                                Visualizar encuestas
+                                {t("satisfactionSite.visualizar_encuestas")}
                               </button>
                             </a>
                           </div>                          
@@ -288,13 +288,13 @@ const Satisfaction = () => {
                         </div>
                         <div className="col-lg-2 ms-3 d-none d-lg-block">
                           <span className="text-white text-start">
-                            Gestionar encuestas
+                            {t("satisfaction.gestionar_encuestas")}
                           </span>
                         </div>
                         <div className="col-lg-3  justify-content-center  col ">
                           <button className="card-btn " onClick={() => navigate("/survey_list")}>
                             {" "}
-                            visualizar encuestas
+                            {t("satisfactionSite.visualizar_encuestas")}
                           </button>                          
                         </div>
                         <div className="col-1 d-none d-lg-block">
@@ -331,7 +331,7 @@ const Satisfaction = () => {
               <div className="col-12 col-lg-4 col-sm-12">
                 <div className="card outstanding-card2 extern">
                   <div className="card-body div-title">
-                    <h5 className=""> Ecuestas frecuentes</h5>
+                    <h5 className=""> {t("satisfactionSite.encuestas_frecuentes")}</h5>
                     <div className="row">
                       {/* <div className="col-12">
                         <span className=" text-start fw-bold">

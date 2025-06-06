@@ -23,7 +23,7 @@ const SurveyList = () => {
   // En el estado del componente añade:
   const [showEnvioModal, setShowEnvioModal] = useState(false);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
-
+  const { t, i18n } = useTranslation();
   //const url = "http://localhost:3000/api/surveys";
   const headers = ["Title", "Start_date", "End_date", "state"];
   const [operation, setOperation] = useState([1]);
@@ -53,7 +53,7 @@ const SurveyList = () => {
   const idClient = useInput({ defaultValue: "", validate: /^[1-4]+$/ });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  // const { t, i18n } = useTranslation();
 
   const { userType, userId, languageUser } = useContext(UserContext);
   const accessToken = Cookies.get('accessToken');
@@ -147,13 +147,13 @@ const SurveyList = () => {
     };
     smallAlertDelete
       .fire({
-        title: "Activar elemento",
+        title: t("alertActivate.activar_elemento"),
         toast: false,
         icon: "warning",
-        text: `La encuesta ${name} se activara.`,
+        text: t("alertActivate.la_encuesta") + ` ${name} ` + t("alertActivate.mensaje_activar"),
         showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        confirmButtonText: t("buttons.confirmar"),
+        cancelButtonText: t("buttons.cancelar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -170,14 +170,14 @@ const SurveyList = () => {
 
             Toast.fire({
               icon: "success",
-              title: `La encuesta ${survey.title} se ha activado exitosamente`,
+              title: t("alertActivate.la_encuesta") + ` ${survey.title} ` + t("alertActivate.SuccessAlert"),
             });
 
             // getSurveys();
           } catch (error) {
             Toast.fire({
               icon: "error",
-              title: `La encuesta ${survey.title} no ha sido activada`,
+              title: t("alertActivate.la_encuesta") +` ${survey.title} ` + t("alertActivate.ErrorAlert"),
             });
             console.error(error);
           }
@@ -198,11 +198,11 @@ const SurveyList = () => {
       .fire({
         icon: "warning",
         toast: false,
-        title: "Deshabilitar elemento",
-        text: `La encuesta ${name} se deshabilitara de forma permanente.`,
+        title: t("alertDeactivate.deshabilitar_elemento"),
+        text: t("alertDeactivate.la_encuesta") +` ${name} ` + t("alertDeactivate.mensaje_desactivar"),
         showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        confirmButtonText: t("buttons.confirmar"),
+        cancelButtonText: t("buttons.cancelar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -216,7 +216,7 @@ const SurveyList = () => {
             await axios.patch(`${url}/${id}`, parametros, config);
             Toast.fire({
               icon: "success",
-              title: `La encuesta ${survey.title} se ha activado exitosamente`,
+              title: t("alertDeactivate.la_encuesta") + ` ${survey.title} ` + t("alertDeactivate.SuccessAlert"),
             });
           } catch (error) {
             alert("error", "Error al eliminar");
@@ -237,6 +237,7 @@ const SurveyList = () => {
   };
 
   const validateDates = (dateStart, dateEnd) => {
+    setErrorFechasMessage(""); //reinicior la variable de mensaje de error
     
     if (!dateStart || !dateEnd) {
       console.warn("Una o ambas fechas no están definidas:", dateStart, dateEnd);
@@ -262,14 +263,14 @@ const SurveyList = () => {
     //validar que la fecha de inicio no sea menor a la fecha actual
     if (start < today)  {
       setErrorFechas(true);
-      setErrorFechasMessage("La fecha de inicio no puede ser anterior al día de hoy")
+      setErrorFechasMessage(t("alerts.error_fecha_incio"))
       document.getElementById("saveButton").disabled = true;
       return false;
     }
 
     if (end < start) {
       setErrorFechas(true);
-      setErrorFechasMessage("La fecha de inicio no puede ser posterior a la fecha de fin")
+      setErrorFechasMessage(t("alerts.error_fecha_inicio_fin"));
       document.getElementById("saveButton").disabled = true;
       return false;
     } 
@@ -292,7 +293,7 @@ const SurveyList = () => {
   const openModal = (op, survey) => {
     setOperation(op);  
     if (op == 1) {
-      setModalTitle("Añadir encuesta");
+      setModalTitle(t("survey.añadir_encuesta"));
       title.handleChange("");
       start_date.handleChange("");
       end_date.handleChange("");
@@ -301,7 +302,7 @@ const SurveyList = () => {
       idClient.handleChange("");
     } else if (op == 2) {
       console.log("esto es survey",survey)
-      setModalTitle("Editar encuesta");
+      setModalTitle(t("survey.editar_encuesta"));
       title.handleChange(survey?.title || "");
       setNewTitle(survey?.title || "");
       start_date.handleChange(formatDateForInput(survey?.start_date));
@@ -332,8 +333,8 @@ const SurveyList = () => {
       .fire({
         icon: "warning",
         toast: false,
-        text: `Todos los campos son obligatorios`,
-        confirmButtonText: "Confirmar",        
+        text: t("alerts.fillRequiredFields"),
+        confirmButtonText: t("buttons.confirmar"),        
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -393,7 +394,7 @@ const SurveyList = () => {
               document.getElementById("btnCerrarModalCrear").click();
               Toast.fire({
                 icon: "success",
-                title: `Encuesta creada exitosamente.`,
+                title: t("alerts.mensaje_crear_encuesta"),
               });
             }
           } catch (error) {
@@ -415,7 +416,7 @@ const SurveyList = () => {
           document.getElementById("btnCerrarModalCrear").click();
           Toast.fire({
             icon: "success",
-            title: `Encuesta editada exitosamente.`,
+            title: t("alerts.mensaje_encuesta_editada"),
           });
         }
         getSurveys();
@@ -472,11 +473,11 @@ const SurveyList = () => {
       .fire({
         icon: "warning",
         toast: false,
-        title: "Duplicar encuesta",
-        text: `La encuesta ${survey.title} se duplicará.`,
+        title: t("survey.duplicar_encuesta"),
+        text: t("alertActivate.la_encuesta") + ` ${survey.title} ` + t("survey.se_duplicara"),
         showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        confirmButtonText: t("buttons.confirmar"),
+        cancelButtonText: t("buttons.cancelar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -585,7 +586,7 @@ const SurveyList = () => {
     navigator.clipboard.writeText(link);
     Toast.fire({
       icon: "success",
-      title: `Link copiado al portapapeles`,
+      title: t("alerts.link_copiado"),
     });
   }
 
@@ -620,14 +621,14 @@ const SurveyList = () => {
               />
             ) : (
               <div className="text-center py-5">
-                <h4>No hay encuestas disponibles</h4>
+                <h4>{t("survey.no_hay_encuestas_disponibles")}</h4>
                 <button 
                   data-bs-toggle="modal"
                   data-bs-target="#modalSurvey"
                   className="btn btn-primary mt-3"
                   onClick={() => openModal(1)}
                 >
-                  Crear nueva encuesta
+                  {t("survey.crear_encuesta")}
                 </button>
               </div>
             )}
@@ -793,7 +794,7 @@ const SurveyList = () => {
                       value={title.input}
                       onChange={(e) => title.handleChange(e.target.value)}
                     />
-                    <span className="labelName">Titulo</span>
+                    <span className="labelName">{t("survey.titulo")}</span>
                   </label>
                 </div>
                 <div className="col-4 mb-3">
@@ -806,7 +807,7 @@ const SurveyList = () => {
                       className="input-new"
                     >
                       <option value="" disabled>
-                        Seleccione un cliente
+                        {t("survey.selecciona_cliente")}
                       </option>
                       {clients.map((client) => (
                         <option value={client.idClient} key={client.id}>
@@ -814,7 +815,7 @@ const SurveyList = () => {
                         </option>
                       ))}
                     </select>
-                    <span className="labelName">Cliente</span>
+                    <span className="labelName">{t("survey.cliente")}</span>
                   </label>
                 </div>
               </div>
@@ -832,7 +833,7 @@ const SurveyList = () => {
                         validateDates(e.target.value, end_date.input);
                       }}
                     />
-                    <span className="labelName">Fecha de inicio:</span>
+                    <span className="labelName">{t("survey.fecha_inicio")}:</span>
                   </label>
                 </div>
                 <div className="col mb-3">
@@ -848,7 +849,7 @@ const SurveyList = () => {
                         validateDates(start_date.input, e.target.value);
                       }}
                     />
-                    <span className="labelName">Fecha de finalización:</span>
+                    <span className="labelName">{t("survey.fecha_fin")}:</span>
                   </label>
                 </div>
               </div>
@@ -862,7 +863,7 @@ const SurveyList = () => {
                   <label id="labelAnimation">
                     <textarea
                       className="input-new "
-                      placeholder="Descripción"
+                      placeholder={t("survey.descripcion")}
                       type="text-area"
                       name="descripcion"
                       value={description.input}
@@ -880,14 +881,14 @@ const SurveyList = () => {
                 data-bs-dismiss="modal"
                 onClick={() => setSelectedClients([])}
               >
-                Cerrar
+                {t("buttons.cerrar")}
               </button>
               <button
                 id="saveButton"
                 onClick={() => validar(idToEdit)}
                 className="btn-primary btn"
               >
-                Guardar
+                {t("buttons.guardar")}
               </button>
             </div>
           </div>

@@ -26,8 +26,16 @@ import {
   PersonAdd as PersonAddIcon,
   Groups as GroupsIcon
 } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
+import { useTranslateBackendMessage } from "../helper/helper";
+import { use } from "react";
 
 const ModalEnvioMasivo = ({ survey, onClose }) => {
+  const translateBackendMessage = useTranslateBackendMessage();
+  const translateSuccess = useTranslateBackendMessage();
+
+  const { t, i18n } = useTranslation();
+
   const [activeTab, setActiveTab] = useState(0);
   const [formData, setFormData] = useState({
     name: "",
@@ -62,7 +70,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
     if (!validExtensions.includes(fileExtension)) {
       Toast.fire({
         icon: "error",
-        title: "Formato no válido. Use .xlsx, .xls, .ods o .csv"
+        title: t("alerts.formato_no_valido")
       });
       return;
     }
@@ -81,7 +89,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
     if (!formData.name || !formData.email || !formData.link) {
       Toast.fire({
         icon: "error",
-        title: "Todos los campos son requeridos"
+        title: t("alerts.todos_los_campos_obligatorios")
       });
       resetForm();
       return;
@@ -90,7 +98,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
     if (!validateEmail(formData.email)) {
       Toast.fire({
         icon: "error",
-        title: "Por favor ingrese un email válido"
+        title: t("alerts.email_invalido")
       });
       resetForm();
       return;
@@ -99,7 +107,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
     if (!validateUrl(formData.link)) {
       Toast.fire({
         icon: "error",
-        title: "Por favor ingrese una url valida"
+        title: t("alerts.url_invalida")
       });
       resetForm();
       return;
@@ -127,10 +135,12 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
       const { mensaje, errores } = response.data;
       
       if (errores && errores.length > 0) {
-        const erroresTexto = errores.map(e => `${e.email}: ${e.error}`).join('\n');
+        //const erroresTexto = errores.map(e => `${e.email}: ${e.error}`).join('\n');
+        const erroresTraducidos =  errores.map(e =>  `${e.email}: ${translateBackendMessage(e.error)}`
+        ).join('\n');        
         Toast.fire({
           icon: "warning",
-          title: `${mensaje}\nErrores:\n${erroresTexto}`,
+          title: `${translateSuccess(mensaje)}\n` + t("alerts.errores") + `:\n${erroresTraducidos}`,
           didOpen: (toast) => {
           toast.style.width = '350%'; // Ajusta a tu preferencia
           }  
@@ -138,7 +148,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
       } else {
         Toast.fire({
           icon: "success",
-          title: mensaje
+          title: translateSuccess(mensaje)
         });
       }
 
@@ -148,7 +158,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
       console.error("Error al enviar:", error);
       Toast.fire({
         icon: "error",
-        title: "Error al enviar la encuesta"
+        title: t("alerts.error_enviar_encuesta")
       });
       resetForm();
     } finally {
@@ -158,7 +168,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
 
   const sendMassive = async () => {
     if (!file) {
-      Toast.fire({ icon: "error", title: "Debe seleccionar un archivo" });
+      Toast.fire({ icon: "error", title:t("alerts.debe_seleccionar_archivo") });
       resetForm();
       return;
     }
@@ -249,15 +259,18 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
 
         const { mensaje, errores } = response.data;
         if (errores && errores.length > 0) {
-        const erroresTexto = errores.map(e => `• ${e.email}: ${e.error}`).join('\n');
+        const erroresTraducidos =  errores.map(e =>  `${e.email}: ${translateBackendMessage(e.error)}`).join('\n');  
+        //const erroresTexto = errores.map(e => `• ${e.email}: ${e.error}`).join('\n');
         Toast.fire({
           icon: "warning",
-          title: `${mensaje}\nErrores:\n${erroresTexto}`
+          title: `${translateSuccess(mensaje)}\n` + t("alerts.errores") + `:\n${erroresTraducidos}`,
+         // title: `${mensaje}\n`+ t("alerts.errores") + `:\n${erroresTexto}`
+         timer: 10000, 
         });
         } else {
           Toast.fire({
             icon: "success",
-            title: mensaje
+            title: translateSuccess(mensaje)
           });
         }
         resetForm();
@@ -277,7 +290,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
     reader.onerror = () => {
       Toast.fire({
         icon: "error",
-        title: "Error al leer el archivo"
+        title: t("alerts.error_leer_archivo")
       });
       resetForm();
       setLoading(false);
@@ -331,7 +344,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
     >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" fontWeight="bold">
-          Enviar Encuesta
+         {t("envioMasivo.enviar_encuesta")}
         </Typography>
         <IconButton onClick={onClose}>
           <CloseIcon />
@@ -357,13 +370,13 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
           }}
           >
             <Tab 
-              label="Enviar a un usuario" 
+              label={t("envioMasivo.enviar_usuario")} 
               icon={<PersonAddIcon />} 
               iconPosition="start"
               sx={{ minHeight: 48 }}
             />
             <Tab 
-              label="Envío masivo" 
+              label={t("envioMasivo.envio_masivo")}
               icon={<GroupsIcon />} 
               iconPosition="start"
               sx={{ minHeight: 48 }}
@@ -375,11 +388,11 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
           {activeTab === 0 && (
             <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Enviar encuesta a un usuario
+                {t("envioMasivo.enviar_encuesta_titulo")}
               </Typography>
               
               <TextField
-                label="Nombre"
+                label={t("envioMasivo.nombre")}
                 variant="outlined"
                 name="name"
                 value={formData.name}
@@ -399,7 +412,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
               />
               
               <TextField
-                label="Email"
+                label={t("envioMasivo.email")}
                 variant="outlined"
                 type="email"
                 name="email"
@@ -420,7 +433,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
               />
               
               <TextField
-                label="Link de la encuesta"
+                label={t("envioMasivo.link_encuesta")}
                 variant="outlined"
                 name="link"
                 value={formData.link}
@@ -444,7 +457,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
           {activeTab === 1 && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Envío masivo de encuesta
+                {t("envioMasivo.envio_masivo_titulo")}
               </Typography>
               
               <Button
@@ -462,13 +475,13 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
                   
                 }}
               >
-                Descargar plantilla
+                {t("envioMasivo.descargar_plantilla")}
               </Button>
               
               <TextField
                 variant="outlined"
                 value={fileName}
-                placeholder="Seleccione archivo"
+                placeholder={t("envioMasivo.selecciona_archivo")}
                 InputProps={{
                   readOnly: true,
                   endAdornment: (
@@ -484,7 +497,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
                           }
                         }}
                       >
-                        Cargar archivo
+                        {t("envioMasivo.subir_archivo")}
                         <input
                           type="file"
                           id="fileInput"
@@ -534,7 +547,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
             }
           }}
         >
-          Cancelar
+          {t("buttons.cancelar")}
         </Button>
         <Button
           variant="contained"
@@ -548,7 +561,7 @@ const ModalEnvioMasivo = ({ survey, onClose }) => {
             }
           }}
         >
-          {loading ? 'Enviando...' : 'Enviar'}
+          {loading ? t("envioMasivo.enviando")+"..." : t("buttons.enviar")}
         </Button>
       </DialogActions>
     </Dialog>

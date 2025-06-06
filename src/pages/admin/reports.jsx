@@ -26,9 +26,12 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Toast } from "../../assets/js/alertConfig";
+import { useTranslation } from "react-i18next";
+
 
 
 const Reports = () => {
+  const {t} = useTranslation();
   const nav = useNavigate();
   const { accessToken, userType, clients } = useContext(UserContext);
   const [allResponses, setAllResponses] = useState([]); // Nueva estructura para contener todas las respuestas en orden
@@ -613,7 +616,7 @@ const renderChartResponse = (item, index) => {
                           </svg>
                         </button>
                         <FormControl required sx={{ minWidth: "40%" }}>
-                          <InputLabel>Encuesta</InputLabel>
+                          <InputLabel>{t("reports.encuesta")}</InputLabel>
                           <Select
                             className="me-2"
                             labelId="survey-select-label"
@@ -640,14 +643,14 @@ const renderChartResponse = (item, index) => {
                           <DatePicker
                             sx={{ width: "23%" }}
                             className="me-2"
-                            label="Fecha de inicio"
+                            label={t("reports.fecha_inicio")}
                             value={startDate}
                             onChange={handleStartDateChange}
                           />
                           <DatePicker
                             sx={{ width: "23%" }}
                             className="me-2"
-                            label="Fecha de fin"
+                            label={t("reports.fecha_fin")}
                             value={endDate}
                             onChange={handleEndDateChange}
                           />
@@ -679,7 +682,7 @@ const renderChartResponse = (item, index) => {
                       {!loading && allResponses.length === 0 && (
                         <div className="mt-3">
                           <div className="alert alert-info text-center" role="alert">
-                            Llena los datos de la consulta
+                            {t("reports.mensaje_reporte")}
                           </div>
                         </div>
                       )}

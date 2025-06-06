@@ -42,10 +42,10 @@ export const deleteQuestion = async (
 
   smallAlertDelete
     .fire({
-      title: "Eliminar elemento",
+      title: t("alertDelete.titulo_eliminar"),
       icon: "warning",
       toast: false,
-      text: `Esta seguro que desea eliminar la pregunta "${questiontext}"`, 
+      text: (t("alertDelete.texto_eliminar")) +`"${questiontext}"`, 
       showCancelButton: true,
       confirmButtonText: `${t("alertDeactivate.Confirm")}`,
       cancelButtonText: `${t("alertDeactivate.Cancel")}`,
@@ -65,9 +65,7 @@ export const deleteQuestion = async (
           if (data.status) {
             Toast.fire({
               icon: "success",
-              title: `${t("la pregunta")} ${questiontext} ${t(
-                "ha sido eliminada."
-              )}`,
+              title: (t("alertDelete.la_pregunta")) + ` ${questiontext}` + t("alertDelete.ha_sido_eliminada"),
             });
             updateSurveyQuestions();
           }
@@ -99,7 +97,7 @@ export const sendData = async (
         setError("");
         Toast2.fire({
           icon: "success",
-          title: `${t("Pregunta añadida exitosamente.")}`,
+          title: `${t("alerts.añadir_pregunta")}`,
         });
         updateSurveyQuestions();
       } else {
@@ -111,7 +109,7 @@ export const sendData = async (
       if (response.data.status) {
         Toast2.fire({
           icon: "success",
-          title: `${t("Pregunta editada exitosamente.")}`,
+          title: `${t("alertEdit.pregunta_editada")}`,
         });
         updateSurveyQuestions();
       } else {

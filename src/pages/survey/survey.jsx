@@ -7,10 +7,15 @@ import Swal from "sweetalert2";
 import { useLocation } from "react-router-dom";
 import TextField from '@mui/material/TextField';
 import Cookies from "js-cookie";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from '../../components/idiomaSurvey/LanguageSelector';
+import { smallAlertDelete, Toast, Toast2 } from "../../assets/js/alertConfig";
+
 
 
 
 export default function Survey() {
+    const {t} = useTranslation();
     //const location = useLocation();
     //const queryParams = new URLSearchParams(location.search);
     //const link = queryParams.get("link"); // obtener el link
@@ -54,12 +59,9 @@ export default function Survey() {
         event.preventDefault();
         // Validar que hay respuestas antes de enviar
         if (answers.length === 0) {
-            Swal.fire({
-                title: 'Error',
-                text: 'No hay respuestas para enviar.',
-                icon: 'error',
-                confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#FF66B2',
+            Toast2.fire({
+                icon: "error",
+                title: t("alerts.no_hay_respuestas"),
             });
             return;
         }
@@ -70,12 +72,9 @@ export default function Survey() {
         );
 
         if (!allAnswered) {
-            Swal.fire({
-            title: 'Error',
-            text: 'Por favor responde todas las preguntas antes de enviar.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#FF66B2',
+        Toast2.fire({
+          icon: "error",
+          title: t("alerts.todas_preguntas"),
         });
         return;
     }
@@ -101,8 +100,8 @@ export default function Survey() {
                 console.log('Se recibió status 200, mostrando alerta');
                 // Alerta de éxito
                 Swal.fire({
-                    title: '¡Éxito!',
-                    text: 'Las respuestas se enviaron correctamente.',
+                    title: t("alerts.exito"),
+                    text: t("alerts.exito_enviar_respuestas"),
                     icon: 'success',
                     confirmButtonText: 'Aceptar',
                     confirmButtonColor: '#28a745', // verde
@@ -124,12 +123,9 @@ export default function Survey() {
         } catch (error) {
             console.error("Error al enviar respuestas:", error);
             // Alerta de error
-            Swal.fire({
-                title: 'Error',
-                text: 'Hubo un error al enviar las respuestas.',
-                icon: 'error',
-                confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#FF66B2',
+            Toast2.fire({
+                icon: "error",
+                title: `${t("alerts.error_enviar_respuestas")}`,
             });
         }
     };
@@ -228,6 +224,7 @@ export default function Survey() {
 
     return (
         <div>
+             <LanguageSelector />
             <svg
                 id="personalized-svg"
                 xmlns="http://www.w3.org/2000/svg"
@@ -300,7 +297,7 @@ export default function Survey() {
                             <div className="row">
                                 <div className="col-12">
                                     <button type="submit" className="btn btn-success m-2">
-                                        Enviar
+                                        {t("buttons.enviar")}
                                     </button>
                                 </div>
                             </div>

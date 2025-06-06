@@ -1,11 +1,15 @@
 import "../../assets/css/questions.css";
+import { useTranslation } from "react-i18next";
+
 
 
 function Range_onetofive() {
+    const { t } = useTranslation();
+
   return (
     <div className="input-group justify-content-center mt-4 mb-4">
     <div className="me-2">
-      <p className="ms-2 mt-2 fw-bold fs-6 redIncorrect">Muy insatisfecho</p>
+      <p className="ms-2 mt-2 fw-bold fs-6 redIncorrect">{t("vistaEncuestas.muy_insatisfecho")}</p>
     </div>
     <div className="btn-group " role="group" aria-label="Basic radio toggle button group">
       <a data-bs-toggle="tooltip" data-bs-title="Muy insatisfecho" className=' m-1'>
@@ -30,18 +34,19 @@ function Range_onetofive() {
       </a>
     </div>
     <div className="ms-2">
-      <p className="ms-2 fw-bold fs-6 mt-2 greenCorrect">Muy satisfecho</p>
+      <p className="ms-2 fw-bold fs-6 mt-2 greenCorrect">{t("vistaEncuestas.muy_satisfecho")}</p>
     </div>
   </div>
   )
 }
 
 function Range_zerototen (){
-  
+  const { t } = useTranslation();
+
   return (
   <div className="input-group justify-content-center mt-4 mb-4">
   <div className="me-2">
-    <p className="ms-2 fw-bold fs-6 mt-2  redIncorrect" >Nada probable</p>
+    <p className="ms-2 fw-bold fs-6 mt-2  redIncorrect" >{t("vistaEncuestas.nada_probable")}</p>
   </div>
   <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
     <a data-bs-toggle="tooltip" data-bs-title="Nada probable" className=' m-1'>
@@ -100,44 +105,48 @@ function Range_zerototen (){
     </a>
   </div>
   <div className="me-2">
-    <p className="ms-2 fw-bold fs-6 mt-2 greenCorrect">Muy probable</p>
+    <p className="ms-2 fw-bold fs-6 mt-2 greenCorrect">{t("vistaEncuestas.muy_probable")}</p>
   </div>
 </div>)
 }
 
 function Range_difficulty(){
+  const { t } = useTranslation();
+
   return(
     <div className="input-group justify-content-center mt-4 mb-4">
       <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
         <input type="radio" className="btn-check" name="dificult" id="dificultad1" autoComplete="off" value="Muy dificil"/>
-        <label className="btn btn-outline-danger" htmlFor="dificultad1">Muy difícil</label>
+        <label className="btn btn-outline-danger" htmlFor="dificultad1">{t("vistaEncuestas.muy_dificil")}</label>
 
         <input type="radio" className="btn-check" name="dificult" id="dificultad2" autoComplete="off" value="Dificil"/>
-        <label className="btn btn-outline-danger" htmlFor="dificultad2">Difícil</label>
+        <label className="btn btn-outline-danger" htmlFor="dificultad2">{t("vistaEncuestas.dificil")}</label>
 
         <input type="radio" className="btn-check" name="dificult" id="dificultad3" autoComplete="off" value="Neutro"/>
-        <label className="btn btn-outline-primary" htmlFor="dificultad3">Ni fácil/ni difícil</label>
+        <label className="btn btn-outline-primary" htmlFor="dificultad3">{t("vistaEncuestas.facil_dificil")}</label>
 
         <input type="radio" className="btn-check" name="dificult" id="dificultad4" autoComplete="off" value="Facil"/>
-        <label className="btn btn-outline-success" htmlFor="dificultad4">Fácil</label>
+        <label className="btn btn-outline-success" htmlFor="dificultad4">{t("vistaEncuestas.facil")}</label>
 
         <input type="radio" className="btn-check" name="dificult" id="dificultad5" autoComplete="off" value="Muy facil"/>
-        <label className="btn btn-outline-success" htmlFor="dificultad5">Muy fácil</label>
+        <label className="btn btn-outline-success" htmlFor="dificultad5">{t("vistaEncuestas.muy_facil")}</label>
       </div>
     </div>
      )
 }
 function Yes_no(){
+  const { t } = useTranslation();
+
   return(
     <div className="input-group justify-content-center mt-4 mb-4">
     <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
     <a data-bs-toggle="tooltip" data-bs-title="Muy probable" className=' m-1'>
     <input type="radio" className="btn-check" name="yes_no" id="si_no1" autoComplete="off" value="NO" />
-    <label className="btn btn-outline-danger" htmlFor="si_no1">NO</label>
+    <label className="btn btn-outline-danger" htmlFor="si_no1">{t("vistaEncuestas.NO")}</label>
     </a>
     <a data-bs-toggle="tooltip" data-bs-title="Muy probable" className=' m-1'>
     <input type="radio" className="btn-check" name="yes_no" id="si_no2" autoComplete="off" value="SI"/>
-    <label className="btn btn-outline-success" htmlFor="si_no2">SI</label>
+    <label className="btn btn-outline-success" htmlFor="si_no2">{t("vistaEncuestas.SI")}</label>
     </a>
     </div>
     </div>
@@ -145,6 +154,8 @@ function Yes_no(){
 }
 
 function Range_emoji(){
+  const { t } = useTranslation();
+
   return(
   <div className="input-group justify-content-center mt-4 mb-4">
     <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
@@ -163,13 +174,17 @@ function Range_emoji(){
 }
 
 function Textfield_s(){
+  const { t } = useTranslation();
+
   return(
   <div className="form-group">
-    <textarea name="" id="" cols="30" rows="3" className="form-control" placeholder="Escriba su respuesta aquí..."></textarea>
+    <textarea name="" id="" cols="30" rows="3" className="form-control" placeholder={t("vistaEncuestas.escriba_respuesta")}></textarea>
   </div>)
 }
 
 function SingleChoiceView({options,correctOption}){
+  const { t } = useTranslation();
+
   const optionsArray= options.split(",")
   const correctOptionToInt=parseInt(correctOption) 
   
@@ -193,6 +208,8 @@ function SingleChoiceView({options,correctOption}){
   )
 }
 function MultipleChoiceView({ options, correctOption }) {
+   const { t } = useTranslation();
+
   // Asegurar que 'options' sea un array
   const optionsArray = Array.isArray(options)
     ? options

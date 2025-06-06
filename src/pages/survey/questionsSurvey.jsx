@@ -1,5 +1,6 @@
 
 import { useState,useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 //Todos los tipos de pregunta manejan sus estados dependiendo al componente que se este nllamando, en el caso de preguntas 1-5 0-10 se manejan con
 //Range selector, en casos como respuest aunica o seleccion multiple se manejan bajo SingleSelector y MultipleSelector respectivamente, donde se muestran las opciones
@@ -100,6 +101,8 @@ function MultipleSelector({ answers, change, id }) {
 
 //Las funciones que continuan a este comentario sirven para renderizar condicionalmente los diferentes tipos de pregunta en el componente padre;
 function Range_zerototen_survey({id,change}) {
+    const { t } = useTranslation();
+
     const range = [
       { label: '0', value: 0, tooltip: 'Nada probable', color: 'danger' },
       { label: '1', value: 1, tooltip: 'Nada probable', color: 'danger' },
@@ -114,13 +117,15 @@ function Range_zerototen_survey({id,change}) {
       { label: '10', value: 10, tooltip: 'Muy probable', color: 'success' },
     ];
   
-    const labels = { min: 'Nada probable', max: 'Muy probable' };
+    const labels = { min: t("vistaEncuestas.nada_probable"), max: t("vistaEncuestas.muy_probable") };
   
     return <RangeSelector change={change} range={range} labels={labels} name={`recomendar_${id}`} />;
   }
 
 
 function Range_onetofive_survey({id,change}) {
+      const { t } = useTranslation();
+
     const range = [
       { label: '1', value: 1, tooltip: 'Insatisfecho', color: 'danger' },
       { label: '2', value: 2, tooltip: 'Insatisfecho', color: 'danger' },
@@ -128,17 +133,19 @@ function Range_onetofive_survey({id,change}) {
       { label: '4', value: 4, tooltip: 'Satisfecho', color: 'success' },
       { label: '5', value: 5, tooltip: 'Muy satisfecho', color: 'success' },
     ];
-    const labels = { min: 'Muy insatisfecho', max: 'Muy satisfecho' };
+    const labels = { min: t("vistaEncuestas.muy_insatisfecho"), max: t("vistaEncuestas.muy_satisfecho") };
     return <RangeSelector range={range}  change={change} labels={labels} name={`recomendar_${id}`} />;
   }
 
 function Range_difficulty_survey({id,change}){
+     const { t } = useTranslation();
+
     const range = [
-        { label: 'Muy dificil', value: "5", tooltip: 'Muy dificíl', color: 'danger' },
-        { label: 'Dificil', value: "4", tooltip: 'Dificíl', color: 'danger' },
-        { label: 'Ni fácil/ni difícil', value: "3", tooltip: 'Neutro', color: 'warning' },
-        { label: 'Facil', value: "2", tooltip: 'satisfecho', color: 'success' },
-        { label: 'Muy facil', value: "1", tooltip: 'Muy satisfecho', color: 'success' },
+        { label: t("vistaEncuestas.muy_dificil"), value: "5", tooltip: 'Muy dificíl', color: 'danger' },
+        { label: t("vistaEncuestas.dificil"), value: "4", tooltip: 'Dificíl', color: 'danger' },
+        { label: t("vistaEncuestas.facil_dificil"), value: "3", tooltip: 'Neutro', color: 'warning' },
+        { label: t("vistaEncuestas.facil"), value: "2", tooltip: 'satisfecho', color: 'success' },
+        { label: t("vistaEncuestas.muy_facil"), value: "1", tooltip: 'Muy satisfecho', color: 'success' },
       ];
       const labels = { min: 'Muy insatisfecho', max: 'Muy satisfecho' };
       return <RangeSelector range={range}  change={change} labels={"Na"} name={`recomendar_${id}`} />;
