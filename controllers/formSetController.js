@@ -2,6 +2,7 @@ const FormSet = require('../models/formSet');
 const FormDTO = require('../dtos/formDTO');
 
 const formSetController = {
+
     async forms(req, res) {
         try {
           // Utilizamos la función getAll para obtener los formularios con la información adicional
@@ -91,13 +92,14 @@ const formSetController = {
             if (!idValidation.status) {
                 return res.status(400).json(idValidation);
             }
-
+           
             const updated = await FormSet.update(req.params.id, req.body);
             if (!updated) {
                 return res.status(404).json({ status: '404', message: 'Formulario no encontrado' });
             }
             res.json({ status: '200', message: 'Formulario actualizado correctamente' });
         } catch (error) {
+            console.log("Error", error)
             res.status(500).json({ status: '500', message: 'Error al actualizar el formulario', error });
         }
     },

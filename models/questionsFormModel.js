@@ -8,11 +8,11 @@ class questionsFormModel {
 
   async createQuestionsForBlock(blockId, questions) {
     const typeMap = {
-      radio_opt: 1,
+      check_opt: 1,
       selector_opt: 2,
       textfield_s: 3,
-      check_opt: 4,
-      yes_no: 5,
+      // radio_opt: 4,
+      // yes_no: 5,
     };
 
     const dataToInsert = questions.map((q) => ({
@@ -61,7 +61,7 @@ class questionsFormModel {
       // 2. Si hay nuevas preguntas, insertarlas
       if (questions && questions.length > 0) {
         const typeMap = {
-          radio_opt: 1,
+          check_opt: 1,
           selector_opt: 2,
           textfield_s: 3,
         };

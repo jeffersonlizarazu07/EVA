@@ -4,7 +4,7 @@ const User = require('../models/user')
 
 class FormDTO {
     static async validateForm(data){
-        const { title, description, state, idClient, creation_date, created_by } = data;
+        const { title, description, state, idClient, created_by } = data;
         const allowedStates = [0, 1];
         const clientService = new ClientModel(knex);  // Instancia de la clase ClientModel
         
@@ -12,7 +12,7 @@ class FormDTO {
     // console.log("Datos del DTO", title, description, state, idClient, creation_date, created_by)
       
         //validar que todos los campos obligatorios estén presentes
-        if(!title || !description || !state || !idClient || !creation_date || !created_by){
+        if(!title || !description || !state || !idClient || !created_by){
             return {status : false, message : "Todos los campos son obligatorios"};
         }
 
@@ -44,11 +44,6 @@ class FormDTO {
             return {status : false, message : "El cliente no existe"};
         }
 
-        const dateStr = creation_date.replace(' ','T'); // Reemplazar espacio por 'T' para formato ISO
-        const startDateObj = new Date(dateStr); // Convertir a objeto de fecha
-        if (isNaN(startDateObj.getTime())) {
-            return { status: false, message: "La fecha de creación no es una fecha válida." };
-        }
 
         const numCreatedBy = parseInt(created_by);
         if(isNaN(numCreatedBy) || !Number.isInteger(numCreatedBy)){
@@ -79,14 +74,14 @@ class FormDTO {
     }
 
     static async validateUpdate(data){
-        const { title, description, state, idClient, updated_date, updated_by } = data;
+        const { title, description, state, idClient, updated_by } = data;
         const allowedStates = [0, 1];
         const clientService = new ClientModel(knex);  // Instancia de la clase ClientModel
         
-    console.log("Info en el DTO", data)
-    console.log("Datos del DTO", title, description, state, idClient, updated_date, updated_by)
+    // console.log("Info en el DTO", data)
+    // console.log("Datos del DTO", title, description, state, idClient, updated_by)
         //validar que todos los campos obligatorios estén presentes
-        if(!title || !description || !state || !idClient || !updated_date || !updated_by){
+        if(!title || !description || !state || !idClient || !updated_by){
             return {status : false, message : "Todos los campos son obligatorios"};
         }
 
@@ -118,11 +113,6 @@ class FormDTO {
             return {status : false, message : "El cliente no existe"};
         }
 
-        const dateStr = updated_date.replace(' ','T'); // Reemplazar espacio por 'T' para formato ISO
-        const startDateObj = new Date(dateStr); // Convertir a objeto de fecha
-        if (isNaN(startDateObj.getTime())) {
-            return { status: false, message: "La fecha de creación no es una fecha válida." };
-        }
 
         const numCreatedBy = parseInt(updated_by);
         if(isNaN(numCreatedBy) || !Number.isInteger(numCreatedBy)){
