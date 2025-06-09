@@ -28,8 +28,9 @@ const AdminList = () => {
 
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]);
+  const [admin, setAdmin] = useState([]);
   const [listClients, setListClients] = useState([]);
-  const [userclients, setUserClients] = useState([]);
+  const [userClients, setUserClients] = useState([]);
 
   // Estado para manejar la operación actual (ej: crear, editar, etc.)
   const [operation, setOperation] = useState([1]);
@@ -55,7 +56,7 @@ const AdminList = () => {
   // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const { accessToken, languageUser, clients } = useContext(UserContext);
 
-  const { id } = useParams();
+  const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
 
   const [userName, setUserName] = useState("");
 
@@ -178,6 +179,8 @@ const AdminList = () => {
   // Función para obtener los clientes asignados a un usuario específico
   const getUserClients = async (id) => {
     try {
+      console.log("Obteniendo clientes para el usuario ID:", id);
+
       // Hago la petición pasando el ID del usuario
       const response = await axios.get(
         `http://localhost:3000/api/users_client/${id}`,
@@ -186,46 +189,71 @@ const AdminList = () => {
       const responseData = response.data.data;
 
       // Imprimo los datos recibidos
-      console.log("respuesta", response.data.data);
+      console.log("Estructura de cada cliente:", responseData);
+      console.log("Clientes obtenidos:", responseData);
 
-      // Guardo los IDs de los clientes seleccionados en el estado
-      setSelectedClients(responseData.map((client) => client.idClient));
+      if (responseData && responseData.length > 0) {
+        // Guardo los IDs de los clientes seleccionados en el estado
+        setSelectedClients(responseData.map((client) => client.idClient));
 
-      // Verifico que se hayan guardado correctamente
-      console.log({ selectedClients });
+        setUserClients(
+          responseData.map((client) => ({
+            id: client.idClient,
+            name: client.clientName,
+          }))
+        );
+      } else {
+        // Si no hay clientes, limpiar los estados
+        setSelectedClients([]);
+        setUserClients([]);
+        console.log("No se encontraron clientes para este usuario");
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching user clients:", error);
+      // Limpiar estados en caso de error
+      setSelectedClients([]);
+      setUserClients([]);
     }
   };
 
-  useEffect(() => {
-    const getUserById = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/api/users/${id}`,
-          { withCredentials: true }
-        );
-        const user = response.data.data;
-        setUserName(user.name);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error al obtener el usuario:', error);
-        setLoading(false);
-      }
-    };
+  // Función para obtener un agente específico por ID
+  const getAgentById = async (agentId) => {
+    try {
+      setLoading(true); // Mostrar indicador de carga
 
-    if (id) getUserById();
-  }, [id]);
+      const response = await axios.get(
+        `http://localhost:3000/api/agent/${agentId}`,
+        { withCredentials: true }
+      );
+
+      console.log("Agente obtenido:", response.data.data);
+      return response.data.data; // Retornamos los datos del agente
+    } catch (error) {
+      console.error("Error obteniendo agente:", error);
+
+      // Mostrar mensaje de error al usuario
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo obtener la información del agente",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
+
+      return null;
+    } finally {
+      setLoading(false); // Ocultar indicador de carga
+    }
+  };
 
   // MODALS //
 
   // abrir el modal para seguir con el monitoreo
-  const openModal = (op, admin) => {
+  const openModal = async (op, admin) => {
     setOperation(op);
 
     // Si la operación es 1, es para registrar
     if (op == 1) {
-      setTitle(t("UserModal.RegisterUser"));
+      firstName.handleChange("");
       lastName.handleChange("");
       firstName.handleChange("");
       middleName.handleChange("");
@@ -236,25 +264,57 @@ const AdminList = () => {
       state.handleChange(1);
       registration_date.handleChange(formattedDate);
       last_visit_date.handleChange(formattedDate);
+      setSelectedClients([]); // Limpiar clientes seleccionados
+
+      if (admin && admin.id) {
+        await getUserClients(admin.id);
+        setTitle(
+          `Crear monitorización para ${admin.firstname} ${admin.lastname}`
+        );
+        setidToEdit(admin.id);
+        setUserName(
+          `${admin.firstname || ""} ${admin.middlename || ""} ${
+            admin.lastname || ""
+          }`.trim()
+        );
+      } else {
+        setSelectedClients([]); // Limpiar clientes seleccionados si no hay admin
+        setUserClients([]);
+        setTitle("Nueva monitorización");
+      }
 
       // Si la operación es 2, es para editar
     } else if (op == 2) {
-      // Traigo los clientes que tiene asignado el admin
-      getUserClients(admin.id);
+      // Para editar, obtenemos los datos completos del agente
+      const agentData = await getAgentById(admin.id);
 
-      setTitle(t("UserModal.EditUser"));
-      lastName.handleChange(admin?.lastname || "");
-      firstName.handleChange(admin?.firstname || "");
-      middleName.handleChange(admin?.middlename || "");
-      email.handleChange(admin?.email || "");
-      password.handleChange("");
-      type.handleChange(admin?.type || "");
-      state.handleChange(admin?.state || "");
-      language.handleChange(admin?.language || "en");
-      registration_date.handleChange(admin?.registration_date || "");
+      if (agentData) {
+        // Trae los clientes que tiene asignado el admin
+        getUserClients(admin.id);
 
-      // Guardo el id del usuario que se está editando
-      setidToEdit(admin?.id);
+        // Datos obtenidos del backend
+        setTitle(t("UserModal.EditUser"));
+        lastName.handleChange(agentData?.lastname || "");
+        firstName.handleChange(agentData?.firstname || "");
+        middleName.handleChange(agentData?.middlename || "");
+        email.handleChange(agentData?.email || "");
+        password.handleChange("");
+        type.handleChange(agentData?.type || "");
+        state.handleChange(agentData?.state || "");
+        language.handleChange(agentData?.language || "en");
+        registration_date.handleChange(agentData?.registration_date || "");
+        last_visit_date.handleChange(agentData?.last_visit_date || "");
+
+        // Guardo el id del usuario que se está editando
+        setidToEdit(agentData?.id);
+
+        // Guarda el nombre para mostrarlo en el modal
+        setUserName(
+          `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${
+            agentData?.lastname || ""
+          }`.trim()
+        );
+      }
     }
   };
 
@@ -265,23 +325,33 @@ const AdminList = () => {
     // Traigo los clientes del usuario
     await getUserClients(admin.id);
 
+    // Obtenemos los datos completos del agente
+    const agentData = await getAgentById(admin.id);
+
     // Cambio el título del modal a "Información"
     setTitle("Información");
 
     // Cargo la información del admin en los inputs
-    lastName.handleChange(admin?.lastname || "");
-    firstName.handleChange(admin?.firstname || "");
-    middleName.handleChange(admin?.middlename || "");
-    email.handleChange(admin?.email || "");
+    lastName.handleChange(agentData?.lastname || "");
+    firstName.handleChange(agentData?.firstname || "");
+    middleName.handleChange(agentData?.middlename || "");
+    email.handleChange(agentData?.email || "");
     password.handleChange("");
-    type.handleChange(admin?.type || "");
-    state.handleChange(admin?.state || "");
-    language.handleChange(admin?.language || "en");
-    registration_date.handleChange(admin?.registration_date || "");
-    last_visit_date.handleChange(admin?.last_visit_date || "Nunca");
+    type.handleChange(agentData?.type || "");
+    state.handleChange(agentData?.state || "");
+    language.handleChange(agentData?.language || "en");
+    registration_date.handleChange(agentData?.registration_date || "");
+    last_visit_date.handleChange(agentData?.last_visit_date || "Nunca");
 
     // Guardo el id del admin consultado
-    setidToEdit(admin?.id);
+    setidToEdit(agentData?.id);
+
+    // Guarda el nombre completo para mostrarlo en el modal
+    setUserName(
+      `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${
+        agentData?.lastname || ""
+      }`.trim()
+    );
   };
 
   // Función para formatear fechas que vienen del backend en formato ISO
@@ -306,7 +376,9 @@ const AdminList = () => {
     }
   };
 
-  //? Select //
+  console.log("userClients estado actual:", userClients);
+  console.log("loadingClients:", loadingClients);
+  console.log("Estructura completa de userClients:", JSON.stringify(userClients, null, 2));
 
   return (
     <div className="App">
@@ -344,7 +416,8 @@ const AdminList = () => {
           <div className="modal-content">
             <div className="modal-header">
               <label className="h5">
-                Jefferson Lizarazu {idToEdit}<span className="text-muted">5445856</span>
+                {userName || "Nuevo Agente"}{" "}
+                {idToEdit && <span className="text-muted">ID: {idToEdit}</span>}
               </label>
               <button
                 type="button"
@@ -360,40 +433,42 @@ const AdminList = () => {
 
               <div className="row g-3">
                 <div className="col-md-6">
-                  <label className="form-label">Monitor Company</label>
-                  <select className="form-select">
-                    <option>Teleperformance CO Colombia</option>
-                  </select>
-                </div>
-
-                <div className="col-md-6">
                   <label className="form-label">Monitor Client</label>
-                  <select className="form-select">
-                    <option>DirectTv</option>
-                  </select>
+                  {loadingClients ? (
+                    <div className="form-select d-flex align-items-center">
+                      <span>Cargando clientes...</span>
+                    </div>
+                  ) : (
+                    <select
+                      className="form-select"
+                      key={`client-select-${idToEdit || "new"}-${
+                        userClients.length
+                      }`}
+                      onChange={(e) =>
+                        console.log("Cliente seleccionado:", e.target.value)
+                      }
+                    >
+                      <option value="">
+                        {userClients.length === 0
+                          ? "No hay clientes disponibles"
+                          : "Seleccione un cliente"}
+                      </option>
+                      {userClients.map((client) => (
+                        <option key={`client-${client.id}`} value={client.id}>
+                          {client.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {/* Debug info - remover en producción */}
+                  <small className="text-muted">
+                    Debug: {userClients.length} clientes cargados
+                  </small>
                 </div>
 
                 <div className="col-md-6">
                   <label className="form-label">
                     Monitorizaciones <span className="text-danger">*</span>
-                  </label>
-                  <select className="form-select">
-                    <option>Seleccionar</option>
-                  </select>
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">
-                    Monitor Program <span className="text-danger">*</span>
-                  </label>
-                  <select className="form-select">
-                    <option>EPS Sura ANTQA Quality Assurance Analyst</option>
-                  </select>
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">
-                    Monitor Type <span className="text-danger">*</span>
                   </label>
                   <select className="form-select">
                     <option>Seleccionar</option>
@@ -415,17 +490,7 @@ const AdminList = () => {
                   <input
                     type="text"
                     className="form-control"
-                    value="1970334"
-                    readOnly
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">Email a</label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    value="jeffersonlizarazu@hotmail.com"
+                    value={`Id: ${idToEdit || ""}`}
                     readOnly
                   />
                 </div>
@@ -599,7 +664,7 @@ const AdminList = () => {
                           (c) => c.id === clientId
                         );
                         return client ? (
-                          <li key={listClients.id}>{client.client}</li>
+                          <li key={client.id}>{client.client}</li>
                         ) : null;
                       })
                     ) : (
