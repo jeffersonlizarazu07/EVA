@@ -9,7 +9,7 @@ const formSetController = {
           const forms = await FormSet.getAll();
           
           if (forms.length === 0) {
-            return res.status(404).json({ status: '404', message: 'No se encontraron formularios' });
+            return res.status(200).json({ data: [] });;
           }
       
           // Ya no necesitamos mapear los formularios, ya que la consulta `getAll` devuelve la estructura correcta
