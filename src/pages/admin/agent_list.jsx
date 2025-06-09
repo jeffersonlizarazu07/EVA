@@ -54,7 +54,7 @@ const AdminList = () => {
   const { t, i18n } = useTranslation();
 
   // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
-  const { accessToken, languageUser, clients } = useContext(UserContext);
+  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext);
 
   const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
 
@@ -150,7 +150,6 @@ const AdminList = () => {
           withCredentials: true,
         }
       );
-      console.log("Datos recibidos:", response.data);
 
       // Guardo los datos de los admins en el estado
       setAdmins(response.data.data);
@@ -179,18 +178,12 @@ const AdminList = () => {
   // Función para obtener los clientes asignados a un usuario específico
   const getUserClients = async (id) => {
     try {
-      console.log("Obteniendo clientes para el usuario ID:", id);
-
       // Hago la petición pasando el ID del usuario
       const response = await axios.get(
         `http://localhost:3000/api/users_client/${id}`,
         { withCredentials: true }
       );
       const responseData = response.data.data;
-
-      // Imprimo los datos recibidos
-      console.log("Estructura de cada cliente:", responseData);
-      console.log("Clientes obtenidos:", responseData);
 
       if (responseData && responseData.length > 0) {
         // Guardo los IDs de los clientes seleccionados en el estado
@@ -206,7 +199,6 @@ const AdminList = () => {
         // Si no hay clientes, limpiar los estados
         setSelectedClients([]);
         setUserClients([]);
-        console.log("No se encontraron clientes para este usuario");
       }
     } catch (error) {
       console.error("Error fetching user clients:", error);
@@ -225,8 +217,6 @@ const AdminList = () => {
         `http://localhost:3000/api/agent/${agentId}`,
         { withCredentials: true }
       );
-
-      console.log("Agente obtenido:", response.data.data);
       return response.data.data; // Retornamos los datos del agente
     } catch (error) {
       console.error("Error obteniendo agente:", error);
@@ -320,9 +310,7 @@ const AdminList = () => {
 
   // Esta función abre el modal de solo consulta (información del usuario)
   const openModalCont = async (admin) => {
-    console.log("admin completo:", admin);
-
-    // Traigo los clientes del usuario
+    // Trae los clientes del usuario
     await getUserClients(admin.id);
 
     // Obtenemos los datos completos del agente
@@ -376,10 +364,6 @@ const AdminList = () => {
     }
   };
 
-  console.log("userClients estado actual:", userClients);
-  console.log("loadingClients:", loadingClients);
-  console.log("Estructura completa de userClients:", JSON.stringify(userClients, null, 2));
-
   return (
     <div className="App">
       <div id="body">
@@ -415,10 +399,7 @@ const AdminList = () => {
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
             <div className="modal-header">
-              <label className="h5">
-                {userName || "Nuevo Agente"}{" "}
-                {idToEdit && <span className="text-muted">ID: {idToEdit}</span>}
-              </label>
+              <label className="h5">{userName || "Nuevo Agente"} </label>
               <button
                 type="button"
                 className="btn-close"
@@ -460,10 +441,6 @@ const AdminList = () => {
                       ))}
                     </select>
                   )}
-                  {/* Debug info - remover en producción */}
-                  <small className="text-muted">
-                    Debug: {userClients.length} clientes cargados
-                  </small>
                 </div>
 
                 <div className="col-md-6">
@@ -490,7 +467,13 @@ const AdminList = () => {
                   <input
                     type="text"
                     className="form-control"
-                    value={`Id: ${idToEdit || ""}`}
+                    value={
+                      userInfo
+                        ? `${userInfo.firstname || ""} ${
+                            userInfo.lastname || ""
+                          }`
+                        : "Cargando..."
+                    }
                     readOnly
                   />
                 </div>
