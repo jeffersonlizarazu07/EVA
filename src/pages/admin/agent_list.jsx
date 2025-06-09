@@ -54,8 +54,7 @@ const AdminList = () => {
   const { t, i18n } = useTranslation();
 
   // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
-  const { accessToken, languageUser, clients, userInfo } =
-    useContext(UserContext);
+  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext);
 
   const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
 
@@ -399,21 +398,18 @@ const AdminList = () => {
       <div id="modalAdmin" className="modal fade" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
-            <div className="modal-header mb-o pb-0">
-              <div className="d-flex flex-column">
-                <h4 className="fw-bold mb-3">Crear una monitorización</h4>
-                <label className="h5">{userName || "Nuevo Agente"}</label>
-                <label className="nameForm">Formulario: {}</label>
-              </div>
+            <div className="modal-header">
+              <label className="h5">{userName || "Nuevo Agente"} </label>
               <button
                 type="button"
-                className="btn-close mb-5"
+                className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="close"
               ></button>
             </div>
 
             <div className="modal-body">
+              <h4 className="fw-bold mb-3">Crear una monitorización</h4>
               <h5 className="mb-3">Configuración de Monitorizaciones</h5>
 
               <div className="row g-3">
@@ -482,7 +478,7 @@ const AdminList = () => {
                   />
                 </div>
 
-                {/* <div className="col-12">
+                <div className="col-12">
                   <div className="form-check">
                     <input
                       className="form-check-input"
@@ -493,7 +489,7 @@ const AdminList = () => {
                       Enviar email ahora
                     </label>
                   </div>
-                </div> */}
+                </div>
               </div>
             </div>
 
