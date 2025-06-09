@@ -172,19 +172,19 @@ const Reports = () => {
   
   if (error.response && error.response.status === 404) {
      Swal.fire({
-            title: 'Sin datos',
-            text: 'No se encontraron datos para las fechas proporcionadas.',
+            title: t("reports.sin_datos"),
+            text: t("reports.texto_sin_datos"),
             icon: 'info',
-            confirmButtonText: 'Aceptar',
+            confirmButtonText: t("buttons.aceptar"),
             confirmButtonColor: '#FF66B2',
           });
   }else{
     // Muestra un mensaje de error usando SweetAlert
     Swal.fire({
-      title: 'Error',
-      text: 'Hubo un error al obtener los datos.',
+      title: t("alerts.error"),
+      text: t("alerts.error_obtener_datos"),
       icon: 'error',
-      confirmButtonText: 'Aceptar',
+      confirmButtonText: t("buttons.aceptar"),
       confirmButtonColor: '#FF66B2',
   });
   }  
@@ -225,10 +225,8 @@ const Reports = () => {
       Swal.fire({
         icon: "warning",
         toast: false,
-        text: "Por favor selecciona primero la fecha de inicio",
-        showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        text: t("alerts.fecha_incio_Seleccione"),
+        confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -242,10 +240,8 @@ const Reports = () => {
       Swal.fire({
         icon: "warning",
         toast: false,
-        text: "La fecha de fin no puede ser mayor a la fecha actual",
-        showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        text: t("alerts.fecha_fin_mayor"),
+        confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -260,10 +256,8 @@ const Reports = () => {
       Swal.fire({
         icon: "warning",
         toast: false,
-        text: "La fecha de fin no puede ser menor a la fecha de inicio",
-        showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        text: t("alerts.fecha_fin_menor"),
+        confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -314,7 +308,7 @@ const exportCharts = async () => {
 
     downloadToast = Toast.fire({
     icon: "info", // Puedes usar 'info' o 'loading' si tu librería Toast lo soporta
-    title: "Preparando gráficas...",
+    title: t("reports.preparando_graficas"), // Título del Toast
     text: "0%", // Texto inicial con el porcentaje
     position: 'bottom-end', // Posición en la esquina inferior derecha
     showConfirmButton: false, // No mostrar botón de confirmación
@@ -397,10 +391,10 @@ const exportCharts = async () => {
     
     // Mensaje de éxito
     Swal.fire({
-      title: 'Éxito',
-      text: 'El reporte se ha descargado correctamente',
+      title: t("alerts.exito"),
+      text: t("reports.descargar_reporte"),
       icon: 'success',
-      confirmButtonText: 'Aceptar',
+      confirmButtonText: t("buttons.aceptar"),
       confirmButtonColor: '#b62a8b',
     });
     
@@ -416,10 +410,10 @@ const exportCharts = async () => {
   } catch (error) {
     console.error("Error al generar el PDF:", error);
     Swal.fire({
-      title: 'Error',
-      text: 'Hubo un problema al generar el PDF',
+      title: t("alerts.error"),
+      text: t("alerts.problema_descargar_pdf"),
       icon: 'error',
-      confirmButtonText: 'Aceptar',
+      confirmButtonText: t("buttons.aceptar"),
       confirmButtonColor: '#b62a8b',
     });
   }
@@ -460,7 +454,7 @@ const renderTextResponse = (item, index) => {
                       className=" p-3 text-white font-bold text-center" 
                       style={{ backgroundColor: '#b62a8b', }}
                     >
-                      Respuesta
+                      {t("reports.respuestas")}
                     </th>
                   </tr>  
                 </TableHead>
@@ -526,13 +520,13 @@ const renderCheckOptResponse = (item, index) => {
                     className=" p-3 text-white font-bold text-start" 
                     style={{ backgroundColor: '#b62a8b', }}
                   >
-                    Respuesta
+                    {t("reports.respuestas")}
                   </th>
                   <th 
                     className="p-3 text-white font-bold text-start" 
                     style={{ backgroundColor: '#b62a8b',}}
                   >
-                    Porcentaje
+                    {t("reports.porcentaje")}
                   </th>
                 </tr>
                 </TableHead>

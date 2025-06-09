@@ -43,8 +43,11 @@ Chart.register(
   zoomPlugin,
   Filler
 );
+import { useTranslation } from "react-i18next";
 
 const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
+  const {t} = useTranslation();
+
   console.log("Componente LineStyleCharts renderizado");
   console.log("Datos recibidos por LineStyleCharts:", dataChart);
 
@@ -259,7 +262,7 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
     labels: filteredElements.labels,
     datasets: [
       {
-        label: "Datos",  // Cambiado a español
+        label: t("reports.datos"),  // Cambiado a español
         data: filteredElements.data,
         borderColor: filteredElements.borders,
         backgroundColor: filteredElements.backgrounds,
@@ -344,14 +347,14 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
                 x: {
                   title: {
                     display: true,
-                    text: "Categorías",  // Ya en español
+                    text: t("reports.categorias"),  // Ya en español
                   },
                 },
                 y: {
                   beginAtZero: true,
                   title: {
                     display: true,
-                    text: "Valores",  // Ya en español
+                    text: t("reports.valores"),  // Ya en español
                   },
                 },
               }
@@ -373,10 +376,10 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
     <div>
       <div className="row m-0 p-0 d-flex justify-content-around">
         <div className="col d-flex justify-content-center">
-          <p className="fs-6 fw-bold fst-italic">Porcentaje mínimo</p>
+          <p className="fs-6 fw-bold fst-italic">{t("reports.porcentaje_minimo")}</p>
         </div>
         <div className="col d-flex justify-content-center">
-          <p className="fs-6 fw-bold fst-italic">Porcentaje máximo</p>
+          <p className="fs-6 fw-bold fst-italic">{t("reports.porcentaje_maximo")}</p>
         </div>
       </div>
       <div className="row mb-3 d-flex justify-content-around">
