@@ -88,18 +88,29 @@ const FormList = () => {
   };
 
   const getForms = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        "http://localhost:3000/api/forms",
-        config
-      );
-      setForms(response.data.data);
-    } catch (error) {
-      console.error("Error al obtener formularios:", error);
+  setLoading(true);
+
+  try {
+    const response = await axios.get(
+      "http://localhost:3000/api/forms",
+      config
+    );
+
+    const forms = response.data.data;
+
+    if (Array.isArray(forms) && forms.length === 0) {
+      console.log("No existen formularios");
+      // También puedes usar setForms([]) y mostrar un mensaje en la interfaz
+    } else {
+      setForms(forms);
     }
+
+  } catch (error) {
+    console.error("Error al obtener formularios:", error);
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   const getClients = async () => {
     try {
