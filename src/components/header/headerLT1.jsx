@@ -24,6 +24,24 @@ import { ThemeContext } from '../../assets/js/ThemeContext';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import LanguageIcon from '@mui/icons-material/Language';
+import MenuIcon from '@mui/icons-material/Menu';
+import SettingsIcon from '@mui/icons-material/Settings';
+// Importaciones de Material UI para el layout
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Container,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  useTheme,
+  Paper
+} from "@mui/material";
 
 const HeaderLT1 = () => {
   const { accessToken, userId, languageUser, setLanguageUser } =
@@ -33,12 +51,11 @@ const HeaderLT1 = () => {
   const open = Boolean(anchorEl);
   const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
 
-
-
   useEffect(() => {
     checkinfo();
     i18n.changeLanguage(languageUser);
   }, [languageUser]);
+  
   const [userLanguage, setUserLanguaje] = useState({ language: "" });
   const [userInfo, setUserInfo] = useState({
     firstname: "",
@@ -72,14 +89,14 @@ const HeaderLT1 = () => {
       /^(?=.[A-Z])(?=.[a-z])(?=.\d)(?=.[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/,
   });
   const [confirmPassword, setConfirmPassword] = useState("");
-const [confirmError, setConfirmError] = useState("");
-
+  const [confirmError, setConfirmError] = useState("");
 
   const nav = useNavigate();
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
+  
   const logout = async () => {
     try {
       await axios.post('http://localhost:3000/api/logout', {}, {
@@ -96,8 +113,6 @@ const [confirmError, setConfirmError] = useState("");
       console.error("Error al cerrar sesión:", error);
     }
   };
-  
-  
 
   const config = {
     withCredentials: true,
@@ -134,6 +149,7 @@ const [confirmError, setConfirmError] = useState("");
       console.error(error);
     }
   };
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUserLanguaje((prevUserInfo) => ({
@@ -191,16 +207,12 @@ const [confirmError, setConfirmError] = useState("");
       });
     }
   };
-  
-  
-  
 
   function stringAvatar(name) {
     return {
       sx: {
         background:
           "linear-gradient(129deg, rgba(199, 14, 143, 1) 37%, rgba(95, 9, 121, 1) 69%)",
-        // WebkitBackgroundClip: "text",
         WebkitTextFillColor: "white",
         fontSize: "20px",
         cursor: "pointer",
@@ -273,11 +285,10 @@ const [confirmError, setConfirmError] = useState("");
     setAnchorEl(null);
   };
 
-  const location = useLocation();  // Hook para obtener la URL actual
+  const location = useLocation();
   
-  // Función para determinar el color del botón basado en la URL
   const getButtonColor = (path) => {
-    return location.pathname === path ? 'rgb(199, 14, 143)' : '#000';
+    return location.pathname === path ? 'rgb(199, 14, 143)' : (theme === 'dark' ? '#fff' : '#000');
   };
 
   const handleLanguageClick = (event) => {
@@ -301,167 +312,205 @@ const [confirmError, setConfirmError] = useState("");
     handleLanguageClose();
   };
 
+
+  // Componente personalizado para el separador vertical
+  const VerticalDivider = styled(Box)(({ theme }) => ({
+    width: '1px',
+    height: '24px',
+    backgroundColor: theme === 'dark' ? '#666' : '#dee2e6',
+    margin: '0 16px',
+  }));
+
+
+
   return (
-    
-    <header className="sticky-top">
-      <nav className="navbar navbar-expand-lg m-2 mb-3" id="nav-Claro">
-        <div className="container-fluid">
-          <div className="row w-100">
-            <div className="col-1 col-sm-6 col-md-1 col-lg-1 d-flex justify-content-center align-items-center">
-              <button
-                className="d-lg-none d-block bg-transparent"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-              >
-                <i id="icono" className="fa-solid fa-bars"></i>
-              </button>
-              <a className="" href="/admin">
-                <img id="logo" src={Logo} alt="" />
-              </a>
-            </div>
-            <div className="col-10 col-md-10 col-lg-10 d-flex align-items-center m-0 p-0 justify-content-around">
+    <Box sx={{ position: 'sticky', top: 0, zIndex: 1100 }}>
+      <Paper
+        elevation={2}
+        sx={{
+          margin: 2,
+          marginBottom: 3,
+          borderRadius: '25px',
+          border: '2px solid rgb(199, 14, 143)',
+          backgroundColor: theme === 'dark' ? 'rgb(33, 37, 41)' : 'white',
+        }}
+      >
+        <AppBar
+          position="static"
+          elevation={0}
+          sx={{
+            backgroundColor: 'transparent',
+            borderRadius: '25px',
+            color: theme === 'dark' ? '#fff' : '#000',
+          }}
+        >
+          <Toolbar sx={{ justifyContent: 'space-between', px: 2 }}>
+            {/* Lado izquierdo - Logo y menú móvil */}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>             
+              {/* Logo */}
+              <Box
+                component="img"
+                src={Logo}
+                alt="Logo"
+                sx={{
+                  width: '63px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => nav("/admin")}
+              />
+            </Box>
+
+            {/* Navegación  */}
+            <Box sx={{ 
+              display: { xs : 'flex', lg: 'flex' }, 
+              alignItems: 'center',
+              flexGrow: 1,
+              justifyContent: 'center',
+              gap: 15
+            }}>
               <MUIButton
                 variant="text"
                 sx={{
-                  color: getButtonColor("/admin"),  // Establecer color dinámicamente
+                  fontSize: '95%',
+                  color: getButtonColor("/admin"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
                   },
+                  fontWeight: 'bold',
                 }}
-                className="fw-bold h-100 m-0 p-0"
                 onClick={() => nav("/admin")}
                 disableRipple
+                startIcon= {<HomeIcon sx={{ fontSize: '120% !important'  }} />}
               >
-                <HomeIcon className="me-1" />
                 {t("header.Home")}
               </MUIButton>
-              <div className="vr"></div>
+
+              <VerticalDivider theme={theme} />
+
               <MUIButton
                 variant="text"
                 sx={{
-                  color: getButtonColor("/admin_list"),  // Establecer color dinámicamente
+                  fontSize: '95%',
+                  color: getButtonColor("/admin_list"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
                   },
+                  fontWeight: 'bold',
                 }}
-                className="fw-bold h-100 m-0 p-0"
                 onClick={() => nav("/admin_list")}
                 disableRipple
+                startIcon={<PersonIcon sx={{ fontSize: '120% !important'  }} />}
               >
-                <PersonIcon className="me-1" />
                 {t("header.Users")}
               </MUIButton>
-              <div className="vr"></div>
+
+              <VerticalDivider theme={theme} />
+
               <MUIButton
                 variant="text"
                 sx={{
-                  color: getButtonColor("/client_list"),  // Establecer color dinámicamente
+                  fontSize: '95%',
+                  color: getButtonColor("/client_list"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
                   },
+                  fontWeight: 'bold',
                 }}
-                className="fw-bold h-100 m-0 p-0"
                 onClick={() => nav("/client_list")}
                 disableRipple
+                startIcon={<AssignmentIndIcon sx={{ fontSize: '120% !important'  }} />}
               >
-                <AssignmentIndIcon className="me-1" />
                 {t("header.Clients")}
               </MUIButton>
-            </div>
-            <div className="col-1 col-sm-6 col-md-1 col-lg-1 d-flex align-items-center justify-content-end">
+            </Box>
 
-            {/*selector de idioma */}
-            <Tooltip  placement="top">
-              <MUIButton 
-                aria-controls="language-menu"
-                aria-haspopup="true"
-                onClick={handleLanguageClick}
-                disableRipple 
-                sx={{
-                  mr: 2,
-                  minWidth: 'auto',
-                  color: 'inherit',
-                  '&:hover': {
-                    background: 'transparent',
-                  }
+            {/* Lado derecho - Controles */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Selector de idioma */}
+              <Tooltip title="Cambiar idioma" placement="top">
+                <IconButton
+                  aria-controls="language-menu"
+                  aria-haspopup="true"
+                  onClick={handleLanguageClick}
+                  disableRipple
+                  sx={{
+                    color: 'inherit',
+                    '&:hover': {
+                      background: 'transparent',
+                    }
+                  }}
+                >
+                  <LanguageIcon sx={{
+                    fontSize: '2rem',
+                    fill: 'url(#gradient-text)',
+                  }} />
+                  <svg width="0" height="0">
+                    <defs>
+                      <linearGradient id="gradient-text" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="37%" stopColor="rgba(199,14,143,1)" />
+                        <stop offset="69%" stopColor="rgba(95,9,121,1)" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </IconButton>
+              </Tooltip>
+
+              {/* Menú de idiomas */}
+              <Menu
+                id="language-menu"
+                anchorEl={languageAnchorEl}
+                open={Boolean(languageAnchorEl)}
+                onClose={handleLanguageClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
                 }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'center',
+                }} 
               >
-              <LanguageIcon sx={{
-                fontSize: '2rem',
-                fill: 'url(#gradient-text)',
-                }}
-              />
-              <svg width="0" height="0">
-                <defs>
-                  <linearGradient id="gradient-text" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="37%" stopColor="rgba(199,14,143,1)" />
-                    <stop offset="69%" stopColor="rgba(95,9,121,1)" />
-                  </linearGradient>
-                </defs>
-            </svg> 
-            </MUIButton>
-          </Tooltip>
+                <MenuItem onClick={() => handleLanguageChange("es")}>
+                  <span className="flag-icon flag-icon-es me-2"></span>
+                  Español
+                </MenuItem>
+                <MenuItem onClick={() => handleLanguageChange("en")}>
+                  <span className="flag-icon flag-icon-us me-2"></span>
+                  Inglés
+                </MenuItem>
+                <MenuItem onClick={() => handleLanguageChange("it")}>
+                  <span className="flag-icon flag-icon-it me-2"></span>
+                  Italiano
+                </MenuItem>
+                <MenuItem onClick={() => handleLanguageChange("pt")}>
+                  <span className="flag-icon flag-icon-pt me-2"></span>
+                  Portugués
+                </MenuItem>
+              </Menu>
 
-          {/* Menú de idiomas */}
-          <Menu
-            id="language-menu"
-            anchorEl={languageAnchorEl}
-            open={Boolean(languageAnchorEl)}
-            onClose={handleLanguageClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'center',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'center',
-            }}
-          >
-            <MenuItem onClick={() => handleLanguageChange("es")}>
-              <span className="flag-icon flag-icon-es me-2"></span>
-              Español
-            </MenuItem>
-            <MenuItem onClick={() => handleLanguageChange("en")}>
-              <span className="flag-icon flag-icon-us me-2"></span>
-              Inglés
-            </MenuItem>
-            <MenuItem onClick={() => handleLanguageChange("it")}>
-              <span className="flag-icon flag-icon-it me-2"></span>
-              Italiano
-            </MenuItem>
-            <MenuItem onClick={() => handleLanguageChange("pt")}>
-              <span className="flag-icon flag-icon-pt me-2"></span>
-              Portugués
-            </MenuItem>
-          </Menu>
-
+              {/* Switch de modo oscuro */}
               <Tooltip title="Cambiar a modo oscuro" placement="top">
                 <FormControlLabel
-                  control={<MaterialUISwitch
-                    checked={theme === 'dark'}
-                    onChange={toggleTheme}
-                  />
+                  control={
+                    <MaterialUISwitch
+                      checked={theme === 'dark'}
+                      onChange={toggleTheme}
+                    />
                   }
                   label=""
                 />
               </Tooltip>
-              {/* [//?Poner modo oscuro] */}
-              {/* <div className="vr fw-bold m-1 border border-black border-1" /> */}
-              {/* <i id="iconoDegradado" className="fa-solid fa-circle m-2"></i> */}
-              <span className="ps-2 align-items-center">
-                <Avatar
-                  {...stringAvatar(
-                    `${userInfo.firstname} ${userInfo.lastname}`
-                  )}
-                  aria-controls={open ? "basic-menu" : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={open ? "true" : undefined}
-                  onClick={handleClick}
-                />
-              </span>
+
+              {/* Avatar del usuario */}
+              <Avatar
+                {...stringAvatar(`${userInfo.firstname} ${userInfo.lastname}`)}
+                aria-controls={open ? "basic-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+                onClick={handleClick}
+              />
+
+              {/* Menú del avatar */}
               <Menu
                 id="basic-menu"
                 anchorEl={anchorEl}
@@ -471,364 +520,20 @@ const [confirmError, setConfirmError] = useState("");
                   "aria-labelledby": "basic-button",
                 }}
               >
-                {/* <MenuItem
-                  data-bs-toggle="modal"
-                  data-bs-target="#userModalInfo2"
-                  onClick={() => {
-                    openModal(), handleClose();
-                  }}
-                >
-                  Gestionar cuenta
-                </MenuItem> */}
                 <MenuItem
                   onClick={() => {
-                    handleClose(), logout();
+                    handleClose();
+                    logout();
                   }}
                 >
                   {t("headerlt.Logout")}
                 </MenuItem>
               </Menu>
-            </div>
-            <div
-              className="col-1 col-md-1 col-lg-1 d-lg-none collapse navbar-collapse"
-              id="navbarNav"
-              style={{ border: "none" }}
-            >
-              <div id="div_ul" className="d-lg-none mt-3">
-                <ul className="p-2 ul-colapse">
-                  <li className="nav-item">
-                    <a className="nav-link tooltip-container" href="/index">
-                      <i id="iconoDegradado" className="fa-solid fa-house"></i>
-                    </a>
-                  </li>
-                  <br />
-                  <li className="nav-item">
-                    <a className="nav-link tooltip-container" href="admin_list">
-                      <i id="iconoDegradado" className="fa-solid fa-user"></i>
-                    </a>
-                  </li>
-                  <br />
-                  <li className="nav-item">
-                    <a
-                      className="nav-link tooltip-container"
-                      href="client_list"
-                    >
-                      <i
-                        id="iconoDegradado"
-                        className="fa-solid fa-id-card-clip"
-                      ></i>
-                    </a>
-                  </li>
-                  <br />
-                  <a
-                    className="dropdown-toggle nav-link link-dark"
-                    id="dropdownMenuButton"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i id="iconoDegradado" className="fa-solid fa-gear"></i>
-                  </a>
-                  <li className="nav-item dropdown">
-                    <ul
-                      className="dropdown-menu"
-                      aria-labelledby="dropdownMenuButton"
-                    >
-                      {/* <li>
-                        <button
-                          className="dropdown-item"
-                          data-bs-toggle="modal"
-                          data-bs-target="#userModalInfo2"
-                          onClick={() => openModal()}
-                        >
-                          {t("headerlt.Manage_account")}
-                        </button>
-                      </li> */}
-                      <li>
-                        <button
-                          className="dropdown-item"
-                          onClick={() => logout()}
-                        >
-                          {t("headerlt.Logout")}
-                        </button>
-                      </li>
-                      {/* [//! Cerrar sesión] */}
-                    </ul>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-      {/* <ManageUser data={fakeData}/> */}
-      {/* <Modal isOpen={modal} toggle={openModal} centered>
-        <ModalHeader toggle={closeModal}>
-          {t("headerlt.Manage_account")}
-        </ModalHeader>
-        <ModalBody>
-          <div id="msg"></div>
-
-          <div className="form-group m-2">
-            <label htmlFor="firstname" className="form-label">
-              {t("headerlt.First_name")}
-            </label>
-            <input
-              type="text"
-              name="firstname"
-              id="firstname"
-              className="form-control"
-              placeholder=" "
-              value={firstName.input}
-              onChange={(e) => firstName.handleChange(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group m-2">
-            <label htmlFor="middlename" className="form-label">
-              {t("headerlt.Middle_name")}
-            </label>
-            <input
-              type="text"
-              name="middlename"
-              id="middlename"
-              className="form-control"
-              placeholder=" "
-              value={middleName.input}
-              onChange={(e) => middleName.handleChange(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group m-2">
-            <label htmlFor="lastname" className="form-label">
-              {t("headerlt.Last_name")}
-            </label>
-            <input
-              type="text"
-              name="lastname"
-              id="lastname"
-              className="form-control"
-              placeholder=" "
-              value={lastName.input}
-              onChange={(e) => lastName.handleChange(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group m-2">
-            <label htmlFor="email" className="form-label">
-              {t("headerlt.Email")}
-            </label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              className="form-control"
-              placeholder=" "
-              value={email.input}
-              onChange={(e) => email.handleChange(e.target.value)}
-              required
-              autoComplete="off"
-            />
-          </div>
-
-          <div className="form-group m-2">
-            <label htmlFor="password" className="form-label">
-              {t("headerlt.Password")}
-            </label>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              className="form-control"
-              placeholder=" "
-              onChange={(e) => password.handleChange(e.target.value)}
-            />
-            <small>
-              <i>
-                {t(
-                  "headerlt.Leave_this_blank_if_you_dont_want_to_change_the_password"
-                )}
-              </i>
-            </small>
-          </div>
-
-          <div className="form-group m-2">
-            <label htmlFor="cpass" className="form-label">
-              {t("headerlt.Confirm_Password")}
-            </label>
-            <input
-              type="password"
-              name="cpass"
-              id="cpass"
-              className="form-control"
-              placeholder=" "
-              value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  setConfirmError("");
-                }}
-            />
-             {confirmError && (
-    <div className="text-danger mt-1" style={{ fontSize: "14px" }}>
-      {confirmError}
-    </div>
-  )}
-            <small id="pass_match" data-status=""></small>
-          </div>
-
-          <p className="lang m-2" key="titulo26">
-            {t("headerlt.Language")}
-          </p>
-          {/* IDIOMAAAAAAA 
-          <div
-            className="btn-group flex-wrap m-2"
-            role="group"
-            aria-label="Basic radio toggle button group"
-          >
-            <input
-              type="radio"
-              className="btn-check translate"
-              id="es"
-              value="es"
-              name="language"
-              autoComplete="off"
-              checked={language.input === "es"}
-              onChange={async (e) => {
-                language.handleChange(e.target.value);
-                i18n.changeLanguage(e.target.value);
-                setLanguageUser(e.target.value);
-                const parameters = {
-                  language: e.target.value,     
-                };
-            
-                try {
-                  await axios.put(`${url}${userId}`, parameters, config);
-        
-                } catch (error) {
-                  console.error("Error al actualizar el idioma:", error);
-                }
-              }}
-             
-            />
-            <label
-              className="btn btn-outline-dark lang"
-              htmlFor="es"
-              key="titulo27"
-            >
-              {t("headerlt.Spanish")}
-            </label>
-
-            <input
-              type="radio"
-              className="btn-check translate"
-              id="en"
-              value="en"
-              name="language"
-              autoComplete="off"
-              checked={language.input === "en"}
-              onChange={async (e) => {
-                language.handleChange(e.target.value);
-                i18n.changeLanguage(e.target.value);
-                setLanguageUser(e.target.value);
-                const parameters = {
-                  language: e.target.value,     
-                };
-            
-                try {
-                  await axios.put(`${url}${userId}`, parameters, config);
-        
-                } catch (error) {
-                  console.error("Error al actualizar el idioma:", error);
-                }
-              }}
-             
-            />
-            <label
-              className="btn btn-outline-dark lang"
-              htmlFor="en"
-              key="titulo28"
-            >
-              {t("headerlt.English")}
-            </label>
-
-            <input
-              type="radio"
-              className="btn-check translate"
-              id="it"
-              value="it"
-              name="language"
-              autoComplete="off"
-              checked={language.input === "it"}
-              onChange={async (e) => {
-                language.handleChange(e.target.value);
-                i18n.changeLanguage(e.target.value);
-                setLanguageUser(e.target.value);
-                const parameters = {
-                  language: e.target.value,     
-                };
-            
-                try {
-                  await axios.put(`${url}${userId}`, parameters, config);
-        
-                } catch (error) {
-                  console.error("Error al actualizar el idioma:", error);
-                }
-              }}
-             
-            />
-            <label
-              className="btn btn-outline-dark lang"
-              htmlFor="it"
-              key="titulo29"
-            >
-              {t("headerlt.Italian")}
-            </label>
-
-            <input
-              type="radio"
-              className="btn-check translate"
-              id="pt"
-              value="pt"
-              name="language"
-              autoComplete="off"
-              checked={language.input === "pt"}
-              onChange={async (e) => {
-                language.handleChange(e.target.value);
-                i18n.changeLanguage(e.target.value);
-                setLanguageUser(e.target.value);
-                const parameters = {
-                  language: e.target.value,     
-                };
-            
-                try {
-                  await axios.put(`${url}${userId}`, parameters, config);
-        
-                } catch (error) {
-                  console.error("Error al actualizar el idioma:", error);
-                }
-              }}
-             
-            />
-            <label
-              className="btn btn-outline-dark lang"
-              htmlFor="pt"
-              key="titulo30"
-            >
-              {t("headerlt.Portuguese")}
-            </label>
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" onClick={closeModal}>
-            {t("headerlt.Close")}
-          </Button>
-          <Button color="primary" onClick={updateInfo}>
-            {t("headerlt.Save_changes")}
-          </Button>
-        </ModalFooter>
-      </Modal> */}
-    </header>
+            </Box>
+          </Toolbar>
+        </AppBar>
+      </Paper>
+    </Box>
   );
 };
 
