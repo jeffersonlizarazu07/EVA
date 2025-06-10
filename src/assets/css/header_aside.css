@@ -114,3 +114,30 @@ ul {
 #logo{
   width: 63px;
 }
+
+
+/* Estilos para el menú de idiomas */
+.MuiMenu-paper {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Estilos para los MenuItem */
+.MuiMenuItem-root {
+  padding: 8px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: rgba(199, 14, 143, 0.08) !important;
+}
+
+/* Estilos para el avatar */
+.MuiAvatar-root {
+  transition: transform 0.2s ease-in-out !important;
+}
+
+.MuiAvatar-root:hover {
+  transform: scale(1.105) !important;
+}
