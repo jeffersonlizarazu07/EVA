@@ -31,38 +31,23 @@ const AdminList = () => {
   const [admin, setAdmin] = useState([]);
   const [listClients, setListClients] = useState([]);
   const [userClients, setUserClients] = useState([]);
-
-  // Estado para manejar la operación actual (ej: crear, editar, etc.)
-  const [operation, setOperation] = useState([1]);
-
-  // Estado para el título del formulario/modal
-  const [title, setTitle] = useState();
-
-  // Estado para guardar el id del usuario que voy a editar
-  const [idToEdit, setidToEdit] = useState(null);
-
-  // Estado para la fecha formateada de hoy (yyyy-mm-dd)
-  const [formattedDate, setFormattedDate] = useState("");
-
-  // Estado para controlar el estado de carga (ej: mostrar spinner mientras carga algo)
-  const [loading, setLoading] = useState(false);
-
-  // Estado para manejar los clientes seleccionados (checkbox múltiple)
-  const [selectedClients, setSelectedClients] = useState([]);
-
-  // Hook para traducciones y cambio de idioma dinámico
-  const { t, i18n } = useTranslation();
-
-  // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
-  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext);
-
+  const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
+  const [title, setTitle] = useState(); // Estado para el título del formulario/modal
+  const [idToEdit, setidToEdit] = useState(null); // Estado para guardar el id del usuario que voy a editar
+  const [formattedDate, setFormattedDate] = useState(""); // Estado para la fecha formateada de hoy (yyyy-mm-dd)
+  const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga (ej: mostrar spinner)
+  const [selectedClients, setSelectedClients] = useState([]); // Estado para manejar los clientes seleccionados (checkbox múltiple)
+  const [selectedClientId, setSelectedClientId] = useState(""); // Estado para el cliente seleccionado
+  const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
+  const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
+  const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
+  const { accessToken, languageUser, clients, userInfo } =
+    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
-
-  const [userName, setUserName] = useState("");
-
-  // Iconos para los checkboxes (vacío y seleccionado)
-  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
-  const checkedIcon = <CheckBoxIcon fontSize="small" />;
+  const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
+  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
+  const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
+  // const [formClientReset, setFormClientReset] = useState(false); // Estado para resetear el formulario de cliente
 
   // Hook que se ejecuta al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -86,26 +71,19 @@ const AdminList = () => {
     withCredentials: true,
   };
 
-  // Claves seleccionadas para mostrar en alguna tabla o formulario
-  const selectedKeys = ["firstname", "lastname", "type", "state"];
+  const selectedKeys = ["firstname", "lastname", "type", "state"]; // Claves seleccionadas para mostrar en tabla o formulario
 
   // Hooks personalizados para los campos del formulario, con validaciones incluidas
 
-  // Apellido, solo letras y espacios
-  const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  // Primer nombre, solo letras y espacios
-  const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  // Segundo nombre, solo letras y espacios
-  const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-
+  const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Apellido, solo letras y espacios
+  const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Primer nombre, solo letras y espacios
+  const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Segundo nombre, solo letras y espacios
   // Email, con expresión regular para validar formato correcto
   const email = useInput({
     defaultValue: "",
     validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
   });
-
-  // Confirmar contraseña (sin validación por ahora)
-  const cPassword = useInput({ defaultValue: "" });
+  const cPassword = useInput({ defaultValue: "" }); // Confirmar contraseña (sin validación por ahora)
 
   // Contraseña, válida si está vacía o si cumple con la política de seguridad
   const password = useInput({
@@ -117,14 +95,9 @@ const AdminList = () => {
       ),
   });
 
-  // Tipo de usuario (por defecto es 5), sin validación extra
-  const type = useInput({ defaultValue: "5", validate: () => true });
-
-  // Estado (activo/inactivo), solo acepta 0 o 1
-  const state = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
-
-  // Idioma, acepta solo códigos válidos: es, en, it, pt
-  const language = useInput({ defaultValue: "", validate: /^(es|en|it|pt)$/ });
+  const type = useInput({ defaultValue: "5", validate: () => true }); // Tipo de usuario (por defecto es 5), sin validación extra
+  const state = useInput({ defaultValue: "", validate: /^[0-1]+$/ }); // Estado (activo/inactivo), solo acepta 0 o 1
+  const language = useInput({ defaultValue: "", validate: /^(es|en|it|pt)$/ }); // Idioma, acepta solo códigos válidos: es, en, it, pt
 
   // Fecha de registro en formato yyyy-mm-dd hh:mm:ss
   const registration_date = useInput({
@@ -217,7 +190,7 @@ const AdminList = () => {
         `http://localhost:3000/api/agent/${agentId}`,
         { withCredentials: true }
       );
-      return response.data.data; // Retornamos los datos del agente
+      return response.data.data; // Retornar los datos del agente
     } catch (error) {
       console.error("Error obteniendo agente:", error);
 
@@ -232,6 +205,149 @@ const AdminList = () => {
       return null;
     } finally {
       setLoading(false); // Ocultar indicador de carga
+    }
+  };
+
+  // Traer formularios asociados a un cliente seleccionado
+  const getFormsByClient = async (clientId) => {
+    try {
+      setLoading(true);
+      console.log("🔍 Obteniendo formularios para cliente ID:", clientId);
+
+      // Validar que clientId sea válido
+      if (!clientId || isNaN(clientId)) {
+        console.error("Client ID inválido:", clientId);
+        return null;
+      }
+
+      // Convertir a número para asegurar el tipo correcto
+      const numericClientId = parseInt(clientId, 10);
+
+      if (numericClientId <= 0) {
+        console.error("Client ID debe ser mayor a 0:", numericClientId);
+        return null;
+      }
+
+      // Usar params en lugar de query string manual para mejor manejo
+      const response = await axios.get(
+        `http://localhost:3000/api/clients/forms`,
+        {
+          params: { clientId: numericClientId }, // Usar params para pasar el ID del cliente
+          withCredentials: true,
+        }
+      );
+
+      console.log("✅ Respuesta exitosa:", response.data);
+      return response.data.data;
+    } catch (error) {
+      console.error("Error completo:", error);
+      console.error("Error response:", error.response);
+
+      // Mostrar mensaje más específico según el error
+      let errorMessage =
+        "No se pudo obtener la información de los formularios del cliente seleccionado";
+
+      if (error.response?.status === 400) {
+        errorMessage = error.response.data?.message || "ID de cliente inválido";
+      } else if (error.response?.status === 404) {
+        errorMessage = "No se encontraron formularios para este cliente";
+      }
+
+      Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Manejo del onChange del select
+  const handleClientChange = async (e) => {
+    const selectedId = e.target.value;
+    console.log("🔄 Cliente seleccionado:", selectedId);
+
+    // Limpiar estados previos
+    setSelectedClientId(selectedId);
+    setSelectedFormId("");
+    setFormOptions([]);
+
+    // Validar selección
+    if (!selectedId || selectedId === "") {
+      console.log("🔄 No hay cliente seleccionado");
+      return;
+    }
+
+    // Convertir a número y validar
+    const numericId = parseInt(selectedId, 10);
+
+    if (isNaN(numericId) || numericId <= 0) {
+      console.error("❌ ID de cliente inválido:", selectedId);
+      Swal.fire({
+        title: "Error",
+        text: "ID de cliente inválido",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
+      return;
+    }
+
+    console.log("🔍 Buscando formularios para cliente:", numericId);
+
+    // Obtener formularios
+    const forms = await getFormsByClient(numericId);
+
+    if (forms && Array.isArray(forms) && forms.length > 0) {
+      console.log("✅ Formularios obtenidos:", forms.length);
+      setFormOptions(forms);
+    } else {
+      console.log("⚠️ No se encontraron formularios");
+      setFormOptions([]);
+
+      // Mostrar mensaje informativo al usuario
+      if (forms === null) {
+        // Error en la petición - ya se mostró el error
+        return;
+      } else {
+        // Sin formularios disponibles
+        Toast.fire({
+          icon: "info",
+          title: "No hay formularios disponibles para este cliente",
+        });
+      }
+    }
+  };
+
+  const saveMonitoring = async () => {
+    const payload = {
+      monitoring_date: new Date().toISOString().slice(0, 10),
+      score,
+      feedback,
+      check,
+      id_user: agentId,
+      id_form: selectedFormId,
+    };
+
+    try {
+      const response = await fetch("/api/monitoring", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("Monitorización guardada correctamente:", result);
+        // Aquí podrías cerrar el modal o mostrar un mensaje de éxito
+      } else {
+        console.error("Error al guardar la monitorización:", result.message);
+      }
+    } catch (error) {
+      console.error("Error en la petición:", error);
     }
   };
 
@@ -256,21 +372,42 @@ const AdminList = () => {
       last_visit_date.handleChange(formattedDate);
       setSelectedClients([]); // Limpiar clientes seleccionados
 
+      // Limpiar estados de formularios
+      setSelectedClientId("");
+      setSelectedFormId("");
+      setFormOptions([]);
+
+      // Si hay un admin, trae los clientes que tiene asignado
       if (admin && admin.id) {
-        await getUserClients(admin.id);
-        setTitle(
-          `Crear monitorización para ${admin.firstname} ${admin.lastname}`
-        );
-        setidToEdit(admin.id);
-        setUserName(
-          `${admin.firstname || ""} ${admin.middlename || ""} ${
-            admin.lastname || ""
-          }`.trim()
-        );
+        try {
+          console.log("🔍 Cargando datos para admin:", admin.id);
+
+          // Trae los clientes del agente seleccionado
+          await getUserClients(admin.id);
+
+          setTitle(
+            `Crear monitorización para ${admin.firstname} ${admin.lastname}`
+          );
+          setidToEdit(admin.id);
+
+          // Guarda el nombre del monitoreador para mostrarlo en el modal
+          setUserName(
+            `${admin.firstname || ""} ${admin.middlename || ""} ${
+              admin.lastname || ""
+            }`.trim()
+          );
+
+          console.log("✅ Admin y clientes cargados correctamente");
+        } catch (error) {
+          console.error("❌ Error cargando datos del admin:", error);
+          setTitle("Nueva monitorización");
+          setUserName("");
+        }
       } else {
-        setSelectedClients([]); // Limpiar clientes seleccionados si no hay admin
+        setSelectedClients([]);
         setUserClients([]);
         setTitle("Nueva monitorización");
+        setUserName("");
       }
 
       // Si la operación es 2, es para editar
@@ -359,9 +496,18 @@ const AdminList = () => {
       // Retorno la fecha formateada en formato dd/mm/yyyy hh:mm
       return `${day}/${month}/${year} ${hours}:${minutes}`;
     } else {
-      // Si no cumple con el formato, la devuelvo tal cual está
-      return dateTimeString;
+      return dateTimeString; // Si no cumple con el formato, la devuelvo tal cual está
     }
+  };
+
+  const formClientReset = () => {
+    // Reset de los select del formulario al cerrar el modal
+    setSelectedClientId("");
+    setSelectedFormId("");
+    setFormOptions([]);
+    setScore("");
+    setFeedback("");
+    setCheck(false);
   };
 
   return (
@@ -405,6 +551,7 @@ const AdminList = () => {
                 className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="close"
+                onClick={formClientReset}
               ></button>
             </div>
 
@@ -415,31 +562,23 @@ const AdminList = () => {
               <div className="row g-3">
                 <div className="col-md-6">
                   <label className="form-label">Monitor Client</label>
-                  {loadingClients ? (
-                    <div className="form-select d-flex align-items-center">
-                      <span>Cargando clientes...</span>
-                    </div>
-                  ) : (
-                    <select
-                      className="form-select"
-                      key={`client-select-${idToEdit || "new"}-${
-                        userClients.length
-                      }`}
-                      onChange={(e) =>
-                        console.log("Cliente seleccionado:", e.target.value)
-                      }
-                    >
-                      <option value="">
-                        {userClients.length === 0
-                          ? "No hay clientes disponibles"
-                          : "Seleccione un cliente"}
+                  <select
+                    className="form-select"
+                    value={selectedClientId || ""}
+                    onChange={handleClientChange}
+                    disabled={loading}
+                  >
+                    <option value="">Seleccione un cliente</option>
+                    {userClients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
                       </option>
-                      {userClients.map((client) => (
-                        <option key={`client-${client.id}`} value={client.id}>
-                          {client.name}
-                        </option>
-                      ))}
-                    </select>
+                    ))}
+                  </select>
+                  {loading && (
+                    <small className="text-info">
+                      <i className="fas fa-spinner fa-spin"></i> Cargando...
+                    </small>
                   )}
                 </div>
 
@@ -447,9 +586,45 @@ const AdminList = () => {
                   <label className="form-label">
                     Monitorizaciones <span className="text-danger">*</span>
                   </label>
-                  <select className="form-select">
-                    <option>Seleccionar</option>
+                  <select
+                    className="form-select"
+                    value={selectedFormId || ""}
+                    onChange={(e) => {
+                      console.log("Formulario seleccionado:", e.target.value);
+                      setSelectedFormId(e.target.value);
+                    }}
+                    disabled={!selectedClientId || loading}
+                  >
+                    <option value="">
+                      {!selectedClientId
+                        ? "Primero seleccione un cliente"
+                        : loading
+                        ? "Cargando formularios..."
+                        : formOptions.length === 0
+                        ? "No hay formularios disponibles"
+                        : "Seleccionar formulario"}
+                    </option>
+                    {formOptions.map((form) => (
+                      <option key={form.id} value={form.id}>
+                        {form.title}
+                      </option>
+                    ))}
                   </select>
+
+                  {/* Mensajes de estado mejorados */}
+                  {selectedClientId && !loading && formOptions.length === 0 && (
+                    <small className="text-warning d-block mt-1">
+                      <i className="fas fa-exclamation-triangle"></i>
+                      No hay formularios disponibles para este cliente
+                    </small>
+                  )}
+
+                  {selectedClientId && formOptions.length > 0 && (
+                    <small className="text-success d-block mt-1">
+                      <i className="fas fa-check-circle"></i>
+                      {formOptions.length} formulario(s) disponible(s)
+                    </small>
+                  )}
                 </div>
 
                 <div className="col-md-6">
@@ -480,14 +655,17 @@ const AdminList = () => {
 
                 <div className="col-12">
                   <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="enviarEmail"
-                    />
-                    <label className="form-check-label" htmlFor="enviarEmail">
-                      Enviar email ahora
-                    </label>
+                    <button
+                      className="btn btn-link"
+                      style={{
+                        color: "white",
+                        background: "rgba(175, 14, 110, 0.717)",
+                      }}
+                      type="button"
+                      id="btnVerBloques"
+                    >
+                      Ver Bloques
+                    </button>
                   </div>
                 </div>
               </div>
@@ -499,14 +677,11 @@ const AdminList = () => {
                 id="btnCerrar"
                 className="btn btn-secondary"
                 data-bs-dismiss="modal"
-                onClick={() => setSelectedClients([])}
+                onClick={formClientReset}
               >
                 Cancelar
               </button>
-              <button
-                onClick={() => validar(idToEdit)}
-                className="btn btn-primary"
-              >
+              <button onClick={saveMonitoring} className="btn btn-primary">
                 Aceptar
               </button>
             </div>
