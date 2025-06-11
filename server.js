@@ -41,10 +41,10 @@ app.use('/api', userClientRoutes); // Rutas de usuarios para clientes
 app.use('/api', surveySetRoutes); // Rutas de encuestas
 app.use('/api', questionRoutes); // Rutas de preguntas
 app.use('/api', answersRoutes); // Rutas de respuestas
+app.use('/api', formSetRoutes); // Rutas de formularios
 app.use('/api', clientsRoutes); // Rutas de clientes
 app.use('/api', enviarCorreos); // Rutas de envío de correos
 app.use('/api', agentRoutes); // Rutas de agentes
-app.use('/api', formSetRoutes); // Rutas de formularios
 app.use("/api/blocks", blockRoutes); // Rutas de bloques
 app.use("/api/questions", questionFormRoutes); // Rutas de preguntas de bloques
 app.use("/api/answers", answersFormRoutes); // Rutas de respuestas de bloques

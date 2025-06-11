@@ -37,12 +37,39 @@ const FormSet = {
       );
   },
 
-  getById: (id) => db("form_set").where({ id }).first(),
+  getById: (id) => db("form_set").where({ id }).first(), // Obtener un formulario por ID
 
+  // Obtener Id por ID del
   getByClients: (clientIdsArray) => {
-    return db("form_set").whereIn("idClient", clientIdsArray).select("*");
-  },
+    console.log("🔍 Consultando formularios para clientes:", clientIdsArray);
 
+    // Validar que el array no esté vacío
+    if (!clientIdsArray || clientIdsArray.length === 0) {
+      throw new Error("Se requiere al menos un ID de cliente");
+    }
+
+    // Validar que todos los IDs sean números enteros positivos
+    const invalidIds = clientIdsArray.filter(
+      (id) => !Number.isInteger(id) || id <= 0
+    );
+
+    if (invalidIds.length > 0) {
+      throw new Error(`IDs de cliente inválidos: ${invalidIds.join(", ")}`);
+    }
+
+    // Realizar la consulta a la base de datos
+    return db("form_set")
+      .whereIn("idClient", clientIdsArray)
+      .select("*") // Corregir el select que estaba vacío
+      .then((results) => {
+        console.log("📊 Resultados de la consulta:", results?.length || 0);
+        return results;
+      })
+      .catch((error) => {
+        console.error("❌ Error en consulta DB:", error);
+        throw error;
+      });
+  },
   // create: (data) => db("form_set").insert(data),
 
   create: async (data) => {
