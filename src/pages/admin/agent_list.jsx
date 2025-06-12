@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import AsyncSelect from "react-select/async";
 // import Select from "react-select";
 import makeAnimated from "react-select/animated";
@@ -47,7 +47,7 @@ const AdminList = () => {
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
   const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
-  // const [formClientReset, setFormClientReset] = useState(false); // Estado para resetear el formulario de cliente
+  const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
 
   // Hook que se ejecuta al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -56,9 +56,8 @@ const AdminList = () => {
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
     const day = today.getDate();
-    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${
-      day < 10 ? "0" + day : day
-    }`;
+    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day
+      }`;
     setFormattedDate(formattedDater); // Actualizo el estado con la fecha
 
     getAdmins(); // Llamo a la función para obtener los administradores
@@ -212,7 +211,6 @@ const AdminList = () => {
   const getFormsByClient = async (clientId) => {
     try {
       setLoading(true);
-      console.log("🔍 Obteniendo formularios para cliente ID:", clientId);
 
       // Validar que clientId sea válido
       if (!clientId || isNaN(clientId)) {
@@ -236,8 +234,6 @@ const AdminList = () => {
           withCredentials: true,
         }
       );
-
-      console.log("✅ Respuesta exitosa:", response.data);
       return response.data.data;
     } catch (error) {
       console.error("Error completo:", error);
@@ -285,7 +281,7 @@ const AdminList = () => {
     const numericId = parseInt(selectedId, 10);
 
     if (isNaN(numericId) || numericId <= 0) {
-      console.error("❌ ID de cliente inválido:", selectedId);
+      console.error("ID de cliente inválido:", selectedId);
       Swal.fire({
         title: "Error",
         text: "ID de cliente inválido",
@@ -341,8 +337,6 @@ const AdminList = () => {
       const result = await response.json();
 
       if (response.ok) {
-        console.log("Monitorización guardada correctamente:", result);
-        // Aquí podrías cerrar el modal o mostrar un mensaje de éxito
       } else {
         console.error("Error al guardar la monitorización:", result.message);
       }
@@ -372,7 +366,7 @@ const AdminList = () => {
       last_visit_date.handleChange(formattedDate);
       setSelectedClients([]); // Limpiar clientes seleccionados
 
-      // Limpiar estados de formularios
+      // Limpiar estados de formulario
       setSelectedClientId("");
       setSelectedFormId("");
       setFormOptions([]);
@@ -380,8 +374,6 @@ const AdminList = () => {
       // Si hay un admin, trae los clientes que tiene asignado
       if (admin && admin.id) {
         try {
-          console.log("🔍 Cargando datos para admin:", admin.id);
-
           // Trae los clientes del agente seleccionado
           await getUserClients(admin.id);
 
@@ -392,14 +384,11 @@ const AdminList = () => {
 
           // Guarda el nombre del monitoreador para mostrarlo en el modal
           setUserName(
-            `${admin.firstname || ""} ${admin.middlename || ""} ${
-              admin.lastname || ""
-            }`.trim()
+            `${admin.firstname || ""} ${admin.middlename || ""} ${admin.lastname || ""
+              }`.trim()
           );
-
-          console.log("✅ Admin y clientes cargados correctamente");
         } catch (error) {
-          console.error("❌ Error cargando datos del admin:", error);
+          console.error("Error cargando datos del admin:", error);
           setTitle("Nueva monitorización");
           setUserName("");
         }
@@ -437,9 +426,8 @@ const AdminList = () => {
 
         // Guarda el nombre para mostrarlo en el modal
         setUserName(
-          `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${
-            agentData?.lastname || ""
-          }`.trim()
+          `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${agentData?.lastname || ""
+            }`.trim()
         );
       }
     }
@@ -473,9 +461,8 @@ const AdminList = () => {
 
     // Guarda el nombre completo para mostrarlo en el modal
     setUserName(
-      `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${
-        agentData?.lastname || ""
-      }`.trim()
+      `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${agentData?.lastname || ""
+        }`.trim()
     );
   };
 
@@ -500,15 +487,33 @@ const AdminList = () => {
     }
   };
 
+  // Resetea los estados del formulario y del modal al cerrarlo
   const formClientReset = () => {
     // Reset de los select del formulario al cerrar el modal
     setSelectedClientId("");
     setSelectedFormId("");
     setFormOptions([]);
-    setScore("");
-    setFeedback("");
     setCheck(false);
+    setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
+
+  const blocksForForm = async (formId) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/form/${formId}/blocks`,
+        {
+          withCredentials: true,
+        }
+      );
+      setBlocks(res.data.data); //
+    } catch (error) {
+      console.error("Error al cargar bloques:", error);
+    }
+  };
+
+const callSelectedForm = formOptions.find(
+  (form) => form.id === Number(selectedFormId)
+);
 
   return (
     <div className="App">
@@ -532,143 +537,187 @@ const AdminList = () => {
                 />
               ) : (
                 <div className="text-center py-5">
-                  <h4>No hay agentes registrados</h4>
+                  <h4>No existen agentes registrados</h4>
                 </div>
               )}
             </div>
           </div>
         </div>
-        <div></div>
       </div>
 
       <div id="modalAdmin" className="modal fade" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
-            <div className="modal-header">
-              <label className="h5">{userName || "Nuevo Agente"} </label>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="close"
-                onClick={formClientReset}
-              ></button>
+            <div className="modal-header flex-column pb-1">
+              {/* Botón volver arriba */}
+              {monitoringStep === 2 && (
+                <div className="w-100 d-flex justify-content-start mb-3">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+
+                    onClick={() => setMonitoringStep(1)}
+                  >
+                    ← Volver
+                  </button>
+                </div>
+              )}
+
+              {/* Info del modal: título y botón cerrar */}
+              <div className="w-100 d-flex justify-content-between align-items-center">
+                <label className="h5 mb-0">{userName || "Nuevo Agente"}</label>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="close"
+                  onClick={formClientReset}
+                ></button>
+              </div>
             </div>
 
             <div className="modal-body">
-              <h4 className="fw-bold mb-3">Crear una monitorización</h4>
-              <h5 className="mb-3">Configuración de Monitorizaciones</h5>
+              {/*Primer vista del modal de monitorización*/}
+              {monitoringStep === 1 && (
+                <>
+                  <h4 className="fw-bold mb-4">Crear una monitorización</h4>
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label">Monitor Client</label>
+                      <select
+                        className="form-select"
+                        value={selectedClientId || ""}
+                        onChange={handleClientChange}
+                        disabled={loading}
+                      >
+                        <option value="">Seleccione un cliente</option>
+                        {userClients.map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.name}
+                          </option>
+                        ))}
+                      </select>
+                      {loading && (
+                        <small className="text-info">
+                          <i className="fas fa-spinner fa-spin"></i> Cargando...
+                        </small>
+                      )}
+                    </div>
 
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label">Monitor Client</label>
-                  <select
-                    className="form-select"
-                    value={selectedClientId || ""}
-                    onChange={handleClientChange}
-                    disabled={loading}
-                  >
-                    <option value="">Seleccione un cliente</option>
-                    {userClients.map((client) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name}
-                      </option>
-                    ))}
-                  </select>
-                  {loading && (
-                    <small className="text-info">
-                      <i className="fas fa-spinner fa-spin"></i> Cargando...
-                    </small>
-                  )}
-                </div>
+                    <div className="col-md-6">
+                      <label className="form-label">
+                        Monitorizaciones <span className="text-danger">*</span>
+                      </label>
+                      <select
+                        className="form-select"
+                        value={selectedFormId || ""}
+                        onChange={(e) => {
+                          console.log(
+                            "Formulario seleccionado:",
+                            e.target.value
+                          );
+                          setSelectedFormId(e.target.value);
+                        }}
+                      >
+                        <option value="">
+                          {!selectedClientId
+                            ? "Primero seleccione un cliente"
+                            : loading
+                              ? "Cargando formularios..."
+                              : formOptions.length === 0
+                                ? "No hay formularios disponibles"
+                                : "Seleccionar formulario"}
+                        </option>
+                        {formOptions.map((form) => (
+                          <option key={form.id} value={form.id}>
+                            {form.title}
+                          </option>
+                        ))}
+                      </select>
 
-                <div className="col-md-6">
-                  <label className="form-label">
-                    Monitorizaciones <span className="text-danger">*</span>
-                  </label>
-                  <select
-                    className="form-select"
-                    value={selectedFormId || ""}
-                    onChange={(e) => {
-                      console.log("Formulario seleccionado:", e.target.value);
-                      setSelectedFormId(e.target.value);
-                    }}
-                    disabled={!selectedClientId || loading}
-                  >
-                    <option value="">
-                      {!selectedClientId
-                        ? "Primero seleccione un cliente"
-                        : loading
-                        ? "Cargando formularios..."
-                        : formOptions.length === 0
-                        ? "No hay formularios disponibles"
-                        : "Seleccionar formulario"}
-                    </option>
-                    {formOptions.map((form) => (
-                      <option key={form.id} value={form.id}>
-                        {form.title}
-                      </option>
-                    ))}
-                  </select>
+                      {/* Mensajes de estado */}
+                      {selectedClientId &&
+                        !loading &&
+                        formOptions.length === 0 && (
+                          <small className="text-warning d-block mt-1">
+                            <i className="fas fa-exclamation-triangle"></i>
+                            No hay formularios disponibles para este cliente
+                          </small>
+                        )}
 
-                  {/* Mensajes de estado mejorados */}
-                  {selectedClientId && !loading && formOptions.length === 0 && (
-                    <small className="text-warning d-block mt-1">
-                      <i className="fas fa-exclamation-triangle"></i>
-                      No hay formularios disponibles para este cliente
-                    </small>
-                  )}
+                      {selectedClientId && formOptions.length > 0 && (
+                        <small className="text-success d-block mt-1"></small>
+                      )}
+                    </div>
 
-                  {selectedClientId && formOptions.length > 0 && (
-                    <small className="text-success d-block mt-1">
-                      <i className="fas fa-check-circle"></i>
-                      {formOptions.length} formulario(s) disponible(s)
-                    </small>
-                  )}
-                </div>
+                    <div className="col-md-6">
+                      <label className="form-label">
+                        Fecha de monitorización{" "}
+                        <span className="text-danger">*</span>
+                      </label>
+                      <input type="date" className="form-control ms-0" />
+                    </div>
 
-                <div className="col-md-6">
-                  <label className="form-label">
-                    Fecha de monitorización{" "}
-                    <span className="text-danger">*</span>
-                  </label>
-                  <input type="date" className="form-control" />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">
-                    Evaluador <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={
-                      userInfo
-                        ? `${userInfo.firstname || ""} ${
-                            userInfo.lastname || ""
-                          }`
-                        : "Cargando..."
-                    }
-                    readOnly
-                  />
-                </div>
-
+                    <div className="col-md-6">
+                      <label className="form-label">
+                        Evaluador <span className="text-danger">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control ms-0"
+                        value={
+                          userInfo
+                            ? `${userInfo.firstname || ""} ${userInfo.lastname || ""
+                            }`
+                            : "Cargando..."
+                        }
+                        readOnly
+                      ></input>
+                    </div>
+                  </div>
+                </>
+              )}
+              {/* Segunda vista del modal de monitorización */}
+              {monitoringStep === 2 && (
                 <div className="col-12">
-                  <div className="form-check">
-                    <button
-                      className="btn btn-link"
-                      style={{
-                        color: "white",
-                        background: "rgba(175, 14, 110, 0.717)",
-                      }}
-                      type="button"
-                      id="btnVerBloques"
-                    >
-                      Ver Bloques
-                    </button>
+                  <h5 className="fw-bold mb-4 mt-0">
+                    Configuración de Monitorizaciones
+                  </h5>
+                  <div className="shadowbox5 p-3">
+                    <h4 className="formTitle text-center mb-3">
+                      Información del Formulario
+                    </h4>
+                    <p>Nombre del formulario: {callSelectedForm?.title || "No seleccionado"}</p>
+                    <p>Form Score: </p>
+                    <p>Posible puntuación: </p>
+                  </div>
+
+                  <div className="shadowbox5 mb-4 mt-3 ms-2 ps-3">
+                    <h4 className="blockInfoTitle text-center mt-3">
+                      {" "}
+                      Información del Bloque
+                    </h4>
+                    <p>.</p>
+                    <p>.</p>
+                    <p>.</p>
+                    <p>.</p>
+                    <table className="table table-sm table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Pregunta</th>
+                          <th>Respuestas</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="modal-footer">
@@ -681,7 +730,10 @@ const AdminList = () => {
               >
                 Cancelar
               </button>
-              <button onClick={saveMonitoring} className="btn btn-primary">
+              <button
+                onClick={() => setMonitoringStep(2)}
+                className="btn btn-primary"
+              >
                 Aceptar
               </button>
             </div>
@@ -737,11 +789,10 @@ const AdminList = () => {
                     {t("viewUserModal.State")}
                   </span>
                   <p className="form-control mt-1">
-                    {`${
-                      state.input === 1
+                    {`${state.input === 1
                         ? `${t("clientTable.Active")}`
                         : `${t("clientTable.Inactive")}`
-                    }`}{" "}
+                      }`}{" "}
                   </p>
                 </div>
                 <div className="m-1 p-1">
@@ -759,15 +810,14 @@ const AdminList = () => {
                   </span>
                   <p className="form-control mt-1">
                     {" "}
-                    {`${
-                      language.input == "es"
+                    {`${language.input == "es"
                         ? `${t("headerlt.Spanish")}`
                         : language.input == "en"
-                        ? `${t("headerlt.English")}`
-                        : language.input == "it"
-                        ? `${t("headerlt.Italian")}`
-                        : `${t("headerlt.Portuguese")}`
-                    }`}
+                          ? `${t("headerlt.English")}`
+                          : language.input == "it"
+                            ? `${t("headerlt.Italian")}`
+                            : `${t("headerlt.Portuguese")}`
+                      }`}
                   </p>
                 </div>
               </div>
@@ -789,17 +839,16 @@ const AdminList = () => {
                   </span>
                   <p type="text" className="form-control mt-1 role-option">
                     {" "}
-                    {` ${
-                      type.input === 1
+                    {` ${type.input === 1
                         ? "Super Administrador"
                         : type.input === 2
-                        ? "Administrador"
-                        : type.input == 3
-                        ? "Editor"
-                        : type.input == 4
-                        ? "Agente"
-                        : "cual rol"
-                    }`}{" "}
+                          ? "Administrador"
+                          : type.input == 3
+                            ? "Editor"
+                            : type.input == 4
+                              ? "Agente"
+                              : "cual rol"
+                      }`}{" "}
                   </p>
                 </div>
                 <div className="m-1 p-1">
