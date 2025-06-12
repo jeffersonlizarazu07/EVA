@@ -41,8 +41,6 @@ const FormSet = {
 
   // Obtener Id por ID del
   getByClients: (clientIdsArray) => {
-    console.log("🔍 Consultando formularios para clientes:", clientIdsArray);
-
     // Validar que el array no esté vacío
     if (!clientIdsArray || clientIdsArray.length === 0) {
       throw new Error("Se requiere al menos un ID de cliente");
@@ -62,7 +60,6 @@ const FormSet = {
       .whereIn("idClient", clientIdsArray)
       .select("*") // Corregir el select que estaba vacío
       .then((results) => {
-        console.log("📊 Resultados de la consulta:", results?.length || 0);
         return results;
       })
       .catch((error) => {

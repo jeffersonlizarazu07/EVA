@@ -16,8 +16,6 @@ const createClient = async (req, res) => {
 
   try {
     const { client, state, color_tag1, color_tag2 } = req.body;
-    //console.log('Datos recibidos para crear el cliente:', { client, state, color_tag1, color_tag2 });
-    //console.log('Archivo recibido (logo):', req.file);
 
     // Si hay una imagen, obtenemos su nombre
     let logo = req.file ? req.file.filename : null;
@@ -48,7 +46,6 @@ const createClient = async (req, res) => {
 const getClients = async (req, res) => {
   try {
     const clients = await clientModel.getAll();
-    //console.log('Clientes obtenidos:', clients);
     if (clients.length === 0) {
       return res.status(404).json({ message: "No se encontraron clientes" });
     }
@@ -61,8 +58,6 @@ const getClients = async (req, res) => {
 // Obtener un cliente por ID
 const getClientById = async (req, res) => {
   const { id } = req.params;
-  console.log("🔍 Valor recibido en req.params.id:", id);
-  console.log("🔍 typeof:", typeof id);
 
   const validarId = ClientsDTO.validarId(id);
   if (!validarId.status) {
@@ -71,8 +66,6 @@ const getClientById = async (req, res) => {
 
   try {
     const numericId = parseInt(id, 10);
-    console.log("🔢 Después de parseInt:", numericId);
-
     const client = await clientModel.getById(numericId);
     if (!client) {
       return res.status(404).json({ message: "Cliente no encontrado" });
@@ -151,7 +144,6 @@ const toggleClientState = async (req, res) => {
   }
   try {
     const { id } = req.params;
-    console.log("id recibido para actualizar el esatdo del cliente", id);
     const updatedClient = await clientModel.toggleState(id);
 
     return res.status(200).json({
@@ -172,7 +164,6 @@ const deleteClient = async (req, res) => {
   }
   try {
     const { id } = req.params;
-    console.log("id recibido para eliminar un cliente", id);
     const client = await clientModel.getById(id);
 
     if (!client) {

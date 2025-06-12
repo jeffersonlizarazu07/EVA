@@ -56,12 +56,9 @@ const formSetController = {
   // Obtiene formularios por IDs del cliente
   async formsxClients (req, res) {
   try {
-    console.log("📥 Petición recibida - Query params:", req.query);
     
     // Obtener clientId de los query parameters
     const { clientId } = req.query;
-    
-    console.log("🔍 Client ID recibido:", clientId, "Tipo:", typeof clientId);
 
     // Validación mejorada del clientId
     if (!clientId) {
@@ -75,19 +72,14 @@ const formSetController = {
     const numericClientId = parseInt(clientId, 10);
     
     if (isNaN(numericClientId) || numericClientId <= 0) {
-      console.log("❌ Validación fallida - ID inválido:", clientId);
       return res.status(400).json({
         status: "400",
         message: "El clientId debe ser un número entero válido mayor a 0"
       });
     }
 
-    console.log("✅ ID validado correctamente:", numericClientId);
-
     // Llamar al modelo para obtener los formularios
     const forms = await FormSet.getByClients([numericClientId]);
-    
-    console.log("📋 Formularios encontrados:", forms?.length || 0);
 
     // Verificar si se encontraron formularios
     if (!forms || forms.length === 0) {
@@ -105,7 +97,7 @@ const formSetController = {
     });
 
   } catch (error) {
-    console.error("❌ Error en formsxClients:", error);
+    console.error("Error en formsxClients:", error);
     res.status(500).json({ 
       status: "500", 
       message: "Error interno del servidor", 
@@ -116,7 +108,6 @@ const formSetController = {
 
   async postForm(req, res) {
     try {
-      console.log("Datos recibidos en para crear formulario: --- ", req.body);
       const validarForm = await FormDTO.validateForm(req.body);
       if (!validarForm.status) {
         return res.status(400).json(validarForm);
@@ -151,7 +142,6 @@ const formSetController = {
 
   async putForm(req, res) {
     try {
-      console.log("Datos recibidos para actualizar formulario: --- ", req.body);
       const validarForm = await FormDTO.validateUpdate(req.body);
       if (!validarForm.status) {
         return res.status(400).json(validarForm);
@@ -173,7 +163,7 @@ const formSetController = {
         message: "Formulario actualizado correctamente",
       });
     } catch (error) {
-      console.log("Error", error);
+      console.error("Error", error);
       res.status(500).json({
         status: "500",
         message: "Error al actualizar el formulario",
