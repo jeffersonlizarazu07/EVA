@@ -52,6 +52,8 @@ import { initReactI18next } from "react-i18next";
               "selectedColor":"Colores seleccionados",
               "colorSelect":"Selecciona dos colores representativos del cliente",
               "Viwer" : "Agente",
+              "fila_pagina":"Filas por página",
+              "de" : "de",
             },
             formTable: {
               "id": "ID",
@@ -200,6 +202,8 @@ import { initReactI18next } from "react-i18next";
             alertCreateEdit:{
               "SuccessAlert":" se ha guardado exitosamente.",
               "ErrorAlert":"Error, no ha sido guardado.",
+              "el_cliente":"el cliente",
+              "editado_exitsosamente":" se ha editado exitosamente.",
             },
             alerts: {
               "fillRequiredFields": "Por favor llena todos los campos obligatorios.",
@@ -465,6 +469,8 @@ import { initReactI18next } from "react-i18next";
               "selectedColor": "Selected colors",
               "colorSelect": "Select two representative colors for the client",
               "Viwer" : "Agent",
+              "fila_pagina":"Rows per page",
+              "de" : "of",
             },
             formTable: {
               "id": "ID",
@@ -569,7 +575,9 @@ import { initReactI18next } from "react-i18next";
             },
             alertCreateEdit: {
               "SuccessAlert": " has been successfully saved.",
-              "ErrorAlert": "Error, it was not saved."
+              "ErrorAlert": "Error, it was not saved.",
+              "el_cliente": "the client",
+              "editado_exitsosamente": " has been successfully edited."
             },
             alerts: {
               "fillRequiredFields": "Please fill in all required fields.",
@@ -956,7 +964,9 @@ import { initReactI18next } from "react-i18next";
             },
             alertCreateEdit: {
               "SuccessAlert": " è stato salvato con successo.",
-              "ErrorAlert": "Errore, non è stato salvato."
+              "ErrorAlert": "Errore, non è stato salvato.",
+              "el_cliente": "il cliente",
+              "editado_exitsosamente": "è stato modificato con successo." 
             },
             alerts: {
               "fillRequiredFields": "Si prega di compilare tutti i campi obbligatori.",
@@ -1216,6 +1226,8 @@ import { initReactI18next } from "react-i18next";
               "selectedColor": "Cores selecionadas",
               "colorSelect": "Selecione duas cores representativas do cliente",
               "Viwer" : "Agente",
+              "fila_pagina":"Linhas por página",
+              "de" : "de",
             },
             formTable: {
               "id": "ID",
@@ -1320,7 +1332,9 @@ import { initReactI18next } from "react-i18next";
             },
             alertCreateEdit: {
               "SuccessAlert": " foi salvo com sucesso.",
-              "ErrorAlert": "Erro, não foi salvo."
+              "ErrorAlert": "Erro, não foi salvo.",
+              "el_cliente": "o cliente",
+              "editado_exitsosamente": " foi editado com sucesso."
             },
             alerts: {
               "fillRequiredFields": "Por favor, preencha todos os campos obrigatórios.",

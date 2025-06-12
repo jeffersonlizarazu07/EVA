@@ -3,6 +3,30 @@ import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/tabla.css";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Button,
+  IconButton,
+  Paper,
+  Box,
+  Grid,InputAdornment} from '@mui/material';
+import {
+  TurnLeft,
+  Add,
+  Edit,
+  PowerSettingsNew,
+  Search,
+} from '@mui/icons-material';
+import TablePagination from '@mui/material/TablePagination';
+
+import SearchIcon from '@mui/icons-material/Search';
+
 const TableDetalle = ({
   header,
   data,
@@ -22,17 +46,23 @@ const TableDetalle = ({
   const nav = useNavigate()
   const { t,i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+
+  // Cambios para MUI Pagination - usar page (base 0) en lugar de currentPage (base 1)
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1); // Reset page to 1 on new search
+    setPage(0); // Reset page to 1 on new search
   };
 
-  const handleRecordsPerPageChange = (records) => {
-    setRecordsPerPage(records);
-    setCurrentPage(1); // Reset page to 1 on new records per page
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0); // Reset page to 0 cuando cambia rows per page
   };
 
   const capitalize = (text) => {
@@ -47,167 +77,224 @@ const TableDetalle = ({
     )
   );
 
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredData.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
   );
 
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
-
   return (
-    <div className="table-container">
-      <div className="row d-flex mb-3">
-        <div className="col-6 col-sm-6 col-md-6 col-lg-6">
-          <button className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-1 mb-2" onClick={() => nav("/admin")} >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-left" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
-            </svg>
-          </button>
-          <input
-            className="w-50 inp-search"
-            placeholder={t("clientTable.Search")}
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </div>
-        <div className="d-grid col-6 col-sm-6 col-md-6 col-lg-6 justify-content-end">
-          <button
-            className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-2"
-            data-bs-toggle="modal"
-            data-bs-target={`#${modalId}`}
-            onClick={onCreate}
-          >
-            <i className="fa fa-plus"></i> {t("clientTable.newClient")}
-          </button>
-        </div>
-      </div>
-      <table className="table table-hover" id="tableDefault">
-        <thead>
-          <tr className="table-light tr-table">
-            {header.map((item, i) => (
-              <th key={i} className="col text-center">
-                {t(`clientTable.${item}`)}
-              </th>
-              
-            ))}
-            <th className="col text-center">{t("clientTable.Actions")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentRecords.map((item, idx) => (
-            <tr key={idx}>
-              {header.map((itemkey, i) => (
-                <td key={i}>
-                  {itemkey=="state"? (item.state==1? `${t("clientTable.Active")}`:`${t("clientTable.Inactive")}`): (itemkey=="logo"? null:item[itemkey])}
-                </td>
-              ))}
-              {item.state!=1?(<td>
-                    <div className="row">
-                      <div className="col">
-                        <button
-                          className="btn btn-rect"
-                          onClick={() => onActive(item)}
-                        >
-                         <i className="fa-solid fa-power-off"></i>
-                        </button>
-                      
-                        <button
-                          className="btn btn-rect"
-                          data-bs-toggle="modal"
-                          data-bs-target={`#${modalId2}`}
-                          onClick={() => onView(item)}
-                        >
-                          <i className="fa-solid fa-search"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </td>):(<td>
-                <button
-                  className="btn btn-rect"
-                  data-bs-toggle="modal"
-                  data-bs-target={`#${modalId}`}
-                  onClick={() => onUpdate(item)}
-                >
-                  <i className="fa-solid fa-edit"></i>
-                </button>
-                <button className="btn btn-rect" 
-                onClick={() => onRemove(item)}
-                >
-                  <i className="fa-solid fa-power-off"></i>
-                </button>
-                <button
-                  className="btn btn-rect"
-                  data-bs-toggle="modal"
-                  data-bs-target={`#${modalId2}`}
-                  onClick={() => onView(item)}
-                >
-                  <i className="fa-solid fa-search"></i>
-                </button>
-              </td>)}
-              
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="row d-flex ps-5 pe-5 mt-3">
-        <div className="col-6 col-sm-6 col-md-6 col-lg-6">
-          <label>
-          {t("clientTable.Show")}
-            <button
-              className="dropdown-toggle inp-search"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              {recordsPerPage}
-            </button>
-            <ul className="dropdown-menu">
-              {[10, 25, 50].map((num) => (
-                <li key={num}>
-                  <a
-                    className="dropdown-item"
-                    href="#"
-                    onClick={() => handleRecordsPerPageChange(num)}
-                  >
-                    {num}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {t("clientTable.Registered")}
-          </label>
-        </div>
-        <div className="d-grid col-6 col-sm-6 col-md-6 col-lg-6 justify-content-end">
-          <div
-            className="btn-group"
-            role="group"
-            aria-label="Basic outlined example"
-          >
-            <button
-              type="button"
-              className="btn"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            >
-              &lt;
-            </button>
-            <label className="btn" htmlFor="btncheck2">
-              {currentPage}
-            </label>
-            <button
-              type="button"
-              className="btn"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+    <Box className="table-container">
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12} sm={6} md={6} lg={6}>
+           <Box display="flex" alignItems="center" gap={1}>
+            <Button 
+              variant="outlined"
+              size="small"
+             sx={{  
+              minWidth: 0,       
+              width: 30,
+              height: 30,
+              padding: 0,
+              borderRadius: '50%',        
+              color: '#b62a8b',
+              borderColor: '#b62a8b',    
+              '&:hover': {
+                borderColor: '#b62a8b',
+                backgroundColor: '#b62a8b',
+                color: 'white'
               }
+            }} 
+              onClick={() => nav("/admin")}              
+            > <TurnLeft /> 
+            </Button>
+            <TextField
+              size="small"
+              placeholder={t("clientTable.Search")}
+              value={searchTerm}
+              onChange={handleSearch}
+              className="inp-search"
+              variant="outlined"
+              sx={{ width: '100%',                 
+                 '& .MuiOutlinedInput-root': {
+                  height: '4vh',
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'transparent', 
+                  },          
+                  '&.Mui-focused': {
+                    boxShadow: 'none',
+                  },
+                },
+                
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: '#888' }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+        </Grid>
+        <Grid item xs={12} sm={6} md={6} lg={6}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              size="small"
+              sx={{
+                borderRadius: '18px',
+                border: '1px solid #b62a8b',
+                color: '#b62a8b',
+                borderColor: '#b62a8b',    
+                '&:hover': {
+                  borderColor: '#b62a8b',
+                  backgroundColor: '#b62a8b',
+                  color: 'white'
+                }
+              }}
+              //data-bs-target={`#${modalId}`}
+              onClick={onCreate}
             >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+              <Add sx={{ fontSize: '18px' }} /> {t("clientTable.newClient")}
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
+
+      {/* tabla  */}
+      <TableContainer component={Paper} elevation={0}  sx={{ maxHeight: 450, overflowY: "auto" }} > 
+        <Table size="small" > 
+          <TableHead           
+          sx={{
+            backgroundColor: '#ececec',           
+          }}
+          >
+            <TableRow>
+              {header.map((item, i) => (
+                <TableCell key={i} sx={{ fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}>
+                  {t(`clientTable.${item}`)}
+                </TableCell>
+                
+              ))}
+              <TableCell sx={{ fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}>{t("clientTable.Actions")}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {currentRecords.map((item, idx) => (
+              <TableRow key={idx}>
+                {header.map((itemkey, i) => (
+                  <TableCell key={i} align="center">
+                    {itemkey=="state"? (item.state==1? `${t("clientTable.Active")}`:`${t("clientTable.Inactive")}`): (itemkey=="logo"? null:item[itemkey])}
+                  </TableCell>
+                ))}
+                {item.state != 1 ? (
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', justifyContent: 'center'}} gap={1}>
+                      <IconButton
+                        className="btn btn-rect"
+                        onClick={() => onActive(item)}
+                        size="small"
+                      >
+                        <PowerSettingsNew />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => onView(item)}
+                        size="small"
+                      >
+                        <Search />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                ) : (
+                  <TableCell sx={{ textAlign: 'center' }}>
+                    <Box gap={1} sx={{ display: 'flex', justifyContent: 'center'}}>
+                      <IconButton                        
+                        onClick={() => onUpdate(item)}
+                        size="small"
+                        sx={{                          
+                          color: '#b62a8b',
+                          '&:hover': {
+                            backgroundColor: '#b62a8b',
+                            color: '#fff',
+                          }
+                        }}
+                      >
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => onRemove(item)}
+                        size="small"
+                        sx={{                          
+                          color: '#b62a8b',
+                          '&:hover': {
+                            backgroundColor: '#b62a8b',
+                            color: '#fff',
+                          }
+                        }}
+                      >
+                        <PowerSettingsNew />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => onView(item)}
+                        size="small"
+                        sx={{                          
+                          color: '#b62a8b',
+                          '&:hover': {
+                            backgroundColor: '#b62a8b',
+                            color: '#fff',
+                          }
+                        }}
+                      >
+                        <Search />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>    
+      </TableContainer>
+      
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2, alignItems: 'center',  }}>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage={t("clientTable.fila_pagina")}
+          labelDisplayedRows={({ from, to, count }) => 
+            `${from}-${to} ${t("clientTable.de")} ${count !== -1 ? count : `more than ${to}`}`
+          }
+         sx={{
+            // Estilos personalizados para alinear verticalmente
+            display: 'flex',
+            alignItems: 'center',
+            '.MuiTablePagination-toolbar': {
+              alignItems: 'center', // Alinea todos los hijos verticalmente
+            },
+            '.MuiTablePagination-selectLabel': {
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: 0,
+            },
+             '.MuiTablePagination-displayedRows': {
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: 0,
+             },
+            '.MuiInputBase-root': {
+              backgroundColor: '#b62a8b',
+              color: 'white',
+              borderRadius: '4px',
+              
+            },
+          }}
+        />
+      </Box>   
+    </Box>
   );
 };
 
