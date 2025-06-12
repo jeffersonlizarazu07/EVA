@@ -324,7 +324,7 @@ const HeaderLT1 = () => {
 
 
   return (
-    <Box sx={{ position: 'sticky', top: 0, zIndex: 1100 }}>
+    <Box sx={{ position: 'sticky', top: 0}}>
       <Paper
         elevation={2}
         sx={{

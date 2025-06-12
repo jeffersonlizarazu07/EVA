@@ -10,6 +10,25 @@ import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
 import { SketchPicker } from "react-color";
 import { useStateManager } from "react-select";
+import {
+  Box,
+  Modal,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  Paper,
+  Grid,
+  Divider,
+  Chip,
+  Stack
+} from '@mui/material';
+import {
+  Close as CloseIcon,
+  CloudUpload as CloudUploadIcon,
+  Edit as EditIcon,
+  Add as AddIcon
+} from '@mui/icons-material';
 
 export default function Client_list() {
   const [operation, setOperation] = useState([1]); // Estado para saber si estoy creando (1) o editando (2)
@@ -30,41 +49,64 @@ export default function Client_list() {
   const { t, i18n } = useTranslation();   // Hook para traducciones
   const url = "http://localhost:3000/api/clients"; // URL base de la API para clientes
 
+  // Estados para los modales MUI
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
+
   // Estados del formulario
   const client = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const logo = useInput({ defaultValue: "", validate: "" });
   const estado = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
 
-  // Trae el token y el idioma desde el contexto del usuario logueado
-  const { accessToken, languageUser } = useContext(UserContext);
+  const [openColorModal, setOpenColorModal] = useState(false);
+  const [openColorModal2, setOpenColorModal2] = useState(false);
 
-  // Efecto que se ejecuta al montar o cuando cambia el idioma del usuario
-  useEffect(() => {
+
+  const handleOpenColor1 = () => setOpenColorModal(true);
+  const handleCloseColor1 = () => setOpenColorModal(false);
+
+  const handleOpenColor2 = () => setOpenColorModal2(true);
+  const handleCloseColor2 = () => setOpenColorModal2(false);
+
+  const { accessToken, languageUser } = useContext(UserContext); // Trae el token y el idioma desde el contexto del usuario logueado
+
+  useEffect(() => {// Efecto que se ejecuta al montar o cuando cambia el idioma del usuario
     fetchData(); // Trae todos los clientes
     i18n.changeLanguage(languageUser); // Cambia el idioma
   }, [languageUser]); // Dependencia del idioma
 
+   // Función para manejar el cierre del modal MUI
+  const handleModalClose = () => {
+    setOpenCreateModal(false);
+    resetForm();
+    fetchData();
+  };
+
+  const handleViewModalClose = () => {
+    setOpenViewModal(false);
+  };
+
   // Añadimos un useEffect para manejar el cierre del modal
-  useEffect(() => {
-    // Agregamos un event listener para cuando se cierra el modal
-    const modalElement = document.getElementById('modalCreateClient');
-    if (modalElement) {
-      modalElement.addEventListener('hidden.bs.modal', handleModalClosed);
-    }
+  // useEffect(() => {
+  //   // Agregamos un event listener para cuando se cierra el modal
+  //   const modalElement = document.getElementById('modalCreateClient');
+  //   if (modalElement) {
+  //     modalElement.addEventListener('hidden.bs.modal', handleModalClosed);
+  //   }
     
-    // Limpieza del event listener cuando el componente se desmonta
-    return () => {
-      if (modalElement) {
-        modalElement.removeEventListener('hidden.bs.modal', handleModalClosed);
-      }
-    };
-  }, []);
+  //   // Limpieza del event listener cuando el componente se desmonta
+  //   return () => {
+  //     if (modalElement) {
+  //       modalElement.removeEventListener('hidden.bs.modal', handleModalClosed);
+  //     }
+  //   };
+  // }, []);
 
   // Función que maneja el cierre del modal
-  const handleModalClosed = () => {
-    resetForm();
-    fetchData(); // Actualiza los datos para asegurarnos de que todo se muestra correctamente
-  }
+  // const handleModalClosed = () => {
+  //   resetForm();
+  //   fetchData(); // Actualiza los datos para asegurarnos de que todo se muestra correctamente
+  // }
 
 
   // Configuración para enviar formularios con archivos y cookies
@@ -91,6 +133,7 @@ export default function Client_list() {
     logo.handleChange(clientData?.logo || "");
     setColors1(clientData?.color_tag1 || "");
     setColors2(clientData?.color_tag2 || "");
+    setOpenViewModal(true);
   };
 
   // Activa un cliente (estado = 1)
@@ -278,6 +321,7 @@ export default function Client_list() {
       setColors2(clientData?.color_tag2 || "");
       console.log(idToEdit);
     }
+    setOpenCreateModal(true);
   };
 
   const validar = async () => {
@@ -344,7 +388,7 @@ export default function Client_list() {
       if (response.data.status) {
         resetForm();
         fetchData();
-        document.getElementById("btnCerrar").click();
+        handleModalClose();
 
         Toast.fire({
           icon: "success",
@@ -379,16 +423,16 @@ export default function Client_list() {
       
       if (!response.data.status) {
         alert("No se realizó la edición del cliente");
-        document.getElementById("btnCerrar").click();
+        handleModalClose();
         console.log(response.data);
       } else {
         Toast.fire({
           icon: "success",
-          title: `El cliente ${client.input} se ha editado exitosamente`,
+          title: t('alertCreateEdit.el_cliente') + ` ${client.input}` + t('alertCreateEdit.editado_exitsosamente'),
         });
         resetForm();
         fetchData();
-        document.getElementById("btnCerrar").click();
+        handleModalClose();
 
       }
     } catch (error) {
@@ -489,272 +533,470 @@ const resetForm = () => {
     },
   };
   return (
-    <div className="App">
-      <div id="body">
+    <Box className="App" sx={{ overflow: "hidden" }}>
+      <Box id="body">
         <HeaderLT1 />
-        <section
-          style={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0 }}
+        <Box
+          sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex" }}
         >
           {/* <SidebarLT1 /> */}
-          <div className="container mt-0">
+          <Box className="container" mt={0}>
             {data.length > 0 && (
               <TableDetalle
                 header={selectedKeys}
                 data={data}
                 onCreate={() => openModal(1)}
                 onRemove={(item) => deactivation(item)}
-                modalId={"modalCreateClient"}
-                modalId2={"modalViewClient"}
                 onUpdate={(payload) => openModal(2, payload)}
                 onView={(payload) => openModalCont(payload)}
                 onActive={(payload) => activation(payload)}
               />
             )}
-          </div>
-        </section>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
-      <div id="modalViewClient" className="modal fade" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-md">
-          <div className="modal-content">
-            <div
-              className="modal-header mb-0 pb-0 text-center"
-              style={{ borderBottom: "none" }}
-            >
-              <label className="fw-bold fs-5">
+      {/* Modal de visualización */}
+      <Modal
+        open={openViewModal}
+        onClose={handleViewModalClose}
+        aria-labelledby="view-client-modal-title"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: { xs: '90%', sm: 500 },
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 0,
+            outline: 'none'
+          }}
+        >
+          <Paper elevation={0} sx={{ borderRadius: 2 }}>
+            {/* Header */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              p: 3, 
+              pb: 1 
+            }}>
+              <Typography variant="h5" component="h2" fontWeight="bold">
                 {t("clientViewModal.Client")}
-              </label>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="close"
-              ></button>
-            </div>
-            <div>
-              {" "}
-              <p
-                style={{
-                  marginLeft: "15px",
-                  marginBottom: 0,
-                  padding: 0,
-                  color: "gray",
-                  fontSize: "small",
-                }}
-              >
-                {t("clientViewModal.ClientInfo")}
-              </p>
-            </div>
+              </Typography>
+              <IconButton onClick={handleViewModalClose} size="small">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ px: 3, mb: 2 }}
+            >
+              {t("clientViewModal.ClientInfo")}
+            </Typography>
 
-            <div className="modal-body">
-              <div className="row text-center"></div>
-              <div className="row">
-                <div className="col m-2">
-                  <div className="col m-2 text-center">
-                    <img
+            {/* Body */}
+            <Box sx={{ px: 3, pb: 3 }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={4}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box
+                      component="img"
                       src={`clientes/${logo.input}`}
                       alt="Logo"
-                      className="logoModal"
-                      width={100}
-                      height={100}
+                      sx={{
+                        width: 100,
+                        height: 100,                        
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 1
+                      }}
                     />
-                  </div>
-                </div>
-                <div className="col  m-2 ">
-                  <div className="m-1 p-1 text-center">
-                    <p className="fw-semibold fs-5">{client.input}</p>
-                    <p className="text-secondary">
-                      {" "}
-                      <span>{`${
-                        estado.input == 1
-                          ? `${t("clientTable.Active")}`
-                          : `${t("clientTable.Inactive")}`
-                      }`}</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-12">
-                <div className="row d-flex justify-content-between">
-                  <div className="col-6 m-2">
-                    <p>{t("clientTable.selectedColor")}:</p>
-                  </div>
-                  <div className="col-5">
-                    <div className="row">
-                      <div className="col-3 m-2">
-                        <div style={styles.swatch} onClick={handleClick}>
-                          <div style={styles.color} />
-                        </div>
-                        {displayColorPicker && (
-                          <div style={styles.popover}>
-                            <div style={styles.cover} onClick={handleClose} />
-                            <div
-                              className="cuadro"
-                              style={{ background: colors1 }}
-                            ></div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="col-1 m-2">
-                        <div style={styles2.swatch} onClick={handle2Click}>
-                          <div style={styles2.color} />
-                        </div>
-                        {displayColorPicker2 && (
-                          <div style={styles2.popover}>
-                            <div style={styles2.cover} onClick={handle2Close} />
-                            <div
-                              className="cuadro"
-                              style={{ background: colors2 }}
-                            ></div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                  </Box>
+                </Grid>
+                
+                <Grid item xs={12} sm={8}>
+                  <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+                    <Typography variant="h5" fontWeight="600" gutterBottom>
+                      {client.input}
+                    </Typography>
+                    <Chip
+                      label={estado.input == 1 ? t("clientTable.Active") : t("clientTable.Inactive")}
+                      color={estado.input == 1 ? "success" : "default"}
+                      variant="outlined"
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
 
-      {
-        <div id="modalCreateClient" className="modal fade" aria-hidden="true" >
-          <div className="modal-dialog modal-dialog-centered modal-md">
-            <div className="modal-content">
-              <div
-                className="modal-header mb-0 pb-0 text-center"
-                style={{ borderBottom: "none" }}
-              >
-                <label className="fw-bold fs-5">{title}</label>
-                <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="close"
-                ></button>
-              </div>
+              <Divider sx={{ my: 3 }} />
 
-              <div className="modal-body">
-                <div className="row text-center"></div>
-                <div className="row">
-                  <div className="col-5 m-2 ms-5 text-center ">
-                    {logoEdit && operation === 2 ? (
-                      <img
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body1" fontWeight="500">
+                  {t("clientTable.selectedColor")}:
+                </Typography>
+                <Stack direction="row" spacing={2}>
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 24,
+                      backgroundColor: colors1,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 0.5,
+                      cursor: 'pointer'
+                    }}
+                    //onClick={handleClick}
+                  />
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 24,
+                      backgroundColor: colors2,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 0.5,
+                      cursor: 'pointer'
+                    }}
+                    //onClick={handle2Click}
+                  />
+                </Stack>
+              </Box>
+
+              {displayColorPicker && (
+                <Box sx={styles.popover}>
+                  <Box sx={styles.cover} onClick={handleClose} />
+                  <Box sx={{ background: colors1, width: 50, height: 50, mt: 1 }} />
+                </Box>
+              )}
+
+              {displayColorPicker2 && (
+                <Box sx={styles2.popover}>
+                  <Box sx={styles2.cover} onClick={handle2Close} />
+                  <Box sx={{ background: colors2, width: 50, height: 50, mt: 1 }} />
+                </Box>
+              )}
+            </Box>
+          </Paper>
+        </Box>
+      </Modal>
+
+
+      {/* Modal de Crear/Editar con MUI */}
+      <Modal
+        open={openCreateModal}
+        onClose={handleModalClose}
+        aria-labelledby="create-client-modal-title"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: { xs: '90%', sm: 650 },
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 0,
+            outline: 'none',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}
+        >
+          <Paper elevation={0} sx={{ borderRadius: 2 }}>
+            {/* Header */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              p: 3, 
+              pb: 2 
+            }}>
+              <Typography variant="h5" component="h2" fontWeight="bold">
+                {title}
+              </Typography>
+              <IconButton onClick={handleModalClose} size="small">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            {/* Body */}
+            <Box sx={{ px: 3, pb: 3 }}>
+              <Grid container spacing={3}>
+                {/* Sección de Logo */}
+                <Grid item xs={12} sm={5}>
+                  <Box sx={{  textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 250  }}>
+                    {logoEdit && operation === 2 && !selectedFile ? (
+                      <Box
+                        component="img"
                         src={`clientes/${logoEdit}`}
                         alt="Logo"
-                        width={150}
-                        height={150}
-                        id="logoToEditOriginal"
-                        className="logoModal m-2"
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          border: '2px dashed',
+                          borderColor: 'divider',
+                          borderRadius: 2,
+                          mb: 2
+                        }}
                       />
                     ) : null}
-                    {selectedFile ? (
-                      <img
+                    
+                    {selectedFile && previewUrl ? (
+                      <Box
+                        component="img"
                         src={previewUrl}
-                        alt="Logo"
-                        width={150}
-                        height={150}
-                        className="logoModal m-2"
+                        alt="Logo Preview"
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          objectFit: 'contain',
+                          border: '2px solid',
+                          borderColor: 'primary.main',
+                          borderRadius: 2,
+                          mb: 2
+                        }}
                       />
                     ) : null}
-                  </div>
-                  <div className="col-5 ms-2 mt-5 ">
-                    <div className="mt-4"></div>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
+
+                    {!selectedFile && !logoEdit && (
+                      <Box
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          border: '2px dashed',
+                          borderColor: 'divider',
+                          borderRadius: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mb: 2,
+                          backgroundColor: 'grey.50'
+                        }}
+                      >
+                        <CloudUploadIcon sx={{ fontSize: 40, color: 'grey.400' }} />
+                      </Box>
+                    )}
+
+                    <Button
+                      variant="contained"
+                      startIcon={<CloudUploadIcon />}
                       onClick={triggerFileInput}
+                      // sx={{ mb: 1 }}
+                      sx={{
+                        mb: 1,
+                        backgroundColor: '#b62a8b', // Color morado estándar de MUI
+                        '&:hover': {
+                          backgroundColor: '#581244', // Morado más oscuro al hover
+                        }
+                      }}    
                     >
-                      <i className="fa-solid fa-arrow-up-from-bracket"></i>
-                    </button>
+                      {operation === 2 ?  t("clientModal.editLogo") :t("clientModal.newLogo")}
+                    </Button>
+                    
                     <input
                       type="file"
                       id="imagenLogo"
                       accept=".jpg, .jpeg, .png"
                       onChange={handleFileChange}
-                      style={{ display: "none" }} // Ocultar el input
+                      style={{ display: "none" }}
                     />
-                    <span className="ms-1 text-center">
-                      {operation === 2 ? t("clientModal.newLogo") : t("clientModal.editLogo")}
-                    </span>
-                  </div>
-                  <div className="col m-2 ">
-                    <label id="labelAnimation" className="text-center">
-                      <input
-                        type="text"
-                        placeholder=" "
-                        className="input-new"
-                        name="client"
-                        value={client.input}
-                        onChange={(e) => client.handleChange(e.target.value)}
-                      />
-                      <span className="labelName">
-                        {t("clientModal.ClientName")}
-                      </span>
-                    </label>
-                  </div>
-                  <div className="row"></div>
-                </div>
-                <div className="row d-flex justify-content-between">
-                  <small className="mt-4 ms-3">
-                    <span>
-                      {t("clientModal.selectColor")}
-                    </span>
-                  </small>
-                  <div className="col-5 text-center d-flex justify-content-center m-2">
-                    <span className="me-2">{t("clientModal.color1")}</span>
-                    <div style={styles.swatch} onClick={handleClick}>
-                      <div style={styles.color} />
-                    </div>
-                    {displayColorPicker && (
-                      <div style={styles.popover}>
-                        <div style={styles.cover} onClick={handleClose} />
-                        <SketchPicker
-                          color={colors1}
-                          onChange={handleColor1Change}
+                  </Box>
+                </Grid>
+
+                {/* Sección de Datos */}
+                <Grid item xs={12} sm={7}>
+                  <TextField
+                    fullWidth
+                    label={t("clientModal.ClientName")}
+                    variant="outlined"
+                    value={client.input}
+                    onChange={(e) => client.handleChange(e.target.value)}
+                    sx={{ mb: 3 }}
+                    error={!!error && error.includes("nombre")}
+                  />
+
+                  <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                    {t("clientModal.selectColor")}
+                  </Typography>
+
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2">
+                          {t("clientModal.color1")}
+                        </Typography>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 24,
+                            backgroundColor: colors1,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 0.5,
+                            cursor: 'pointer'
+                          }}
+                          //onClick={handleClick}
+                          onClick={handleOpenColor1}
                         />
-                      </div>
-                    )}
-                  </div>
-                  <div className="col-6 text-center d-flex justify-content-center m-2">
-                    <span className="me-2">{t("clientModal.color2")}</span>
-                    <div style={styles2.swatch} onClick={handle2Click}>
-                      <div style={styles2.color} />
-                    </div>
-                    {displayColorPicker2 && (
-                      <div style={styles2.popover}>
-                        <div style={styles2.cover} onClick={handle2Close} />
-                        <SketchPicker
-                          color={colors2}
-                          onChange={handleColor2Change}
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2">
+                          {t("clientModal.color2")}
+                        </Typography>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 24,
+                            backgroundColor: colors2,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 0.5,
+                            cursor: 'pointer'
+                          }}
+                          onClick={handleOpenColor2}
+                          //onClick={handle2Click}
                         />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {error && <p className="text-danger text-center">{error}</p>}
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  id="btnCerrar"
-                  className="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  {t("clientModal.Close")}
-                </button>
-                <button
-                  onClick={() => validar()}
-                  className="btn-primary btn"
-                >
-                  {t("clientModal.Save")}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {displayColorPicker && (
+                <Box sx={{ position: 'relative', mt: 2 }}>
+                  <Box sx={styles.cover} onClick={handleClose} />
+                  <Box sx={{ position: 'absolute', zIndex: 1000 }}>
+                    <SketchPicker
+                      color={colors1}
+                      onChange={handleColor1Change}
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {displayColorPicker2 && (
+                <Box sx={{ position: 'relative', mt: 2 }}>
+                  <Box sx={styles2.cover} onClick={handle2Close} />
+                  <Box sx={{ position: 'absolute', zIndex: 1000 }}>
+                    <SketchPicker
+                      color={colors2}
+                      onChange={handleColor2Change}
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {error && (
+                <Typography color="error" variant="body2" textAlign="center" sx={{ mt: 2 }}>
+                  {error}
+                </Typography>
+              )}
+            </Box>
+
+            {/* Footer */}
+            <Divider />
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              gap: 2, 
+              p: 3 
+            }}>
+              <Button
+                variant="outlined"
+                onClick={handleModalClose}
+                sx={{            
+                  color: '#b62a8b',       // Texto morado
+                  borderColor: '#b62a8b',  // Borde morado
+                  '&:hover': {
+                    borderColor: '#b62a8b', // Borde morado oscuro al hover
+                    backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
+                  }
+                }}
+              >
+                {t("clientModal.Close")}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={validar}
+                 sx={{
+                  backgroundColor: '#b62a8b', // Color morado estándar de MUI
+                  '&:hover': {
+                    backgroundColor: '#581244', // Morado más oscuro al hover
+                  }
+                }}                
+              >
+                {t("clientModal.Save")}
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+      </Modal>
+      {/* modal para color 1 */}
+      <Modal
+        open={openColorModal}
+        onClose={handleCloseColor1}
+        aria-labelledby="color-picker-modal-1"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            p: 2,
+            borderRadius: 2,
+            boxShadow: 24,
+          }}
+        >
+          <SketchPicker
+            color={colors1}
+            onChange={handleColor1Change}
+          />
+        </Box>
+      </Modal>
+
+      {/* modal para color 2 */}
+      <Modal
+        open={openColorModal2}
+        onClose={handleCloseColor2}
+        aria-labelledby="color-picker-modal-2"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            p: 2,
+            borderRadius: 2,
+            boxShadow: 24,
+          }}
+        >
+          <SketchPicker
+            color={colors2}
+            onChange={handleColor2Change}
+          />
+        </Box>
+        
+      </Modal>
+    </Box>
   );
 }
