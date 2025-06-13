@@ -21,8 +21,6 @@ import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 
 const AdminList = () => {
-  // URL del endpoint para obtener los administradores (agentes)
-  const urlUsers = "http://localhost:3000/api/agent";
   // URL del endpoint para obtener los clientes
   const urlUsersClients = "http://localhost:3000/api/users_client";
 
@@ -48,6 +46,7 @@ const AdminList = () => {
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
   const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
+  const [blocksForForm, setBlocksforForm] = useState([]); // Estado para menjar los bloques de un formulario
 
   // Hook que se ejecuta al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -56,8 +55,9 @@ const AdminList = () => {
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
     const day = today.getDate();
-    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day
-      }`;
+    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${
+      day < 10 ? "0" + day : day
+    }`;
     setFormattedDate(formattedDater); // Actualizo el estado con la fecha
 
     getAdmins(); // Llamo a la función para obtener los administradores
@@ -111,7 +111,7 @@ const AdminList = () => {
   });
 
   //REQUEST//
-  // Función para obtener todos los administradores desde el backend
+  // Obtener todos los administradores (agentes) desde el backend
   const getAdmins = async () => {
     try {
       // Hago la petición a la API para traer los agentes
@@ -264,7 +264,6 @@ const AdminList = () => {
   // Manejo del onChange del select
   const handleClientChange = async (e) => {
     const selectedId = e.target.value;
-    console.log("🔄 Cliente seleccionado:", selectedId);
 
     // Limpiar estados previos
     setSelectedClientId(selectedId);
@@ -273,7 +272,7 @@ const AdminList = () => {
 
     // Validar selección
     if (!selectedId || selectedId === "") {
-      console.log("🔄 No hay cliente seleccionado");
+      console.log("No hay cliente seleccionado");
       return;
     }
 
@@ -291,16 +290,12 @@ const AdminList = () => {
       return;
     }
 
-    console.log("🔍 Buscando formularios para cliente:", numericId);
-
     // Obtener formularios
     const forms = await getFormsByClient(numericId);
 
     if (forms && Array.isArray(forms) && forms.length > 0) {
-      console.log("✅ Formularios obtenidos:", forms.length);
       setFormOptions(forms);
     } else {
-      console.log("⚠️ No se encontraron formularios");
       setFormOptions([]);
 
       // Mostrar mensaje informativo al usuario
@@ -317,6 +312,54 @@ const AdminList = () => {
     }
   };
 
+  const getBlocksForIdForm = async (formId) => {
+    try {
+      setLoading(true);
+
+      const res = await axios.get(
+        `http://localhost:3000/api/blocks/form/${formId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      setLoading(false);
+      console.log("Bloques cargados:", res.data.data);
+      console.log(JSON.stringify(res.data.data, null, 2));
+      return res.data.data;
+    } catch (error) {
+      console.error("Error al cargar bloques:", error);
+      return [];
+    }
+  };
+
+  const handleLoadBlocks = async (e) => {
+    const selectedId = e.target.value;
+    setSelectedFormId(selectedId);
+
+    const fetchedBlocks = await getBlocksForIdForm(selectedId);
+
+    if (fetchedBlocks && fetchedBlocks.length > 0) {
+      setBlocksforForm(fetchedBlocks);
+      console.log("Bloques cargados:", fetchedBlocks);
+    } else {
+      Toast.fire({
+        icon: "info",
+        title: "No existen bloques creados para este formulario",
+      });
+      setBlocksforForm([]); // Limpiar bloques si no existen
+    }
+  };
+
+  useEffect(() => {
+    console.log("Bloques actualizados:", blocksForForm);
+  }, [blocksForForm]);
+
+  const handleFormSelect = async (e) => {
+    const selectedId = e.target.value;
+    setSelectedFormId(selectedId); // actualizar ID del formulario
+
+    await handleLoadBlocks(e); // también carga los bloques asociados
+  };
   const saveMonitoring = async () => {
     const payload = {
       monitoring_date: new Date().toISOString().slice(0, 10),
@@ -370,6 +413,7 @@ const AdminList = () => {
       setSelectedClientId("");
       setSelectedFormId("");
       setFormOptions([]);
+      setBlocksforIdForm([]);
 
       // Si hay un admin, trae los clientes que tiene asignado
       if (admin && admin.id) {
@@ -384,11 +428,12 @@ const AdminList = () => {
 
           // Guarda el nombre del monitoreador para mostrarlo en el modal
           setUserName(
-            `${admin.firstname || ""} ${admin.middlename || ""} ${admin.lastname || ""
-              }`.trim()
+            `${admin.firstname || ""} ${admin.middlename || ""} ${
+              admin.lastname || ""
+            }`.trim()
           );
         } catch (error) {
-          console.error("Error cargando datos del admin:", error);
+          console.error("Error cargando datos", error);
           setTitle("Nueva monitorización");
           setUserName("");
         }
@@ -426,8 +471,9 @@ const AdminList = () => {
 
         // Guarda el nombre para mostrarlo en el modal
         setUserName(
-          `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${agentData?.lastname || ""
-            }`.trim()
+          `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${
+            agentData?.lastname || ""
+          }`.trim()
         );
       }
     }
@@ -461,8 +507,9 @@ const AdminList = () => {
 
     // Guarda el nombre completo para mostrarlo en el modal
     setUserName(
-      `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${agentData?.lastname || ""
-        }`.trim()
+      `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${
+        agentData?.lastname || ""
+      }`.trim()
     );
   };
 
@@ -489,7 +536,6 @@ const AdminList = () => {
 
   // Resetea los estados del formulario y del modal al cerrarlo
   const formClientReset = () => {
-    // Reset de los select del formulario al cerrar el modal
     setSelectedClientId("");
     setSelectedFormId("");
     setFormOptions([]);
@@ -497,23 +543,9 @@ const AdminList = () => {
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
 
-  const blocksForForm = async (formId) => {
-    try {
-      const res = await axios.get(
-        `http://localhost:3000/api/form/${formId}/blocks`,
-        {
-          withCredentials: true,
-        }
-      );
-      setBlocks(res.data.data); //
-    } catch (error) {
-      console.error("Error al cargar bloques:", error);
-    }
-  };
-
-const callSelectedForm = formOptions.find(
-  (form) => form.id === Number(selectedFormId)
-);
+  const callSelectedForm = formOptions.find(
+    (form) => form.id === Number(selectedFormId)
+  );
 
   return (
     <div className="App">
@@ -546,33 +578,43 @@ const callSelectedForm = formOptions.find(
       </div>
 
       <div id="modalAdmin" className="modal fade" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-lg">
+        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
           <div className="modal-content">
             <div className="modal-header flex-column pb-1">
               {/* Botón volver arriba */}
               {monitoringStep === 2 && (
-                <div className="w-100 d-flex justify-content-start mb-3">
+                <div className="w-100 d-flex justify-content-start mb-1">
                   <button
-                    type="button"
-                    className="btn btn-primary"
-
+                    className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla  mb-2"
                     onClick={() => setMonitoringStep(1)}
                   >
-                    ← Volver
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-arrow-90deg-left"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
+                      />
+                    </svg>
                   </button>
+                  <button
+                    type="button"
+                    className="btn-close mb-0"
+                    data-bs-dismiss="modal"
+                    aria-label="close"
+                    onClick={formClientReset}
+                  ></button>
                 </div>
               )}
 
               {/* Info del modal: título y botón cerrar */}
               <div className="w-100 d-flex justify-content-between align-items-center">
-                <label className="h5 mb-0">{userName || "Nuevo Agente"}</label>
-                <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="close"
-                  onClick={formClientReset}
-                ></button>
+                <label className="h5 mb-2">{userName || "Nuevo Agente"}</label>
               </div>
             </div>
 
@@ -611,22 +653,16 @@ const callSelectedForm = formOptions.find(
                       <select
                         className="form-select"
                         value={selectedFormId || ""}
-                        onChange={(e) => {
-                          console.log(
-                            "Formulario seleccionado:",
-                            e.target.value
-                          );
-                          setSelectedFormId(e.target.value);
-                        }}
+                        onChange={handleFormSelect}
                       >
                         <option value="">
                           {!selectedClientId
                             ? "Primero seleccione un cliente"
                             : loading
-                              ? "Cargando formularios..."
-                              : formOptions.length === 0
-                                ? "No hay formularios disponibles"
-                                : "Seleccionar formulario"}
+                            ? "Cargando formularios..."
+                            : formOptions.length === 0
+                            ? "No hay formularios disponibles"
+                            : "Seleccionar formulario"}
                         </option>
                         {formOptions.map((form) => (
                           <option key={form.id} value={form.id}>
@@ -667,8 +703,9 @@ const callSelectedForm = formOptions.find(
                         className="form-control ms-0"
                         value={
                           userInfo
-                            ? `${userInfo.firstname || ""} ${userInfo.lastname || ""
-                            }`
+                            ? `${userInfo.firstname || ""} ${
+                                userInfo.lastname || ""
+                              }`
                             : "Cargando..."
                         }
                         readOnly
@@ -679,42 +716,157 @@ const callSelectedForm = formOptions.find(
               )}
               {/* Segunda vista del modal de monitorización */}
               {monitoringStep === 2 && (
-                <div className="col-12">
+                <div
+                  className="col-12"
+                  style={{ maxHeight: "65vh", overflowY: "auto", scrollbarWidth: "none" }}
+                >
                   <h5 className="fw-bold mb-4 mt-0">
                     Configuración de Monitorizaciones
                   </h5>
                   <div className="shadowbox5 p-3">
-                    <h4 className="formTitle text-center mb-3">
+                    <h4 className="text-center mb-3">
                       Información del Formulario
                     </h4>
-                    <p>Nombre del formulario: {callSelectedForm?.title || "No seleccionado"}</p>
-                    <p>Form Score: </p>
-                    <p>Posible puntuación: </p>
+
+                    <div className="infoForm d-flex align-items-center">
+                      <p className="fw-bold mb-0 me-2">
+                        Nombre del formulario:
+                      </p>
+                      <label className="mb-0">
+                        {callSelectedForm?.title ||
+                          "Formulario no seleccionado"}
+                      </label>
+                    </div>
+
+                    <p className=" fw-bold m-0">Form Score:</p>
+
+                    <div className="d-flex align-items-center">
+                      <p className="fw-bold mb-0">Posible puntuación:</p>
+                      <label className="m-0 p-0 ms-1">100%.</label>
+                    </div>
                   </div>
 
-                  <div className="shadowbox5 mb-4 mt-3 ms-2 ps-3">
-                    <h4 className="blockInfoTitle text-center mt-3">
-                      {" "}
-                      Información del Bloque
-                    </h4>
-                    <p>.</p>
-                    <p>.</p>
-                    <p>.</p>
-                    <p>.</p>
-                    <table className="table table-sm table-bordered">
-                      <thead>
-                        <tr>
-                          <th>Pregunta</th>
-                          <th>Respuestas</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
+                  <div className="shadowbox5 mb-4 mt-3 ms-0 ps-0 align-items-center">
+                    <h4 className="text-center mt-3">Información del Bloque</h4>
+
+                    {blocksForForm.length === 0 ? (
+                      <p>
+                        No se ha cargado o existe error al llamar los bloques.
+                      </p>
+                    ) : (
+                      blocksForForm.map((block) => (
+                        <div key={block.id} className="mb-4 pb-3">
+                          <div className="w-100 border-bottom ps-3 mb-3">
+                            <div className="d-flex mb-2">
+                              <p className="fw-bold p-0 m-0">
+                                Nombre del bloque:
+                              </p>
+                              <label className="ms-1">
+                                {block.block_name}.
+                              </label>
+                            </div>
+
+                            <div className="d-flex mb-3">
+                              <p className="fw-bold mb-0">Puntuación:</p>
+                              <label className="ms-1">
+                                {block.percentage || "No existe puntuación"}.
+                              </label>
+                            </div>
+                          </div>
+
+                          {/* Preguntas */}
+                          <div className="ms-3 mt-3">
+                            <h6 className="fw-bold mb-2">Preguntas</h6>
+
+                            {block.preguntas.length === 0 ? (
+                              <p className="text-muted">
+                                Este bloque no tiene preguntas registradas.
+                              </p>
+                            ) : (
+                              <div
+                                className="accordion me-3"
+                                id={`accordionPreguntas-${block.id}`}
+                              >
+                                {block.preguntas.map((pregunta, idx) => (
+                                  <div
+                                    className="accordion-item"
+                                    key={pregunta.id}
+                                  >
+                                    <h2
+                                      className="accordion-header"
+                                      id={`heading-${block.id}-${idx}`}
+                                    >
+                                      <button
+                                        className="accordion-button collapsed"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target={`#collapse-${block.id}-${idx}`}
+                                        aria-expanded="false"
+                                        aria-controls={`collapse-${block.id}-${idx}`}
+                                      >
+                                        {pregunta.question_name}
+                                      </button>
+                                    </h2>
+                                    <div
+                                      id={`collapse-${block.id}-${idx}`}
+                                      className="accordion-collapse collapse"
+                                      aria-labelledby={`heading-${block.id}-${idx}`}
+                                      data-bs-parent={`#accordionPreguntas-${block.id}`}
+                                    >
+                                      <div className="accordion-body">
+                                        {/* Render dinámico por tipo */}
+                                        {pregunta.id_type_question === 1 && (
+                                          <select
+                                            className="form-select"
+                                            disabled
+                                          >
+                                            {(pregunta.select_option || "")
+                                              .split(";")
+                                              .map((opt, i) => (
+                                                <option key={i}>{opt}</option>
+                                              ))}
+                                          </select>
+                                        )}
+
+                                        {pregunta.id_type_question === 2 && (
+                                          <div>
+                                            {(pregunta.select_option || "")
+                                              .split(";")
+                                              .map((opt, i) => (
+                                                <div
+                                                  className="form-check"
+                                                  key={i}
+                                                >
+                                                  <input
+                                                    className="form-check-input"
+                                                    type="checkbox"
+                                                    disabled
+                                                  />
+                                                  <label className="form-check-label">
+                                                    {opt}
+                                                  </label>
+                                                </div>
+                                              ))}
+                                          </div>
+                                        )}
+
+                                        {pregunta.id_type_question === 3 && (
+                                          <textarea
+                                            className="form-control"
+                                            placeholder="Respuesta abierta..."
+                                            disabled
+                                          />
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -789,10 +941,11 @@ const callSelectedForm = formOptions.find(
                     {t("viewUserModal.State")}
                   </span>
                   <p className="form-control mt-1">
-                    {`${state.input === 1
+                    {`${
+                      state.input === 1
                         ? `${t("clientTable.Active")}`
                         : `${t("clientTable.Inactive")}`
-                      }`}{" "}
+                    }`}{" "}
                   </p>
                 </div>
                 <div className="m-1 p-1">
@@ -810,14 +963,15 @@ const callSelectedForm = formOptions.find(
                   </span>
                   <p className="form-control mt-1">
                     {" "}
-                    {`${language.input == "es"
+                    {`${
+                      language.input == "es"
                         ? `${t("headerlt.Spanish")}`
                         : language.input == "en"
-                          ? `${t("headerlt.English")}`
-                          : language.input == "it"
-                            ? `${t("headerlt.Italian")}`
-                            : `${t("headerlt.Portuguese")}`
-                      }`}
+                        ? `${t("headerlt.English")}`
+                        : language.input == "it"
+                        ? `${t("headerlt.Italian")}`
+                        : `${t("headerlt.Portuguese")}`
+                    }`}
                   </p>
                 </div>
               </div>
@@ -839,16 +993,17 @@ const callSelectedForm = formOptions.find(
                   </span>
                   <p type="text" className="form-control mt-1 role-option">
                     {" "}
-                    {` ${type.input === 1
+                    {` ${
+                      type.input === 1
                         ? "Super Administrador"
                         : type.input === 2
-                          ? "Administrador"
-                          : type.input == 3
-                            ? "Editor"
-                            : type.input == 4
-                              ? "Agente"
-                              : "cual rol"
-                      }`}{" "}
+                        ? "Administrador"
+                        : type.input == 3
+                        ? "Editor"
+                        : type.input == 4
+                        ? "Agente"
+                        : "cual rol"
+                    }`}{" "}
                   </p>
                 </div>
                 <div className="m-1 p-1">
