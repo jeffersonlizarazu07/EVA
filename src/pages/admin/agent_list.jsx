@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AsyncSelect from "react-select/async";
-// import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAgent";
@@ -32,10 +31,10 @@ import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
 
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
-  const [admins, setAdmins] = useState([]);
-  const [admin, setAdmin] = useState([]);
-  const [listClients, setListClients] = useState([]);
-  const [userClients, setUserClients] = useState([]);
+  const [admins, setAdmins] = useState([]); // Guarda todos los administradores
+  const [admin, setAdmin] = useState([]); // Administrador seleccionado o en edición
+  const [listClients, setListClients] = useState([]); // Clientes disponibles en el sistema
+  const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
   const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
   const [title, setTitle] = useState(); // Estado para el título del formulario/modal
   const [idToEdit, setidToEdit] = useState(null); // Estado para guardar el id del usuario que voy a editar
@@ -55,14 +54,16 @@ const AdminList = () => {
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksforForm] = useState([]); // Estado para menjar los bloques de un formulario
 
-  // Hook que se ejecuta al montar el componente o si cambia el idioma
+  // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
-    // Genero la fecha de hoy en formato yyyy-mm-dd
     setFormattedDate(formatDate(new Date())); // Actualizo el estado con la fecha
     loadAdmins(); // Llamo a la función para obtener los administradores
-    i18n.changeLanguage(languageUser); // Cambio el idioma según lo que tenga el usuario
     loadClients(); // Llamo a la función para obtener los clientes
-  }, [languageUser]);
+  }, []); // Solo al montar
+
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, [languageUser]); // Cambio del idioma según lo que tenga el usuario (Solo cuando cambie el idioma)
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
   const config = {
@@ -112,13 +113,20 @@ const AdminList = () => {
 
   // Obtener todos los administradores (agentes) desde el backend
   const loadAdmins = async () => {
-    try {
-      const data = await getAdmins(clients);
-      setAdmins(data);
-    } catch (error) {
-      console.error("Error loading admins:", error);
-    }
-  };
+  try {
+    setLoading(true);
+    const data = await getAdmins(clients);
+    setAdmins(data);
+  } catch (error) {
+    console.error("Error al cargar los administradores:", error);
+    Toast.fire({
+      icon: "error",
+      title: "Error al cargar administradores"
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Función para obtener la lista de clientes registrados
   const loadClients = async () => {
@@ -135,28 +143,14 @@ const AdminList = () => {
     try {
       const { selectedClients: clients, userClients: users } =
         await getUserClients(id);
-      setSelectedClients(clients);
-      setUserClients(users);
+      setSelectedClients(clients); // Clientes seleccionados actualmente (asignados)
+      setUserClients(users); // Clientes asociados al usuario
     } catch (error) {
       console.error("Error loading user clients:", error);
-      setSelectedClients([]);
+      setSelectedClients([]); // Limpiar en caso de error
       setUserClients([]);
     }
   };
-
-  // Función para obtener un agente específico por ID
-  // const loadAgentById = async (agentId) => {
-  //   try {
-  //     setLoading(true);
-  //     const data = await getAgentById(agentId);
-  //     return data;
-  //   } catch (error) {
-  //     console.error("Error loading agent:", error);
-  //     return null;
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   // Manejo del onChange del select
   const handleClientChange = async (e) => {
@@ -191,7 +185,7 @@ const AdminList = () => {
     const forms = await getFormsByClient(numericId);
 
     if (forms && Array.isArray(forms) && forms.length > 0) {
-      setFormOptions(forms);
+      setFormOptions(forms); // Cargar los formularios en el estado
     } else {
       setFormOptions([]);
 
@@ -209,28 +203,15 @@ const AdminList = () => {
     }
   };
 
-  // Obtener bloques para un formulario específico usando el servicio
-  // const loadBlocksForForm = async (formId) => {
-  //   try {
-  //     setLoading(true);
-  //     const data = await getBlocksForIdForm(formId);
-  //     return data;
-  //   } catch (error) {
-  //     console.error("Error loading blocks:", error);
-  //     return [];
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
+  // Cargar los bloques asociados al formulario seleccionado
   const handleLoadBlocks = async (e) => {
     const selectedId = e.target.value;
-    setSelectedFormId(selectedId);
+    setSelectedFormId(selectedId); // Guardar el ID del formulario seleccionado
 
-    const fetchedBlocks = await getBlocksForIdForm(selectedId);
+    const fetchedBlocks = await getBlocksForIdForm(selectedId); // Obtener bloques desde el backend
 
     if (fetchedBlocks && fetchedBlocks.length > 0) {
-      setBlocksforForm(fetchedBlocks);
+      setBlocksforForm(fetchedBlocks); // // Actualizar el estado con los bloques encontrados
       console.log("Bloques cargados:", fetchedBlocks);
     } else {
       Toast.fire({
@@ -241,26 +222,27 @@ const AdminList = () => {
     }
   };
 
+  // Maneja la selección de un formulario, y carga sus bloques
   const handleFormSelect = async (e) => {
     const selectedId = e.target.value;
     setSelectedFormId(selectedId); // actualizar ID del formulario
 
-    await handleLoadBlocks(e); // también carga los bloques asociados
+    await handleLoadBlocks(e); // también carga los bloques asociados al formulario seleccionado
   };
 
-  // Guardar monitorización
+  // Guarda una nueva monitorización en el sistema
   const handleSaveMonitoring = async (score, feedback, check, agentId) => {
     const payload = {
       monitoring_date: new Date().toISOString().slice(0, 10),
-      score,
-      feedback,
-      check,
-      id_user: agentId,
-      id_form: selectedFormId,
+      score, // Puntuación total de la monitorización
+      feedback, // Comentarios u observaciones
+      check, // Checklist o validación binaria
+      id_user: agentId, // ID del agente evaluado
+      id_form: selectedFormId, // ID del formulario aplicado
     };
 
     try {
-      const result = await saveMonitoring(payload);
+      const result = await saveMonitoring(payload); // Enviar datos al backend
       console.log("Monitorización guardada exitosamente:", result);
       return result;
     } catch (error) {
@@ -269,18 +251,15 @@ const AdminList = () => {
     }
   };
 
-  // const callSelectedForm = formOptions.find(
-  //   (form) => form.id === Number(selectedFormId)
-  // );
-
   // MODALS //
 
-  // Abrir el modal para seguir con el monitoreo
+  // Abrir el modal para iniciar con el monitoreo
   const openModal = async (op, admin) => {
     setOperation(op);
 
     // Si la operación es 1, es para registrar
     if (op == 1) {
+      // Limpiar los valores del formulario
       firstName.handleChange("");
       lastName.handleChange("");
       firstName.handleChange("");
@@ -309,7 +288,7 @@ const AdminList = () => {
           setTitle(
             `Crear monitorización para ${admin.firstname} ${admin.lastname}`
           );
-          setidToEdit(admin.id);
+          setidToEdit(admin.id); // ID del agente a quien se le hará la monitorización
 
           // Guarda el nombre del monitoreador para mostrarlo en el modal
           setUserName(
@@ -323,6 +302,7 @@ const AdminList = () => {
           setUserName("");
         }
       } else {
+        // Si no hay admin definido, inicializar los estados
         setSelectedClients([]);
         setUserClients([]);
         setTitle("Nueva monitorización");
@@ -336,7 +316,7 @@ const AdminList = () => {
 
       if (agentData) {
         // Trae los clientes que tiene asignado el admin
-        await loadUserClients(admin.id);
+        await loadUserClients(admin.id); // Cargar clientes asociados al agente
 
         // Datos obtenidos del backend
         setTitle(t("UserModal.EditUser"));
@@ -407,6 +387,7 @@ const AdminList = () => {
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
 
+  // Props que se pasan al modal principal para crear o editar monitorizaciones
   const modalAdminProps = {
     monitoringStep,
     setMonitoringStep,
@@ -432,6 +413,7 @@ const AdminList = () => {
     t,
   };
 
+  // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
   const modalViewAdminProps = {
     formatDateTimeShort,
     registration_date,

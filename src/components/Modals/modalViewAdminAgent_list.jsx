@@ -1,4 +1,5 @@
 const ModalViewAdmin = ({
+// Props de agent_list
   formatDateTimeShort,
   registration_date,
   type,

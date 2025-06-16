@@ -1,4 +1,5 @@
 const modalAdmin = ({
+  // Props de agent_list
   monitoringStep,
   setMonitoringStep,
   formClientReset,
