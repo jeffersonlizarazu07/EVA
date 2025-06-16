@@ -149,3 +149,12 @@ section:has(> .cards-EVA) {
 }
 
 }
+
+.listCards{
+    border: 2px solid rgb(199, 14, 143) !important;
+}
+
+.listCards:hover {
+    border: none !important;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
