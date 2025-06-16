@@ -6,6 +6,10 @@ import HeaderLT1 from "../header/headerLT1";
 import i18n from "../../assets/js/i18n.jsx";
 import { useEffect,useContext,useState} from "react";
 import { UserContext } from "../../context/UserContext";
+import { Container, Grid, Card, CardContent, Typography, Link, Box } from "@mui/material";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AddchartIcon from '@mui/icons-material/Addchart';
+
 const Index = () => {
   const { t,i18n } = useTranslation();
   const {userType,languageUser} = useContext(UserContext)
@@ -16,59 +20,62 @@ const Index = () => {
  
   return (
 
-    <div >
+    <Box >
       <HeaderLT1/>
-      <div id="body">
+      <Box id="body">
         
-        <section>
-          <div className="col-12">
-            <div className="container mt-5 home">
-              <div id="row_card" className="row">
-                <div className="col-12 col-sm-12 col-md-6 col-lg-6 p-2 d-flex justify-content-center align-content-center">
-                  <a style={{ textDecoration: "none" }} href="/quality">
-                    <div
-                      id="card1"
-                      className="card text-white text-center pb-2"
-                    >
-                      <div className="card-body index">
-                        <i
-                          id="iconoCard"
-                          className="fa-solid fa-circle-user"
-                          style={{ fontSize: "100px" }}
-                        ></i>
+        <Box sx={{marginTop: 12}}>
+            <Grid size={12}>
+              <Container sx={{marginLeft: 27}} >
+                <Grid container spacing={1}>
+                  
+                  <Grid item xs={12} md={6}>
+                    <Link href="/quality" underline="none">
+                      <Card id="card1" sx={{
+                        color: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minHeight: 300, // Ajusta según tu necesidad
+                        textAlign: "center",
+                      }}>
+                      <CardContent >
+                        <AccountCircleIcon style={{ fontSize: "100px" }}/>
                         <br />
-                        <h3>{t("quality.title")}</h3>
-                        <p>{t("quality.description")}</p>
-                      </div>
-                    </div>
-                  </a>
-                </div>
-                <div className="col-12 col-sm-12 col-md-6 col-lg-6 p-2 d-flex justify-content-center align-content-center h-100">
-                  <a style={{ textDecoration: "none" }} href="./satisfaction">
-                    <div
-                      id="card2"
-                      className=" d-flex card text-white text-center pb-2 align-items-center"
-                    >
-                      <div className="card-body index">
-                        <i
-                          id="iconoCard"
-                          className="fa-solid fa-chart-column"
-                          style={{ fontSize: "100px" }}
-                        ></i>
-                        <br />
-                        <h3>{t("satisfaction.title")}</h3>
-                        <p>{t("satisfaction.description")}</p>
-                      </div>
-                    </div>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
+                        <Typography variant="h5">{t("quality.title")}</Typography>
+                        <Typography variant="body1">{t("quality.description")}</Typography>
+                      </CardContent>
+                      </Card>
+                    </Link>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                     <Link href="/satisfaction" underline="none">
+                      <Card id="card1"  sx={{
+                        color: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minHeight: 300,
+                        textAlign: "center",
+                      }}>
+                        <CardContent >
+                          <AddchartIcon style={{ fontSize: "100px" }}/>
+                          <br />
+                          <Typography variant="h5">{t("satisfaction.title")}</Typography>
+                          <Typography variant="body1" sx={{ textAlign: 'center', mt: 2}}>{t("satisfaction.description")}</Typography>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </Grid>
+                </Grid>
+              </Container>
+            </Grid>
           {/* <SidebarLT1 /> */}
-        </section>
-      </div>
-    </div>
+          
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
