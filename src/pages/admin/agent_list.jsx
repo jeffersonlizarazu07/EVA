@@ -239,10 +239,6 @@ const AdminList = () => {
     }
   };
 
-  useEffect(() => {
-    console.log("Bloques actualizados:", blocksForForm);
-  }, [blocksForForm]);
-
   const handleFormSelect = async (e) => {
     const selectedId = e.target.value;
     setSelectedFormId(selectedId); // actualizar ID del formulario
@@ -706,7 +702,6 @@ const AdminList = () => {
                                                   <input
                                                     className="form-check-input"
                                                     type="checkbox"
-                                                    disabled
                                                   />
                                                   <label className="form-check-label">
                                                     {opt}
