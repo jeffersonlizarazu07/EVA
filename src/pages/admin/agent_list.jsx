@@ -13,17 +13,22 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
-
 import Checkbox from "@mui/material/Checkbox";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import {
+  getAdmins,
+  getClients,
+  getUserClients,
+  getAgentById,
+  getFormsByClient,
+  getBlocksForIdForm,
+} from "../../services/agent_listService";
+import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 
 const AdminList = () => {
-  // URL del endpoint para obtener los clientes
-  const urlUsersClients = "http://localhost:3000/api/users_client";
-
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]);
   const [admin, setAdmin] = useState([]);
@@ -51,18 +56,10 @@ const AdminList = () => {
   // Hook que se ejecuta al montar el componente o si cambia el idioma
   useEffect(() => {
     // Genero la fecha de hoy en formato yyyy-mm-dd
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-    const day = today.getDate();
-    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${
-      day < 10 ? "0" + day : day
-    }`;
-    setFormattedDate(formattedDater); // Actualizo el estado con la fecha
-
-    getAdmins(); // Llamo a la función para obtener los administradores
+    setFormattedDate(formatDate(new Date())); // Actualizo el estado con la fecha
+    loadAdmins(); // Llamo a la función para obtener los administradores
     i18n.changeLanguage(languageUser); // Cambio el idioma según lo que tenga el usuario
-    getClients(); // Llamo a la función para obtener los clientes
+    loadClients(); // Llamo a la función para obtener los clientes
   }, [languageUser]);
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
@@ -73,7 +70,6 @@ const AdminList = () => {
   const selectedKeys = ["firstname", "lastname", "type", "state"]; // Claves seleccionadas para mostrar en tabla o formulario
 
   // Hooks personalizados para los campos del formulario, con validaciones incluidas
-
   const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Apellido, solo letras y espacios
   const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Primer nombre, solo letras y espacios
   const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Segundo nombre, solo letras y espacios
@@ -111,150 +107,49 @@ const AdminList = () => {
   });
 
   //REQUEST//
-  // Obtener todos los administradores (agentes) desde el backend
-  const getAdmins = async () => {
-    try {
-      // Hago la petición a la API para traer los agentes
-      const response = await axios.post(
-        `http://localhost:3000/api/agent`,
-        { clients },
-        {
-          withCredentials: true,
-        }
-      );
 
-      // Guardo los datos de los admins en el estado
-      setAdmins(response.data.data);
+  // Obtener todos los administradores (agentes) desde el backend
+  const loadAdmins = async () => {
+    try {
+      const data = await getAdmins(clients);
+      setAdmins(data);
     } catch (error) {
-      // Si algo sale mal, lo muestro en consola
-      console.error("Error fetching data:", error);
+      console.error("Error loading admins:", error);
     }
   };
 
   // Función para obtener la lista de clientes registrados
-  const getClients = async () => {
+  const loadClients = async () => {
     try {
-      // Hago la petición a la API de clientes
-      const response = await axios.get(`http://localhost:3000/api/clients`, {
-        withCredentials: true,
-      });
-
-      // Guardo los datos en el estado de clientes
-      setListClients(response.data.data);
+      const data = await getClients();
+      setListClients(data);
     } catch (error) {
-      // Capturo el error si ocurre
-      console.error("Error fetching data:", error);
+      console.error("Error loading clients:", error);
     }
   };
 
-  // Función para obtener los clientes asignados a un usuario específico
-  const getUserClients = async (id) => {
+  // Obtener los clientes asignados a un usuario específico
+  const loadUserClients = async (id) => {
     try {
-      // Hago la petición pasando el ID del usuario
-      const response = await axios.get(
-        `http://localhost:3000/api/users_client/${id}`,
-        { withCredentials: true }
-      );
-      const responseData = response.data.data;
-
-      if (responseData && responseData.length > 0) {
-        // Guardo los IDs de los clientes seleccionados en el estado
-        setSelectedClients(responseData.map((client) => client.idClient));
-
-        setUserClients(
-          responseData.map((client) => ({
-            id: client.idClient,
-            name: client.clientName,
-          }))
-        );
-      } else {
-        // Si no hay clientes, limpiar los estados
-        setSelectedClients([]);
-        setUserClients([]);
-      }
+      const { selectedClients: clients, userClients: users } =
+        await getUserClients(id);
+      setSelectedClients(clients);
+      setUserClients(users);
     } catch (error) {
-      console.error("Error fetching user clients:", error);
-      // Limpiar estados en caso de error
+      console.error("Error loading user clients:", error);
       setSelectedClients([]);
       setUserClients([]);
     }
   };
 
   // Función para obtener un agente específico por ID
-  const getAgentById = async (agentId) => {
-    try {
-      setLoading(true); // Mostrar indicador de carga
-
-      const response = await axios.get(
-        `http://localhost:3000/api/agent/${agentId}`,
-        { withCredentials: true }
-      );
-      return response.data.data; // Retornar los datos del agente
-    } catch (error) {
-      console.error("Error obteniendo agente:", error);
-
-      // Mostrar mensaje de error al usuario
-      Swal.fire({
-        title: "Error",
-        text: "No se pudo obtener la información del agente",
-        icon: "error",
-        confirmButtonText: "Ok",
-      });
-
-      return null;
-    } finally {
-      setLoading(false); // Ocultar indicador de carga
-    }
-  };
-
-  // Traer formularios asociados a un cliente seleccionado
-  const getFormsByClient = async (clientId) => {
+  const loadAgentById = async (agentId) => {
     try {
       setLoading(true);
-
-      // Validar que clientId sea válido
-      if (!clientId || isNaN(clientId)) {
-        console.error("Client ID inválido:", clientId);
-        return null;
-      }
-
-      // Convertir a número para asegurar el tipo correcto
-      const numericClientId = parseInt(clientId, 10);
-
-      if (numericClientId <= 0) {
-        console.error("Client ID debe ser mayor a 0:", numericClientId);
-        return null;
-      }
-
-      // Usar params en lugar de query string manual para mejor manejo
-      const response = await axios.get(
-        `http://localhost:3000/api/clients/forms`,
-        {
-          params: { clientId: numericClientId }, // Usar params para pasar el ID del cliente
-          withCredentials: true,
-        }
-      );
-      return response.data.data;
+      const data = await getAgentById(agentId);
+      return data;
     } catch (error) {
-      console.error("Error completo:", error);
-      console.error("Error response:", error.response);
-
-      // Mostrar mensaje más específico según el error
-      let errorMessage =
-        "No se pudo obtener la información de los formularios del cliente seleccionado";
-
-      if (error.response?.status === 400) {
-        errorMessage = error.response.data?.message || "ID de cliente inválido";
-      } else if (error.response?.status === 404) {
-        errorMessage = "No se encontraron formularios para este cliente";
-      }
-
-      Swal.fire({
-        title: "Error",
-        text: errorMessage,
-        icon: "error",
-        confirmButtonText: "Ok",
-      });
+      console.error("Error loading agent:", error);
       return null;
     } finally {
       setLoading(false);
@@ -312,23 +207,17 @@ const AdminList = () => {
     }
   };
 
-  const getBlocksForIdForm = async (formId) => {
+  // Obtener bloques para un formulario específico usando el servicio
+  const loadBlocksForForm = async (formId) => {
     try {
       setLoading(true);
-
-      const res = await axios.get(
-        `http://localhost:3000/api/blocks/form/${formId}`,
-        {
-          withCredentials: true,
-        }
-      );
-      setLoading(false);
-      console.log("Bloques cargados:", res.data.data);
-      console.log(JSON.stringify(res.data.data, null, 2));
-      return res.data.data;
+      const data = await getBlocksForIdForm(formId);
+      return data;
     } catch (error) {
-      console.error("Error al cargar bloques:", error);
+      console.error("Error loading blocks:", error);
       return [];
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -360,7 +249,9 @@ const AdminList = () => {
 
     await handleLoadBlocks(e); // también carga los bloques asociados
   };
-  const saveMonitoring = async () => {
+
+  // Guardar monitorización
+  const handleSaveMonitoring = async (score, feedback, check, agentId) => {
     const payload = {
       monitoring_date: new Date().toISOString().slice(0, 10),
       score,
@@ -371,26 +262,22 @@ const AdminList = () => {
     };
 
     try {
-      const response = await fetch("/api/monitoring", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-      } else {
-        console.error("Error al guardar la monitorización:", result.message);
-      }
+      const result = await saveMonitoring(payload);
+      console.log("Monitorización guardada exitosamente:", result);
+      return result;
     } catch (error) {
-      console.error("Error en la petición:", error);
+      console.error("Error al guardar la monitorización:", error);
+      throw error;
     }
   };
 
+  const callSelectedForm = formOptions.find(
+    (form) => form.id === Number(selectedFormId)
+  );
+
   // MODALS //
 
-  // abrir el modal para seguir con el monitoreo
+  // Abrir el modal para seguir con el monitoreo
   const openModal = async (op, admin) => {
     setOperation(op);
 
@@ -419,7 +306,7 @@ const AdminList = () => {
       if (admin && admin.id) {
         try {
           // Trae los clientes del agente seleccionado
-          await getUserClients(admin.id);
+          await loadUserClients(admin.id);
 
           setTitle(
             `Crear monitorización para ${admin.firstname} ${admin.lastname}`
@@ -451,7 +338,7 @@ const AdminList = () => {
 
       if (agentData) {
         // Trae los clientes que tiene asignado el admin
-        getUserClients(admin.id);
+        await loadUserClients(admin.id);
 
         // Datos obtenidos del backend
         setTitle(t("UserModal.EditUser"));
@@ -482,7 +369,7 @@ const AdminList = () => {
   // Esta función abre el modal de solo consulta (información del usuario)
   const openModalCont = async (admin) => {
     // Trae los clientes del usuario
-    await getUserClients(admin.id);
+    await loadUserClients(admin.id);
 
     // Obtenemos los datos completos del agente
     const agentData = await getAgentById(admin.id);
@@ -513,39 +400,14 @@ const AdminList = () => {
     );
   };
 
-  // Función para formatear fechas que vienen del backend en formato ISO
-  const formatDate = (dateTimeString) => {
-    // Expresión regular para validar si el string es un formato ISO con milisegundos y zona horaria Z
-    const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{1,6}Z$/;
-
-    // Si la fecha cumple con el formato, la transformo
-    if (regex.test(dateTimeString)) {
-      const dateTime = new Date(dateTimeString);
-      const day = dateTime.getDate().toString().padStart(2, "0");
-      const month = (dateTime.getMonth() + 1).toString().padStart(2, "0");
-      const year = dateTime.getFullYear();
-      const hours = dateTime.getHours().toString().padStart(2, "0");
-      const minutes = dateTime.getMinutes().toString().padStart(2, "0");
-
-      // Retorno la fecha formateada en formato dd/mm/yyyy hh:mm
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
-    } else {
-      return dateTimeString; // Si no cumple con el formato, la devuelvo tal cual está
-    }
-  };
-
   // Resetea los estados del formulario y del modal al cerrarlo
   const formClientReset = () => {
     setSelectedClientId("");
     setSelectedFormId("");
     setFormOptions([]);
-    setCheck(false);
+    // setCheck(false);
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
-
-  const callSelectedForm = formOptions.find(
-    (form) => form.id === Number(selectedFormId)
-  );
 
   return (
     <div className="App">
@@ -577,45 +439,60 @@ const AdminList = () => {
         </div>
       </div>
 
-      <div id="modalAdmin" className="modal fade" aria-hidden="true">
+      <div id="modalAdmin" className="modal fade">
         <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
           <div className="modal-content">
-            <div className="modal-header flex-column pb-1">
-              {/* Botón volver arriba */}
-              {monitoringStep === 2 && (
-                <div className="w-100 d-flex justify-content-start mb-1">
-                  <button
-                    className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla  mb-2"
-                    onClick={() => setMonitoringStep(1)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      className="bi bi-arrow-90deg-left"
-                      viewBox="0 0 16 16"
+            <div className="modal-header justify-content-center pb-1">
+              {/* Encabezado principal con botón de volver y nombre */}
+              {monitoringStep === 2 ? (
+                <div className="w-100 d-flex justify-content-between align-items-center pb-1">
+                  <div className="d-flex align-items-center">
+                    <button
+                      className="btn btn-sm btn-default btn-flat fw-bold acces-tabla me-2"
+                      onClick={() => setMonitoringStep(1)}
                     >
-                      <path
-                        fillRule="evenodd"
-                        d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        className="bi bi-arrow-90deg-left"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
+                        />
+                      </svg>
+                    </button>
+                    <label className="h5 mb-0">
+                      {userName || "Nuevo Agente"}
+                    </label>
+                  </div>
+
+                  {/* Botón cerrar modal */}
                   <button
                     type="button"
-                    className="btn-close mb-0"
+                    className="btn-close mb-2"
+                    data-bs-dismiss="modal"
+                    aria-label="close"
+                    onClick={formClientReset}
+                  ></button>
+                </div>
+              ) : (
+                <div className="w-100 d-flex justify-content-between align-items-center">
+                  <label className="h5 mb-2">
+                    {userName || "Nuevo Agente"}
+                  </label>
+                  <button
+                    type="button"
+                    className="btn-close"
                     data-bs-dismiss="modal"
                     aria-label="close"
                     onClick={formClientReset}
                   ></button>
                 </div>
               )}
-
-              {/* Info del modal: título y botón cerrar */}
-              <div className="w-100 d-flex justify-content-between align-items-center">
-                <label className="h5 mb-2">{userName || "Nuevo Agente"}</label>
-              </div>
             </div>
 
             <div className="modal-body">
@@ -715,10 +592,14 @@ const AdminList = () => {
                 </>
               )}
               {/* Segunda vista del modal de monitorización */}
-              {monitoringStep === 2 && (
+              {monitoringStep === 2 ? (
                 <div
                   className="col-12"
-                  style={{ maxHeight: "65vh", overflowY: "auto", scrollbarWidth: "none" }}
+                  style={{
+                    maxHeight: "65vh",
+                    overflowY: "auto",
+                    scrollbarWidth: "none",
+                  }}
                 >
                   <h5 className="fw-bold mb-4 mt-0">
                     Configuración de Monitorizaciones
@@ -776,8 +657,6 @@ const AdminList = () => {
 
                           {/* Preguntas */}
                           <div className="ms-3 mt-3">
-                            <h6 className="fw-bold mb-2">Preguntas</h6>
-
                             {block.preguntas.length === 0 ? (
                               <p className="text-muted">
                                 Este bloque no tiene preguntas registradas.
@@ -816,19 +695,6 @@ const AdminList = () => {
                                       <div className="accordion-body">
                                         {/* Render dinámico por tipo */}
                                         {pregunta.id_type_question === 1 && (
-                                          <select
-                                            className="form-select"
-                                            disabled
-                                          >
-                                            {(pregunta.select_option || "")
-                                              .split(";")
-                                              .map((opt, i) => (
-                                                <option key={i}>{opt}</option>
-                                              ))}
-                                          </select>
-                                        )}
-
-                                        {pregunta.id_type_question === 2 && (
                                           <div>
                                             {(pregunta.select_option || "")
                                               .split(";")
@@ -850,6 +716,26 @@ const AdminList = () => {
                                           </div>
                                         )}
 
+                                        {pregunta.id_type_question === 2 && (
+                                          <select
+                                            className="form-select"
+                                            value={
+                                              pregunta.selected_answer || ""
+                                            }
+                                          >
+                                            {(pregunta.select_option || "")
+                                              .split(",")
+                                              .map((opt, i) => (
+                                                <option
+                                                  key={i}
+                                                  value={opt.trim()}
+                                                >
+                                                  {opt.trim()}
+                                                </option>
+                                              ))}
+                                          </select>
+                                        )}
+
                                         {pregunta.id_type_question === 3 && (
                                           <textarea
                                             className="form-control"
@@ -869,7 +755,7 @@ const AdminList = () => {
                     )}
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             <div className="modal-footer">
@@ -954,7 +840,7 @@ const AdminList = () => {
                   </span>
                   <p className="form-control mt-1">
                     {" "}
-                    {formatDate(registration_date.input)}
+                    {formatDateTimeShort(registration_date.input)}
                   </p>
                 </div>
                 <div className="m-1 p-1">
@@ -1011,7 +897,7 @@ const AdminList = () => {
                     {t("viewUserModal.LastVisit")}
                   </span>
                   <p className="form-control mt-1">
-                    {formatDate(last_visit_date.input)}{" "}
+                    {formatDateTimeShort(last_visit_date.input)}{" "}
                   </p>
                 </div>
                 <div className="m-1 p-1">
