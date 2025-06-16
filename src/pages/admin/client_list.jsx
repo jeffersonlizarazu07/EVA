@@ -5,11 +5,10 @@ import HeaderLT1 from "../../components/header/headerLT1";
 import TableDetalle from "../../components/Tables/tableClients";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
-import "../../assets/css/newUser.css";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
 import { SketchPicker } from "react-color";
-import { useStateManager } from "react-select";
+import "../../assets/css/newUser.css";
 import {
   Box,
   Modal,
@@ -85,29 +84,6 @@ export default function Client_list() {
   const handleViewModalClose = () => {
     setOpenViewModal(false);
   };
-
-  // Añadimos un useEffect para manejar el cierre del modal
-  // useEffect(() => {
-  //   // Agregamos un event listener para cuando se cierra el modal
-  //   const modalElement = document.getElementById('modalCreateClient');
-  //   if (modalElement) {
-  //     modalElement.addEventListener('hidden.bs.modal', handleModalClosed);
-  //   }
-    
-  //   // Limpieza del event listener cuando el componente se desmonta
-  //   return () => {
-  //     if (modalElement) {
-  //       modalElement.removeEventListener('hidden.bs.modal', handleModalClosed);
-  //     }
-  //   };
-  // }, []);
-
-  // Función que maneja el cierre del modal
-  // const handleModalClosed = () => {
-  //   resetForm();
-  //   fetchData(); // Actualiza los datos para asegurarnos de que todo se muestra correctamente
-  // }
-
 
   // Configuración para enviar formularios con archivos y cookies
   const config = {
@@ -578,13 +554,7 @@ const resetForm = () => {
         >
           <Paper elevation={0} sx={{ borderRadius: 2 }}>
             {/* Header */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              p: 3, 
-              pb: 1 
-            }}>
+            <Box sx={{  display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3 }}>
               <Typography variant="h5" component="h2" fontWeight="bold">
                 {t("clientViewModal.Client")}
               </Typography>
@@ -686,7 +656,6 @@ const resetForm = () => {
           </Paper>
         </Box>
       </Modal>
-
 
       {/* Modal de Crear/Editar con MUI */}
       <Modal
@@ -823,6 +792,7 @@ const resetForm = () => {
                     label={t("clientModal.ClientName")}
                     variant="outlined"
                     value={client.input}
+                    className="readOnlyField"
                     onChange={(e) => client.handleChange(e.target.value)}
                     sx={{ mb: 3 }}
                     error={!!error && error.includes("nombre")}

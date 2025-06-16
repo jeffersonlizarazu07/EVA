@@ -138,7 +138,7 @@ const TableDetalle = ({
         </Grid>
         <Grid item xs={12} sm={6} md={6} lg={6}>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
+            <Button variant="h5"
               size="small"
               sx={{
                 borderRadius: '18px',
@@ -163,11 +163,7 @@ const TableDetalle = ({
       {/* tabla  */}
       <TableContainer component={Paper} elevation={0}  sx={{ maxHeight: 450, overflowY: "auto" }} > 
         <Table size="small" > 
-          <TableHead           
-          sx={{
-            backgroundColor: '#ececec',           
-          }}
-          >
+          <TableHead>
             <TableRow>
               {header.map((item, i) => (
                 <TableCell key={i} sx={{ fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}>
@@ -290,7 +286,7 @@ const TableDetalle = ({
               color: 'white',
               borderRadius: '4px',
               
-            },
+            }
           }}
         />
       </Box>   

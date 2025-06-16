@@ -82,3 +82,53 @@
     }
 
 }
+
+.modalBox {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: white;
+  box-shadow: rgba(0,0,0,0.24) 0px 3px 8px;
+  border-radius: 16px;
+  padding: 0;
+}
+
+@media (max-width: 600px) {
+  .modalBox {
+    width: 95% !important;
+  }
+}
+
+/*Para el border y label de los imput de formulario*/
+.readOnlyField {
+  margin-bottom: 16px;
+}
+
+.readOnlyField_ .MuiOutlinedInput-root fieldset{
+  border-color: #c70e8f !important;
+}
+
+.readOnlyField .MuiOutlinedInput-root:hover fieldset {
+  border-color: #c70e8f !important;
+}
+
+.readOnlyField .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #c70e8f !important;
+}
+
+.readOnlyField .MuiInputLabel-root,
+.readOnlyField label.Mui-focused, .text-area {
+  color: #c70e8f !important;
+}
+
+.textarea-box {
+  border: 1px solid #c70e8f;
+  border-radius: 8px;
+  min-height: 100px;
+  padding: 8px;
+  overflow-y: auto;
+}
