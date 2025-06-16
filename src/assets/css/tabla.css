@@ -43,6 +43,14 @@ table {
   z-index: 1; /* Ajusta el índice z para que esté detrás del contenido desplazable */
 }
 
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: #ececec;
+  z-index: 1;
+  box-shadow: inset 0 -1px 0 #e0e0e0; /* línea de separación */
+}
+
 
 #table {
   box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
