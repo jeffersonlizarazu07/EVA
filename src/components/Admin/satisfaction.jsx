@@ -107,71 +107,65 @@ const Satisfaction = () => {
                 sx={{ width: '66.666667%' }} 
               >
                 <Grid margin={3}>
-                  <Grid container>
-                    <Grid item xs={8} lg={8}>
-                      <Typography 
-                        variant="h4" 
-                        sx={{ textAlign: 'left', fontWeight: 'bold' }}
-                      >
-                        {t("satisfactionSite.Survey_system")}
+                  <Typography 
+                    variant="h4" 
+                    sx={{ textAlign: 'left', fontWeight: 'bold', mb: 1 }}
+                  >
+                    {t("satisfactionSite.Survey_system")}
+                  </Typography>
+                  <Grid container alignItems="center" justifyContent="space-between" >
+                    <Grid item>
+                      <Typography variant="h6">
+                        {surveys}
                       </Typography>
+                      
                     </Grid>
-                    <Grid item xs={4} lg={4}>
-                      <Typography 
-                        variant="h5"
-                        sx={{ marginTop: 4, textAlign: 'right' }}
-                      >
+                    <Grid item>
+                      <Typography variant="h5">
                         {formatDate(currentDate)}
                       </Typography>
                     </Grid>
-                  </Grid>
-                  
-                  <Grid container>
-                    <Grid item xs={12} lg={4} sx={{ textAlign: 'left' }}>
-                      <Typography variant="h6" >
-                        {surveys}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={8} lg={8} 
-                      sx={{ 
-                        textAlign: 'right', 
-                        display: { xs: 'none', lg: 'block' } 
-                      }}
-                    >
-                      <Button                    
-                        className="btn btn-option-view"                        
-                        onClick={toggleListMode}
-                        sx={{
-                        width: 40,
-                        height: 40,
-                        minWidth: 0, // evita que MUI le dé un ancho mínimo por defecto
-                        padding: 0,
-                        borderRadius: '8px', // o '50%' si lo quieres circular   
-                        mr: 1,     
-                        color: '#000000',                                   
-                      }}
-                      >
-                        <i className="fa-solid fa-list" id="lista"></i>
-                      </Button>
-                      <Button className="btn btn-option-view "
+                  </Grid>   
+                  <Grid 
+                    container 
+                    justifyContent="space-between" 
+                    sx={{ mb: 0, display: {  lg: 'flex' } }}
+                  >
+                  <Grid item>
+                        <Typography variant="h6" className="cardElement">
+                          {t("satisfactionSite.Total_Surveys")}
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Box sx={{ display: 'flex', }}> 
+                    <Button
+                      className="btn btn-option-view"
+                      onClick={toggleListMode}
                       sx={{
                         width: 40,
                         height: 40,
-                        minWidth: 0, // evita que MUI le dé un ancho mínimo por defecto
+                        minWidth: 0,
                         padding: 0,
-                        borderRadius: '8px', // o '50%' si lo quieres circular 
-                        color: '#000000',                       
-                      }}>
-                        <i className="fa-solid fa-border-all" id="grid"></i>
-                      </Button>
-                    </Grid>
-                  </Grid>
-
-                  <Grid container>
-                    <Grid item xs={8} lg={4} sx={{ textAlign: 'left' }}>
-                      <Typography variant="h6" className="cardElement">
-                        {t("satisfactionSite.Total_Surveys")}
-                      </Typography>
+                        borderRadius: '8px',
+                        color: '#000000',
+                      }}
+                    >
+                      <i className="fa-solid fa-list" id="lista"></i>
+                    </Button>
+                    <Button
+                      className="btn btn-option-view"
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        minWidth: 0,
+                        padding: 0,
+                        borderRadius: '8px',
+                        color: '#000000',
+                      }}
+                    >
+                      <i className="fa-solid fa-border-all" id="grid"></i>
+                    </Button>
+                    </Box>
                     </Grid>
                   </Grid>
                 </Grid>
@@ -287,39 +281,39 @@ const Satisfaction = () => {
                 style={{ display: "none" }}
                 sx={{ width: '66.666667%' }} // equivalente a col-lg-8
               >
-                <Grid  margin={3}>
-                  <Grid container>
-                    <Grid item xs={8} lg={8}>
-                      <Typography 
-                        variant="h4" 
-                        sx={{ textAlign: 'left', fontWeight: 'bold'}}
-                      >
-                        {t("satisfactionSite.Survey_system")}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={4} lg={4}>
-                      <Typography 
-                        variant="h5" 
-                        sx={{ marginTop: 4, textAlign: 'right' }}
-                      >
-                        {formatDate(currentDate)}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                  
-                  <Grid container>
-                    <Grid item xs={12} lg={4} sx={{ textAlign: 'left' }}>
+                              <Grid margin={3}>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ textAlign: 'left', fontWeight: 'bold', mb: 1 }}
+                  >
+                    {t("satisfactionSite.Survey_system")}
+                  </Typography>
+                  <Grid container alignItems="center" justifyContent="space-between" >
+                    <Grid item>
                       <Typography variant="h6">
                         {surveys}
                       </Typography>
+                      
                     </Grid>
-                    <Grid item xs={8} lg={8} 
-                      sx={{ 
-                        textAlign: 'right', 
-                        display: { xs: 'none', lg: 'block' } 
-                      }}
-                    >
-                      <Button
+                    <Grid item>
+                      <Typography variant="h5">
+                        {formatDate(currentDate)}
+                      </Typography>
+                    </Grid>
+                  </Grid>   
+                  <Grid 
+                    container 
+                    justifyContent="space-between" 
+                    sx={{ mb: 0, display: {  lg: 'flex' } }}
+                  >
+                  <Grid item>
+                        <Typography variant="h6" className="cardElement">
+                          {t("satisfactionSite.Total_Surveys")}
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Box sx={{ display: 'flex', }}> 
+                    <Button
                         className="btn btn-option-view active"
                         sx={{
                           width: 40,
@@ -348,14 +342,7 @@ const Satisfaction = () => {
                       >
                         <i className="fa-solid fa-border-all" id="grid"></i>
                       </Button>
-                    </Grid>
-                  </Grid>
-
-                  <Grid container>
-                    <Grid item xs={12} lg={4} sx={{ textAlign: 'left' }}>
-                      <Typography variant="h6" className="cardElement">
-                        {t("satisfactionSite.Total_Surveys")}
-                      </Typography>
+                    </Box>
                     </Grid>
                   </Grid>
                 </Grid>
