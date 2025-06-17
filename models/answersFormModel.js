@@ -6,7 +6,7 @@ class AnswersFormModel {
 
   async createAnswer(data) {
   const [id] = await this.knex(this.table).insert({
-    id_question: data.question_id,
+    question_id: data.question_id,
     answer_question: data.answer_question,
   });
   return { id, ...data };
