@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import AsyncSelect from "react-select/async";
-// import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAgent";
@@ -13,99 +12,77 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
-
 import Checkbox from "@mui/material/Checkbox";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import {
+  getAdmins,
+  getClients,
+  getUserClients,
+  getAgentById,
+  getFormsByClient,
+  getBlocksForIdForm,
+} from "../../services/agent_listService";
+import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
+import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
+import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
 
 const AdminList = () => {
-  // URL del endpoint para obtener los administradores (agentes)
-  const urlUsers = "http://localhost:3000/api/agent";
-  // URL del endpoint para obtener los clientes
-  const urlUsersClients = "http://localhost:3000/api/users_client";
-
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
-  const [admins, setAdmins] = useState([]);
-  const [admin, setAdmin] = useState([]);
-  const [listClients, setListClients] = useState([]);
-  const [userClients, setUserClients] = useState([]);
-
-  // Estado para manejar la operación actual (ej: crear, editar, etc.)
-  const [operation, setOperation] = useState([1]);
-
-  // Estado para el título del formulario/modal
-  const [title, setTitle] = useState();
-
-  // Estado para guardar el id del usuario que voy a editar
-  const [idToEdit, setidToEdit] = useState(null);
-
-  // Estado para la fecha formateada de hoy (yyyy-mm-dd)
-  const [formattedDate, setFormattedDate] = useState("");
-
-  // Estado para controlar el estado de carga (ej: mostrar spinner mientras carga algo)
-  const [loading, setLoading] = useState(false);
-
-  // Estado para manejar los clientes seleccionados (checkbox múltiple)
-  const [selectedClients, setSelectedClients] = useState([]);
-
-  // Hook para traducciones y cambio de idioma dinámico
-  const { t, i18n } = useTranslation();
-
-  // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
-  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext);
-
+  const [admins, setAdmins] = useState([]); // Guarda todos los administradores
+  const [admin, setAdmin] = useState([]); // Administrador seleccionado o en edición
+  const [listClients, setListClients] = useState([]); // Clientes disponibles en el sistema
+  const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
+  const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
+  const [title, setTitle] = useState(); // Estado para el título del formulario/modal
+  const [idToEdit, setidToEdit] = useState(null); // Estado para guardar el id del usuario que voy a editar
+  const [formattedDate, setFormattedDate] = useState(""); // Estado para la fecha formateada de hoy (yyyy-mm-dd)
+  const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga (ej: mostrar spinner)
+  const [selectedClients, setSelectedClients] = useState([]); // Estado para manejar los clientes seleccionados (checkbox múltiple)
+  const [selectedClientId, setSelectedClientId] = useState(""); // Estado para el cliente seleccionado
+  const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
+  const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
+  const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
+  const { accessToken, languageUser, clients, userInfo } =
+    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
+  const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
+  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
+  const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
+  const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
+  const [blocksForForm, setBlocksforForm] = useState([]); // Estado para menjar los bloques de un formulario
+  const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización 
 
-  const [userName, setUserName] = useState("");
-
-  // Iconos para los checkboxes (vacío y seleccionado)
-  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
-  const checkedIcon = <CheckBoxIcon fontSize="small" />;
-
-  // Hook que se ejecuta al montar el componente o si cambia el idioma
+  // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
-    // Genero la fecha de hoy en formato yyyy-mm-dd
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-    const day = today.getDate();
-    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${
-      day < 10 ? "0" + day : day
-    }`;
-    setFormattedDate(formattedDater); // Actualizo el estado con la fecha
+    setFormattedDate(formatDate(new Date())); // Actualizo el estado con la fecha
+    loadAdmins(); // Llamo a la función para obtener los administradores
+    loadClients(); // Llamo a la función para obtener los clientes
+  }, []); // Solo al montar
 
-    getAdmins(); // Llamo a la función para obtener los administradores
-    i18n.changeLanguage(languageUser); // Cambio el idioma según lo que tenga el usuario
-    getClients(); // Llamo a la función para obtener los clientes
-  }, [languageUser]);
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, [languageUser]); // Cambio del idioma según lo que tenga el usuario (Solo cuando cambie el idioma)
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
   const config = {
     withCredentials: true,
   };
 
-  // Claves seleccionadas para mostrar en alguna tabla o formulario
-  const selectedKeys = ["firstname", "lastname", "type", "state"];
+  const selectedKeys = ["firstname", "lastname", "type", "state"]; // Claves seleccionadas para mostrar en tabla o formulario
 
   // Hooks personalizados para los campos del formulario, con validaciones incluidas
-
-  // Apellido, solo letras y espacios
-  const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  // Primer nombre, solo letras y espacios
-  const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  // Segundo nombre, solo letras y espacios
-  const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-
+  const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Apellido, solo letras y espacios
+  const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Primer nombre, solo letras y espacios
+  const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ }); // Segundo nombre, solo letras y espacios
   // Email, con expresión regular para validar formato correcto
   const email = useInput({
     defaultValue: "",
     validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
   });
-
-  // Confirmar contraseña (sin validación por ahora)
-  const cPassword = useInput({ defaultValue: "" });
+  const cPassword = useInput({ defaultValue: "" }); // Confirmar contraseña (sin validación por ahora)
 
   // Contraseña, válida si está vacía o si cumple con la política de seguridad
   const password = useInput({
@@ -117,14 +94,9 @@ const AdminList = () => {
       ),
   });
 
-  // Tipo de usuario (por defecto es 5), sin validación extra
-  const type = useInput({ defaultValue: "5", validate: () => true });
-
-  // Estado (activo/inactivo), solo acepta 0 o 1
-  const state = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
-
-  // Idioma, acepta solo códigos válidos: es, en, it, pt
-  const language = useInput({ defaultValue: "", validate: /^(es|en|it|pt)$/ });
+  const type = useInput({ defaultValue: "5", validate: () => true }); // Tipo de usuario (por defecto es 5), sin validación extra
+  const state = useInput({ defaultValue: "", validate: /^[0-1]+$/ }); // Estado (activo/inactivo), solo acepta 0 o 1
+  const language = useInput({ defaultValue: "", validate: /^(es|en|it|pt)$/ }); // Idioma, acepta solo códigos válidos: es, en, it, pt
 
   // Fecha de registro en formato yyyy-mm-dd hh:mm:ss
   const registration_date = useInput({
@@ -139,110 +111,156 @@ const AdminList = () => {
   });
 
   //REQUEST//
-  // Función para obtener todos los administradores desde el backend
-  const getAdmins = async () => {
-    try {
-      // Hago la petición a la API para traer los agentes
-      const response = await axios.post(
-        `http://localhost:3000/api/agent`,
-        { clients },
-        {
-          withCredentials: true,
-        }
-      );
 
-      // Guardo los datos de los admins en el estado
-      setAdmins(response.data.data);
-    } catch (error) {
-      // Si algo sale mal, lo muestro en consola
-      console.error("Error fetching data:", error);
-    }
-  };
+  // Obtener todos los administradores (agentes) desde el backend
+  const loadAdmins = async () => {
+  try {
+    setLoading(true);
+    const data = await getAdmins(clients);
+    setAdmins(data);
+  } catch (error) {
+    console.error("Error al cargar los administradores:", error);
+    Toast.fire({
+      icon: "error",
+      title: "Error al cargar administradores"
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Función para obtener la lista de clientes registrados
-  const getClients = async () => {
+  const loadClients = async () => {
     try {
-      // Hago la petición a la API de clientes
-      const response = await axios.get(`http://localhost:3000/api/clients`, {
-        withCredentials: true,
-      });
-
-      // Guardo los datos en el estado de clientes
-      setListClients(response.data.data);
+      const data = await getClients();
+      setListClients(data);
     } catch (error) {
-      // Capturo el error si ocurre
-      console.error("Error fetching data:", error);
+      console.error("Error loading clients:", error);
     }
   };
 
-  // Función para obtener los clientes asignados a un usuario específico
-  const getUserClients = async (id) => {
+  // Obtener los clientes asignados a un usuario específico
+  const loadUserClients = async (id) => {
     try {
-      // Hago la petición pasando el ID del usuario
-      const response = await axios.get(
-        `http://localhost:3000/api/users_client/${id}`,
-        { withCredentials: true }
-      );
-      const responseData = response.data.data;
-
-      if (responseData && responseData.length > 0) {
-        // Guardo los IDs de los clientes seleccionados en el estado
-        setSelectedClients(responseData.map((client) => client.idClient));
-
-        setUserClients(
-          responseData.map((client) => ({
-            id: client.idClient,
-            name: client.clientName,
-          }))
-        );
-      } else {
-        // Si no hay clientes, limpiar los estados
-        setSelectedClients([]);
-        setUserClients([]);
-      }
+      const { selectedClients: clients, userClients: users } =
+        await getUserClients(id);
+      setSelectedClients(clients); // Clientes seleccionados actualmente (asignados)
+      setUserClients(users); // Clientes asociados al usuario
     } catch (error) {
-      console.error("Error fetching user clients:", error);
-      // Limpiar estados en caso de error
-      setSelectedClients([]);
+      console.error("Error loading user clients:", error);
+      setSelectedClients([]); // Limpiar en caso de error
       setUserClients([]);
     }
   };
 
-  // Función para obtener un agente específico por ID
-  const getAgentById = async (agentId) => {
-    try {
-      setLoading(true); // Mostrar indicador de carga
+  // Manejo del onChange del select
+  const handleClientChange = async (e) => {
+    const selectedId = e.target.value;
 
-      const response = await axios.get(
-        `http://localhost:3000/api/agent/${agentId}`,
-        { withCredentials: true }
-      );
-      return response.data.data; // Retornamos los datos del agente
-    } catch (error) {
-      console.error("Error obteniendo agente:", error);
+    // Limpiar estados previos
+    setSelectedClientId(selectedId);
+    setSelectedFormId("");
+    setFormOptions([]);
 
-      // Mostrar mensaje de error al usuario
+    // Validar selección
+    if (!selectedId || selectedId === "") {
+      console.log("No hay cliente seleccionado");
+      return;
+    }
+
+    // Convertir a número y validar
+    const numericId = parseInt(selectedId, 10);
+
+    if (isNaN(numericId) || numericId <= 0) {
+      console.error("ID de cliente inválido:", selectedId);
       Swal.fire({
         title: "Error",
-        text: "No se pudo obtener la información del agente",
+        text: "ID de cliente inválido",
         icon: "error",
         confirmButtonText: "Ok",
       });
+      return;
+    }
 
-      return null;
-    } finally {
-      setLoading(false); // Ocultar indicador de carga
+    // Obtener formularios
+    const forms = await getFormsByClient(numericId);
+
+    if (forms && Array.isArray(forms) && forms.length > 0) {
+      setFormOptions(forms); // Cargar los formularios en el estado
+    } else {
+      setFormOptions([]);
+
+      // Mostrar mensaje informativo al usuario
+      if (forms === null) {
+        // Error en la petición - ya se mostró el error
+        return;
+      } else {
+        // Sin formularios disponibles
+        Toast.fire({
+          icon: "info",
+          title: "No hay formularios disponibles para este cliente",
+        });
+      }
+    }
+  };
+
+  // Cargar los bloques asociados al formulario seleccionado
+  const handleLoadBlocks = async (e) => {
+    const selectedId = e.target.value;
+    setSelectedFormId(selectedId); // Guardar el ID del formulario seleccionado
+
+    const fetchedBlocks = await getBlocksForIdForm(selectedId); // Obtener bloques desde el backend
+
+    if (fetchedBlocks && fetchedBlocks.length > 0) {
+      setBlocksforForm(fetchedBlocks); // // Actualizar el estado con los bloques encontrados
+      console.log("Bloques cargados:", fetchedBlocks);
+    } else {
+      Toast.fire({
+        icon: "info",
+        title: "No existen bloques creados para este formulario",
+      });
+      setBlocksforForm([]); // Limpiar bloques si no existen
+    }
+  };
+
+  // Maneja la selección de un formulario, y carga sus bloques
+  const handleFormSelect = async (e) => {
+    const selectedId = e.target.value;
+    setSelectedFormId(selectedId); // actualizar ID del formulario
+
+    await handleLoadBlocks(e); // también carga los bloques asociados al formulario seleccionado
+  };
+
+  // Guarda una nueva monitorización en el sistema
+  const handleSaveMonitoring = async (score, feedback, check, agentId) => {
+    const payload = {
+      monitoring_date: new Date().toISOString().slice(0, 10),
+      score, // Puntuación total de la monitorización
+      feedback, // Comentarios u observaciones
+      check, // Checklist o validación binaria
+      id_user: agentId, // ID del agente evaluado
+      id_form: selectedFormId, // ID del formulario aplicado
+    };
+
+    try {
+      const result = await saveMonitoring(payload); // Enviar datos al backend
+      console.log("Monitorización guardada exitosamente:", result);
+      return result;
+    } catch (error) {
+      console.error("Error al guardar la monitorización:", error);
+      throw error;
     }
   };
 
   // MODALS //
 
-  // abrir el modal para seguir con el monitoreo
+  // Abrir el modal para iniciar con el monitoreo
   const openModal = async (op, admin) => {
     setOperation(op);
 
     // Si la operación es 1, es para registrar
     if (op == 1) {
+      // Limpiar los valores del formulario
       firstName.handleChange("");
       lastName.handleChange("");
       firstName.handleChange("");
@@ -256,21 +274,40 @@ const AdminList = () => {
       last_visit_date.handleChange(formattedDate);
       setSelectedClients([]); // Limpiar clientes seleccionados
 
+      // Limpiar estados de formulario
+      setSelectedClientId("");
+      setSelectedFormId("");
+      setFormOptions([]);
+      setBlocksforIdForm([]);
+
+      // Si hay un admin, trae los clientes que tiene asignado
       if (admin && admin.id) {
-        await getUserClients(admin.id);
-        setTitle(
-          `Crear monitorización para ${admin.firstname} ${admin.lastname}`
-        );
-        setidToEdit(admin.id);
-        setUserName(
-          `${admin.firstname || ""} ${admin.middlename || ""} ${
-            admin.lastname || ""
-          }`.trim()
-        );
+        try {
+          // Trae los clientes del agente seleccionado
+          await loadUserClients(admin.id);
+
+          setTitle(
+            `Crear monitorización para ${admin.firstname} ${admin.lastname}`
+          );
+          setidToEdit(admin.id); // ID del agente a quien se le hará la monitorización
+
+          // Guarda el nombre del monitoreador para mostrarlo en el modal
+          setUserName(
+            `${admin.firstname || ""} ${admin.middlename || ""} ${
+              admin.lastname || ""
+            }`.trim()
+          );
+        } catch (error) {
+          console.error("Error cargando datos", error);
+          setTitle("Nueva monitorización");
+          setUserName("");
+        }
       } else {
-        setSelectedClients([]); // Limpiar clientes seleccionados si no hay admin
+        // Si no hay admin definido, inicializar los estados
+        setSelectedClients([]);
         setUserClients([]);
         setTitle("Nueva monitorización");
+        setUserName("");
       }
 
       // Si la operación es 2, es para editar
@@ -280,7 +317,7 @@ const AdminList = () => {
 
       if (agentData) {
         // Trae los clientes que tiene asignado el admin
-        getUserClients(admin.id);
+        await loadUserClients(admin.id); // Cargar clientes asociados al agente
 
         // Datos obtenidos del backend
         setTitle(t("UserModal.EditUser"));
@@ -311,7 +348,7 @@ const AdminList = () => {
   // Esta función abre el modal de solo consulta (información del usuario)
   const openModalCont = async (admin) => {
     // Trae los clientes del usuario
-    await getUserClients(admin.id);
+    await loadUserClients(admin.id);
 
     // Obtenemos los datos completos del agente
     const agentData = await getAgentById(admin.id);
@@ -342,26 +379,58 @@ const AdminList = () => {
     );
   };
 
-  // Función para formatear fechas que vienen del backend en formato ISO
-  const formatDate = (dateTimeString) => {
-    // Expresión regular para validar si el string es un formato ISO con milisegundos y zona horaria Z
-    const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{1,6}Z$/;
+  // Resetea los estados del formulario y del modal al cerrarlo
+  const formClientReset = () => {
+    setSelectedClientId("");
+    setSelectedFormId("");
+    setFormOptions([]);
+    // setCheck(false);
+    setMonitoringStep(1); // Reinicia a la primera vista del modal
+  };
 
-    // Si la fecha cumple con el formato, la transformo
-    if (regex.test(dateTimeString)) {
-      const dateTime = new Date(dateTimeString);
-      const day = dateTime.getDate().toString().padStart(2, "0");
-      const month = (dateTime.getMonth() + 1).toString().padStart(2, "0");
-      const year = dateTime.getFullYear();
-      const hours = dateTime.getHours().toString().padStart(2, "0");
-      const minutes = dateTime.getMinutes().toString().padStart(2, "0");
+  // Props que se pasan al modal principal para crear o editar monitorizaciones
+  const modalAdminProps = {
+    monitoringStep,
+    setMonitoringStep,
+    formClientReset,
+    userName,
+    loading,
+    setLoading,
+    selectedFormId,
+    setSelectedFormId,
+    handleFormSelect,
+    selectedClientId,
+    setSelectedClientId,
+    openModal,
+    userClients,
+    handleClientChange,
+    formOptions,
+    callSelectedForm: formOptions.find((f) => f.id === Number(selectedFormId)),
+    blocksForForm,
+    userInfo,
+    formattedDate,
+    handleSaveMonitoring,
+    idToEdit,
+    t,
+    monitoringDate,
+    setMonitoringDate
+  };
 
-      // Retorno la fecha formateada en formato dd/mm/yyyy hh:mm
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
-    } else {
-      // Si no cumple con el formato, la devuelvo tal cual está
-      return dateTimeString;
-    }
+  // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
+  const modalViewAdminProps = {
+    formatDateTimeShort,
+    registration_date,
+    type,
+    last_visit_date,
+    selectedClients,
+    firstName,
+    middleName,
+    lastName,
+    state,
+    language,
+    email,
+    listClients,
+    t,
   };
 
   return (
@@ -386,280 +455,15 @@ const AdminList = () => {
                 />
               ) : (
                 <div className="text-center py-5">
-                  <h4>No hay agentes registrados</h4>
+                  <h4>No existen agentes registrados</h4>
                 </div>
               )}
             </div>
           </div>
         </div>
-        <div></div>
       </div>
-
-      <div id="modalAdmin" className="modal fade" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <label className="h5">{userName || "Nuevo Agente"} </label>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="close"
-              ></button>
-            </div>
-
-            <div className="modal-body">
-              <h4 className="fw-bold mb-3">Crear una monitorización</h4>
-              <h5 className="mb-3">Configuración de Monitorizaciones</h5>
-
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label">Monitor Client</label>
-                  {loadingClients ? (
-                    <div className="form-select d-flex align-items-center">
-                      <span>Cargando clientes...</span>
-                    </div>
-                  ) : (
-                    <select
-                      className="form-select"
-                      key={`client-select-${idToEdit || "new"}-${
-                        userClients.length
-                      }`}
-                      onChange={(e) =>
-                        console.log("Cliente seleccionado:", e.target.value)
-                      }
-                    >
-                      <option value="">
-                        {userClients.length === 0
-                          ? "No hay clientes disponibles"
-                          : "Seleccione un cliente"}
-                      </option>
-                      {userClients.map((client) => (
-                        <option key={`client-${client.id}`} value={client.id}>
-                          {client.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">
-                    Monitorizaciones <span className="text-danger">*</span>
-                  </label>
-                  <select className="form-select">
-                    <option>Seleccionar</option>
-                  </select>
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">
-                    Fecha de monitorización{" "}
-                    <span className="text-danger">*</span>
-                  </label>
-                  <input type="date" className="form-control" />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">
-                    Evaluador <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={
-                      userInfo
-                        ? `${userInfo.firstname || ""} ${
-                            userInfo.lastname || ""
-                          }`
-                        : "Cargando..."
-                    }
-                    readOnly
-                  />
-                </div>
-
-                <div className="col-12">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="enviarEmail"
-                    />
-                    <label className="form-check-label" htmlFor="enviarEmail">
-                      Enviar email ahora
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button
-                type="button"
-                id="btnCerrar"
-                className="btn btn-secondary"
-                data-bs-dismiss="modal"
-                onClick={() => setSelectedClients([])}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => validar(idToEdit)}
-                className="btn btn-primary"
-              >
-                Aceptar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="modalViewAdmin" className="modal fade" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-md">
-          <div className="modal-content">
-            <div
-              className="modal-header mb-0 pb-0"
-              style={{ borderBottom: "none" }}
-            >
-              <label className="h5">{t("viewUserModal.UserDetails")}</label>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="close"
-              ></button>
-            </div>
-            <div>
-              {" "}
-              <p
-                style={{
-                  marginLeft: "15px",
-                  marginBottom: 0,
-                  padding: 0,
-                  color: "gray",
-                  fontSize: "small",
-                }}
-              >
-                Información detallada del perfil de usuario.
-              </p>
-            </div>
-            <div className="modal-body d-flex ">
-              <div className="col  m-2 ">
-                <div className="m-1 p-1">
-                  <label className="fw-semibold ">
-                    {t("viewUserModal.Name")}
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control mt-1"
-                    value={`${firstName.input} ${middleName.input} ${lastName.input}`}
-                    readOnly
-                  />
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {" "}
-                    {t("viewUserModal.State")}
-                  </span>
-                  <p className="form-control mt-1">
-                    {`${
-                      state.input === 1
-                        ? `${t("clientTable.Active")}`
-                        : `${t("clientTable.Inactive")}`
-                    }`}{" "}
-                  </p>
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.RegisterDate")}
-                  </span>
-                  <p className="form-control mt-1">
-                    {" "}
-                    {formatDate(registration_date.input)}
-                  </p>
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.Language")}
-                  </span>
-                  <p className="form-control mt-1">
-                    {" "}
-                    {`${
-                      language.input == "es"
-                        ? `${t("headerlt.Spanish")}`
-                        : language.input == "en"
-                        ? `${t("headerlt.English")}`
-                        : language.input == "it"
-                        ? `${t("headerlt.Italian")}`
-                        : `${t("headerlt.Portuguese")}`
-                    }`}
-                  </p>
-                </div>
-              </div>
-              <div className="col  m-2  ">
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.Email")}
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control mt-1"
-                    value={email.input}
-                    readOnly
-                  />
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.Role")}
-                  </span>
-                  <p type="text" className="form-control mt-1 role-option">
-                    {" "}
-                    {` ${
-                      type.input === 1
-                        ? "Super Administrador"
-                        : type.input === 2
-                        ? "Administrador"
-                        : type.input == 3
-                        ? "Editor"
-                        : type.input == 4
-                        ? "Agente"
-                        : "cual rol"
-                    }`}{" "}
-                  </p>
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.LastVisit")}
-                  </span>
-                  <p className="form-control mt-1">
-                    {formatDate(last_visit_date.input)}{" "}
-                  </p>
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.Clients")}
-                  </span>
-
-                  <ul className="form-control mt-1">
-                    {selectedClients.length > 0 ? (
-                      selectedClients.map((clientId) => {
-                        const client = listClients.find(
-                          (c) => c.id === clientId
-                        );
-                        return client ? (
-                          <li key={client.id}>{client.client}</li>
-                        ) : null;
-                      })
-                    ) : (
-                      <li>{t("viewUserModal.NotClients")}</li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ModalAdmin {...modalAdminProps} />
+      <ModalViewAdmin {...modalViewAdminProps} />
     </div>
   );
 };
