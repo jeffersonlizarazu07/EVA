@@ -53,7 +53,7 @@ const AdminList = () => {
   const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksforForm] = useState([]); // Estado para menjar los bloques de un formulario
-  const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización 
+  const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -114,20 +114,20 @@ const AdminList = () => {
 
   // Obtener todos los administradores (agentes) desde el backend
   const loadAdmins = async () => {
-  try {
-    setLoading(true);
-    const data = await getAdmins(clients);
-    setAdmins(data);
-  } catch (error) {
-    console.error("Error al cargar los administradores:", error);
-    Toast.fire({
-      icon: "error",
-      title: "Error al cargar administradores"
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      const data = await getAdmins(clients);
+      setAdmins(data);
+    } catch (error) {
+      console.error("Error al cargar los administradores:", error);
+      Toast.fire({
+        icon: "error",
+        title: "Error al cargar administradores",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Función para obtener la lista de clientes registrados
   const loadClients = async () => {
@@ -387,6 +387,30 @@ const AdminList = () => {
     // setCheck(false);
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
+  
+  /* SCORE */
+  
+  // Calcular puntaje del bloque
+  const calScoreBlock = (block) => {
+  let total = 0;
+
+  block.preguntas.forEach((p) => {
+    const pesoPregunta = Number(p.puntaje_asignado) || 0;
+    const satisfactorio = p.evaluacion === 1;
+
+    if (satisfactorio) total += pesoPregunta;
+  });
+
+  return Math.min(total, 100); // No excede de 100
+};
+
+const handleUpdatePregunta = (idPregunta, campo, valor) => {
+  setPreguntas((prev) =>
+    prev.map((p) =>
+      p.id === idPregunta ? { ...p, [campo]: valor } : p
+    )
+  );
+};
 
   // Props que se pasan al modal principal para crear o editar monitorizaciones
   const modalAdminProps = {
@@ -413,7 +437,7 @@ const AdminList = () => {
     idToEdit,
     t,
     monitoringDate,
-    setMonitoringDate
+    setMonitoringDate,
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)

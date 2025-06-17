@@ -163,7 +163,7 @@ import { initReactI18next } from "react-i18next";
               "DuplicatedUser": "Este usuario ya existe."
             },
             viewUserModal:{
-              "UserDetails":"Detalles del usuario",
+              "UserDetails":"Información del agente",
               "Name":"Nombre",
               "Email":"Correo electronico",
               "Role":"Rol",
