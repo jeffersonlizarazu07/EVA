@@ -53,6 +53,7 @@ const AdminList = () => {
   const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksforForm] = useState([]); // Estado para menjar los bloques de un formulario
+  const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización 
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -411,6 +412,8 @@ const AdminList = () => {
     handleSaveMonitoring,
     idToEdit,
     t,
+    monitoringDate,
+    setMonitoringDate
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)

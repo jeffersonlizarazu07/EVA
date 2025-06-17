@@ -1,3 +1,6 @@
+import { useState } from "react";
+import Swal from "sweetalert2";
+
 const modalAdmin = ({
   // Props de agent_list
   monitoringStep,
@@ -14,7 +17,36 @@ const modalAdmin = ({
   callSelectedForm,
   blocksForForm,
   userInfo,
+  monitoringDate,
+  setMonitoringDate,
 }) => {
+  const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
+  const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
+  const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
+
+  // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
+  const handleNextStep = () => {
+    const isClientValid = selectedClientId !== "";
+    const isFormValid = selectedFormId !== "";
+    const isDateValid = monitoringDate !== "";
+
+    // Actualizar visualmente errores
+    setClientError(!isClientValid);
+    setFormError(!isFormValid);
+    setDateError(!isDateValid);
+
+    if (!isClientValid || !isFormValid || !isDateValid) {
+      Swal.fire({
+        icon: "warning",
+        title: "Faltan campos obligatorios",
+        text: "Debes completar cliente, formulario y fecha para continuar.",
+      });
+      return;
+    }
+
+    setMonitoringStep(2);
+  };
+
   return (
     <div id="modalAdmin" className="modal fade">
       <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
@@ -79,9 +111,14 @@ const modalAdmin = ({
                   <div className="col-md-6">
                     <label className="form-label">Monitor Client</label>
                     <select
-                      className="form-select"
+                      className={`form-select ${
+                        clientError ? "is-invalid" : ""
+                      }`}
                       value={selectedClientId || ""}
-                      onChange={handleClientChange}
+                      onChange={(e) => {
+                        handleClientChange(e);
+                        setClientError(false);
+                      }}
                       disabled={loading}
                     >
                       <option value="">Seleccione un cliente</option>
@@ -103,9 +140,12 @@ const modalAdmin = ({
                       Monitorizaciones <span className="text-danger">*</span>
                     </label>
                     <select
-                      className="form-select"
+                      className={`form-select ${formError ? "is-invalid" : ""}`}
                       value={selectedFormId || ""}
-                      onChange={handleFormSelect}
+                      onChange={(e) => {
+                        handleFormSelect(e);
+                        setFormError(false);
+                      }}
                     >
                       <option value="">
                         {!selectedClientId
@@ -143,7 +183,17 @@ const modalAdmin = ({
                       Fecha de monitorización{" "}
                       <span className="text-danger">*</span>
                     </label>
-                    <input type="date" className="form-control ms-0" />
+                    <input
+                      type="date"
+                      className={`form-control ms-0 ${
+                        dateError ? "is-invalid" : ""
+                      }`}
+                      value={monitoringDate}
+                      onChange={(e) => {
+                        setMonitoringDate(e.target.value);
+                        setDateError(false);
+                      }}
+                    />
                   </div>
 
                   <div className="col-md-6">
@@ -336,10 +386,7 @@ const modalAdmin = ({
             >
               Cancelar
             </button>
-            <button
-              onClick={() => setMonitoringStep(2)}
-              className="btn btn-primary"
-            >
+            <button onClick={handleNextStep} className="btn btn-primary">
               Aceptar
             </button>
           </div>
