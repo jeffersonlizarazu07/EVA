@@ -33,19 +33,19 @@ class ClientsDTO {
         return {status : true}
     }
 
-    static validarId(id) {                 
-        //validamos que el id no sea null, undifined o vacio
-        if(id === undefined || id === null || id === "") {
-            return {status : false, message : "El ID es obligatorio"};
-        }
-
-        const numberId = parseInt(id); //para validar que sea un numero
-
-        if (isNaN(numberId) || !Number.isInteger(numberId)) {
-            return { status: false, message: "Debe ingresar un ID válido " };
-        }
-        return {status : true}
+    static validarId(id) {
+    if (id === undefined || id === null || id === "") {
+        return { status: false, message: "El ID es obligatorio" };
     }
+
+    const numberId = typeof id === "number" ? id : parseInt(id);
+
+    if (isNaN(numberId) || !Number.isInteger(numberId)) {
+        return { status: false, message: "Debe ingresar un ID válido" };
+    }
+
+    return { status: true };
+}
 
 }
 

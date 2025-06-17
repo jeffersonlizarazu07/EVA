@@ -3,8 +3,8 @@ const BlockModel = require('../models/blockModel');
 const QuestionModel = require('../models/questionsFormModel');
 const BlockDTO = require('../dtos/blockDTO');
 
+// Crear bloque
 exports.createBlock = async (req, res) => {
-  // console.log("Datos recibidos en backend: --", req.body);
   
   const validarBlock = await BlockDTO.validateBlock(req.body);        
   if(!validarBlock.status){
@@ -29,6 +29,7 @@ exports.createBlock = async (req, res) => {
   }
 };
 
+// Obtener todos los bloques
 exports.getAllBlocks = async (req, res) => {
   try {
     const blocks = await BlockModel.getAllBlocks();
@@ -38,6 +39,7 @@ exports.getAllBlocks = async (req, res) => {
   }
 };
 
+// Obtener bloques por el ID del formulario
 exports.getBlocksByFormId = async (req, res) => {
   
   const idValidation = BlockDTO.validarId(req.params.formId);
@@ -67,6 +69,7 @@ exports.getBlocksByFormId = async (req, res) => {
   }
 };
 
+// Obtener un bloque por ID
 exports.getBlockById = async (req, res) => {
    const idValidation = BlockDTO.validarId(req.params.id);
   if (!idValidation.status) {
@@ -81,8 +84,8 @@ exports.getBlockById = async (req, res) => {
   }
 };
 
+// Actualizar un bloque por ID
 exports.updateBlock = async (req, res) => {
-  // console.log('Datos recibidos para actualizar bloque: --- ', req.body);
   
   const validarBlock = await BlockDTO.validateBlockUpdate(req.body);        
   if(!validarBlock.status){
@@ -95,7 +98,6 @@ exports.updateBlock = async (req, res) => {
   }
 
   try {
-    // console.log("Datos recibidos para actualizar:", req.body);
     const updatedBlock = await BlockModel.updateBlock(req.params.id, req.body);
     res.json({ message: 'Bloque actualizado', data: updatedBlock });
   } catch (error) {
@@ -104,6 +106,7 @@ exports.updateBlock = async (req, res) => {
   }
 };
 
+// Eliminar un bloque por id
 exports.deleteBlock = async (req, res) => {
 
    const idValidation = BlockDTO.validarId(req.params.id);
