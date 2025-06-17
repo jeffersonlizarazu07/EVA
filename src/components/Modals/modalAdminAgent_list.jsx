@@ -37,9 +37,10 @@ const modalAdmin = ({
 
     if (!isClientValid || !isFormValid || !isDateValid) {
       Swal.fire({
-        icon: "warning",
+        icon: "error",
         title: "Faltan campos obligatorios",
-        text: "Debes completar cliente, formulario y fecha para continuar.",
+        html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+        customClass: "swal-content-center",
       });
       return;
     }
@@ -250,8 +251,6 @@ const modalAdmin = ({
                 </div>
 
                 <div className="shadowbox5 mb-4 mt-3 ms-0 ps-0 align-items-center">
-                  <h4 className="text-center mt-3">Información del Bloque</h4>
-
                   {blocksForForm.length === 0 ? (
                     <p>
                       No se ha cargado o existe error al llamar los bloques.
@@ -259,21 +258,13 @@ const modalAdmin = ({
                   ) : (
                     blocksForForm.map((block) => (
                       <div key={block.id} className="mb-4 pb-3">
-                        <div className="w-100 border-bottom ps-3 mb-3">
-                          <div className="d-flex mb-2">
-                            <p className="fw-bold p-0 m-0">
-                              Nombre del bloque:
-                            </p>
-                            <label className="ms-1">{block.block_name}.</label>
-                          </div>
-
-                          <div className="d-flex mb-3">
-                            <p className="fw-bold mb-0">Puntuación:</p>
-                            <label className="ms-1">
-                              {block.percentage || "No existe puntuación"}.
-                            </label>
-                          </div>
-                        </div>
+                        <h4 className="text-center mt-3">
+                          <label className="ms-1">{block.block_name}</label>
+                          {" - "}
+                          <label className="ms-1">
+                            {block.percentage || "No existe puntuación"}
+                          </label>
+                        </h4>
 
                         {/* Preguntas */}
                         <div className="ms-3 mt-3">
