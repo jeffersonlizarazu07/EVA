@@ -261,7 +261,10 @@ const SurveyList = () => {
               title: t("alertDeactivate.la_encuesta") + ` ${survey.title} ` + t("alertDeactivate.SuccessAlert"),
             });
           } catch (error) {
-            alert("error", "Error al eliminar");
+             Toast.fire({
+              icon: "error",
+              title: t("alertDeactivate.error_desactivar_encuesta"),
+            });
             console.error(error);
           }
         }
@@ -470,7 +473,7 @@ const SurveyList = () => {
   };
   const openModalCont =  async (survey) => {
      /* await getClient(survey.id)  */
-     setModalTitle("Información de la encuesta");
+     setModalTitle(t("survey.informacion_encuesta"));
      title.handleChange(survey?.title || "");
      start_date.handleChange(survey?.start_date || "");
      end_date.handleChange(survey?.end_date || "");
@@ -842,16 +845,14 @@ const SurveyList = () => {
             gap: 2, 
             p: 2 
           }}>
-            <Button
-              variant="outlined"          
+            <Button      
               onClick={handleCloseViewModal}
-              sx={{            
-                color: '#b62a8b',       // Texto morado
-                borderColor: '#b62a8b',  // Borde morado
-                '&:hover': {
-                  borderColor: '#b62a8b', // Borde morado oscuro al hover
-                  backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
-                }
+              sx={{
+                  color: 'white',
+                  backgroundColor: '#b62a8b',
+                  '&:hover': {
+                    backgroundColor: '#581244',
+                  }
               }}
             >
               {t("buttons.cerrar")}
