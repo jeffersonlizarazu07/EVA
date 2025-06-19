@@ -17,8 +17,30 @@ import { getSurveyQuestions } from "../../services/surveyRequest";
 
 import ModalEnvioMasivo from "../../components/Modals/modalEnvioMasivo";
 
+import {
+  Box,
+  Modal,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  Paper,
+  Grid,
+  Divider,
+  Chip,
+  Stack
+} from '@mui/material';
+import {
+  Close as CloseIcon,
+  CloudUpload as CloudUploadIcon,
+  Edit as EditIcon,
+  Add as AddIcon
+} from '@mui/icons-material';
+
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
+
+  const [modalOpen, setModalOpen] = useState(false); //estado del modal mui
 
   // En el estado del componente añade:
   const [showEnvioModal, setShowEnvioModal] = useState(false);
@@ -54,9 +76,29 @@ const SurveyList = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   // const { t, i18n } = useTranslation();
+  const [isFormValid, setIsFormValid] = useState(true);
+  const [viewModalOpen, setViewModalOpen] = useState(false); // Estado del modal de vista
+
 
   const { userType, userId, languageUser } = useContext(UserContext);
   const accessToken = Cookies.get('accessToken');
+
+  const handleCloseViewModal = () => {
+    setViewModalOpen(false);
+  };
+
+  const handleOpenViewModal = () => {
+    setViewModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedClients([]);
+  };
+
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
 
   useEffect(() => {
     getSurveys();
@@ -219,7 +261,10 @@ const SurveyList = () => {
               title: t("alertDeactivate.la_encuesta") + ` ${survey.title} ` + t("alertDeactivate.SuccessAlert"),
             });
           } catch (error) {
-            alert("error", "Error al eliminar");
+             Toast.fire({
+              icon: "error",
+              title: t("alertDeactivate.error_desactivar_encuesta"),
+            });
             console.error(error);
           }
         }
@@ -264,18 +309,18 @@ const SurveyList = () => {
     if (start < today)  {
       setErrorFechas(true);
       setErrorFechasMessage(t("alerts.error_fecha_incio"))
-      document.getElementById("saveButton").disabled = true;
+      setIsFormValid(false);
       return false;
     }
 
     if (end < start) {
       setErrorFechas(true);
       setErrorFechasMessage(t("alerts.error_fecha_inicio_fin"));
-      document.getElementById("saveButton").disabled = true;
+      setIsFormValid(false);
       return false;
     } 
     setErrorFechas(false);
-    document.getElementById("saveButton").disabled = false;
+    setIsFormValid(true);
     return true;
   };
 
@@ -313,6 +358,7 @@ const SurveyList = () => {
       idClient.handleChange(survey?.idClient || "");
       setidToEdit(survey?.id);
     }
+    handleOpenModal();
   };
   
   const validar = (id) => {
@@ -391,7 +437,7 @@ const SurveyList = () => {
             console.log("Respuesta solicitud Post:", responseData);
             if (responseData.status) {
               getSurveys();
-              document.getElementById("btnCerrarModalCrear").click();
+              handleCloseModal();
               Toast.fire({
                 icon: "success",
                 title: t("alerts.mensaje_crear_encuesta"),
@@ -413,7 +459,7 @@ const SurveyList = () => {
           config
         );
         if (response.status === 200) {
-          document.getElementById("btnCerrarModalCrear").click();
+          handleCloseModal();
           Toast.fire({
             icon: "success",
             title: t("alerts.mensaje_encuesta_editada"),
@@ -427,7 +473,7 @@ const SurveyList = () => {
   };
   const openModalCont =  async (survey) => {
      /* await getClient(survey.id)  */
-     setModalTitle("Información de la encuesta");
+     setModalTitle(t("survey.informacion_encuesta"));
      title.handleChange(survey?.title || "");
      start_date.handleChange(survey?.start_date || "");
      end_date.handleChange(survey?.end_date || "");
@@ -435,6 +481,7 @@ const SurveyList = () => {
      description.handleChange(survey?.description || "");
      link.handleChange(survey?.link || "No presenta link anexado");
      idClient.handleChange(survey?.idClient || "");
+     handleOpenViewModal();
   };
 
   const openModalBulk = (survey)  => {
@@ -594,15 +641,14 @@ const SurveyList = () => {
   console.log("Valor de start_date.input en el render:", start_date.input);
 
   return (
-    <div className="App">
-      <div id="body">
+    <Box className="App" sx={{ overflow: "hidden" }}>
+      <Box id="body">
         {userType == "1" || userType == "2" ? <HeaderLT1 /> : <HeaderLT2 />}
-     <div className="row m-0">
-      <div className="col-1 d-flex  align-items-center mx-auto p-0">
-          {/* {userType == "1" || userType == "2" ? <SidebarLT1 /> : <SidebarLT2 />} */}
-          </div>
-          <div className="w-100 d-flex justify-content-center px-2">
-          <div className="w-100 px-3" style={{ maxWidth: "97%" }}>
+        <Box m={0} sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex" }}>
+          {/* <Box div className="col-1 d-flex  align-items-center mx-auto p-0">
+          {/* {userType == "1" || userType == "2" ? <SidebarLT1 /> : <SidebarLT2 />} 
+          </div> */}
+          <Box className="container" mt={0} sx={{ maxWidth: "97%" }}>
             {survey.length > 0 ? (
               <TableSurvey
                 header={headers}
@@ -620,281 +666,386 @@ const SurveyList = () => {
                 onBulkEmail={(payload)=> openModalBulk(payload)}
               />
             ) : (
-              <div className="text-center py-5">
-                <h4>{t("survey.no_hay_encuestas_disponibles")}</h4>
-                <button 
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalSurvey"
-                  className="btn btn-primary mt-3"
-                  onClick={() => openModal(1)}
-                >
-                  {t("survey.crear_encuesta")}
-                </button>
-              </div>
-            )}
-          </div>
-          </div>
-          </div>
-      </div>
-     <div id="modalViewSurvey" className="modal fade" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <label className="h5">{modalTitle}</label>
-              <button
-                id="btnCerrar"
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="close"
-              ></button>
-            </div>
-            <div className="modal-body ">
-              <div className="row">
-                <div className="col-8 mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      placeholder=" "
-                      className="input-new"
-                      type="text"
-                      name="title"
-                      value={title.input}
-                      readOnly
-                    />
-                    <span className="labelName">Titulo</span>
-                  </label>
-                </div>
-                <div className="col-4 mb-3">
-                  <label id="labelAnimation">
-                  <select
-                    onChange={(e) => {
-                      console.log("***--lo que se manda--***",e.target.value);
-                      idClient.handleChange(e.target.value)}}
-                    value={idClient.input}
-                    className="input-new"
-                    disabled={clients.length === 0} // Deshabilitar si no hay clientes
+              <Box sx={{ textAlign: 'center', py: 5,}}>
+                <Typography>{t("survey.no_hay_encuestas_disponibles")}</Typography>
+                  <Button
+                  sx={{
+                    color: 'white',
+                    backgroundColor: '#b62a8b', // Color morado estándar de MUI
+                    '&:hover': {
+                      backgroundColor: '#581244', // Morado más oscuro al hover
+                    }
+                  }}         
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalSurvey"
+                    className="btn btn-primary mt-3"
+                    onClick={() => openModal(1)}
                   >
-                    <option value="" disabled>
-                      Seleccione un cliente
-                    </option>
-                    {clients.length > 0 ? (
-                      clients.map((client) => (
-                        <option value={client.idClient} key={client.id}>
-                          {client.clientName}
-                        </option>
-                      ))
-                    ) : (
-                      <option disabled>Cargando clientes...</option> 
-                    )}
-                  </select>
+                    {t("survey.crear_encuesta")}
+                  </Button>
+              </Box>
+            )}
+          </Box>
+          
+        </Box>
+      </Box>
+     
+     <Modal
+      open={viewModalOpen}
+      onClose={handleCloseViewModal}
+      aria-labelledby="view-modal-title"
+      aria-describedby="view-modal-description"
+      sx={{
+        zIndex: 5,
+      }}
+    >
+      <Box sx={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: { xs: '90%', sm: 600, md: 800 },
+        bgcolor: 'background.paper',
+        borderRadius: 2,
+        boxShadow: 24,
+        p: 0,
+        maxHeight: '90vh',
+        overflow: 'auto'
+      }}>
+        <Paper elevation={3}>
+          {/* Header */}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            p: 2, 
+            borderBottom: '1px solid #e0e0e0' 
+          }}>
+            <Typography variant="h6" component="h2" id="view-modal-title">
+              {modalTitle}
+            </Typography>
+            <IconButton 
+              onClick={handleCloseViewModal}
+              sx={{ color: 'grey.500' }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
 
-                    <span className="labelName">Cliente</span>
-                  </label>
-                </div>
-              </div>
-              <div className="row mt-2">
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=" "
-                      type="date"
-                      name="start_date"
-                      value={start_date.input}
-                      min={formatDateForInput(new Date())}
-                      onChange={(e) => {
-                        console.log("-----Valor seleccionado:}}}", e.target.value)
-                        start_date.handleChange(e.target.value);
-                        validateDates(e.target.value, end_date.input);
-                      }}
-                    />
-                    <span className="labelName">Fecha de inicio:</span>
-                  </label>
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=" "
-                      type="date"
-                      name="end_date"
-                      value={end_date.input}
-                      onChange={(e) => {
-                        end_date.handleChange(e.target.value);
-                        validateDates(start_date.input, e.target.value);
-                      }}
-                    />
-                    <span className="labelName">Fecha de finalización:</span>
-                  </label>
-                </div>
-              </div>
-              {errorFechas && (
-                <p className="text-danger">
-                  La fecha de fin no puede ser anterior a la fecha de inicio
-                </p>
-              )}
-              <div className="row">
-                <div className="col mb-3 ">
-                  <span>Descripción</span>
-                  <label id="labelAnimation">
-                    <textarea
-                      className="input-new "
-                      placeholder="Descripción"
-                      type="text-area"
-                      name="descripcion"
-                      value={description.input}
-                      readOnly
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                id="btnCerrar"
-                className="btn-primary btn"
-                data-bs-dismiss="modal"
-                onClick={() => setSelectedClients([])}
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div> 
+          {/* Body */}
+          <Box sx={{ p: 3 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={8}>
+                <TextField
+                  className="readOnlyField"
+                  fullWidth
+                  label={t("survey.titulo")}
+                  value={title.input}
+                  variant="outlined"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  className="readOnlyField"
+                  fullWidth
+                  select
+                  label={t("survey.cliente")}
+                  value={idClient.input}
+                  variant="outlined"
+                  SelectProps={{
+                    native: true,
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  
+                >
+                  <option value="" disabled>
+                    {t("survey.selecciona_cliente")}
+                  </option>
+                  {clients.length > 0 ? (
+                    clients.map((client) => (
+                      <option value={client.idClient} key={client.id}>
+                        {client.clientName}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>Cargando clientes...</option>
+                  )}
+                </TextField>
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                className="readOnlyField"
+                  fullWidth
+                  label={t("survey.fecha_inicio")}
+                  type="date"
+                  value={start_date.input}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant="outlined"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  className="readOnlyField"
+                  fullWidth
+                  label={t("survey.fecha_fin")}
+                  type="date"
+                  value={end_date.input}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant="outlined"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  
+                />
+              </Grid>
+            </Grid>
+
+            <TextField
+               className="readOnlyField"
+              fullWidth
+              label={t("survey.descripcion")}
+              multiline
+              rows={4}
+              value={description.input}
+              variant="outlined"
+              sx={{ 
+                mt: 2,
+              }}
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+          </Box>
+
+          {/* Footer */}
+          <Divider />
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            gap: 2, 
+            p: 2 
+          }}>
+            <Button      
+              onClick={handleCloseViewModal}
+              sx={{
+                  color: 'white',
+                  backgroundColor: '#b62a8b',
+                  '&:hover': {
+                    backgroundColor: '#581244',
+                  }
+              }}
+            >
+              {t("buttons.cerrar")}
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
+    </Modal>
  {showEnvioModal && (
   <ModalEnvioMasivo 
     survey={selectedSurvey} 
     onClose={() => setShowEnvioModal(false)} 
   />
 )}
-      <div id="modalSurvey" className="modal fade" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <label className="h5">{modalTitle}</label>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="close"
-                onClick={() => setSelectedClients([])}
-              ></button>
-            </div>
-            <div className="modal-body ">
-              <div className="row">
-                <div className="col-8 mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      placeholder=" "
-                      className="input-new"
-                      type="text"
-                      name="title"
-                      value={title.input}
-                      onChange={(e) => title.handleChange(e.target.value)}
-                    />
-                    <span className="labelName">{t("survey.titulo")}</span>
-                  </label>
-                </div>
-                <div className="col-4 mb-3">
-                  <label id="labelAnimation">
-                    <select
-                      onChange={(e) =>{ 
-                        console.log("***--lo que se manda--***",e.target.value);
-                        idClient.handleChange(e.target.value)}}
-                      value={idClient.input}
-                      className="input-new"
-                    >
-                      <option value="" disabled>
-                        {t("survey.selecciona_cliente")}
+     <Modal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+        sx={{
+    zIndex: 5, // ⬅️ Reduce el z-index del modal (valor por defecto de MUI)
+  }}
+      >
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: { xs: '90%', sm: 600, md: 800 },
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: 24,
+          p: 0,
+          maxHeight: '90vh',
+          overflow: 'auto'
+        }}>
+          <Paper elevation={3}>
+            {/* Header */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              p: 2, 
+              borderBottom: '1px solid #e0e0e0' 
+            }}>
+              <Typography variant="h6" component="h2" id="modal-title">
+                {modalTitle}
+              </Typography>
+              <IconButton 
+                onClick={handleCloseModal}
+                sx={{ color: 'grey.500' }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            {/* Body */}
+            <Box sx={{ p: 3 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={8}>
+                  <TextField
+                    className="readOnlyField"
+                    fullWidth
+                    label={t("survey.titulo")}
+                    value={title.input}
+                    onChange={(e) => title.handleChange(e.target.value)}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    className="readOnlyField"
+                    fullWidth
+                    select
+                    label={t("survey.cliente")}
+                    value={idClient.input}
+                    onChange={(e) => idClient.handleChange(e.target.value)}
+                    variant="outlined"
+                    SelectProps={{
+                      native: true,
+                    }}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  >
+                    <option value="" disabled>
+                      {t("survey.selecciona_cliente")}
+                    </option>
+                    {clients.map((client) => (
+                      <option value={client.idClient} key={client.id}>
+                        {client.clientName}
                       </option>
-                      {clients.map((client) => (
-                        <option value={client.idClient} key={client.id}>
-                          {client.clientName}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="labelName">{t("survey.cliente")}</span>
-                  </label>
-                </div>
-              </div>
-              <div className="row mt-2">
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=" "
-                      type="date"
-                      name="start_date"
-                      value={start_date.input}
-                      onChange={(e) => {
-                        start_date.handleChange(e.target.value);
-                        validateDates(e.target.value, end_date.input);
-                      }}
-                    />
-                    <span className="labelName">{t("survey.fecha_inicio")}:</span>
-                  </label>
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=" "
-                      type="date"
-                      name="end_date"
-                      value={end_date.input}
-                      onChange={(e) => {
-                        end_date.handleChange(e.target.value);
-                        validateDates(start_date.input, e.target.value);
-                      }}
-                    />
-                    <span className="labelName">{t("survey.fecha_fin")}:</span>
-                  </label>
-                </div>
-              </div>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                   className="readOnlyField"
+                    fullWidth
+                    label={t("survey.fecha_inicio")}
+                    type="date"
+                    value={start_date.input}
+                    onChange={(e) => {
+                      start_date.handleChange(e.target.value);
+                      validateDates(e.target.value, end_date.input);
+                    }}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    className="readOnlyField"
+                    fullWidth
+                    label={t("survey.fecha_fin")}
+                    type="date"
+                    value={end_date.input}
+                    onChange={(e) => {
+                      end_date.handleChange(e.target.value);
+                      validateDates(start_date.input, e.target.value);
+                    }}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+
               {errorFechas && (
-                <p className="text-danger">
+                <Typography color="error" sx={{ mt: 1 }}>
                   {errorFechasMessage}
-                </p>
+                </Typography>
               )}
-              <div className="row mt-3">
-                <div className="col mb-3 ">
-                  <label id="labelAnimation">
-                    <textarea
-                      className="input-new "
-                      placeholder={t("survey.descripcion")}
-                      type="text-area"
-                      name="descripcion"
-                      value={description.input}
-                      onChange={(e) => description.handleChange(e.target.value)}
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                id="btnCerrarModalCrear"
-                className="btn btn-secondary"
-                data-bs-dismiss="modal"
-                onClick={() => setSelectedClients([])}
+
+              <TextField
+                className="readOnlyField"
+                fullWidth
+                label={t("survey.descripcion")}
+                multiline
+                rows={4}
+                value={description.input}
+                onChange={(e) => description.handleChange(e.target.value)}
+                variant="outlined"
+                sx={{ mt: 2 }}
+              />
+            </Box>
+
+            {/* Footer */}
+            <Divider />
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              gap: 2, 
+              p: 2 
+            }}>
+              <Button
+                variant="outlined"
+                onClick={handleCloseModal}
+                sx={{            
+                  color: '#b62a8b',       // Texto morado
+                  borderColor: '#b62a8b',  // Borde morado
+                  '&:hover': {
+                    borderColor: '#b62a8b', // Borde morado oscuro al hover
+                    backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
+                  }
+                }}
               >
                 {t("buttons.cerrar")}
-              </button>
-              <button
-                id="saveButton"
+              </Button>
+              <Button
+                variant="contained"
                 onClick={() => validar(idToEdit)}
-                className="btn-primary btn"
+                disabled={errorFechas || !isFormValid}
+                sx={{
+                  backgroundColor: '#b62a8b',
+                  '&:hover': {
+                    backgroundColor: '#581244',
+                  }
+                }}
               >
                 {t("buttons.guardar")}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+      </Modal>
+    </Box>
   );
 };
 

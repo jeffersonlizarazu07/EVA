@@ -1,7 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
-import AsyncSelect from "react-select/async";
-// import Select from "react-select";
-import makeAnimated from "react-select/animated";
+import { useState, useEffect, useContext } from "react";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAdmin";
 import Swal from "sweetalert2";
@@ -11,14 +8,28 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
+import {
+  Modal,
+  Box,
+  Typography,
+  Grid,
+  TextField,
+  Button,
+  Paper,
+  IconButton,
+  Divider,
+  MenuItem,
+  Checkbox,
+  Autocomplete
+} from '@mui/material';
 
-import Checkbox from "@mui/material/Checkbox";
-import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import {Close as CloseIcon, CloudUpload as CloudUploadIcon, Edit as EditIcon, Add as AddIcon } from '@mui/icons-material';
 
 const AdminList = () => {
+  //ocultar o mostrar los modales
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+
   // URL base para los usuarios (admins) y para los usuarios-clientes
   const urlUsers = "http://localhost:3000/api/users";
   const urlUsersClients = "http://localhost:3000/api/users_client";
@@ -31,16 +42,12 @@ const AdminList = () => {
   const [idToEdit, setidToEdit] = useState(null); // ID del admin que se está editando
   const [formattedDate, setFormattedDate] = useState(""); // Fecha actual formateada
   const [loading, setLoading] = useState(false); // Bandera de carga (puede ser útil)
-  const [userclients, setUserClients] = useState([]); // Relación de clientes por usuario
   const [selectedClients, setSelectedClients] = useState([]); // Clientes seleccionados para un admin
 
   // Traducción e idioma desde el contexto global del usuario
   const { t, i18n } = useTranslation();
   const { accessToken, languageUser, setClients, userId, clients } = useContext(UserContext);
 
-  // Íconos para los checkboxes (Material UI)
-  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
-  const checkedIcon = <CheckBoxIcon fontSize="small" />;
   // Se ejecuta cuando cambia el idioma del usuario o se monta el componente
   useEffect(() => {
     const today = new Date();
@@ -48,9 +55,7 @@ const AdminList = () => {
     const month = today.getMonth() + 1;
     const day = today.getDate();
     // Formateo de la fecha (YYYY-MM-DD)
-    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${
-      day < 10 ? "0" + day : day
-    }`;
+    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${ day < 10 ? "0" + day : day }`;
 
     // Cargo admins y clientes desde el backend
     setFormattedDate(formattedDater);
@@ -58,29 +63,29 @@ const AdminList = () => {
 
     // Cambio el idioma actual del usuario
     i18n.changeLanguage(languageUser);
-    getClients();
-  }, [languageUser]);
-  const config = {
-    withCredentials: true,
-  };
-  // Llaves para campos específicos al mostrar data
-  const selectedKeys = ["firstname", "lastname", "type", "state"];
-  const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  const email = useInput({
-    defaultValue: "",
-    validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
-  });
-  const cPassword = useInput({ defaultValue: "" });
-  const password = useInput({
-    defaultValue: "",
-    validate: (value) =>
-      value === "" ||
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/.test(
-        value
-      ),
-  });
+      getClients();
+    }, [languageUser]);
+    const config = {
+      withCredentials: true,
+    };
+    // Llaves para campos específicos al mostrar data
+    const selectedKeys = ["firstname", "lastname", "type", "state"];
+    const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+    const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+    const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+    const email = useInput({
+      defaultValue: "",
+      validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
+    });
+    const cPassword = useInput({ defaultValue: "" });
+    const password = useInput({
+      defaultValue: "",
+      validate: (value) =>
+        value === "" ||
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/.test(
+          value
+        ),
+    });
 
   const type = useInput({ defaultValue: "", validate: /^[1-4]+$/ });
   const state = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
@@ -98,7 +103,7 @@ const AdminList = () => {
   // Obtener todos los admins
   const getAdmins = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/users`, {
+      const response = await axios.get("http://localhost:3000/api/users", {
         withCredentials: true,
       });
       setAdmins(response.data.data);
@@ -144,7 +149,7 @@ const AdminList = () => {
       });
       return;
     }
-  
+
     if (password && cPassword !== password) {
       Toast.fire({
         icon: "error",
@@ -153,61 +158,56 @@ const AdminList = () => {
       return;
     }
 
-    const nombre = rest.firstname; // Se usará para el mensaje dinámico
+    const nombre = rest.firstname;
 
-    // PUT
     if (metodo.toUpperCase() === "PUT") {
       if (!password || password.trim() === "") {
         delete rest.password;
       } else {
         rest.password = password;
       }
-  
-      
+
       try {
         const respuesta = await axios.put(`${urlUsers}/${idToEdit}`, rest, config);
-      
+
         if (respuesta.status >= 200 && respuesta.status < 300) {
           const envioC = await sendClients(respuesta.data.data.id, 2);
-          if(envioC.success ){
-            if (idToEdit ==  userId){
+
+          if (envioC.success) {
+            if (idToEdit == userId) {
               try {
-                const response = await axios.get(`http://localhost:3000/api/users/${userId}/clients`, config);
-                if(response.status == 200){
+                const response = await axios.get(
+                  `http://localhost:3000/api/users/${userId}/clients`,
+                  config
+                );
+                if (response.status === 200) {
                   setClients(response.data.data);
-                  console.log("clientes", clients);
-                  console.log("respuesta", response.data.data);
                 }
-              }catch (error) {
-                console.error("Error fetching data:", error);
+              } catch (error) {
+                console.error("Error fetching user clients:", error);
               }
             }
-             Toast.fire({
-            icon: "success",
-            title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
-          });
-    
-          document.getElementById("btnCerrar").click();
-          getAdmins();
-          }else {
-          // Error al asignar clientes - mostrar mensaje del servidor
-          Toast.fire({
-            icon: "error",
-            title: `Usuario actualizado, pero error al asignar clientes: ${envioC.error}`,
-          });
-          
-          // Refrescar la lista para mostrar el usuario actualizado
-          getAdmins();
+
+            Toast.fire({
+              icon: "success",
+              title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
+            });
+            setOpenCreateModal(false);
+            getAdmins();
+          } else {
+            Toast.fire({
+              icon: "error",
+              title: `Usuario actualizado, pero error al asignar clientes: ${envioC.error}`,
+            });
+            // No cerrar modal en este caso si lo prefieres
+            getAdmins();
+          }
         }
-         
-        }  
       } catch (error) {
-        console.error("Error:", error);
-              
         let errorMessage = `${nombre} - ${t("alertCreateEdit.ErrorAlert")}`;
-        if (error.response && error.response.data && error.response.data.message) {
+        if (error.response?.data?.message) {
           errorMessage = error.response.data.message;
-        }      
+        }
         Toast.fire({
           icon: "error",
           title: errorMessage,
@@ -215,7 +215,6 @@ const AdminList = () => {
       }
     }
 
-    // POST
     if (metodo.toUpperCase() === "POST") {
       const duplicados = admins.find((u) => u.email === rest.email);
       if (duplicados) {
@@ -225,38 +224,34 @@ const AdminList = () => {
         });
         return;
       }
-  
+
       try {
         const respuesta = await axios.post(`${urlUsers}`, { ...rest, password }, config);
-  
+
         if (respuesta.status >= 200 && respuesta.status < 300) {
           const envioC = await sendClients(respuesta.data.data.id, 1);
+
           if (envioC.success) {
-          Toast.fire({
-            icon: "success",
-            title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
-          });
-    
-          document.getElementById("btnCerrar").click();
-          getAdmins();
-        }else {
-          // Error al asignar clientes - mostrar mensaje del servidor
-          Toast.fire({
-            icon: "error",
-            title: `Usuario creado, pero error al asignar clientes: ${envioC.error}`,
-          });
-          
-          // Refrescar la lista para mostrar el usuario creado
-          getAdmins();
+            Toast.fire({
+              icon: "success",
+              title: `${nombre}${t("alertCreateEdit.SuccessAlert")}`,
+            });
+            setOpenCreateModal(false);
+            getAdmins();
+          } else {
+            Toast.fire({
+              icon: "error",
+              title: `Usuario creado, pero error al asignar clientes: ${envioC.error}`,
+            });
+            getAdmins();
+          }
         }
-        }  
       } catch (error) {
-        console.error("Error: ", error);
         let errorMessage = `${nombre} - ${t("alertCreateEdit.ErrorAlert")}`;
-        if (error.response && error.response.data && error.response.data.message) {
+        if (error.response?.data?.message) {
           errorMessage = error.response.data.message;
         }
-      
+
         Toast.fire({
           icon: "error",
           title: errorMessage,
@@ -421,10 +416,18 @@ const AdminList = () => {
   };
   
   //MODALS//
+  // Manejo cerrar modal
+  const handleModalClose = () => {
+    setOpenCreateModal(false);
+    setOpenViewModal(false);
+    setSelectedClients([]);  // Limpia selección si quieres
+  };
+
+  // Función abrir modal
   const openModal = (op, admin) => {
     setSelectedClients([]);
     setOperation(op);
-    if (op == 1) {
+    if (op === 1) {
       setTitle(t("UserModal.RegisterUser"));
       lastName.handleChange("");
       firstName.handleChange("");
@@ -436,7 +439,7 @@ const AdminList = () => {
       state.handleChange(1);
       registration_date.handleChange(formattedDate);
       last_visit_date.handleChange(formattedDate);
-    } else if (op == 2) {
+    } else if (op === 2) {
       getUserClients(admin.id);
       setTitle(t("UserModal.EditUser"));
       lastName.handleChange(admin?.lastname || "");
@@ -451,6 +454,9 @@ const AdminList = () => {
 
       setidToEdit(admin?.id);
     }
+
+    // Aquí abrir el modal
+    setOpenCreateModal(true);
   };
 
   const openModalCont = async (admin) => {
@@ -468,10 +474,14 @@ const AdminList = () => {
     state.handleChange(admin?.state || "");
     language.handleChange(admin?.language || "en");
     registration_date.handleChange(admin?.registration_date || "");
-
     last_visit_date.handleChange(admin?.last_visit_date || "Nunca");
     setidToEdit(admin?.id);
+
+    // Aquí abres el modal de MUI y defines que la operación sea "ver"
+    setOperation(3);          // 3 = Ver info user
+    setOpenViewModal(true); // abrir modal
   };
+
 
   const formatDate = (dateTimeString) => {
     const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{1,6}Z$/;
@@ -553,404 +563,351 @@ const AdminList = () => {
   };
 
   //? Select //
-
   const onChange = (event, value) => {
     const selectedClientIds = value.map((client) => client.id);
     console.log(selectedClientIds);
 
     setSelectedClients(selectedClientIds);
   };
-
+ 
   return (
-    <div className="App">
-      <div id="body">
+    <Box className="App" sx={{ overflow: "hidden" }}>
+      <Box id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
-        <div className="row m-0">
-          <div className="col-1 d-none d-flex  align-items-center ms-0 p-0">
-            {/* <SidebarLT1 /> */}
-          </div>
-          <div className="col-12">
-            <div className="container-fluid mt-0 mx-auto">
-              {admins.length > 0 && (
-                <TableAdmin
-                  header={selectedKeys}
-                  data={admins}
-                  onCreate={() => openModal(1)}
-                  onRemove={(item) => deactivateUser(item)}
-                  modalId={"modalAdmin"}
-                  modalId2={"modalViewAdmin"}
-                  onUpdate={(payload) => openModal(2, payload)}
-                  onView={(payload) => openModalCont(payload)}
-                  onActive={(payload) => activeUser(payload)}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
+        <Box sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex" }}>
+          {/* <SidebarLT1 /> */}
+          <Box className="container" mt={0}>
+            {admins.length > 0 && (
+              <TableAdmin
+                header={selectedKeys}
+                data={admins}
+                onCreate={() => openModal(1)}
+                onRemove={(item) => deactivateUser(item)}
+                onUpdate={(payload) => openModal(2, payload)}
+                onView={(payload) => openModalCont(payload)}
+                onActive={(payload) => activeUser(payload)}
+              />
+            )}
+          </Box>
+        </Box>
+      </Box>
 
-      <div id="modalAdmin" className="modal fade" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <label className="h5">{title}</label>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="close"
-              ></button>
-            </div>
-            <div className="modal-body d-flex justify-content-between">
-              <div className="row flex-column m-0 w-50">
-                <div className="col text-center fs-4 mb-2">
-                  {t("UserModal.UserData")}
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      placeholder=""
-                      className="input-new"
-                      type="text"
-                      name="firstname"
-                      value={firstName.input}
-                      onChange={(e) => firstName.handleChange(e.target.value)}
-                    />
-                    <span className="labelName">
-                      {t("UserModal.FirstName")}:
-                    </span>
-                  </label>
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=""
-                      type="text"
-                      name="middleName"
-                      value={middleName.input}
-                      onChange={(e) => middleName.handleChange(e.target.value)}
-                    />
-                    <span className="labelName">
-                      {t("UserModal.MiddleName")}:
-                    </span>
-                  </label>
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=""
-                      type="text"
-                      name="lastname"
-                      value={lastName.input}
-                      onChange={(e) => lastName.handleChange(e.target.value)}
-                    />
-                    <span className="labelName">
-                      {t("UserModal.LastName")}:
-                    </span>
-                  </label>
-                </div>
-                <div className="col mb-3">
+      {/*Modal de crear/editar*/}
+      <Modal
+        open={openCreateModal}
+        onClose={handleModalClose}
+        aria-labelledby="user-modal-title"
+      >
+        <Box className="modalBox">
+          <Paper elevation={0} sx={{ borderRadius: 2 }}>
+            {/* Encabezado */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 3 }}>
+              <Typography variant="h6" fontWeight="bold">
+                {title}
+              </Typography>
+              <IconButton onClick={handleModalClose}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            {/* Cuerpo */}
+            <Box sx={{ px: 3, pb: 3 }}>
+              <Grid container spacing={3}>
+                {/* Columna izquierda */}
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1" sx={{ mb: 3 }} gutterBottom>
+                    {t("UserModal.UserData")}
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    label={t("UserModal.FirstName")}
+                    value={firstName.input}
+                    onChange={(e) => firstName.handleChange(e.target.value)}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                  />
+                  <TextField
+                    fullWidth
+                    label={t("UserModal.MiddleName")}
+                    value={middleName.input}
+                    onChange={(e) => middleName.handleChange(e.target.value)}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                  />
+                  <TextField
+                    fullWidth
+                    label={t("UserModal.LastName")}
+                    value={lastName.input}
+                    onChange={(e) => lastName.handleChange(e.target.value)}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                  />
                   <Autocomplete
                     multiple
-                    limitTags={1}
-                    id="checkboxes-tags-demo"
                     options={listClients}
                     disableCloseOnSelect
-                    onChange={onChange}
                     getOptionLabel={(option) => option.client}
-                    value={listClients.filter((client) =>
-                      selectedClients.includes(client.id)
+                    onChange={onChange}
+                    value={listClients.filter(client => selectedClients.includes(client.id))}
+                    renderOption={(props, option, { selected }) => (
+                      <li {...props} key={option.id}>
+                        <Checkbox checked={selected} style={{ marginRight: 8 }} />
+                        {option.client}
+                      </li>
                     )}
-                    // renderOption={(props, option, { selected }) => (
-                    //   <li key={option.id} {...props}>
-                    //     <Checkbox
-                    //       icon={icon}
-                    //       checkedIcon={checkedIcon}
-                    //       style={{ marginRight: 8 }}
-                    //       checked={selected}
-                    //     />
-                    //     {option.client}
-                    //   </li>
-                    // )}
-                    renderOption={(props, option, { selected }) => {
-                      const { key, ...rest } = props;
-                      return (
-                        <li key={option.id} {...rest}>
-                          <Checkbox
-                            icon={icon}
-                            checkedIcon={checkedIcon}
-                            style={{ marginRight: 8 }}
-                            checked={selected}
-                          />
-                          {option.client}
-                        </li>
-                      );
-                    }}
-                    style={{ width: "100%" }}
                     renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={t("viewUserModal.Clients")}
-                        placeholder={t("viewUserModal.Clients")}
-                      />
+                      <TextField {...params} label={t("viewUserModal.Clients")} placeholder={t("viewUserModal.Clients")} />
                     )}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
                   />
-                </div>
-              </div>
-              <div className="row flex-column m-0 w-50">
-                <div className="col text-center fs-4 mb-2">
-                  {t("UserModal.AdminData")}
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=""
-                      type="text"
-                      name="email"                      
-                      onChange={(e) => email.handleChange(e.target.value)}
-                      value={email.input}
-                    />
-                    <span className="labelName">{t("UserModal.Email")}:</span>
-                  </label>
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=""
-                      type="password"
-                      name="password"
-                      onChange={(e) => password.handleChange(e.target.value)}
-                      value={password.value}
-                    />
-                    <span className="labelName">
-                      {t("UserModal.Password")}:
-                    </span>
-                  </label>
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <input
-                      className="input-new"
-                      placeholder=""
-                      type="password"
-                      name="cPassword"
-                      onChange={(e) => cPassword.handleChange(e.target.value)}
-                      value={cPassword.value}
-                    />
-                    <span className="labelName">
-                      {t("UserModal.ConfirmPassword")}:
-                    </span>
-                    <small>
-                      {t(
-                        "headerlt.Leave_this_blank_if_you_dont_want_to_change_the_password"
-                      )}
-                    </small>
-                  </label>
-                </div>
-                <div className="col mb-3">
-                  <label id="labelAnimation">
-                    <select
-                      className="input-new input-optttt text-center"
-                      name="type"
-                      onChange={(e) => type.handleChange(e.target.value)}
-                      value={type.input}
-                    >
-                      <option
-                        value="0"
-                        disabled
-                        className="opt-default"
-                      >
-                        {t("UserModal.SelectRole")}
-                      </option>
-                      <option value="1" className="opt-superadmin">
-                        {t("UserModal.SuperAdmin")}
-                      </option>
-                      <option value="2" className="opt-admin">
-                        {t("UserModal.Admin")}
-                      </option>
-                      <option value="3" className="opt-editor">
-                        {t("UserModal.Editor")}
-                      </option>
-                      <option value="4" className="opt-viewer">
-                        {t("UserModal.Viwer")}
-                      </option>
-                    </select>
-                    <span className="labelName">{t("UserModal.Type")}</span>
-                  </label>
-                </div>
-                <div className="col mb-3"></div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                id="btnCerrar"
-                className="btn btn-secondary"
-                data-bs-dismiss="modal"
-                onClick={() => setSelectedClients([])}
-              >
-                {t("UserModal.Close")}
-              </button>
-              <button
-                onClick={() => validar(idToEdit)}
-                className="btn-primary btn"
-              >
-                {t("UserModal.Save")}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+                </Grid>
 
-      <div id="modalViewAdmin" className="modal fade" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered modal-md">
-          <div className="modal-content">
-            <div
-              className="modal-header mb-0 pb-0"
-              style={{ borderBottom: "none" }}
-            >
-              <label className="h5">{t("viewUserModal.UserDetails")}</label>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="close"
-              ></button>
-            </div>
-            <div>
-              {" "}
-              <p
-                style={{
-                  marginLeft: "15px",
-                  marginBottom: 0,
-                  padding: 0,
-                  color: "gray",
-                  fontSize: "small",
+                {/* Columna derecha */}
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1" sx={{ mb: 3 }} gutterBottom>
+                    {t("UserModal.AdminData")}
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    label={t("UserModal.Email")}
+                    value={email.input}
+                    onChange={(e) => email.handleChange(e.target.value)}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                  />
+                  <TextField
+                    fullWidth
+                    label={t("UserModal.Password")}
+                    type="password"
+                    value={password.value}
+                    onChange={(e) => password.handleChange(e.target.value)}
+                    placeholder={t("headerlt.Leave_this_blank_if_you_dont_want_to_change_the_password")}
+                    sx={{ mb: 2, '& input::placeholder': {
+                        fontSize: '0.75rem',
+                        opacity: 1,
+                        color: 'gray',
+                      }
+                    }}
+                    className="readOnlyField"
+                  />
+                  <TextField
+                    fullWidth
+                    label={t("UserModal.ConfirmPassword")}
+                    type="password"
+                    value={cPassword.value}
+                    onChange={(e) => cPassword.handleChange(e.target.value)}
+                    placeholder={t("headerlt.Leave_this_blank_if_you_dont_want_to_change_the_password")}
+                    sx={{ mb: 2, '& input::placeholder': {
+                        fontSize: '0.75rem',
+                        opacity: 1,
+                        color: 'gray',
+                      }
+                    }}
+                    className="readOnlyField"
+                  />
+                  <TextField
+                    select
+                    fullWidth
+                    label={t("UserModal.Type")}
+                    value={type.input}
+                    onChange={(e) => type.handleChange(e.target.value)}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                  >
+                    <MenuItem value="0" disabled>{t("UserModal.SelectRole")}</MenuItem>
+                    <MenuItem value="1">{t("UserModal.SuperAdmin")}</MenuItem>
+                    <MenuItem value="2">{t("UserModal.Admin")}</MenuItem>
+                    <MenuItem value="3">{t("UserModal.Editor")}</MenuItem>
+                    <MenuItem value="4">{t("UserModal.Viwer")}</MenuItem>
+                  </TextField>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Footer */}
+            <Divider />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, p: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={handleModalClose}
+                sx={{            
+                  color: '#b62a8b',       // Texto morado
+                  borderColor: '#b62a8b',  // Borde morado
+                  '&:hover': {
+                    borderColor: '#b62a8b', // Borde morado oscuro al hover
+                    backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
+                  }
                 }}
               >
+                {t("clientModal.Close")}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => validar(idToEdit)}
+                sx={{
+                  backgroundColor: '#b62a8b',
+                  '&:hover': {
+                    backgroundColor: '#581244'
+                  }
+                }}
+              >
+                {t("UserModal.Save")}
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+      </Modal>
+
+      {/*Modal de visualización*/}
+      <Modal
+        open={openViewModal}  // operation=3 es ver
+        onClose={handleModalClose}
+        aria-labelledby="view-user-modal-title"
+      >
+        <Box className="modalBox">
+          <Paper elevation={0} sx={{ borderRadius: 2 }}>
+            {/* Header */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 3 }}>
+              <Typography variant="h6" fontWeight="bold">
+                {t("viewUserModal.UserDetails")}
+              </Typography>
+              <IconButton onClick={handleModalClose}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            {/* Subtitle */}
+            <Box sx={{ px: 3, pb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
                 Información detallada del perfil de usuario.
-              </p>
-            </div>
-            <div className="modal-body d-flex ">
-              <div className="col  m-2 ">
-                <div className="m-1 p-1">
-                  <label className="fw-semibold ">
-                    {t("viewUserModal.Name")}
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control mt-1"
+              </Typography>
+            </Box>
+
+            {/* Body */}
+            <Box sx={{ px: 3, pb: 3, mb: 2 }}>
+              <Grid container spacing={3}>
+                {/* Left column */}
+                <Grid item xs={12} sm={6}>
+
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.Name")}
                     value={`${firstName.input} ${middleName.input} ${lastName.input}`}
-                    readOnly
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2}}
+                    className="readOnlyField readOnlyField_"
                   />
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {" "}
-                    {t("viewUserModal.State")}
-                  </span>
-                  <p className="form-control mt-1">
-                    {`${
+
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.State")}
+                    value={
                       state.input === 1
-                        ? `${t("clientTable.Active")}`
-                        : `${t("clientTable.Inactive")}`
-                    }`}{" "}
-                  </p>
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.RegisterDate")}
-                  </span>
-                  <p className="form-control mt-1">
-                    {" "} 
-                    {formatDate(registration_date.input)}
-                  </p>
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.Language")}
-                  </span>
-                  <p className="form-control mt-1">
-                    {" "}
-                    {`${
-                      language.input == "es"
-                        ? `${t("headerlt.Spanish")}`
-                        : language.input == "en"
-                        ? `${t("headerlt.English")}`
-                        : language.input == "it"
-                        ? `${t("headerlt.Italian")}`
-                        : `${t("headerlt.Portuguese")}`
-                    }`}
-                  </p>
-                </div>
-              </div>
-              <div className="col  m-2  ">
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.Email")}
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control mt-1"
-                    value={email.input}
-                    readOnly
+                        ? t("clientTable.Active")
+                        : t("clientTable.Inactive")
+                    }
+                    InputProps={{ readOnly: true }}
+                    sx={{mb: 2 }}
+                    className="readOnlyField readOnlyField_"
                   />
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.Role")}
-                  </span>
-                  <p type="text" className="form-control mt-1 role-option">
-                    {" "}
-                    {` ${
+
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.RegisterDate")}
+                    value={formatDate(registration_date.input)}
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2}}
+                    className="readOnlyField readOnlyField_"
+                  />
+
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.Language")}
+                    value={
+                      language.input === "es"
+                        ? t("headerlt.Spanish")
+                        : language.input === "en"
+                        ? t("headerlt.English")
+                        : language.input === "it"
+                        ? t("headerlt.Italian")
+                        : t("headerlt.Portuguese")
+                    }
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2}}
+                    className="readOnlyField readOnlyField_"
+                  />
+                </Grid>
+
+                {/* Right column */}
+                <Grid item xs={12} sm={6}>
+
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.Email")}
+                    value={email.input}
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2}}
+                    className="readOnlyField readOnlyField_"
+                  />
+
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.Role")}
+                    value={
                       type.input === 1
                         ? "Super Administrador"
                         : type.input === 2
                         ? "Administrador"
-                        : type.input == 3
+                        : type.input === 3
                         ? "Editor"
                         : "Agente"
-                    }`}{" "}
-                  </p>
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.LastVisit")}
-                  </span>
-                  <p className="form-control mt-1">
-                    {formatDate(last_visit_date.input)}{" "}
-                  </p>
-                </div>
-                <div className="m-1 p-1">
-                  <span className="fw-semibold ">
-                    {t("viewUserModal.Clients")}
-                  </span>
+                    }
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2}}
+                    className="readOnlyField readOnlyField_"
+                  />
 
-                  <ul className="form-control mt-1">
-                    {selectedClients.length > 0 ? (
-                      selectedClients.map((clientId) => {
-                        const client = listClients.find((c) => c.id === clientId);
-                        return client ? (
-                          <li key={client.id}>{client.client}</li>
-                        ) : null;
-                      })
-                    ) : (
-                      <li>{t("viewUserModal.NotClients")}</li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.LastVisit")}
+                    value={formatDate(last_visit_date.input)}
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2}}
+                    className="readOnlyField readOnlyField_"
+                  />
+
+                  <Box>
+                    <Box className="textarea-box">
+                      <Typography className="text-area" variant="subtitle2" gutterBottom>
+                        {t("viewUserModal.Clients")}
+                      </Typography>
+                      {selectedClients.length > 0 ? (
+                        <ul style={{ margin: 0, paddingLeft: 16 }}>
+                          {selectedClients.map((clientId) => {
+                            const client = listClients.find((c) => c.id === clientId);
+                            return client ? (
+                              <li key={client.id}>{client.client}</li>
+                            ) : null;
+                          })}
+                        </ul>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ m: 1 }}>
+                          {t("viewUserModal.NotClients")}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          </Paper>
+        </Box>
+      </Modal>
+    </Box>
   );
 };
 

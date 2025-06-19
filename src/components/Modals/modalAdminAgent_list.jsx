@@ -24,6 +24,9 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CancelButton from "../../components/buttons/cancelButton";
+import AcceptButton from "../../components/buttons/acceptButton";
+import ConfirmButton from "../buttons/confirmButton";
 
 const ModalAdmin = ({
   // Props de agent_list
@@ -225,7 +228,7 @@ const ModalAdmin = ({
               </Box>
             </Box>
 
-            <Box>
+            <Box border={1} borderRadius={2} overflow="hidden">
               {blocksForForm.length === 0 ? (
                 <Typography color="text.secondary">
                   No se ha cargado o existe error al llamar los bloques.
@@ -262,7 +265,15 @@ const ModalAdmin = ({
                         </Typography>
                       ) : (
                         block.preguntas.map((pregunta, idx) => (
-                          <Accordion key={pregunta.id}>
+                          <Accordion
+                            key={pregunta.id}
+                            sx={{
+                              border: "1.5px solid #ccc",
+                              borderRadius: "8px",
+                              boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                              mb: 1,
+                            }}
+                          >
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                               <Box
                                 flex={1}
@@ -339,12 +350,12 @@ const ModalAdmin = ({
                         ))
                       )}
                       <Box display="flex" justifyContent="flex-end" mt={2}>
-                        <Button
+                        <ConfirmButton
                           variant="contained"
                           onClick={() => handleSaveBlock(block.id)}
                         >
                           Confirmar
-                        </Button>
+                        </ConfirmButton>
                       </Box>
                     </AccordionDetails>
                   </Accordion>
@@ -355,13 +366,9 @@ const ModalAdmin = ({
         )}
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={formClientReset} color="secondary">
-          Cancelar
-        </Button>
-        <Button onClick={handleNextStep} variant="contained">
-          Aceptar
-        </Button>
+      <DialogActions sx={{ gap: 1 }}>
+        <CancelButton onClick={formClientReset}></CancelButton>
+        <AcceptButton onClick={handleNextStep}></AcceptButton>
       </DialogActions>
     </Dialog>
   );

@@ -52,6 +52,8 @@ import { initReactI18next } from "react-i18next";
               "selectedColor":"Colores seleccionados",
               "colorSelect":"Selecciona dos colores representativos del cliente",
               "Viwer" : "Agente",
+              "fila_pagina":"Filas por página",
+              "de" : "de",
             },
             formTable: {
               "id": "ID",
@@ -184,7 +186,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel":"Cancelar",
               "SuccessAlert":" se ha desactivado exitosamente.",
               "ErrorAlert":" no ha sido desactivado.",
-              "mensaje_desactivar": "se deshabilitara de forma permanente"
+              "mensaje_desactivar": "se deshabilitara de forma permanente",
+              "error_desactivar_encuesta" : "No se pudo desactivar la encuesta"
             },
             alertActivate:{
               "activar_elemento":"Activar elemento",
@@ -200,6 +203,8 @@ import { initReactI18next } from "react-i18next";
             alertCreateEdit:{
               "SuccessAlert":" se ha guardado exitosamente.",
               "ErrorAlert":"Error, no ha sido guardado.",
+              "el_cliente":"el cliente",
+              "editado_exitsosamente":" se ha editado exitosamente.",
             },
             alerts: {
               "fillRequiredFields": "Por favor llena todos los campos obligatorios.",
@@ -224,6 +229,11 @@ import { initReactI18next } from "react-i18next";
               "error_enviar_respuestas": "Hubo un error al enviar las respuestas.",
               "exito": "Éxito",
               "exito_enviar_respuestas": "Las respuestas se enviaron correctamente.",
+              "error_obtener_datos": "Hubo un error al obtener los datos.",
+              "fecha_incio_Seleccione" : "Por favor seleccione primero la fecha de incio.",
+              "fecha_fin_mayor" : "La fecha fin no puede ser mayor al dia de hoy.",
+              "fecha_fin_menor" : "La fecha fin no puede ser menor a la fecha de inicio.",
+              "problema_descargar_pdf": "Hubo un problema al generar el PDF.",       
             },
             alertDelete:{
               "titulo_eliminar":"Eliminar elemento",
@@ -302,6 +312,7 @@ import { initReactI18next } from "react-i18next";
               "descripcion":"Descripcion",
               "cliente":"Cliente",
               "selecciona_cliente":"Selecciona un cliente",
+              "informacion_encuesta":"Información de la encuesta",
             },
             buttons:{
               "WatchQuestions":"Ver preguntas",
@@ -399,6 +410,17 @@ import { initReactI18next } from "react-i18next";
               "fecha_inicio" : "Fecha de inicio",
               "fecha_fin" : "Fecha de finalización",
               "mensaje_reporte" : "Llena los datos de la consulta para generar las gráficas.",
+              "respuestas" : "Respuestas",
+              "porcentaje": "Porcentaje",
+              "porcentaje_maximo": "Porcentaje máximo",
+              "porcentaje_minimo": "Porcentaje mínimo",
+              "valores": "Valores",
+              "categorias": "Categorías",
+              "datos": "Datos",
+              "sin_datos": "Sin datos",
+              "texto_sin_datos" : "No se encontraron datos para las fechas proporcionadas.",
+              "preparando_graficas": "Preparando gráficas...",
+              "descargar_reporte": "El  reporte se ha descargado correctamente.",
             }        
           },
         },
@@ -449,6 +471,8 @@ import { initReactI18next } from "react-i18next";
               "selectedColor": "Selected colors",
               "colorSelect": "Select two representative colors for the client",
               "Viwer" : "Agent",
+              "fila_pagina":"Rows per page",
+              "de" : "of",
             },
             formTable: {
               "id": "ID",
@@ -538,7 +562,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Cancel",
               "SuccessAlert": " has been successfully deactivated.",
               "ErrorAlert": " has not been deactivated.",
-              "mensaje_desactivar": "will be permanently disabled"
+              "mensaje_desactivar": "will be permanently disabled",
+              "error_desactivar_encuesta" : "Could not deactivate the survey"
             },
             alertActivate: {
               "activar_elemento": "Activate element",
@@ -553,7 +578,9 @@ import { initReactI18next } from "react-i18next";
             },
             alertCreateEdit: {
               "SuccessAlert": " has been successfully saved.",
-              "ErrorAlert": "Error, it was not saved."
+              "ErrorAlert": "Error, it was not saved.",
+              "el_cliente": "the client",
+              "editado_exitsosamente": " has been successfully edited."
             },
             alerts: {
               "fillRequiredFields": "Please fill in all required fields.",
@@ -578,6 +605,11 @@ import { initReactI18next } from "react-i18next";
               "error_enviar_respuestas": "There was an error sending the answers.",
               "exito": "Success",
               "exito_enviar_respuestas": "The answers were sent successfully.",
+              "error_obtener_datos": "There was an error obtaining the data.",
+              "fecha_incio_Seleccione" : "Please select the start date first.",
+              "fecha_fin_mayor" : "The end date cannot be later than today's date.",
+              "fecha_fin_menor" : "The end date cannot be earlier than the start date.",
+              "problema_descargar_pdf": "There was a problem generating the PDF.",
             },
             alertDelete:{
               "titulo_eliminar": "Delete element",
@@ -613,6 +645,7 @@ import { initReactI18next } from "react-i18next";
               "descripcion": "Description",
               "cliente": "Client",
               "selecciona_cliente": "Select a client",
+              "informacion_encuesta": "Survey information",
             },
             clientModal:{
               "NewClient": "Add client",
@@ -768,6 +801,17 @@ import { initReactI18next } from "react-i18next";
             "fecha_inicio" : "Start date",
             "fecha_fin" : "End date",
             "mensaje_reporte" : "Fill in the query data to generate the charts.",
+            "respuestas" : "Responses",
+            "porcentaje": "Percentage",
+            "porcentaje_maximo": "Maximum percentage",
+            "porcentaje_minimo": "Minimum percentage",
+            "valores": "Values",
+            "categorias": "Categories",
+            "datos": "Data",
+            "sin_datos": "No data",
+            "texto_sin_datos" : "No data found for the provided dates.",
+            "preparando_graficas": "Preparing charts...",
+            "descargar_reporte": "The report has been downloaded successfully.",
           }      
           },
         },
@@ -909,7 +953,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Annulla",
               "SuccessAlert": " è stato disattivato con successo.",
               "ErrorAlert": " non è stato disattivato.",
-              "mensaje_desactivar": "sarà disabilitato in modo permanente"
+              "mensaje_desactivar": "sarà disabilitato in modo permanente",
+              "error_desactivar_encuesta" : "Impossibile disattivare il sondaggio"
             },
             alertActivate: {
               "activar_elemento": "Attiva elemento",
@@ -924,7 +969,9 @@ import { initReactI18next } from "react-i18next";
             },
             alertCreateEdit: {
               "SuccessAlert": " è stato salvato con successo.",
-              "ErrorAlert": "Errore, non è stato salvato."
+              "ErrorAlert": "Errore, non è stato salvato.",
+              "el_cliente": "il cliente",
+              "editado_exitsosamente": "è stato modificato con successo." 
             },
             alerts: {
               "fillRequiredFields": "Si prega di compilare tutti i campi obbligatori.",
@@ -949,6 +996,11 @@ import { initReactI18next } from "react-i18next";
               "error_enviar_respuestas": "Si è verificato un errore nell'invio delle risposte.",
               "exito": "Successo",
               "exito_enviar_respuestas": "Le risposte sono state inviate con successo.",
+              "error_obtener_datos": "Si è verificato un errore nell'ottenere i dati.",
+              "fecha_incio_Seleccione" : "Si prega di selezionare prima la data di inizio.",
+              "fecha_fin_mayor" : "La data di fine non può essere successiva alla data di oggi.",
+              "fecha_fin_menor" : "La data di fine non può essere precedente alla data di inizio.",
+              "problema_descargar_pdf": "Si è verificato un problema nella generazione del PDF.",
             },
             alertDelete: {
               "titulo_eliminar": "Elimina elemento",
@@ -984,6 +1036,7 @@ import { initReactI18next } from "react-i18next";
               "descripcion": "Descrizione",
               "cliente": "Cliente",
               "selecciona_cliente": "Seleziona un cliente",
+              "informacion_encuesta": "Informazioni sondaggio",
             },
             clientModal:{
               "NewClient": "Aggiungi cliente",
@@ -1134,6 +1187,17 @@ import { initReactI18next } from "react-i18next";
               "fecha_inicio" : "Data di inizio",
               "fecha_fin" : "Data di fine",
               "mensaje_reporte" : "Compila i dati della query per generare i grafici.",
+              "respuestas" : "Risposte",
+              "porcentaje": "Percentuale",
+              "porcentaje_maximo": "Percentuale massima",
+              "porcentaje_minimo": "Percentuale minima",
+              "valores": "Valori",
+              "categorias": "Categorie",
+              "datos": "Dati",
+              "sin_datos": "Nessun dato",
+              "texto_sin_datos" : "Nessun dato trovato per le date fornite.",
+              "preparando_graficas": "Preparando grafici...",
+              "descargar_reporte": "Il report è stato scaricato con successo.",
             }
             
           },
@@ -1168,6 +1232,8 @@ import { initReactI18next } from "react-i18next";
               "selectedColor": "Cores selecionadas",
               "colorSelect": "Selecione duas cores representativas do cliente",
               "Viwer" : "Agente",
+              "fila_pagina":"Linhas por página",
+              "de" : "de",
             },
             formTable: {
               "id": "ID",
@@ -1257,7 +1323,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Cancelar",
               "SuccessAlert": " foi desativado com sucesso.",
               "ErrorAlert": " não foi desativado.",
-              "mensaje_desactivar": "será desativado permanentemente"
+              "mensaje_desactivar": "será desativado permanentemente",
+              "error_desactivar_encuesta" : "Não foi possivel desativar a pesquisa"
             },
             alertActivate: {
               "activar_elemento": "Ativar elemento",
@@ -1272,7 +1339,9 @@ import { initReactI18next } from "react-i18next";
             },
             alertCreateEdit: {
               "SuccessAlert": " foi salvo com sucesso.",
-              "ErrorAlert": "Erro, não foi salvo."
+              "ErrorAlert": "Erro, não foi salvo.",
+              "el_cliente": "o cliente",
+              "editado_exitsosamente": " foi editado com sucesso."
             },
             alerts: {
               "fillRequiredFields": "Por favor, preencha todos os campos obrigatórios.",
@@ -1297,7 +1366,11 @@ import { initReactI18next } from "react-i18next";
               "error_enviar_respuestas": "Ocorreu um erro ao enviar as respostas.",
               "exito": "Sucesso",
               "exito_enviar_respuestas": "As respostas foram enviadas com sucesso.",
-              
+              "error_obtener_datos": "Ocorreu um erro ao obter os dados.",
+              "fecha_incio_Seleccione" : "Por favor, selecione primeiro a data de início.",
+              "fecha_fin_mayor" : "A data de término não pode ser posterior à data de hoje.",
+              "fecha_fin_menor" : "A data de término não pode ser anterior ao início.",
+              "problema_descargar_pdf": "Ocorreu um problema ao gerar o PDF.",
             },
             alertDelete: {
               "titulo_eliminar": "Excluir elemento",
@@ -1410,6 +1483,7 @@ import { initReactI18next } from "react-i18next";
             "descripcion": "Descrição",
             "cliente": "Cliente",
             "selecciona_cliente": "Selecione um cliente",
+            "informacion_encuesta": "Informação da pesquisa",
           },
           buttons: {
             "WatchQuestions": "Ver Perguntas",
@@ -1502,6 +1576,17 @@ import { initReactI18next } from "react-i18next";
             "fecha_inicio" : "Data de início",
             "fecha_fin" : "Data de término",
             "mensaje_reporte" : "Preencha os dados da consulta para gerar os gráficos.",
+            "respuestas" : "Respostas",
+            "porcentaje": "Porcentagem",
+            "porcentaje_maximo": "Porcentagem máxima",
+            "porcentaje_minimo": "Porcentagem mínima",
+            "valores": "Valores",
+            "categorias": "Categorias",
+            "datos": "Dados",
+            "sin_datos": "Sem dados",
+            "texto_sin_datos" : "Nenhum dado encontrado para as datas fornecidas.",
+            "preparando_graficas": "Preparando gráficos...",
+            "descargar_reporte": "O relatório foi baixado com sucesso.",
           }
           },
         },

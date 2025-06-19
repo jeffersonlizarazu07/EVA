@@ -2,33 +2,48 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import axios from "axios";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import InputLabel from "@mui/material/InputLabel";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { UserContext } from "../../context/UserContext";
 import LineStyleCharts from "../../components/charts/lineStyle";
 import HeaderLT1 from "../../components/header/headerLT1";
 import HeaderLT2 from "../../components/header/headerLT2";
 import dayjs from "dayjs";
-import { Box, ButtonGroup, Grid, IconButton, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import Cookies from "js-cookie"; 
 import Swal from 'sweetalert2';
 import { useNavigate } from "react-router-dom";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Toast } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
-
-
+import { 
+  Box, 
+  Button,
+  ButtonGroup,
+  IconButton,
+  Grid,
+  Card,
+  CardContent,
+  Skeleton, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper, 
+  Accordion, 
+  AccordionSummary, 
+  AccordionDetails,
+  InputLabel,
+  OutlinedInput,
+  MenuItem,
+  FormControl,
+  Select,
+  Typography,
+  Alert
+} from "@mui/material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SearchIcon from "@mui/icons-material/Search";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const Reports = () => {
   const {t} = useTranslation();
@@ -167,35 +182,34 @@ const Reports = () => {
     console.log("Todos los datos de respuestas en orden:", allResponsesArray);
     setAllResponses(allResponsesArray);
     setLoading(false);
-} catch (error) {
-  console.error("Error al obtener los datos:", error);
-  
-  if (error.response && error.response.status === 404) {
-     Swal.fire({
-            title: 'Sin datos',
-            text: 'No se encontraron datos para las fechas proporcionadas.',
-            icon: 'info',
-            confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#FF66B2',
-          });
-  }else{
-    // Muestra un mensaje de error usando SweetAlert
-    Swal.fire({
-      title: 'Error',
-      text: 'Hubo un error al obtener los datos.',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#FF66B2',
-  });
-  }  
+    } catch (error) {
+      console.error("Error al obtener los datos:", error);
+      
+      if (error.response && error.response.status === 404) {
+        Swal.fire({
+                title: t("reports.sin_datos"),
+                text: t("reports.texto_sin_datos"),
+                icon: 'info',
+                confirmButtonText: t("buttons.aceptar"),
+                confirmButtonColor: '#FF66B2',
+              });
+      }else{
+        // Muestra un mensaje de error usando SweetAlert
+        Swal.fire({
+          title: t("alerts.error"),
+          text: t("alerts.error_obtener_datos"),
+          icon: 'error',
+          confirmButtonText: t("buttons.aceptar"),
+          confirmButtonColor: '#FF66B2',
+      });
+      }  
 
-  setLoading(false);
-  return;
-}
+      setLoading(false);
+      return;
+    }
 
   };
     
-
   const getSurveys = async () => {
     try {
       console.log(clients)
@@ -225,10 +239,8 @@ const Reports = () => {
       Swal.fire({
         icon: "warning",
         toast: false,
-        text: "Por favor selecciona primero la fecha de inicio",
-        showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        text: t("alerts.fecha_incio_Seleccione"),
+        confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -242,10 +254,8 @@ const Reports = () => {
       Swal.fire({
         icon: "warning",
         toast: false,
-        text: "La fecha de fin no puede ser mayor a la fecha actual",
-        showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        text: t("alerts.fecha_fin_mayor"),
+        confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -260,10 +270,8 @@ const Reports = () => {
       Swal.fire({
         icon: "warning",
         toast: false,
-        text: "La fecha de fin no puede ser menor a la fecha de inicio",
-        showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
+        text: t("alerts.fecha_fin_menor"),
+        confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
         customClass :{
           actions: 'swal2-actions-center ', 
@@ -277,284 +285,306 @@ const Reports = () => {
     setEndDate(newValue);
   };
 
-const exportCharts = async () => {
- 
-  let downloadToast; // Variable para almacenar la instancia del toast y poder actualizarla
-
-  // Primero, abrimos todos los acordeones para asegurarnos de que el contenido sea visible
-  const accordions = document.querySelectorAll('.MuiAccordion-root');
-  accordions.forEach(accordion => {
-    if (!accordion.classList.contains('Mui-expanded')) {
-      const expandButton = accordion.querySelector('.MuiAccordionSummary-root');// Buscar el botón de expansión y hacer clic en él
-
-      if (expandButton) {
-        expandButton.click();
-      }
-    }
-  });
-
-  await new Promise(resolve => setTimeout(resolve, 500)); // Esperar un momento para que las animaciones de expansión terminen
-
-  const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });  // Creamos el PDF en formato A4
+  const exportCharts = async () => {
   
-  // Obtenemos dimensiones de la página
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 40; // Margen en todos los lados
-  
-  const contentWidth = pageWidth - (margin * 2);
-  const contentHeight = pageHeight - (margin * 2);
-  
-  const numCols = 2;
-  const numRows = 2;
-  const cellWidth = contentWidth / numCols;
-  const cellHeight = contentHeight / numRows;
+    let downloadToast; // Variable para almacenar la instancia del toast y poder actualizarla
 
-  let chartCount = 0; // Contador para saber cuántas gráficas van en la página actual
-
-    downloadToast = Toast.fire({
-    icon: "info", // Puedes usar 'info' o 'loading' si tu librería Toast lo soporta
-    title: "Preparando gráficas...",
-    text: "0%", // Texto inicial con el porcentaje
-    position: 'bottom-end', // Posición en la esquina inferior derecha
-    showConfirmButton: false, // No mostrar botón de confirmación
-    timer: false, // No cerrar automáticamente
-  });
- 
-  // Capturamos cada elemento de respuesta (incluye tanto el título como el contenido)
-  for (let index = 0; index < responseRefs.current.length; index++) {
-    const ref = responseRefs.current[index];
-    if (!ref) continue;
-    
-    try {
-      // Verificar si necesitamos una nueva página antes de procesar la gráfica actual
-      if (chartCount > 0 && chartCount % (numCols * numRows) === 0) {
-        pdf.addPage();
-        chartCount = 0; // Reiniciar contador para la nueva página
-      }
-      
-      // Opciones para mejorar la calidad de la captura pero manteniendo un tamaño razonable
-      const options = {
-        scale: 1.5, // Reducido a 1 para evitar imágenes demasiado grandes
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false, // Deshabilitar logs para mejorar rendimiento
-      };
-      
-      const canvas = await html2canvas(ref, options);      
-      const imgData = canvas.toDataURL("image/jpeg", 1); // Formato JPEG con 100% de calidad      
-      const imgProps = pdf.getImageProperties(imgData);
-      
-      // Calcular la altura proporcionalmente pero limitada al alto de la página menos márgenes
-      let imgWidth = cellWidth;
-      let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-      
-      // Si la altura es mayor que el espacio disponible en la página, ajustamos proporcionalmente
-      if (imgHeight > cellHeight) {
-        imgHeight = cellHeight;
-        imgWidth = (imgProps.width * imgHeight) / imgProps.height;
-      }     
-     
-      // Calculamos la posición de la celda actual
-      const col = chartCount % numCols;
-      const row = Math.floor(chartCount / numCols) % numRows;
-
-      const xPos = margin + col * cellWidth + (cellWidth - imgWidth) / 2;
-      const yPos = margin + row * cellHeight + (cellHeight - imgHeight) / 2;
-            
-      // Añadir la imagen al PDF
-      pdf.addImage(imgData, "JPEG", xPos, yPos, imgWidth, imgHeight);
-      chartCount++; // Incrementamos el contador después de añadir la imagen
-
-      // Actualizar el progreso en el Toast
-      const progress = Math.round(((index + 1) / responseRefs.current.length) * 100);
-      downloadToast.update({
-        title: `Generando PDF: ${progress}%`,
-        text: "Preparando gráficas..." // Puedes mantener este texto o cambiarlo
-      });
-
-      // Mostrar progreso de procesamiento
-      if (index % 2 === 0) {
-        const progress = Math.round((index / responseRefs.current.length) * 100);
-        await loadingSwal.update({
-          html: `<i class="fas fa-file-pdf fa-3x mb-3" style="color: #b62a8b;"></i><br>Procesando gráficas... ${progress}%`
-        });
-      }
-    } catch (error) {
-      console.error(`Error al capturar el elemento ${index}:`, error);
-    }
-  }
-  try {
-    // Actualizar el mensaje final en el Toast antes de guardar
-    downloadToast.update({
-      icon: "info",
-      title: "Descargando PDF...",
-      text: "", // Limpiar el texto si lo deseas
-      position: 'bottom-end',
-    });
-    pdf.save("reporte_encuesta.pdf");
-    
-    // Mensaje de éxito
-    Swal.fire({
-      title: 'Éxito',
-      text: 'El reporte se ha descargado correctamente',
-      icon: 'success',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#b62a8b',
-    });
-    
-    // Cerrar los acordeones después de la exportación 
+    // Primero, abrimos todos los acordeones para asegurarnos de que el contenido sea visible
+    const accordions = document.querySelectorAll('.MuiAccordion-root');
     accordions.forEach(accordion => {
-      if (accordion.classList.contains('Mui-expanded')) {
-        const expandButton = accordion.querySelector('.MuiAccordionSummary-root');
+      if (!accordion.classList.contains('Mui-expanded')) {
+        const expandButton = accordion.querySelector('.MuiAccordionSummary-root');// Buscar el botón de expansión y hacer clic en él
+
         if (expandButton) {
           expandButton.click();
         }
       }
-    });    
-  } catch (error) {
-    console.error("Error al generar el PDF:", error);
-    Swal.fire({
-      title: 'Error',
-      text: 'Hubo un problema al generar el PDF',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#b62a8b',
     });
-  }
-};  
 
-// Renderiza un item de respuesta de texto
-const renderTextResponse = (item, index) => {
-  return (
-    <div 
-      className="col-md-6 col-lg-4 p-2"
-      key={`text-${index}`}
-      ref={(el) => (responseRefs.current[index] = el)}
-    >
+    await new Promise(resolve => setTimeout(resolve, 500)); // Esperar un momento para que las animaciones de expansión terminen
+
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });  // Creamos el PDF en formato A4
+    
+    // Obtenemos dimensiones de la página
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 40; // Margen en todos los lados
+    
+    const contentWidth = pageWidth - (margin * 2);
+    const contentHeight = pageHeight - (margin * 2);
+    
+    const numCols = 2;
+    const numRows = 2;
+    const cellWidth = contentWidth / numCols;
+    const cellHeight = contentHeight / numRows;
+
+    let chartCount = 0; // Contador para saber cuántas gráficas van en la página actual
+
+      downloadToast = Toast.fire({
+      icon: "info", // Puedes usar 'info' o 'loading' si tu librería Toast lo soporta
+      title: t("reports.preparando_graficas"), // Título del Toast
+      text: "0%", // Texto inicial con el porcentaje
+      position: 'bottom-end', // Posición en la esquina inferior derecha
+      showConfirmButton: false, // No mostrar botón de confirmación
+      timer: false, // No cerrar automáticamente
+    });
+  
+    // Capturamos cada elemento de respuesta (incluye tanto el título como el contenido)
+    for (let index = 0; index < responseRefs.current.length; index++) {
+      const ref = responseRefs.current[index];
+      if (!ref) continue;
+      
+      try {
+        // Verificar si necesitamos una nueva página antes de procesar la gráfica actual
+        if (chartCount > 0 && chartCount % (numCols * numRows) === 0) {
+          pdf.addPage();
+          chartCount = 0; // Reiniciar contador para la nueva página
+        }
+        
+        // Opciones para mejorar la calidad de la captura pero manteniendo un tamaño razonable
+        const options = {
+          scale: 1.5, // Reducido a 1 para evitar imágenes demasiado grandes
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false, // Deshabilitar logs para mejorar rendimiento
+        };
+        
+        const canvas = await html2canvas(ref, options);      
+        const imgData = canvas.toDataURL("image/jpeg", 1); // Formato JPEG con 100% de calidad      
+        const imgProps = pdf.getImageProperties(imgData);
+        
+        // Calcular la altura proporcionalmente pero limitada al alto de la página menos márgenes
+        let imgWidth = cellWidth;
+        let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+        
+        // Si la altura es mayor que el espacio disponible en la página, ajustamos proporcionalmente
+        if (imgHeight > cellHeight) {
+          imgHeight = cellHeight;
+          imgWidth = (imgProps.width * imgHeight) / imgProps.height;
+        }     
+      
+        // Calculamos la posición de la celda actual
+        const col = chartCount % numCols;
+        const row = Math.floor(chartCount / numCols) % numRows;
+
+        const xPos = margin + col * cellWidth + (cellWidth - imgWidth) / 2;
+        const yPos = margin + row * cellHeight + (cellHeight - imgHeight) / 2;
+              
+        // Añadir la imagen al PDF
+        pdf.addImage(imgData, "JPEG", xPos, yPos, imgWidth, imgHeight);
+        chartCount++; // Incrementamos el contador después de añadir la imagen
+
+        // Actualizar el progreso en el Toast
+        const progress = Math.round(((index + 1) / responseRefs.current.length) * 100);
+        downloadToast.update({
+          title: `Generando PDF: ${progress}%`,
+          text: "Preparando gráficas..." // Puedes mantener este texto o cambiarlo
+        });
+
+        // Mostrar progreso de procesamiento
+        if (index % 2 === 0) {
+          const progress = Math.round((index / responseRefs.current.length) * 100);
+          await loadingSwal.update({
+            html: `<i class="fas fa-file-pdf fa-3x mb-3" style="color: #b62a8b;"></i><br>Procesando gráficas... ${progress}%`
+          });
+        }
+      } catch (error) {
+        console.error(`Error al capturar el elemento ${index}:`, error);
+      }
+    }
+    try {
+      // Actualizar el mensaje final en el Toast antes de guardar
+      downloadToast.update({
+        icon: "info",
+        title: "Descargando PDF...",
+        text: "", // Limpiar el texto si lo deseas
+        position: 'bottom-end',
+      });
+      pdf.save("reporte_encuesta.pdf");
+      
+      // Mensaje de éxito
+      Swal.fire({
+        title: t("alerts.exito"),
+        text: t("reports.descargar_reporte"),
+        icon: 'success',
+        confirmButtonText: t("buttons.aceptar"),
+        confirmButtonColor: '#b62a8b',
+      });
+      
+      // Cerrar los acordeones después de la exportación 
+      accordions.forEach(accordion => {
+        if (accordion.classList.contains('Mui-expanded')) {
+          const expandButton = accordion.querySelector('.MuiAccordionSummary-root');
+          if (expandButton) {
+            expandButton.click();
+          }
+        }
+      });    
+    } catch (error) {
+      console.error("Error al generar el PDF:", error);
+      Swal.fire({
+        title: t("alerts.error"),
+        text: t("alerts.problema_descargar_pdf"),
+        icon: 'error',
+        confirmButtonText: t("buttons.aceptar"),
+        confirmButtonColor: '#b62a8b',
+      });
+    }
+  };
+
+  // Renderiza un item de respuesta de texto
+  const renderTextResponse = (item, index) => {
+    return (
+    <Box key={`text-${index}`} ref={(el) => (responseRefs.current[index] = el)}
+      sx={{
+        p: 2,
+        width: { md: '50%', lg: '33.33%' }, // para col-md-6 col-lg-4
+        boxSizing: 'border-box',
+    }}>
       <Accordion className="shadowbox5">
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls={`panel-${item.id}-content`}
           id={`panel-${item.id}-header`}
         >
-          <h5 className="m-0" style={{ color: '#b62a8b' }}>{item.label} </h5>
+          <Typography
+            variant="h6"
+            sx={{ m: 0, color: '#b62a8b' }}
+          >
+            {item.label}
+          </Typography>
         </AccordionSummary>
+        <AccordionDetails>
+          <TableContainer
+            component={Paper}
+            sx={{
+              backgroundColor: 'transparent !important',
+              border: '1px solid #ccc !important',
+              overflow: 'auto',
+            }}
+          >
+            <Table
+              aria-label="tabla de respuestas"
+              sx={{ backgroundColor: 'transparent !important' }}
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell
+                    align="center"
+                    sx={{
+                      backgroundColor: '#b62a8b',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      p: 3,
+                    }}
+                  >
+                    {t("reports.respuestas")}
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody sx={{ backgroundColor: 'transparent !important' }}>
+                {Object.entries(item.data).map(([key], idx) => (
+                  <TableRow
+                    key={idx}
+                    sx={{
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      backgroundColor: 'transparent !important',
+                    }}
+                  >
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      sx={{ backgroundColor: 'transparent !important' }}
+                    >
+                      {key}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </AccordionDetails>
+      </Accordion>
+    </Box>
+    );
+  };
+
+  // Renderiza un item de respuesta de tipo check_opt en una tabla
+  const renderCheckOptResponse = (item, index) => {
+    return (
+      <Box key={`check-opt-${index}`} ref={(el) => (responseRefs.current[index] = el)}
+        sx={{
+          p: 2,
+          flexBasis: { xs: '100%', md: '50%', lg: '33.3333%' }, // para col-md-6 col-lg-4
+          boxSizing: 'border-box',
+      }}>
+        <Accordion className="shadowbox5">
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls={`panel-${item.id}-content`}
+            id={`panel-${item.id}-header`}
+          >
+            <Typography variant="h6" sx={{ color: '#b62a8b', m: 0 }}>
+              {item.label}
+            </Typography>
+          </AccordionSummary>
           <AccordionDetails>
-            <TableContainer 
-              component={Paper} 
-              sx={{ 
-                backgroundColor: 'transparent !important', 
+            <TableContainer
+              component={Paper}
+              sx={{
+                backgroundColor: 'transparent !important',
                 border: 'solid 1px #ccc !important',
-                overflow: 'auto'  
+                overflow: 'auto',
               }}
             >
-              <Table 
-                aria-label="tabla de respuestas"
-                sx={{ backgroundColor: 'transparent !important' }}
-              >
-                <TableHead>
-                  <tr>
-                    <th 
-                      className=" p-3 text-white font-bold text-center" 
-                      style={{ backgroundColor: '#b62a8b', }}
-                    >
-                      Respuesta
-                    </th>
-                  </tr>  
-                </TableHead>
-                <TableBody sx={{ backgroundColor: 'transparent !important' }}>
-                  {Object.entries(item.data).map(([key, _], idx) => (
-                    <TableRow
-                      key={idx}
-                      sx={{ 
-                        '&:last-child td, &:last-child th': { border: 0 },
-                        backgroundColor: 'transparent !important' 
-                      }}
-                    >
-                      <TableCell 
-                        component="th" 
-                        scope="row"
-                        sx={{ backgroundColor: 'transparent !important' }}
-                      >
-                        {key}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-        </AccordionDetails> 
-      </Accordion>  
-    </div>
-  );
-};
-
-// Renderiza un item de respuesta de tipo check_opt en una tabla
-const renderCheckOptResponse = (item, index) => {
-  return (
-    <div 
-      className="col-md-6 col-lg-4 p-2"
-      key={`check-opt-${index}`}
-      ref={(el) => (responseRefs.current[index] = el)}
-    >
-      <Accordion className="shadowbox5">
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls={`panel-${item.id}-content`}
-          id={`panel-${item.id}-header`}
-        >
-          <h5 className="m-0" style={{ color: '#b62a8b' }}>{item.label} </h5>
-        </AccordionSummary>
-          <AccordionDetails>
-            <TableContainer 
-              component={Paper} 
-              sx={{ 
-                backgroundColor: 'transparent !important', 
-                border: 'solid 1px #ccc !important', 
-                overflow: 'auto'  
-              }}
-            >
-              <Table 
+              <Table
                 aria-label="tabla de respuestas check_opt"
                 sx={{ backgroundColor: 'transparent !important' }}
               >
                 <TableHead>
-                 <tr>
-                  <th 
-                    className=" p-3 text-white font-bold text-start" 
-                    style={{ backgroundColor: '#b62a8b', }}
-                  >
-                    Respuesta
-                  </th>
-                  <th 
-                    className="p-3 text-white font-bold text-start" 
-                    style={{ backgroundColor: '#b62a8b',}}
-                  >
-                    Porcentaje
-                  </th>
-                </tr>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        backgroundColor: '#b62a8b',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        textAlign: 'start',
+                        p: 3,
+                      }}
+                    >
+                      {t('reports.respuestas')}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        backgroundColor: '#b62a8b',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        textAlign: 'start',
+                        p: 3,
+                      }}
+                    >
+                      {t('reports.porcentaje')}
+                    </TableCell>
+                  </TableRow>
                 </TableHead>
                 <TableBody sx={{ backgroundColor: 'transparent !important' }}>
                   {item.data.map((row, idx) => (
                     <TableRow
                       key={idx}
-                      sx={{ 
+                      sx={{
                         '&:last-child td, &:last-child th': { border: 0 },
-                        backgroundColor: 'transparent !important' 
+                        backgroundColor: 'transparent !important',
                       }}
                     >
-                      <TableCell 
-                        component="th" 
+                      <TableCell
+                        component="th"
                         scope="row"
                         sx={{ backgroundColor: 'transparent !important' }}
                       >
                         {row.respuesta}
                       </TableCell>
-                      <TableCell 
-                        sx={{ backgroundColor: 'transparent !important' }}
-                      >
+                      <TableCell sx={{ backgroundColor: 'transparent !important' }}>
                         {row.porcentaje}%
                       </TableCell>
                     </TableRow>
@@ -562,63 +592,94 @@ const renderCheckOptResponse = (item, index) => {
                 </TableBody>
               </Table>
             </TableContainer>
-        </AccordionDetails> 
-      </Accordion>  
-    </div>
-  );
-};
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+    );
+  };
 
-// Renderiza un item de respuesta de gráfica
-const renderChartResponse = (item, index) => {
-  return (
-    <div
-      className="col-md-6 col-lg-4 p-2"
-      key={`chart-${index}`}
-      ref={(el) => (responseRefs.current[index] = el)}
-    >
-      <Accordion className="shadowbox5">      
-        <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
-        aria-controls={`panel-${item.id}-content`}
-        id={`panel-${item.id}-header`}
-        >
-          <h5 className="m-0" style={{ color: '#b62a8b' }} >{item.label}</h5>
-        </AccordionSummary>  
-        <AccordionDetails>
-          <LineStyleCharts
-            label={item.label}
-            dataChart={item.data}
-            type={item.type}
-            initialType="pie"
-          />
-        </AccordionDetails>  
-      </Accordion> 
-    </div>
-  );
-};
+  // Renderiza un item de respuesta de gráfica
+  const renderChartResponse = (item, index) => {
+    return (
+      <Box key={`chart-${index}`} ref={(el) => (responseRefs.current[index] = el)}
+        sx={{
+          p: 2,
+          width: { xs: '100%', md: '50%', lg: '33.33%' } // para col-md-6 col-lg-4
+        }}
+      >
+        <Accordion className="shadowbox5">
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls={`panel-${item.id}-content`}
+            id={`panel-${item.id}-header`}
+          >
+            <Typography variant="h6" sx={{ color: '#b62a8b', m: 0 }}>
+              {item.label}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <LineStyleCharts
+              label={item.label}
+              dataChart={item.data}
+              type={item.type}
+              initialType="pie"
+            />
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+    );
+  };
 
   return (
-    <div className="App">
-      <div id="body">
+    <Box className="App">
+      <Box id="body">
         {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
-        <div className="m-0 p-0">
-          <div className="row m-0">
-            <div className="col-12 px-2 d-flex justify-content-center">
-              <div className="w-100 px-3" style={{ maxWidth: "96%" }}>
-                <div className="col-md-12 mb-4">
-                  <div className="card">
-                    <div className="card-body" style={{ borderRadius: "50px" }}>
-                      {/* FILTROS */}
-                      <div className="input-group d-flex flex-wrap">
-                        <button className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla" onClick={() => nav("/satisfaction")} >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-left" viewBox="0 0 16 16">
-                            <path fillRule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
+
+        <Box m={0} p={0}>
+          <Grid container spacing={0} sx={{ m: 0 }}>
+            <Grid item xs={12}
+              sx={{
+                px: 2,
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <Box sx={{
+                  width: "100%",
+                  px: 3,
+                  maxWidth: "96%",
+                }}
+              >
+
+                <Grid item xs={12} sx={{ mb: 4 }}>
+                  <Card>
+                    <CardContent sx={{ borderRadius: "50px" }}>
+                       {/* FILTROS */}
+                      <Box display="flex" flexWrap="wrap" alignItems="center" gap={2} sx={{ mb: 2 }} >
+                        <Button variant="outlined" size="small" onClick={() => nav("/satisfaction")}
+                          sx={{
+                            py: 2,
+                            minWidth: "2%",
+                            fontWeight: "bold",
+                            color: '#b62a8b',
+                            borderColor: '#b62a8b',
+                            borderTopLeftRadius: '20px',
+                            borderBottomLeftRadius: '20px',
+                            '&:hover': {
+                              borderColor: '#b62a8b',
+                              backgroundColor: 'rgba(156, 39, 176, 0.04)'
+                            }
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path fillRule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z" />
                           </svg>
-                        </button>
-                        <FormControl required sx={{ minWidth: "40%" }}>
+                        </Button>
+
+
+                        <FormControl required sx={{ minWidth: "40%" }} className="readOnlyField">
                           <InputLabel>{t("reports.encuesta")}</InputLabel>
                           <Select
-                            className="me-2"
                             labelId="survey-select-label"
                             id="survey-select"
                             value={surveyId}
@@ -641,57 +702,53 @@ const renderChartResponse = (item, index) => {
 
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DatePicker
-                            sx={{ width: "23%" }}
-                            className="me-2"
+                            className="readOnlyField"
                             label={t("reports.fecha_inicio")}
                             value={startDate}
                             onChange={handleStartDateChange}
+                            sx={{ width: "22%" }}
                           />
                           <DatePicker
-                            sx={{ width: "23%" }}
-                            className="me-2"
+                            className="readOnlyField"
                             label={t("reports.fecha_fin")}
                             value={endDate}
                             onChange={handleEndDateChange}
+                            sx={{ width: "22%" }}
                           />
                         </LocalizationProvider>
 
-                        <ButtonGroup variant="text">
+                        <ButtonGroup>
                           <IconButton
-                            variant="contained"
                             color="secondary"
                             onClick={getPercentages}
-                            sx={{ minWidth: "auto" }}
                             disabled={!(surveyId && startDate && endDate)}
                           >
                             <SearchIcon />
                           </IconButton>
                           <IconButton
-                            disabled={allResponses.length === 0}
-                            variant="contained"
                             color="secondary"
                             onClick={exportCharts}
-                            sx={{ minWidth: "auto" }}
+                            disabled={allResponses.length === 0}
                           >
                             <FileDownloadIcon />
                           </IconButton>
                         </ButtonGroup>
-                      </div>
+                      </Box>
 
                       {/* ALERTA DE LLENADO */}
                       {!loading && allResponses.length === 0 && (
-                        <div className="mt-3">
-                          <div className="alert alert-info text-center" role="alert">
+                        <Box mt={3}>
+                          <Alert severity="info" sx={{ textAlign: "center" }}>
                             {t("reports.mensaje_reporte")}
-                          </div>
-                        </div>
+                          </Alert>
+                        </Box>
                       )}
-                    </div>
-                  </div>
-                </div>
+                    </CardContent>
+                  </Card>
+                </Grid>
 
                 {/* TODAS LAS RESPUESTAS (TABLAS Y GRÁFICAS EN EL ORDEN ORIGINAL) */}
-                <div className="row">
+                <Box className="row">
                   {allResponses.length > 0 ? (
                     allResponses.map((item, i) => {
                       // Renderizar según el tipo de visualización
@@ -731,13 +788,13 @@ const renderChartResponse = (item, index) => {
                       ))}
                     </Grid>
                   ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 export default Reports;
