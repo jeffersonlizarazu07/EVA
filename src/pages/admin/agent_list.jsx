@@ -55,6 +55,7 @@ const AdminList = () => {
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
   const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
+  const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
 
   // Validaciones de la primer vista del modal
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
@@ -287,6 +288,7 @@ const AdminList = () => {
 
   // Abrir el modal para iniciar con el monitoreo
   const openModal = async (op, admin) => {
+    setIsModalOpen(true); // abre el modal
     setOperation(op);
 
     // Si la operación es 1, es para registrar
@@ -412,10 +414,10 @@ const AdminList = () => {
 
   // Resetea los estados del formulario y del modal al cerrarlo
   const formClientReset = () => {
+    setIsModalOpen(false); // cierra el modal
     setSelectedClientId("");
     setSelectedFormId("");
     setFormOptions([]);
-    // setCheck(false);
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
 
@@ -537,6 +539,7 @@ const AdminList = () => {
     selectedBlockId,
     setSelectedBlockId,
     handleNextStep,
+    open: isModalOpen
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
