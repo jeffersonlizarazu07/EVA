@@ -1,5 +1,26 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Typography,
+  Button,
+  Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Box,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const modalAdmin = ({
   // Props de agent_list
@@ -25,36 +46,16 @@ const modalAdmin = ({
   handleUpdatePregunta,
   calFormScore,
   handleSaveBlock,
+  clientError,
+  setClientError,
+  formError,
+  setFormError,
+  dateError,
+  setDateError,
+  selectedBlockId,
+  setSelectedBlockId,
+  handleNextStep,
 }) => {
-  const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
-  const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
-  const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
-  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
-
-  // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
-  const handleNextStep = () => {
-    const isClientValid = selectedClientId !== "";
-    const isFormValid = selectedFormId !== "";
-    const isDateValid = monitoringDate !== "";
-
-    // Actualizar visualmente errores
-    setClientError(!isClientValid);
-    setFormError(!isFormValid);
-    setDateError(!isDateValid);
-
-    if (!isClientValid || !isFormValid || !isDateValid) {
-      Swal.fire({
-        icon: "error",
-        title: "Faltan campos obligatorios",
-        html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-        customClass: "swal-content-center",
-      });
-      return;
-    }
-
-    setMonitoringStep(2);
-  };
-
   return (
     <div id="modalAdmin" className="modal fade">
       <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">

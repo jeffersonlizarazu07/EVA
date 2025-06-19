@@ -55,7 +55,12 @@ const AdminList = () => {
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
   const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
-  // const [handleSaveBlock, setHandleSaveBlock] = useState([]); // Guarda la calificación de un bloque
+
+  // Validaciones de la primer vista del modal
+  const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
+  const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
+  const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
+  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -204,6 +209,30 @@ const AdminList = () => {
         });
       }
     }
+  };
+
+  // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
+  const handleNextStep = () => {
+    const isClientValid = selectedClientId !== "";
+    const isFormValid = selectedFormId !== "";
+    const isDateValid = monitoringDate !== "";
+
+    // Actualizar visualmente errores
+    setClientError(!isClientValid);
+    setFormError(!isFormValid);
+    setDateError(!isDateValid);
+
+    if (!isClientValid || !isFormValid || !isDateValid) {
+      Swal.fire({
+        icon: "error",
+        title: "Faltan campos obligatorios",
+        html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+        customClass: "swal-content-center",
+      });
+      return;
+    }
+
+    setMonitoringStep(2);
   };
 
   // Cargar los bloques asociados al formulario seleccionado
@@ -499,6 +528,15 @@ const AdminList = () => {
     handleUpdatePregunta,
     calFormScore,
     handleSaveBlock,
+    clientError,
+    setClientError,
+    formError,
+    setFormError,
+    dateError,
+    setDateError,
+    selectedBlockId,
+    setSelectedBlockId,
+    handleNextStep,
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
