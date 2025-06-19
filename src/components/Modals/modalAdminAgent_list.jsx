@@ -19,6 +19,12 @@ const modalAdmin = ({
   userInfo,
   monitoringDate,
   setMonitoringDate,
+  blocksWithPer,
+  setBlocksWithPer,
+  calBlocksPercentage,
+  handleUpdatePregunta,
+  calFormScore,
+  handleSaveBlock,
 }) => {
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
   const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
@@ -239,11 +245,14 @@ const modalAdmin = ({
                   <div className="infoForm d-flex align-items-center">
                     <p className="fw-bold mb-0 me-2">Nombre del formulario:</p>
                     <label className="mb-0">
-                      {callSelectedForm?.title || "Formulario no seleccionado"}
+                      {callSelectedForm?.title || "Formulario no seleccionado"}.
                     </label>
                   </div>
 
-                  <p className=" fw-bold m-0">Form Score:</p>
+                  <div className="d-flex align-items-center">
+                    <p className="fw-bold m-0 me-2">Form Score:</p>
+                    <label className="m-0">{calFormScore()}%.</label>
+                  </div>
 
                   <div className="d-flex align-items-center">
                     <p className="fw-bold mb-0">Posible puntuación:</p>
@@ -258,210 +267,205 @@ const modalAdmin = ({
                     </p>
                   ) : (
                     <div className="accordion" id="accordionBloques">
-                      {blocksForForm.map((block, blockIdx) => (
-                        <div className="accordion-item mb-3" key={block.id}>
-                          <h4
-                            className="accordion-header"
-                            id={`heading-block-${block.id}`}
-                          >
-                            <button
-                              className={`accordion-button d-flex justify-content-center ${
-                                selectedBlockId === block.id ? "" : "collapsed"
-                              }`}
-                              type="button"
-                              onClick={() =>
-                                setSelectedBlockId((prev) =>
-                                  prev === block.id ? null : block.id
-                                )
-                              }
-                              data-bs-toggle="collapse"
-                              data-bs-target={`#collapse-block-${block.id}`}
-                              aria-expanded={selectedBlockId === block.id}
-                              aria-controls={`collapse-block-${block.id}`}
-                              style={{
-                                backgroundColor:
-                                  selectedBlockId === block.id
-                                    ? "#adb5ba"
-                                    : "inherit",
-                                cursor: "pointer",
-                                color:
-                                  selectedBlockId === block.id
-                                    ? "rgb(248, 244, 246)"
-                                    : "inherit",
-                              }}
+                      {Array.isArray(blocksWithPer) &&
+                        blocksWithPer.map((block, blockIdx) => (
+                          <div className="accordion-item mb-3" key={block.id}>
+                            <h4
+                              className="accordion-header"
+                              id={`heading-block-${block.id}`}
                             >
-                              <span className="w-100 fw-bold text-center">
-                                {block.block_name} -{" "}
-                                {block.percentage || "No existe puntuación"}
-                              </span>
-                            </button>
-                          </h4>
+                              <button
+                                className={`accordion-button d-flex justify-content-between align-items-center ${
+                                  selectedBlockId === block.id
+                                    ? ""
+                                    : "collapsed"
+                                }`}
+                                type="button"
+                                onClick={() =>
+                                  setSelectedBlockId((prev) =>
+                                    prev === block.id ? null : block.id
+                                  )
+                                }
+                                data-bs-toggle="collapse"
+                                data-bs-target={`#collapse-block-${block.id}`}
+                                aria-expanded={selectedBlockId === block.id}
+                                aria-controls={`collapse-block-${block.id}`}
+                                style={{
+                                  backgroundColor:
+                                    selectedBlockId === block.id
+                                      ? "#adb5ba"
+                                      : "inherit",
+                                  cursor: "pointer",
+                                  color:
+                                    selectedBlockId === block.id
+                                      ? "rgb(248, 244, 246)"
+                                      : "inherit",
+                                }}
+                              >
+                                <span className="flex-grow-1 text-start fw-bold">
+                                  {block.block_name}
+                                </span>
+                                <span className="fw-bold text-end me-3">
+                                  {block.porcentajeBloque}%
+                                </span>
+                              </button>
+                            </h4>
 
-                          <div
-                            id={`collapse-block-${block.id}`}
-                            className={`accordion-collapse collapse ${
-                              selectedBlockId === block.id ? "show" : ""
-                            }`}
-                            aria-labelledby={`heading-block-${block.id}`}
-                            data-bs-parent="#accordionBloques"
-                          >
-                            <div className="accordion-body">
-                              {block.preguntas.length === 0 ? (
-                                <p className="text-muted">
-                                  Este bloque no tiene preguntas registradas.
-                                </p>
-                              ) : (
-                                <div
-                                  className="accordion"
-                                  id={`accordionPreguntas-${block.id}`}
-                                >
-                                  {block.preguntas.map((pregunta, idx) => (
-                                    <div
-                                      className="accordion-item"
-                                      key={pregunta.id}
-                                    >
-                                      <h2
-                                        className="accordion-header"
-                                        id={`heading-${block.id}-${idx}`}
-                                      >
-                                        <button
-                                          className="accordion-button collapsed"
-                                          type="button"
-                                          data-bs-toggle="collapse"
-                                          data-bs-target={`#collapse-${block.id}-${idx}`}
-                                          aria-expanded="false"
-                                          aria-controls={`collapse-${block.id}-${idx}`}
-                                        >
-                                          {pregunta.question_name}
-                                        </button>
-                                      </h2>
+                            <div
+                              id={`collapse-block-${block.id}`}
+                              className={`accordion-collapse collapse ${
+                                selectedBlockId === block.id ? "show" : ""
+                              }`}
+                              aria-labelledby={`heading-block-${block.id}`}
+                              data-bs-parent="#accordionBloques"
+                            >
+                              <div className="accordion-body">
+                                {block.preguntas.length === 0 ? (
+                                  <p className="text-muted">
+                                    Este bloque no tiene preguntas registradas.
+                                  </p>
+                                ) : (
+                                  <div
+                                    className="accordion"
+                                    id={`accordionPreguntas-${block.id}`}
+                                  >
+                                    {block.preguntas.map((pregunta, idx) => (
                                       <div
-                                        id={`collapse-${block.id}-${idx}`}
-                                        className="accordion-collapse collapse"
-                                        aria-labelledby={`heading-${block.id}-${idx}`}
-                                        data-bs-parent={`#accordionPreguntas-${block.id}`}
+                                        className="accordion-item"
+                                        key={pregunta.id}
                                       >
-                                        <div className="accordion-body">
-                                          {/* Render dinámico por tipo */}
-                                          {pregunta.id_type_question === 1 && (
-                                            <div>
-                                              {(pregunta.select_option || "")
-                                                .split(";")
-                                                .map((opt, i) => (
-                                                  <div
-                                                    className="form-check"
-                                                    key={i}
-                                                  >
-                                                    <input
-                                                      className="form-check-input"
-                                                      type="checkbox"
-                                                    />
-                                                    <label className="form-check-label">
-                                                      {opt}
-                                                    </label>
-                                                  </div>
-                                                ))}
+                                        <h2
+                                          className="accordion-header"
+                                          id={`heading-${block.id}-${idx}`}
+                                        >
+                                          <button
+                                            className="accordion-button collapsed d-flex align-items-center"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target={`#collapse-${block.id}-${idx}`}
+                                            aria-expanded="false"
+                                            aria-controls={`collapse-${block.id}-${idx}`}
+                                          >
+                                            <span className="flex-grow-1 text-start">
+                                              {pregunta.question_name}
+                                            </span>
+                                            <span className="text-end me-3">
+                                              {pregunta.porcentajePregunta}
+                                              {"%"}
+                                            </span>
+                                          </button>
+                                        </h2>
+                                        <div
+                                          id={`collapse-${block.id}-${idx}`}
+                                          className="accordion-collapse collapse"
+                                          aria-labelledby={`heading-${block.id}-${idx}`}
+                                          data-bs-parent={`#accordionPreguntas-${block.id}`}
+                                        >
+                                          <div className="accordion-body">
+                                            {/* Render dinámico por tipo */}
+                                            {pregunta.id_type_question ===
+                                              1 && (
+                                              <div>
+                                                {(pregunta.select_option || "")
+                                                  .split(";")
+                                                  .map((opt, i) => (
+                                                    <div
+                                                      className="form-check"
+                                                      key={i}
+                                                    >
+                                                      <input
+                                                        className="form-check-input"
+                                                        type="checkbox"
+                                                      />
+                                                      <label className="form-check-label">
+                                                        {opt}
+                                                      </label>
+                                                    </div>
+                                                  ))}
+                                              </div>
+                                            )}
+
+                                            {pregunta.id_type_question ===
+                                              2 && (
+                                              <select
+                                                className="form-select"
+                                                value={
+                                                  pregunta.selected_answer || ""
+                                                }
+                                                disabled
+                                              >
+                                                {(pregunta.select_option || "")
+                                                  .split(",")
+                                                  .map((opt, i) => (
+                                                    <option
+                                                      key={i}
+                                                      value={opt.trim()}
+                                                    >
+                                                      {opt.trim()}
+                                                    </option>
+                                                  ))}
+                                              </select>
+                                            )}
+
+                                            {pregunta.id_type_question ===
+                                              3 && (
+                                              <textarea
+                                                className="form-control"
+                                                placeholder="Respuesta abierta..."
+                                                disabled
+                                              />
+                                            )}
+
+                                            {/* Evaluación del monitoreo */}
+                                            <div className="mt-3">
+                                              <label className="form-label fw-bold">
+                                                Evaluación
+                                              </label>
+                                              <select
+                                                className="form-select"
+                                                value={
+                                                  pregunta.evaluacion || ""
+                                                }
+                                                onChange={(e) =>
+                                                  handleUpdatePregunta(
+                                                    pregunta.id,
+                                                    "evaluacion",
+                                                    e.target.value
+                                                  )
+                                                }
+                                              >
+                                                <option value="">
+                                                  Seleccionar
+                                                </option>
+                                                <option value="1">
+                                                  ✅ Buena
+                                                </option>
+                                                <option value="0">
+                                                  ❌ Mala
+                                                </option>
+                                              </select>
                                             </div>
-                                          )}
 
-                                          {pregunta.id_type_question === 2 && (
-                                            <select
-                                              className="form-select"
-                                              value={
-                                                pregunta.selected_answer || ""
-                                              }
-                                              disabled
-                                            >
-                                              {(pregunta.select_option || "")
-                                                .split(",")
-                                                .map((opt, i) => (
-                                                  <option
-                                                    key={i}
-                                                    value={opt.trim()}
-                                                  >
-                                                    {opt.trim()}
-                                                  </option>
-                                                ))}
-                                            </select>
-                                          )}
-
-                                          {pregunta.id_type_question === 3 && (
-                                            <textarea
-                                              className="form-control"
-                                              placeholder="Respuesta abierta..."
-                                              disabled
-                                            />
-                                          )}
-
-                                          {/* Evaluación del monitoreo */}
-                                          <div className="mt-3">
-                                            <label className="form-label fw-bold">
-                                              Evaluación
-                                            </label>
-                                            <select
-                                              className="form-select"
-                                              value={pregunta.evaluacion || ""}
-                                              onChange={(e) =>
-                                                handleUpdatePregunta(
-                                                  pregunta.id,
-                                                  "evaluacion",
-                                                  e.target.value
-                                                )
-                                              }
-                                            >
-                                              <option value="">
-                                                Seleccionar
-                                              </option>
-                                              <option value="1">
-                                                ✅ Buena
-                                              </option>
-                                              <option value="0">❌ Mala</option>
-                                            </select>
-                                          </div>
-
-                                          {/* Puntaje asignado */}
-                                          <div className="mt-3">
-                                            <label className="form-label fw-bold">
-                                              Puntaje (%)
-                                            </label>
-                                            <input
-                                              type="number"
-                                              className="form-control ms-0"
-                                              placeholder="Ej: 15"
-                                              min="0"
-                                              max="100"
-                                              value={
-                                                pregunta.puntaje_asignado || ""
-                                              }
-                                              onChange={(e) =>
-                                                handleUpdatePregunta(
-                                                  pregunta.id,
-                                                  "puntaje_asignado",
-                                                  e.target.value
-                                                )
-                                              }
-                                            />
+                                            {/* Puntaje asignado */}
+                                            <div className="mt-3"></div>
                                           </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="d-flex justify-content-end mt-3 mb-3 pe-3">
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={() => handleSaveBlock(block.id)}
+                                >
+                                  Confirmar
+                                </button>
+                              </div>
                             </div>
-                            <div className="d-flex justify-content-end mt-3 mb-3 pe-3">
-                            <button
-                              className="btn btn-primary"
-                              
-                              onClick={() => handleGuardarBloque(block.id)}
-                            >
-                              Confirmar
-                            </button>
                           </div>
-                          </div>
-                          
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
                 </div>

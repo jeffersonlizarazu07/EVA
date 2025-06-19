@@ -52,8 +52,10 @@ const AdminList = () => {
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
   const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
-  const [blocksForForm, setBlocksforForm] = useState([]); // Estado para menjar los bloques de un formulario
+  const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
   const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
+  const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
+  // const [handleSaveBlock, setHandleSaveBlock] = useState([]); // Guarda la calificación de un bloque
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -212,14 +214,14 @@ const AdminList = () => {
     const fetchedBlocks = await getBlocksForIdForm(selectedId); // Obtener bloques desde el backend
 
     if (fetchedBlocks && fetchedBlocks.length > 0) {
-      setBlocksforForm(fetchedBlocks); // // Actualizar el estado con los bloques encontrados
+      setBlocksForForm(fetchedBlocks); // // Actualizar el estado con los bloques encontrados
       console.log("Bloques cargados:", fetchedBlocks);
     } else {
       Toast.fire({
         icon: "info",
         title: "No existen bloques creados para este formulario",
       });
-      setBlocksforForm([]); // Limpiar bloques si no existen
+      setBlocksForForm([]); // Limpiar bloques si no existen
     }
   };
 
@@ -387,30 +389,83 @@ const AdminList = () => {
     // setCheck(false);
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
-  
+
   /* SCORE */
-  
-  // Calcular puntaje del bloque
-  const calScoreBlock = (block) => {
-  let total = 0;
 
-  block.preguntas.forEach((p) => {
-    const pesoPregunta = Number(p.puntaje_asignado) || 0;
-    const satisfactorio = p.evaluacion === 1;
+  const calBlocksPercentage = (bloques) => {
+    return bloques.map((block) => {
+      const initBlockPer = 100; // Valor inicial del bloque = 100%
+      const totalQuestions = block.preguntas.length; // Calcula el número de preguntas que contiene el bloque
+      // Calcula el valor de cada pregunta dentro del bloque
+      const perQuestion = initBlockPer / totalQuestions; // Calcula el porcentaje de cada pregunta dentro del bloque
 
-    if (satisfactorio) total += pesoPregunta;
-  });
+      let finalBlockPer = initBlockPer; // Guarda el valor actual del bloque al calificar cada pregunta
 
-  return Math.min(total, 100); // No excede de 100
-};
+      const changeBlockPer = block.preguntas.map((pregunta) => {
+        const evaluation = pregunta.evaluacion;
+        if (evaluation === "0") {
+          finalBlockPer -= perQuestion; // Se resta el valor del porcentaje de la pregunta al valor actual del bloque
+        }
 
-const handleUpdatePregunta = (idPregunta, campo, valor) => {
-  setPreguntas((prev) =>
-    prev.map((p) =>
-      p.id === idPregunta ? { ...p, [campo]: valor } : p
-    )
-  );
-};
+        return {
+          ...pregunta,
+          porcentajePregunta: perQuestion, // porcentaje visual individual
+        };
+      });
+
+      return {
+        ...block,
+        porcentajeBloque: Math.round(finalBlockPer), // Retorna el valor del bloque despues de finalizar la calificación
+        preguntas: changeBlockPer, // Retorna el valor de cada pregunta para que sea visible por el usuario al evaluar el bloque
+      };
+    });
+  };
+
+  useEffect(() => {
+    if (blocksForForm.length > 0) {
+      const result = calBlocksPercentage(blocksForForm);
+      setBlocksWithPer(result);
+    }
+  }, [blocksForForm]);
+
+  const calFormScore = () => {
+    const total = blocksWithPer.reduce(
+      (suma, bloque) => suma + bloque.porcentajeBloque,
+      0
+    );
+
+    return Math.round(total / blocksWithPer.length);
+  };
+
+  const handleSaveBlock = (blockId) => {
+    const bloque = blocksWithPer.find((b) => b.id === blockId);
+
+    if (!bloque) return;
+
+    // Crear payload
+    const payload = {
+      block_id: bloque.id,
+      block_score: bloque.porcentajeBloque,
+      questions: bloque.preguntas.map((p) => ({
+        question_id: p.id,
+        evaluacion: p.evaluacion,
+        porcentaje: p.porcentajePregunta,
+      })),
+    };
+
+    console.log("Bloque evaluado:", payload);
+  };
+
+  // Clacula el % del bloque en tiempo real
+  const handleUpdatePregunta = (idPregunta, campo, valor) => {
+    const updated = blocksForForm.map((block) => ({
+      ...block,
+      preguntas: block.preguntas.map((p) =>
+        p.id === idPregunta ? { ...p, [campo]: valor } : p
+      ),
+    }));
+    setBlocksForForm(updated); // Vuelve a calcular el valor en % del bloque
+  };
 
   // Props que se pasan al modal principal para crear o editar monitorizaciones
   const modalAdminProps = {
@@ -438,6 +493,12 @@ const handleUpdatePregunta = (idPregunta, campo, valor) => {
     t,
     monitoringDate,
     setMonitoringDate,
+    blocksWithPer,
+    setBlocksWithPer,
+    calBlocksPercentage,
+    handleUpdatePregunta,
+    calFormScore,
+    handleSaveBlock,
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
