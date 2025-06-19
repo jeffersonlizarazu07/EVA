@@ -186,7 +186,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel":"Cancelar",
               "SuccessAlert":" se ha desactivado exitosamente.",
               "ErrorAlert":" no ha sido desactivado.",
-              "mensaje_desactivar": "se deshabilitara de forma permanente"
+              "mensaje_desactivar": "se deshabilitara de forma permanente",
+              "error_desactivar_encuesta" : "No se pudo desactivar la encuesta"
             },
             alertActivate:{
               "activar_elemento":"Activar elemento",
@@ -311,6 +312,7 @@ import { initReactI18next } from "react-i18next";
               "descripcion":"Descripcion",
               "cliente":"Cliente",
               "selecciona_cliente":"Selecciona un cliente",
+              "informacion_encuesta":"Información de la encuesta",
             },
             buttons:{
               "WatchQuestions":"Ver preguntas",
@@ -560,7 +562,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Cancel",
               "SuccessAlert": " has been successfully deactivated.",
               "ErrorAlert": " has not been deactivated.",
-              "mensaje_desactivar": "will be permanently disabled"
+              "mensaje_desactivar": "will be permanently disabled",
+              "error_desactivar_encuesta" : "Could not deactivate the survey"
             },
             alertActivate: {
               "activar_elemento": "Activate element",
@@ -642,6 +645,7 @@ import { initReactI18next } from "react-i18next";
               "descripcion": "Description",
               "cliente": "Client",
               "selecciona_cliente": "Select a client",
+              "informacion_encuesta": "Survey information",
             },
             clientModal:{
               "NewClient": "Add client",
@@ -949,7 +953,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Annulla",
               "SuccessAlert": " è stato disattivato con successo.",
               "ErrorAlert": " non è stato disattivato.",
-              "mensaje_desactivar": "sarà disabilitato in modo permanente"
+              "mensaje_desactivar": "sarà disabilitato in modo permanente",
+              "error_desactivar_encuesta" : "Impossibile disattivare il sondaggio"
             },
             alertActivate: {
               "activar_elemento": "Attiva elemento",
@@ -1031,6 +1036,7 @@ import { initReactI18next } from "react-i18next";
               "descripcion": "Descrizione",
               "cliente": "Cliente",
               "selecciona_cliente": "Seleziona un cliente",
+              "informacion_encuesta": "Informazioni sondaggio",
             },
             clientModal:{
               "NewClient": "Aggiungi cliente",
@@ -1317,7 +1323,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Cancelar",
               "SuccessAlert": " foi desativado com sucesso.",
               "ErrorAlert": " não foi desativado.",
-              "mensaje_desactivar": "será desativado permanentemente"
+              "mensaje_desactivar": "será desativado permanentemente",
+              "error_desactivar_encuesta" : "Não foi possivel desativar a pesquisa"
             },
             alertActivate: {
               "activar_elemento": "Ativar elemento",
@@ -1476,6 +1483,7 @@ import { initReactI18next } from "react-i18next";
             "descripcion": "Descrição",
             "cliente": "Cliente",
             "selecciona_cliente": "Selecione um cliente",
+            "informacion_encuesta": "Informação da pesquisa",
           },
           buttons: {
             "WatchQuestions": "Ver Perguntas",

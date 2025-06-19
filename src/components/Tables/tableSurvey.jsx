@@ -4,6 +4,37 @@ import axios from "axios";
 import "../../assets/css/tabla.css";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import React from 'react';
+import {
+  Table,
+  Menu,
+  MenuItem,
+  Tooltip,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Button,
+  IconButton,
+  Paper,
+  Box,
+  Grid,InputAdornment} from '@mui/material';
+import {
+  TurnLeft,
+  Add,
+  Edit,
+  PowerSettingsNew,
+  MoreVert,
+  Search,
+  HelpOutline,
+  Link as LinkIcon,
+  Email as EmailIcon,
+  FileCopy as FileCopyIcon,
+} from '@mui/icons-material';
+import TablePagination from '@mui/material/TablePagination';
+
 
 const TableSurvey = ({
   header,
@@ -28,6 +59,38 @@ const TableSurvey = ({
   const [userClients, setUserClients] = useState([]);
   const { userId, accessToken, languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
+  
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [selectedItem, setSelectedItem] = React.useState(null);
+    
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0); // Reset page to 0 cuando cambia rows per page
+  };
+
+
+  const handleMenuOpen = (event, item) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedItem(item);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedItem(null);
+  };
+
+  const handleMenuAction = (action, item) => {
+    handleMenuClose();
+    action(item);
+  };
+
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
@@ -56,12 +119,7 @@ const TableSurvey = ({
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1); // Reset page to 1 on new search
-  };
-
-  const handleRecordsPerPageChange = (records) => {
-    setRecordsPerPage(records);
-    setCurrentPage(1); // Reset page to 1 on new records per page
+    setPage(0); // Reset page to 1 on new search
   };
 
   const capitalize = (text) => {
@@ -82,10 +140,9 @@ const TableSurvey = ({
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = filteredData.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
   );
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
 
   const headerTranslations = {
   "Title": t("survey.titulo"),
@@ -94,221 +151,273 @@ const TableSurvey = ({
   "state": t("survey.estado")
 };
   return (
-    <div className="table-container">
-      <div className="row d-flex mb-3">
-        <div className="col-6 col-sm-6 col-md-6 col-lg-6">
-          <button className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-1 mb-2" onClick={() => nav("/satisfaction")} >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-left" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
-            </svg>
-          </button>
-          <input
-            className="w-50 inp-search"
-            placeholder={(t("survey.buscar"))}
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </div>
-        <div className="d-grid col-6 col-sm-6 col-md-6 col-lg-6 justify-content-end">
-          <button
-            className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-2"
-            data-bs-toggle="modal"
-            data-bs-target={`#${modalId}`}
-            onClick={() => onCreate()}
-          >
-            <i className="fa fa-plus"></i> {t("survey.encuestas")}
-          </button>
-        </div>
-      </div>
-      <table className="table table-hover" id="tableDefault">
-        <thead>
-          <tr className="table-light tr-table">
-            {header.map((item, i) => (
-              <th key={i} className="col text-center">
-                {headerTranslations[item] || capitalize(item)}
-              </th>
-            ))}
-            <th className="col text-center">{t("survey.acciones")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentRecords.map((item, idx) => (
-            <tr key={idx}>
-              {header.map((col, i) => (
-                <td key={i}>
-                  {col == "state"
-                    ? item.state == 1
-                      ? `${t("clientTable.Active")}`
-                      : `${t("clientTable.Inactive")}`
-                    : item[col.toLowerCase()] || item[col]}
-                </td>
-              ))}
+    <Box className="table-container">
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12} sm={6} md={6} lg={6}>
+          <Box display="flex" alignItems="center" gap={1}  sx={{ height: '40px' }} >
+            <Button 
+              variant="outlined"
+              size="small"
+              sx={{  
+                minWidth: 0,       
+                width: 30,
+                height: 30,
+                padding: 0,
+                borderRadius: '50%',        
+                color: '#b62a8b',
+                borderColor: '#b62a8b',    
+                '&:hover': {
+                  borderColor: '#b62a8b',
+                  backgroundColor: '#b62a8b',
+                  color: 'white'
+                }
+              }} 
+              onClick={() => nav("/satisfaction")}              
+            > <TurnLeft /> 
+            </Button>
+            <TextField
+              size="small"
+              className="inp-search"
+              placeholder={(t("survey.buscar"))}
+              value={searchTerm}
+              onChange={handleSearch}
+              variant="outlined"
+              sx={{ width: '100%',                 
+                 '& .MuiOutlinedInput-root': {
+                  height: '4vh',
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'transparent', 
+                  },          
+                  '&.Mui-focused': {
+                    boxShadow: 'none',
+                  },
+                },                
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: '#888' }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+        </Grid>
+        <Grid item xs={12} sm={6} md={6} lg={6}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button variant="h5"
+              size="small"
+              sx={{
+                borderRadius: '18px',
+                border: '1px solid #b62a8b',
+                color: '#b62a8b',
+                borderColor: '#b62a8b',    
+                '&:hover': {
+                  borderColor: '#b62a8b',
+                  backgroundColor: '#b62a8b',
+                  color: 'white'
+                }
+              }}
+              onClick={() => onCreate()}
+            >
+               <Add sx={{ fontSize: '18px' }} />{t("survey.encuestas")}
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
 
-              {item.state == 1 ? (
-                <td>
-                  <div className="dropdown">
-                    <button
-                      className="btn-rect btn-dropdown"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
+      {/* Tabla */}
+      <TableContainer component={Paper} elevation={0}  sx={{ maxHeight: 450, overflowY: "auto" }} >
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              {header.map((item, i) => (
+                <TableCell key={i}  sx={{ fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}>
+                  {headerTranslations[item] || capitalize(item)}
+                </TableCell>
+              ))}
+              <TableCell sx={{ fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}>{t("survey.acciones")}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {currentRecords.map((item, idx) => (
+              <TableRow key={idx}>
+                {header.map((col, i) => (
+                  <TableCell key={i} align="center">
+                    {col == "state"
+                      ? item.state == 1
+                        ? `${t("clientTable.Active")}`
+                        : `${t("clientTable.Inactive")}`
+                      : item[col.toLowerCase()] || item[col]}
+                  </TableCell>
+                ))}
+
+                <TableCell align="center">
+                  {item.state == 1 ? (                  
+                    <Box>
+                     <IconButton
+                      onClick={(e) => handleMenuOpen(e, item)}
+                      sx={{ 
+                        color:' #b62a8b',
+                        '&:hover': { backgroundColor: '#e9ecef' }
+                      }}
                     >
-                      <div className="dropdown-toggle">
-                        <i className="fa-solid fa-ellipsis-vertical"></i>
-                      </div>
-                    </button>
-                    <ul className="dropdown-menu p-0 ">
-                      <li className="text-start btn-rect">
-                        <button
-                          className="btn  btn-rect"
-                          onClick={() => onCheck(item)}
-                        >
-                          <i className="fa-solid fa-circle-question"></i>{" "}
-                          <span> {t("survey.ver_preguntas")} </span>
-                        </button>
-                      </li>
-                      <li className="text-start btn-rect">
-                        <button
-                          className="btn text-start"
-                          style={{ width: "100%" }}
-                          onClick={() => onCopyLink(item)}
-                        >
-                          <i className="fa-solid fa-link"></i>{" "}
-                          <span> {t("survey.copiar_enlace")}</span>
-                        </button>
-                      </li>
-                      <li className="text-start  btn-rect">
-                        <button
-                          style={{ width: "100%" }}
-                          className="btn text-start"
-                          data-bs-toggle="modal"
-                          data-bs-target={`#${modalId}`}
-                          onClick={() => onUpdate(item)}
-                        >
-                          <i className="fa-solid fa-edit"></i> {(t("survey.editar"))}
-                        </button>
-                      </li>
-
-                      <li className="text-start  btn-rect">
-                        <button
-                          className="btn text-start"
-                          onClick={() => onBulkEmail(item)}
-                          style={{ width: "100%" }}
-                        >
-                          <i className="fa-solid fa-envelopes-bulk"></i>
-                          <span> {t("survey.envio_masivo")}</span>
-                        </button>
-                      </li>
-                      <li className="text-start btn-rect">
-                        <button
-                          className="btn text-start "
-                          onClick={() => onDuplicate(item)}
-                          style={{ width: "100%" }}
-                        >
-                          <i className="fa-solid fa-clone"></i>{" "}
-                          <span>{(t("survey.duplicar"))}</span>
-                        </button>
-                      </li>
-                      <li className="text-start  btn-rect">
-                        {" "}
-                        <button
-                          className="btn text-start"
-                          style={{ width: "100%" }}
-                          onClick={() => onRemove(item)}
-                        >
-                          <i className="fa-solid fa-power-off"></i>{" "}
-                          <span> {t("survey.deshabilitar")}</span>
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                </td>
-              ) : (
-                <td>
-                  <div className="row">
-                    <div className="col">
-                      <button
-                        className="btn btn-rect"
+                      <MoreVert />
+                    </IconButton>
+                    
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl) && selectedItem === item}
+                      onClose={handleMenuClose}                    
+                    >
+                      <MenuItem 
+                        onClick={() => handleMenuAction(onCheck, item)}
+                        sx={{ 
+                          display: 'flex', 
+                          gap: 1,
+                          color:' #b62a8b',
+                          '&:hover': { backgroundColor: '#f8f9fa' }
+                        }}
+                      >
+                        <HelpOutline sx={{ fontSize: 18 }} />
+                        {t("survey.ver_preguntas")}
+                      </MenuItem>
+                      
+                      <MenuItem 
+                        onClick={() => handleMenuAction(onCopyLink, item)}
+                        sx={{ 
+                           color:' #b62a8b',
+                          display: 'flex', 
+                          gap: 1,
+                          '&:hover': { backgroundColor: '#f8f9fa' }
+                        }}
+                      >
+                        <LinkIcon sx={{ fontSize: 18 }} />
+                        {t("survey.copiar_enlace")}
+                      </MenuItem>
+                      
+                      <MenuItem 
+                        onClick={() => handleMenuAction(onUpdate, item)}
+                        sx={{ 
+                           color:' #b62a8b',
+                          display: 'flex', 
+                          gap: 1,
+                          '&:hover': { backgroundColor: '#f8f9fa' }
+                        }}
+                      >
+                        <Edit sx={{ fontSize: 18 }} />
+                        {t("survey.editar")}
+                      </MenuItem>
+                      
+                      <MenuItem 
+                        onClick={() => handleMenuAction(onBulkEmail, item)}
+                        sx={{ 
+                           color:' #b62a8b',
+                          display: 'flex', 
+                          gap: 1,
+                          '&:hover': { backgroundColor: '#f8f9fa' }
+                        }}
+                      >
+                        <EmailIcon sx={{ fontSize: 18 }} />
+                        {t("survey.envio_masivo")}
+                      </MenuItem>
+                      
+                      <MenuItem                       
+                        onClick={() => handleMenuAction(onDuplicate, item)}
+                        sx={{ 
+                          color:' #b62a8b',
+                          display: 'flex', 
+                          gap: 1,
+                          '&:hover': { backgroundColor: '#f8f9fa' }
+                        }}
+                      >
+                        <FileCopyIcon sx={{ fontSize: 18 }} />
+                        {t("survey.duplicar")}
+                      </MenuItem>
+                      
+                      <MenuItem 
+                        onClick={() => handleMenuAction(onRemove, item)}
+                        sx={{ 
+                          color:' #b62a8b',
+                          display: 'flex', 
+                          gap: 1,
+                          '&:hover': { backgroundColor: '#f8f9fa' }
+                        }}
+                      >
+                        <PowerSettingsNew sx={{ fontSize: 18 }} />
+                        {t("survey.deshabilitar")}
+                      </MenuItem>
+                    </Menu>
+                    </Box>
+                  
+                  ) : (
+                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                    <Tooltip title="Activar" placement="bottom">
+                      <IconButton
                         onClick={() => onActive(item)}
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-title="Tooltip on bottom"
+                        size="small"
                       >
-                        <i className="fa-solid fa-power-off"></i>
-                      </button>
-                      <button
-                        className="btn btn-rect"
-                        data-bs-toggle="modal"
-                        data-bs-target={`#${modalId2}`}
+                        <PowerSettingsNew />
+                      </IconButton>
+                    </Tooltip>
+                    
+                    <Tooltip title="Ver detalles" placement="bottom">
+                      <IconButton                
                         onClick={() => onView(item)}
+                        size="small"
                       >
-                        <i className="fa-solid fa-search"></i>
-                      </button>
-                    </div>
-                  </div>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="row d-flex ps-5 pe-5 mt-3">
-        <div className="col-6 col-sm-6 col-md-6 col-lg-6">
-          <label>
-            {t("survey.Mostrar")}
-            <button
-              className="dropdown-toggle inp-search"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              {recordsPerPage}
-            </button>
-            <ul className="dropdown-menu">
-              {[10, 25, 50].map((num) => (
-                <li key={num}>
-                  <a
-                    className="dropdown-item"
-                    href="#"
-                    onClick={() => handleRecordsPerPageChange(num)}
-                  >
-                    {num}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {t("survey.Registros")}
-          </label>
-        </div>
-        <div className="d-grid col-6 col-sm-6 col-md-6 col-lg-6 justify-content-end">
-          <div
-            className="btn-group"
-            role="group"
-            aria-label="Basic outlined example"
-          >
-            <button
-              type="button"
-              className="btn"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            >
-              &lt;
-            </button>
-            <label className="btn" htmlFor="btncheck2">
-              {currentPage}
-            </label>
-            <button
-              type="button"
-              className="btn"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+                        <Search />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                )}
+              </TableCell>  
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>  
+      </TableContainer>
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2, alignItems: 'center',  }}>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage={t("clientTable.fila_pagina")}
+          labelDisplayedRows={({ from, to, count }) => 
+            `${from}-${to} ${t("clientTable.de")} ${count !== -1 ? count : `more than ${to}`}`
+          }
+         sx={{
+            // Estilos personalizados para alinear verticalmente
+            display: 'flex',
+            alignItems: 'center',
+            '.MuiTablePagination-toolbar': {
+              alignItems: 'center', // Alinea todos los hijos verticalmente
+            },
+            '.MuiTablePagination-selectLabel': {
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: 0,
+            },
+             '.MuiTablePagination-displayedRows': {
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: 0,
+             },
+            '.MuiInputBase-root': {
+              backgroundColor: '#b62a8b',
+              color: 'white',
+              borderRadius: '4px',
+              
+            }
+          }}
+        />
+      </Box>  
+    </Box>
   );
 };
 export default TableSurvey;

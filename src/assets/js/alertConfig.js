@@ -31,6 +31,7 @@ export const smallAlertDeactivateConfirm = Swal.mixin({
   timer: 4000,
   timerProgressBar: true,
   icon: "success", // Icono para indicar éxito
+  zIndex: 10000,
   didOpen: (toast) => {
     toast.onmouseenter = Swal.stopTimer;
     toast.onmouseleave = Swal.resumeTimer;
