@@ -1,19 +1,52 @@
-const db = require("../config/db"); // Importar db congig
-const { getAgents } = require("../controllers/agenteController");
+const knex = require("../config/db");
+const { getDateTimeForSQL } = require("../helpers/dateHelper");
 
-const AgentMonitoring = {
-  // Obtener todos los agentes de la base de datos
-  getAgents: async (clientIds) => {
-    const monitoring = await db("user as u")
-      // Unimos la tabla 'users' con 'user_clients' para obtener los usuarios vinculados a clientes
-      .join("user_clients as uc", "u.id", "uc.idUser")
-      // Filtramos solo los usuarios de tipo 4 (agentes)
-      .where("u.type", 4)
-      // Filtramos solo los que estén asociados con los IDs de clientes recibidos como parámetro
-      .whereIn("uc.idClient", clientIds)
-      // Seleccionamos los campos relevantes del usuario
+const MonitoringModel = {
+  // Crear
+  create(data) {
+    return knex("monitoring").insert({
+      monitoring_date: getDateTimeForSQL(),
+      score: data.score,
+      feedback: data.feedback,
+      check: data.check,
+      id_user: data.id_user,
+      id_form: data.id_form,
+    });
+  },
+
+  // Obtener todos con join
+  getAll() {
+    return knex("monitoring")
+      .join("users", "monitoring.id_user", "users.id")
+      .join("forms", "monitoring.id_form", "forms.id")
       .select(
-        "u.id"
-      )
+        "monitoring.*",
+        "users.name as user_name",
+        "forms.title as form_title"
+      );
+  },
+
+  // Obtener por ID
+  getById: (id) => db("monitoring").where({ id }).first(),
+
+  // Actualizar
+  update(id, data) {
+    return knex("monitoring").where({ id }).update({
+      score: data.score,
+      check: data.check,
+      id_user: data.id_user,
+      id_form: data.id_form,
+    });
+  },
+
+  updateFeedback(id, feedback) {
+    return knex("monitoring").where({ id }).update({ feedback });
+  },
+
+  // Eliminar
+  remove(id) {
+    return knex("monitoring").where({ id }).del();
   },
 };
+
+module.exports = MonitoringModel;

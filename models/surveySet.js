@@ -2,7 +2,16 @@ const db = require("../config/db"); // Importa la conexión a la base de datos
 
 const SurveySet = {
 
-    getAll: () => db('survey_set').select('*'),
+    getAll:async() =>{
+        try {
+            const res = await db('survey_set').select('*')
+            return res;
+        }catch (error) {
+            console.error("Error al eliminar el formulario:", error);
+            throw new Error("No se pudo eliminar el formulario debido a un error en el servidor." + error.message);
+        }
+
+    },
 
     getById:async (id) =>{
        
@@ -35,20 +44,31 @@ const SurveySet = {
     // },
       
 
-    getByLink: (link) => {
-        return db('survey_set')
-            .join('clients', 'clients.id', '=', 'survey_set.idClient')
-            .where('survey_set.link', link)
-            .select('survey_set.*', 'clients.logo', 'clients.color_tag1', 'clients.color_tag2')
-            .first();
+    getByLink:async (link) => {
+        try{
+            return db('survey_set')
+                .join('clients', 'clients.id', '=', 'survey_set.idClient')
+                .where('survey_set.link', link)
+                .select('survey_set.*', 'clients.logo', 'clients.color_tag1', 'clients.color_tag2')
+                .first();
+        }catch (error) {
+            console.error("Error al eliminar el formulario:", error);
+            throw new Error("No se pudo eliminar el formulario debido a un error en el servidor." + error.message);
+        }
     },
     
     
 
     getByClients: (clientIdsArray) => {
+        try{
         return db('survey_set')
             .whereIn('idClient', clientIdsArray)
             .select('*');
+        }catch (error) {
+            console.error("Error al eliminar el formulario:", error);
+            throw new Error("No se pudo eliminar el formulario debido a un error en el servidor." + error.message);
+        }
+    
     },
       
        
@@ -78,7 +98,8 @@ const SurveySet = {
         }
     },
 
-    toggleState: (id) => {
+    toggleState: async (id) => {
+        try{
         return db('survey_set')
             .where({ id })
             .first()
@@ -86,10 +107,21 @@ const SurveySet = {
                 if (!survey) return null;
                 return db('survey_set').where({ id }).update({ state: !survey.state });
             });
+        }catch (error) {
+            console.error("Error al eliminar el formulario:", error);
+            throw new Error("No se pudo eliminar el formulario debido a un error en el servidor." + error.message);
+        }
     },
 
 
-    delete: (id) => db('survey_set').where({ id }).del(),
+    delete: async (id) => {
+        try{
+            return db('survey_set').where({ id }).del()
+        }catch (error) {
+            console.error("Error al eliminar el formulario:", error);
+            throw new Error("No se pudo eliminar el formulario debido a un error en el servidor." + error.message);
+        }
+    },
 
     getSurveysByUser : async (id) => {
         try{

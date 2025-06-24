@@ -40,30 +40,50 @@ class BlockModel {
 }
 
   async getAllBlocks() {
-    return await this.knex(this.table).select("*");
+    try {
+      return await this.knex(this.table).select("*");
+    } catch (error) {
+      throw new Error(`Error al obtener los bloques: ${error.message}`);
+    }  
   }
 
   async getBlocksByFormId(formId) {
-    return await this.knex(this.table)
-      .where({ form_id: formId })
-      .orderBy("block_location", "asc");
+    try{
+      return await this.knex(this.table)
+        .where({ form_id: formId })
+        .orderBy("block_location", "asc");
+    }catch (error) {
+      throw new Error(`Error al obtener los bloques por ID de formulario: ${error.message}`);
+    }
   }
 
   async getBlockById(id) {
-    const block = await this.knex(this.table).where({ id }).first();
-    //if (!block) throw new Error("Bloque no encontrado");
-    return block;
+    try {
+      const block = await this.knex(this.table).where({ id }).first();
+      //if (!block) throw new Error("Bloque no encontrado");
+      return block;
+    }catch (error) {
+      throw new Error(`Error al obtener el bloque por ID: ${error.message}`);
+    }
   }
 
   async updateBlock(id, data) {
-    await this.knex(this.table).where({ id }).update(data);
-    return this.getBlockById(id);
+    try{
+      await this.knex(this.table).where({ id }).update(data);
+      return this.getBlockById(id);
+    }catch (error) {
+      throw new Error(`Error al actualizar el bloque: ${error.message}`);
+    }
   }
 
   async deleteBlock(id) {
-    const deleted = await this.knex(this.table).where({ id }).del();
-    if (!deleted) throw new Error("No se encontró el bloque para eliminar");
-    return { success: true };
+    try{
+      const deleted = await this.knex(this.table).where({ id }).del();
+      if (!deleted) throw new Error("No se encontró el bloque para eliminar");
+      return { success: true };
+    }catch (error) {
+      throw new Error(`Error al eliminar el bloque: ${error.message}`);
+    }
   }
 }
 
