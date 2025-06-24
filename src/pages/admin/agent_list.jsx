@@ -24,6 +24,7 @@ import {
   getAgentById,
   getFormsByClient,
   getBlocksForIdForm,
+  saveMonitoring,
 } from "../../services/agent_listService";
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
@@ -52,8 +53,16 @@ const AdminList = () => {
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
   const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
-  const [blocksForForm, setBlocksforForm] = useState([]); // Estado para menjar los bloques de un formulario
-  const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización 
+  const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
+  const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
+  const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
+  const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
+
+  // Validaciones de la primer vista del modal
+  const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
+  const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
+  const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
+  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -114,20 +123,20 @@ const AdminList = () => {
 
   // Obtener todos los administradores (agentes) desde el backend
   const loadAdmins = async () => {
-  try {
-    setLoading(true);
-    const data = await getAdmins(clients);
-    setAdmins(data);
-  } catch (error) {
-    console.error("Error al cargar los administradores:", error);
-    Toast.fire({
-      icon: "error",
-      title: "Error al cargar administradores"
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      const data = await getAdmins(clients);
+      setAdmins(data);
+    } catch (error) {
+      console.error("Error al cargar los administradores:", error);
+      Toast.fire({
+        icon: "error",
+        title: "Error al cargar administradores",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Función para obtener la lista de clientes registrados
   const loadClients = async () => {
@@ -164,7 +173,6 @@ const AdminList = () => {
 
     // Validar selección
     if (!selectedId || selectedId === "") {
-      console.log("No hay cliente seleccionado");
       return;
     }
 
@@ -204,6 +212,160 @@ const AdminList = () => {
     }
   };
 
+  // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
+  // const handleNextStep = async () => {
+  //   if (monitoringStep === 1) {
+  //     const isClientValid = selectedClientId !== "";
+  //     const isFormValid = selectedFormId !== "";
+  //     const isDateValid = monitoringDate !== "";
+
+  //     setClientError(!isClientValid);
+  //     setFormError(!isFormValid);
+  //     setDateError(!isDateValid);
+
+  //     if (!isClientValid || !isFormValid || !isDateValid) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Faltan campos obligatorios",
+  //         html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+  //         customClass: "swal-content-center",
+  //       });
+  //       return;
+  //     }
+
+  //     setMonitoringStep(2);
+  //   } else if (monitoringStep === 2) {
+  //     try {
+  //       const result = await handleSaveMonitoring(score, check);
+  //       if (result && result.success) {
+  //         setMonitoringStep(3);
+  //       } else {
+  //         Swal.fire({
+  //           icon: "error",
+  //           title: "No se pudo guardar",
+  //           text:
+  //             result?.message || "Ocurrió un error al guardar la evaluación.",
+  //         });
+  //       }
+  //     } catch (error) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Error inesperado",
+  //         text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+  //       });
+  //     }
+  //   } else if (monitoringStep === 3) {
+  //     try {
+  //       const result = await saveFeedback(feedback);
+
+  //       if (result && result.success) {
+  //         setSaveFeedback(true);
+  //         Swal.fire({
+  //           icon: "success",
+  //           title: "Feedback guardado",
+  //           text: "La información adicional fue almacenada correctamente.",
+  //         });
+  //       } else {
+  //         Swal.fire({
+  //           icon: "error",
+  //           title: "No se pudo guardar el feedback",
+  //           text: result?.message || "Ocurrió un error al guardar el feedback.",
+  //         });
+  //       }
+  //     } catch (error) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Error inesperado",
+  //         text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+  //       });
+  //     }
+  //   }
+  // };
+
+  const handleNextStep = async () => {
+  if (monitoringStep === 1) {
+    const isClientValid = selectedClientId !== "";
+    const isFormValid = selectedFormId !== "";
+    const isDateValid = monitoringDate !== "";
+
+    setClientError(!isClientValid);
+    setFormError(!isFormValid);
+    setDateError(!isDateValid);
+
+    if (!isClientValid || !isFormValid || !isDateValid) {
+      Swal.fire({
+        icon: "error",
+        title: "Faltan campos obligatorios",
+        html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+        customClass: "swal-content-center",
+      });
+      return;
+    }
+
+    setMonitoringStep(2); // pasar a paso 2 sin guardar aún
+  } else if (monitoringStep === 2) {
+    // 🔒 COMENTADO: guardar evaluación en backend
+    /*
+    try {
+      const result = await handleSaveMonitoring(score, check);
+      if (result && result.success) {
+        setMonitoringStep(3);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo guardar",
+          text: result?.message || "Ocurrió un error al guardar la evaluación.",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error inesperado",
+        text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+      });
+    }
+    */
+    
+    // Por ahora, solo pasar a la vista 3 directamente
+    setMonitoringStep(3);
+  } else if (monitoringStep === 3) {
+    // 🔒 COMENTADO: guardar feedback en backend
+    /*
+    try {
+      const result = await saveFeedback(feedback);
+      if (result && result.success) {
+        setSaveFeedback(true);
+        Swal.fire({
+          icon: "success",
+          title: "Feedback guardado",
+          text: "La información adicional fue almacenada correctamente.",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo guardar el feedback",
+          text: result?.message || "Ocurrió un error al guardar el feedback.",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error inesperado",
+        text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+      });
+    }
+    */
+    
+    // Por ahora, solo dar confirmación visual
+    Swal.fire({
+      icon: "success",
+      title: "¡Proceso completado!",
+      text: "Has completado todos los pasos.",
+    });
+  }
+};
+
+
   // Cargar los bloques asociados al formulario seleccionado
   const handleLoadBlocks = async (e) => {
     const selectedId = e.target.value;
@@ -212,14 +374,13 @@ const AdminList = () => {
     const fetchedBlocks = await getBlocksForIdForm(selectedId); // Obtener bloques desde el backend
 
     if (fetchedBlocks && fetchedBlocks.length > 0) {
-      setBlocksforForm(fetchedBlocks); // // Actualizar el estado con los bloques encontrados
-      console.log("Bloques cargados:", fetchedBlocks);
+      setBlocksForForm(fetchedBlocks); // // Actualizar el estado con los bloques encontrados
     } else {
       Toast.fire({
         icon: "info",
         title: "No existen bloques creados para este formulario",
       });
-      setBlocksforForm([]); // Limpiar bloques si no existen
+      setBlocksForForm([]); // Limpiar bloques si no existen
     }
   };
 
@@ -244,7 +405,6 @@ const AdminList = () => {
 
     try {
       const result = await saveMonitoring(payload); // Enviar datos al backend
-      console.log("Monitorización guardada exitosamente:", result);
       return result;
     } catch (error) {
       console.error("Error al guardar la monitorización:", error);
@@ -256,6 +416,7 @@ const AdminList = () => {
 
   // Abrir el modal para iniciar con el monitoreo
   const openModal = async (op, admin) => {
+    setIsModalOpen(true); // abre el modal
     setOperation(op);
 
     // Si la operación es 1, es para registrar
@@ -263,7 +424,6 @@ const AdminList = () => {
       // Limpiar los valores del formulario
       firstName.handleChange("");
       lastName.handleChange("");
-      firstName.handleChange("");
       middleName.handleChange("");
       email.handleChange("");
       password.handleChange("");
@@ -321,8 +481,8 @@ const AdminList = () => {
 
         // Datos obtenidos del backend
         setTitle(t("UserModal.EditUser"));
-        lastName.handleChange(agentData?.lastname || "");
         firstName.handleChange(agentData?.firstname || "");
+        lastName.handleChange(agentData?.lastname || "");
         middleName.handleChange(agentData?.middlename || "");
         email.handleChange(agentData?.email || "");
         password.handleChange("");
@@ -357,8 +517,8 @@ const AdminList = () => {
     setTitle("Información");
 
     // Cargo la información del admin en los inputs
-    lastName.handleChange(agentData?.lastname || "");
     firstName.handleChange(agentData?.firstname || "");
+    lastName.handleChange(agentData?.lastname || "");
     middleName.handleChange(agentData?.middlename || "");
     email.handleChange(agentData?.email || "");
     password.handleChange("");
@@ -381,11 +541,86 @@ const AdminList = () => {
 
   // Resetea los estados del formulario y del modal al cerrarlo
   const formClientReset = () => {
+    setIsModalOpen(false); // cierra el modal
     setSelectedClientId("");
     setSelectedFormId("");
     setFormOptions([]);
-    // setCheck(false);
     setMonitoringStep(1); // Reinicia a la primera vista del modal
+  };
+
+  /* SCORE */
+
+  const calBlocksPercentage = (bloques) => {
+    return bloques.map((block) => {
+      const initBlockPer = 100; // Valor inicial del bloque = 100%
+      const totalQuestions = block.preguntas.length; // Calcula el número de preguntas que contiene el bloque
+      // Calcula el valor de cada pregunta dentro del bloque
+      const perQuestion = initBlockPer / totalQuestions; // Calcula el porcentaje de cada pregunta dentro del bloque
+
+      let finalBlockPer = initBlockPer; // Guarda el valor actual del bloque al calificar cada pregunta
+
+      const changeBlockPer = block.preguntas.map((pregunta) => {
+        const evaluation = pregunta.evaluacion;
+        if (evaluation === "0") {
+          finalBlockPer -= perQuestion; // Se resta el valor del porcentaje de la pregunta al valor actual del bloque
+        }
+
+        return {
+          ...pregunta,
+          porcentajePregunta: perQuestion, // porcentaje visual individual
+        };
+      });
+
+      return {
+        ...block,
+        porcentajeBloque: Math.round(finalBlockPer), // Retorna el valor del bloque despues de finalizar la calificación
+        preguntas: changeBlockPer, // Retorna el valor de cada pregunta para que sea visible por el usuario al evaluar el bloque
+      };
+    });
+  };
+
+  useEffect(() => {
+    if (blocksForForm.length > 0) {
+      const result = calBlocksPercentage(blocksForForm);
+      setBlocksWithPer(result);
+    }
+  }, [blocksForForm]);
+
+  const calFormScore = () => {
+    const total = blocksWithPer.reduce(
+      (suma, bloque) => suma + bloque.porcentajeBloque,
+      0
+    );
+
+    return Math.round(total / blocksWithPer.length);
+  };
+
+  const handleSaveBlock = (blockId) => {
+    const bloque = blocksWithPer.find((b) => b.id === blockId);
+
+    if (!bloque) return;
+
+    // Crear payload
+    const payload = {
+      block_id: bloque.id,
+      block_score: bloque.porcentajeBloque,
+      questions: bloque.preguntas.map((p) => ({
+        question_id: p.id,
+        evaluacion: p.evaluacion,
+        porcentaje: p.porcentajePregunta,
+      })),
+    };
+  };
+
+  // Clacula el % del bloque en tiempo real
+  const handleUpdatePregunta = (idPregunta, campo, valor) => {
+    const updated = blocksForForm.map((block) => ({
+      ...block,
+      preguntas: block.preguntas.map((p) =>
+        p.id === idPregunta ? { ...p, [campo]: valor } : p
+      ),
+    }));
+    setBlocksForForm(updated); // Vuelve a calcular el valor en % del bloque
   };
 
   // Props que se pasan al modal principal para crear o editar monitorizaciones
@@ -413,7 +648,23 @@ const AdminList = () => {
     idToEdit,
     t,
     monitoringDate,
-    setMonitoringDate
+    setMonitoringDate,
+    blocksWithPer,
+    setBlocksWithPer,
+    calBlocksPercentage,
+    handleUpdatePregunta,
+    calFormScore,
+    handleSaveBlock,
+    clientError,
+    setClientError,
+    formError,
+    setFormError,
+    dateError,
+    setDateError,
+    selectedBlockId,
+    setSelectedBlockId,
+    handleNextStep,
+    open: isModalOpen,
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
