@@ -68,7 +68,7 @@ const FormSet = {
         return results;
       })
       .catch((error) => {
-        console.error("❌ Error en consulta DB:", error);
+        console.error("Error en consulta DB:", error);
         throw error;
       });
   },

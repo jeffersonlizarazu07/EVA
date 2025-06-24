@@ -11,8 +11,6 @@ const formSetController = {
         return res.status(200).json({ data: [] });
       }
 
-      // Ya no necesitamos mapear los formularios, ya que la consulta `getAll` devuelve la estructura correcta
-      // Simplemente devolvemos la respuesta con los datos obtenidos directamente
       res.json({
         status: "200",
         message: "Formularios obtenidos correctamente",
