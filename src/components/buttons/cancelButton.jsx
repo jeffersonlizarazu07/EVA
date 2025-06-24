@@ -9,7 +9,7 @@ const CancelButton = ({ onClick, label = "Cancelar", ...props }) => {
       variant="outlined"
       onClick={onClick}
       sx={{
-        width: "95px",
+        width: "5.940rem",
         backgroundColor: bgColor,
         color: textColor,
         "&:hover": {

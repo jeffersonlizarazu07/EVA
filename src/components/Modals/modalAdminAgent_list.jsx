@@ -62,6 +62,7 @@ const ModalAdmin = ({
   setSelectedBlockId,
   handleNextStep,
   open,
+  handleSaveMonitoring,
 }) => {
   return (
     <Dialog
@@ -362,6 +363,29 @@ const ModalAdmin = ({
                 ))
               )}
             </Box>
+          </Box>
+        )}
+        {monitoringStep === 3 && (
+          <Box>
+            <Typography fontWeight="bold" sx={{ marginBottom: "10px" }}>
+              Feedback
+            </Typography>
+            <TextField
+              placeholder="Ingrese su feedback aquí"
+              multiline
+              fullWidth
+              sx={{
+                "& .MuiInputBase-root": {
+                  height: "150px",
+                  alignItems: "flex-start", // asegura que el texto inicie desde arriba
+                },
+                "& .MuiInputBase-inputMultiline": {
+                  padding: "10px",
+                  height: "100%",
+                  overflow: "auto",
+                },
+              }}
+            />
           </Box>
         )}
       </DialogContent>

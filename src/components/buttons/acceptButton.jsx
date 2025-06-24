@@ -9,7 +9,7 @@ const AcceptButton = ({ onClick, label = "Aceptar", ...props }) => {
       variant="contained"
       onClick={onClick}
       sx={{
-        width: "95px",
+        width: "5.940rem",
         backgroundColor: bgColor,
         color: textColor,
         "&:hover": {

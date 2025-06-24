@@ -24,6 +24,7 @@ import {
   getAgentById,
   getFormsByClient,
   getBlocksForIdForm,
+  saveMonitoring,
 } from "../../services/agent_listService";
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
@@ -172,7 +173,6 @@ const AdminList = () => {
 
     // Validar selección
     if (!selectedId || selectedId === "") {
-      console.log("No hay cliente seleccionado");
       return;
     }
 
@@ -213,27 +213,73 @@ const AdminList = () => {
   };
 
   // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
-  const handleNextStep = () => {
-    const isClientValid = selectedClientId !== "";
-    const isFormValid = selectedFormId !== "";
-    const isDateValid = monitoringDate !== "";
+  const handleNextStep = async () => {
+    if (monitoringStep === 1) {
+      const isClientValid = selectedClientId !== "";
+      const isFormValid = selectedFormId !== "";
+      const isDateValid = monitoringDate !== "";
 
-    // Actualizar visualmente errores
-    setClientError(!isClientValid);
-    setFormError(!isFormValid);
-    setDateError(!isDateValid);
+      setClientError(!isClientValid);
+      setFormError(!isFormValid);
+      setDateError(!isDateValid);
 
-    if (!isClientValid || !isFormValid || !isDateValid) {
-      Swal.fire({
-        icon: "error",
-        title: "Faltan campos obligatorios",
-        html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-        customClass: "swal-content-center",
-      });
-      return;
+      if (!isClientValid || !isFormValid || !isDateValid) {
+        Swal.fire({
+          icon: "error",
+          title: "Faltan campos obligatorios",
+          html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+          customClass: "swal-content-center",
+        });
+        return;
+      }
+
+      setMonitoringStep(2);
+    } else if (monitoringStep === 2) {
+      try {
+        const result = await handleSaveMonitoring(score, check);
+        if (result && result.success) {
+          setMonitoringStep(3);
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "No se pudo guardar",
+            text:
+              result?.message || "Ocurrió un error al guardar la evaluación.",
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error inesperado",
+          text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+        });
+      }
+    } else if (monitoringStep === 3) {
+      try {
+        const result = await saveFeedback(feedback);
+
+        if (result && result.success) {
+          setSaveFeedback(true);
+          Swal.fire({
+            icon: "success",
+            title: "Feedback guardado",
+            text: "La información adicional fue almacenada correctamente.",
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "No se pudo guardar el feedback",
+            text: result?.message || "Ocurrió un error al guardar el feedback.",
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error inesperado",
+          text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+        });
+      }
     }
-
-    setMonitoringStep(2);
   };
 
   // Cargar los bloques asociados al formulario seleccionado
@@ -245,7 +291,6 @@ const AdminList = () => {
 
     if (fetchedBlocks && fetchedBlocks.length > 0) {
       setBlocksForForm(fetchedBlocks); // // Actualizar el estado con los bloques encontrados
-      console.log("Bloques cargados:", fetchedBlocks);
     } else {
       Toast.fire({
         icon: "info",
@@ -276,7 +321,6 @@ const AdminList = () => {
 
     try {
       const result = await saveMonitoring(payload); // Enviar datos al backend
-      console.log("Monitorización guardada exitosamente:", result);
       return result;
     } catch (error) {
       console.error("Error al guardar la monitorización:", error);
@@ -296,7 +340,6 @@ const AdminList = () => {
       // Limpiar los valores del formulario
       firstName.handleChange("");
       lastName.handleChange("");
-      firstName.handleChange("");
       middleName.handleChange("");
       email.handleChange("");
       password.handleChange("");
@@ -354,8 +397,8 @@ const AdminList = () => {
 
         // Datos obtenidos del backend
         setTitle(t("UserModal.EditUser"));
-        lastName.handleChange(agentData?.lastname || "");
         firstName.handleChange(agentData?.firstname || "");
+        lastName.handleChange(agentData?.lastname || "");
         middleName.handleChange(agentData?.middlename || "");
         email.handleChange(agentData?.email || "");
         password.handleChange("");
@@ -390,8 +433,8 @@ const AdminList = () => {
     setTitle("Información");
 
     // Cargo la información del admin en los inputs
-    lastName.handleChange(agentData?.lastname || "");
     firstName.handleChange(agentData?.firstname || "");
+    lastName.handleChange(agentData?.lastname || "");
     middleName.handleChange(agentData?.middlename || "");
     email.handleChange(agentData?.email || "");
     password.handleChange("");
@@ -483,8 +526,6 @@ const AdminList = () => {
         porcentaje: p.porcentajePregunta,
       })),
     };
-
-    console.log("Bloque evaluado:", payload);
   };
 
   // Clacula el % del bloque en tiempo real
@@ -539,7 +580,7 @@ const AdminList = () => {
     selectedBlockId,
     setSelectedBlockId,
     handleNextStep,
-    open: isModalOpen
+    open: isModalOpen,
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)

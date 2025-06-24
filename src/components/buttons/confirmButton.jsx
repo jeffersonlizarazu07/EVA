@@ -9,7 +9,7 @@ const ConfirmButton = ({ onClick, label = "Confirmar", ...props }) => {
       variant="contained"
       onClick={onClick}
       sx={{
-        width: "110px",
+        width: "6.25rem",
         p: 1,
         backgroundColor: bgColor,
         color: textColor,
