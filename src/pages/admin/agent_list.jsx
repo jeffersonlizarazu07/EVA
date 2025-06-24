@@ -213,74 +213,158 @@ const AdminList = () => {
   };
 
   // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
+  // const handleNextStep = async () => {
+  //   if (monitoringStep === 1) {
+  //     const isClientValid = selectedClientId !== "";
+  //     const isFormValid = selectedFormId !== "";
+  //     const isDateValid = monitoringDate !== "";
+
+  //     setClientError(!isClientValid);
+  //     setFormError(!isFormValid);
+  //     setDateError(!isDateValid);
+
+  //     if (!isClientValid || !isFormValid || !isDateValid) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Faltan campos obligatorios",
+  //         html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+  //         customClass: "swal-content-center",
+  //       });
+  //       return;
+  //     }
+
+  //     setMonitoringStep(2);
+  //   } else if (monitoringStep === 2) {
+  //     try {
+  //       const result = await handleSaveMonitoring(score, check);
+  //       if (result && result.success) {
+  //         setMonitoringStep(3);
+  //       } else {
+  //         Swal.fire({
+  //           icon: "error",
+  //           title: "No se pudo guardar",
+  //           text:
+  //             result?.message || "Ocurrió un error al guardar la evaluación.",
+  //         });
+  //       }
+  //     } catch (error) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Error inesperado",
+  //         text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+  //       });
+  //     }
+  //   } else if (monitoringStep === 3) {
+  //     try {
+  //       const result = await saveFeedback(feedback);
+
+  //       if (result && result.success) {
+  //         setSaveFeedback(true);
+  //         Swal.fire({
+  //           icon: "success",
+  //           title: "Feedback guardado",
+  //           text: "La información adicional fue almacenada correctamente.",
+  //         });
+  //       } else {
+  //         Swal.fire({
+  //           icon: "error",
+  //           title: "No se pudo guardar el feedback",
+  //           text: result?.message || "Ocurrió un error al guardar el feedback.",
+  //         });
+  //       }
+  //     } catch (error) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Error inesperado",
+  //         text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+  //       });
+  //     }
+  //   }
+  // };
+
   const handleNextStep = async () => {
-    if (monitoringStep === 1) {
-      const isClientValid = selectedClientId !== "";
-      const isFormValid = selectedFormId !== "";
-      const isDateValid = monitoringDate !== "";
+  if (monitoringStep === 1) {
+    const isClientValid = selectedClientId !== "";
+    const isFormValid = selectedFormId !== "";
+    const isDateValid = monitoringDate !== "";
 
-      setClientError(!isClientValid);
-      setFormError(!isFormValid);
-      setDateError(!isDateValid);
+    setClientError(!isClientValid);
+    setFormError(!isFormValid);
+    setDateError(!isDateValid);
 
-      if (!isClientValid || !isFormValid || !isDateValid) {
-        Swal.fire({
-          icon: "error",
-          title: "Faltan campos obligatorios",
-          html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-          customClass: "swal-content-center",
-        });
-        return;
-      }
-
-      setMonitoringStep(2);
-    } else if (monitoringStep === 2) {
-      try {
-        const result = await handleSaveMonitoring(score, check);
-        if (result && result.success) {
-          setMonitoringStep(3);
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "No se pudo guardar",
-            text:
-              result?.message || "Ocurrió un error al guardar la evaluación.",
-          });
-        }
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error inesperado",
-          text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
-        });
-      }
-    } else if (monitoringStep === 3) {
-      try {
-        const result = await saveFeedback(feedback);
-
-        if (result && result.success) {
-          setSaveFeedback(true);
-          Swal.fire({
-            icon: "success",
-            title: "Feedback guardado",
-            text: "La información adicional fue almacenada correctamente.",
-          });
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "No se pudo guardar el feedback",
-            text: result?.message || "Ocurrió un error al guardar el feedback.",
-          });
-        }
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error inesperado",
-          text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
-        });
-      }
+    if (!isClientValid || !isFormValid || !isDateValid) {
+      Swal.fire({
+        icon: "error",
+        title: "Faltan campos obligatorios",
+        html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+        customClass: "swal-content-center",
+      });
+      return;
     }
-  };
+
+    setMonitoringStep(2); // pasar a paso 2 sin guardar aún
+  } else if (monitoringStep === 2) {
+    // 🔒 COMENTADO: guardar evaluación en backend
+    /*
+    try {
+      const result = await handleSaveMonitoring(score, check);
+      if (result && result.success) {
+        setMonitoringStep(3);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo guardar",
+          text: result?.message || "Ocurrió un error al guardar la evaluación.",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error inesperado",
+        text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+      });
+    }
+    */
+    
+    // Por ahora, solo pasar a la vista 3 directamente
+    setMonitoringStep(3);
+  } else if (monitoringStep === 3) {
+    // 🔒 COMENTADO: guardar feedback en backend
+    /*
+    try {
+      const result = await saveFeedback(feedback);
+      if (result && result.success) {
+        setSaveFeedback(true);
+        Swal.fire({
+          icon: "success",
+          title: "Feedback guardado",
+          text: "La información adicional fue almacenada correctamente.",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo guardar el feedback",
+          text: result?.message || "Ocurrió un error al guardar el feedback.",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error inesperado",
+        text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
+      });
+    }
+    */
+    
+    // Por ahora, solo dar confirmación visual
+    Swal.fire({
+      icon: "success",
+      title: "¡Proceso completado!",
+      text: "Has completado todos los pasos.",
+    });
+  }
+};
+
 
   // Cargar los bloques asociados al formulario seleccionado
   const handleLoadBlocks = async (e) => {

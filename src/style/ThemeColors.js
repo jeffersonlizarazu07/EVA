@@ -1,4 +1,4 @@
-;
+
 export const themeColors = {
   light: {
     // Botón aceptar

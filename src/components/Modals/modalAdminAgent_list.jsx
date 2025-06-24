@@ -27,6 +27,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CancelButton from "../../components/buttons/cancelButton";
 import AcceptButton from "../../components/buttons/acceptButton";
 import ConfirmButton from "../buttons/confirmButton";
+// import { getThemeColor } from "../../style/ThemeColors";
 
 const ModalAdmin = ({
   // Props de agent_list
