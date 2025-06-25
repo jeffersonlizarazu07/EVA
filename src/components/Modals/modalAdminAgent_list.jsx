@@ -256,7 +256,7 @@ const ModalAdmin = ({
                           {block.block_name}
                         </Typography>
                         <Typography fontWeight="bold">
-                          {block.porcentajeBloque}%
+                          {block.percentage}%
                         </Typography>
                       </Box>
                     </AccordionSummary>

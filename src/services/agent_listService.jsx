@@ -150,8 +150,28 @@ export const getBlocksForIdForm = async (formId) => {
   }
 };
 
+// Guardar feedback de la monitorización
+export const saveFeedback = async (id, feedback) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/monitoring/${id}`, { feedback }, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accesToken}`
+      }
+    });
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error("Error al guardar feedback:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Error al guardar el feedback.",
+    };
+  }
+};
+
 // Guardar monitorización
 export const saveMonitoring = async (payload) => {
+  console.log("🔼 Enviando al backend:", payload); // este debe imprimirse
   try {
     const response = await axios.post(`${API_BASE_URL}/monitoring`, payload, {
       headers: { "Content-Type": "application/json" },
