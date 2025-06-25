@@ -1,10 +1,16 @@
+import { Box } from "@mui/material";
 
 export const themeColors = {
     light: {
-        
+        Box:{
+          backgroundColor:"#666"
+        }
     },
 
     dark: {
+      Box:{
+          backgroundColor:"#dee2e6"
+        }
     }
 };
 

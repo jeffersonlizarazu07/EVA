@@ -43,6 +43,10 @@ import {
   Paper
 } from "@mui/material";
 
+// importaciones de temas
+
+import {themeColors} from '../../style/ThemeColors.js'
+
 const HeaderLT1 = () => {
   const { accessToken, userId, languageUser, setLanguageUser } =
     useContext(UserContext);
@@ -313,11 +317,11 @@ const HeaderLT1 = () => {
   };
 
 
-  // Componente personalizado para el separador vertical
+  // Componente personalizado para el separador vertical 
   const VerticalDivider = styled(Box)(({ theme }) => ({
     width: '1px',
     height: '24px',
-    backgroundColor: theme === 'dark' ? '#666' : '#dee2e6',
+    backgroundColor: theme === 'dark' ? themeColors.light.Box.backgroundColor :  themeColors.dark.Box.backgroundColor,
     margin: '0 16px',
   }));
 
