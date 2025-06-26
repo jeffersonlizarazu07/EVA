@@ -45,6 +45,7 @@ const  Question = {
 
     // update: (id, data) => db('questions').where({ id }).update(data).returning('*'),
     update: async (id, data) => {
+        console.log("aca",data)
         try {
             await db('questions').where({ id }).update(data);
             const updated = await db('questions').where({ id }).first();

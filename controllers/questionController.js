@@ -103,6 +103,7 @@ async postQuestion(req, res) {
       return res.status(400).json(validarId);
     }
     try {
+      console.log("--", req.body);
       const { id } = req.params;
   
       // Solo los campos válidos de la tabla
@@ -115,7 +116,9 @@ async postQuestion(req, res) {
         question,
         //section,
         survey_id,
-        type
+        type,
+        select_option,
+        selected_answer
       } = req.body;
   
       const updatedQuestion = await Question.update(id, {
@@ -127,7 +130,9 @@ async postQuestion(req, res) {
         question,
         //section,
         survey_id,
-        type
+        selected_answer,
+        select_option,
+        type,
       });
   
       if (!updatedQuestion || updatedQuestion.length === 0) {
