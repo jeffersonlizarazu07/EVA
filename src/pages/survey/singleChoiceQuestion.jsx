@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Box,
+  FormControlLabel,
+  Radio,
+  TextField,
+  Button,
+  Typography,
+  Checkbox,
+  IconButton,
+  Grid
+} from '@mui/material';
+import BackspaceIcon from '@mui/icons-material/Backspace';
+
 
 
 //Funcion para recorrer options y marcarlas como seleccionadas o no seleccionadas al editar
@@ -16,6 +29,7 @@ function getCorrectOptions(optionsT, indexOption) {
       options.push(x);
     }
   }
+  console.log("-------opiconsoss",options);
   return options;
 }
 
@@ -55,42 +69,78 @@ function SingleChoiceQuestion({ options, correctAnswer, onChange }) {
     onChange({ options: newOptions, correctAnswer: newCorrectAnswer });
   };
 
-  return (
-    <div>
-      {localOptions.map((option, index) => (
-        <div
-          key={index}
-          className="row m-2 align-items-center form-group d-flex"
-        >
-          <div className="col-1 d-flex justify-content-center align-items-start">
-            <input
-              type="checkbox"
-              checked={option.checked}
-              onChange={() => handleCheckboxChange(index)}
-              className="form-check-input"
-              style={{ width: "20px", height: "20px" }} // Ajusta el tamaño del checkbox
-            />
-          </div>
+   const removeOption = (index) => {
+    const newOptions = localOptions.filter((_, i) => i !== index);
+    setLocalOptions(newOptions);
 
-          <div className="col d-flex align-items-center">
-            <label id="labelAnimation" className="w-100">
-              <input
-                type="text"
-                value={option.text}
-                onChange={(e) => handleOptionChange(index, e.target.value)}
-                placeholder=" "
-                className="input-new form-control"
-                sx={{ paddingBottom: "5px" }} // Ajusta el padding del input
+    const newCorrectAnswer = newOptions.findIndex((option) => option.checked);
+    setLocalCorrectAnswer(newCorrectAnswer !== -1 ? newCorrectAnswer : null);
+
+    onChange({ options: newOptions, correctAnswer: newCorrectAnswer !== -1 ? newCorrectAnswer : null, });
+  };
+
+  return (
+    <Box>
+    {localOptions.map((option, index) => (
+      <Grid
+        key={index}
+        container
+        alignItems="center"
+        spacing={1}
+        sx={{ mb: 2 }}
+      >
+        {/* Radio */}
+        <Grid item xs="auto">
+          <FormControlLabel
+            control={
+              <Radio
+                checked={option.checked}
+                onChange={() => handleCheckboxChange(index)}
+                sx={{
+                  '& .MuiSvgIcon-root': {
+                    fontSize: 20
+                  }
+                }}
               />
-              <span className="labelName">{t("vistaEncuestas.opcion_respuesta")}</span>
-            </label>
-          </div>
-        </div>
-      ))}
-      <button onClick={moreOption} className="btn btn-primary m-2">
-        + {t("vistaEncuestas.opcion")}
-      </button>
-    </div>
+            }
+            label=""
+          />
+        </Grid>
+
+        <Grid item xs>
+          <TextField
+            className="readOnlyField"
+            value={option.text}
+            onChange={(e) => handleOptionChange(index, e.target.value)}
+            label={t("vistaEncuestas.opcion_respuesta")}
+            placeholder=" "
+            fullWidth
+            variant="outlined"
+            size="small"
+          />
+        </Grid>
+
+        <Grid item xs="auto">
+          <IconButton onClick={() => removeOption(index)} size="small">
+            <BackspaceIcon sx={{ color: '#b62a8b' }} />
+          </IconButton>
+        </Grid>
+      </Grid>
+    ))}
+    <Button
+      onClick={moreOption}
+      variant="text"
+      sx={{
+        color: 'white',
+        backgroundColor: '#b62a8b',
+        '&:hover': {
+          backgroundColor: '#581244',
+        }
+      }}
+    >
+      + {t("vistaEncuestas.opcion")}
+    </Button>
+  </Box>
   );
 }
 
@@ -152,65 +202,93 @@ function SingleChoiceQuestionEdit({
     onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
   };
 
-  useEffect(() => {
-    const currentCorrectAnswers = localOptions
-      .map((option, i) => (option.checked ? i : -1))
-      .filter((index) => index !== -1);
+  // useEffect(() => {
+  //   const currentCorrectAnswers = localOptions
+  //     .map((option, i) => (option.checked ? i : -1))
+  //     .filter((index) => index !== -1);
 
-    if (
-      JSON.stringify(localCorrectAnswer) !==
-      JSON.stringify(currentCorrectAnswers)
-    ) {
-      setLocalCorrectAnswer(currentCorrectAnswers);
-      onChange({
-        options: localOptions,
-        correctAnswers: currentCorrectAnswers,
-      });
-    }
-  }, [localOptions, onChange]);
+  //   if (
+  //     JSON.stringify(localCorrectAnswer) !==
+  //     JSON.stringify(currentCorrectAnswers)
+  //   ) {
+  //     setLocalCorrectAnswer(currentCorrectAnswers);
+  //     onChange({
+  //       options: localOptions,
+  //       correctAnswers: currentCorrectAnswers,
+  //     });
+  //   }
+  // }, [localOptions, onChange]);
 
   return (
-    <div>
+    <Box>
       {localOptions.map((option, index) => (
-        <div
-          key={index}
-          className="row mx-2 form-group align-items-stretch d-flex"
-        >
-          <div className="col-1 p-1 mb-7">
-            <input
-              type="checkbox"
-              checked={option.checked}
-              onChange={() => handleCheckboxChange(index)}
-              className="form-check-input"
-              style={{ width: "100%", height: "50%" }}
-            />
-          </div>
-          <div className="col">
-            <label id="labelAnimation">
-              <input
-                type="text"
+            <Grid container key={index} spacing={1} alignItems="stretch" sx={{ mb: 2, mx: 1 }}>
+          <Grid item xs={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', justifyContent: 'center' }}>
+              <FormControlLabel
+                control={
+                  <Radio
+                    checked={Boolean(option.checked)}
+                    onChange={() => handleCheckboxChange(index)}  
+                    inputProps={{ 'aria-label': `Opción ${index}` }}                   
+                    sx={{ 
+                      '& .MuiSvgIcon-root': { 
+                        fontSize: 20 
+                      } 
+                    }}
+                  />
+                }
+                label=""
+                sx={{ m: 0 }}
+              />
+            </Box>
+          </Grid>
+          
+          <Grid item xs={10}>
+            <Box sx={{ position: 'relative', mt: 1}}>
+              <TextField
+                className="readOnlyField"
                 value={option.text}
                 onChange={(e) => handleOptionChange(index, e.target.value)}
                 placeholder=" "
-                className="input-new"
-              />
-              <span className="labelName">{t("vistaEncuestas.opcion_respuesta")}</span>
-            </label>
-          </div>
-          <div className="col-1 me-2">
-            <button
-              onClick={() => removeOption(index)}
-              className="btn btn-rect"
-            >
-              <i className="fa-solid fa-delete-left"></i>
-            </button>
-          </div>
-        </div>
+                fullWidth
+                variant="outlined"
+                size="small"
+                label={t("vistaEncuestas.opcion_respuesta")}
+                sx={{ mb: 0.5 }}
+              />            
+            </Box>
+          </Grid>
+          
+          <Grid item xs={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', justifyContent: 'center' }}>
+              <IconButton
+                onClick={() => removeOption(index)}
+                color="error"
+                size="small"
+              >
+                <BackspaceIcon  sx={{color: '#b62a8b'}} />
+              </IconButton>
+            </Box>
+          </Grid>
+        </Grid>
       ))}
-      <button onClick={moreOption} className="btn btn-primary m-2">
+      
+      <Button 
+        onClick={moreOption} 
+        variant="contained" 
+        color="primary"
+        sx={{
+          color: 'white',
+          backgroundColor: '#b62a8b',
+          '&:hover': {
+            backgroundColor: '#581244',
+          },
+        }}
+      >
         + {t("vistaEncuestas.opcion")}
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 }
 
@@ -225,6 +303,8 @@ function MultipleChoiceQuestionEdit({
   const [localCorrectAnswers, setLocalCorrectAnswers] =
     useState(correctAnswers);
   useEffect(() => {
+    console.log("options (props):", options);
+  console.log("correctAnswers (props):", correctAnswers);
     const opciones = getCorrectOptions(options, correctAnswers);
     setLocalOptions(opciones);
   }, [idToEdit]);
@@ -288,48 +368,77 @@ function MultipleChoiceQuestionEdit({
   }, [localOptions, onChange]);
 
   return (
-    <div>
+    <Box>
       {localOptions.map((option, index) => (
-        <div
-          key={index}
-          className="row mx-2 form-group align-items-stretch d-flex"
-        >
-          <div className="col-1 p-1 mb-7">
-            <input
-              type="checkbox"
-              checked={option.checked}
-              onChange={() => handleCheckboxChange(index)}
-              className="form-check-input"
-              style={{ width: "100%", height: "50%" }}
-            />
-          </div>
-          <div className="col mt-2">
-            <label id="labelAnimation">
-              <input
-                type="text"
+        <Grid container key={index} spacing={1} alignItems="stretch" sx={{ mb: 2, mx: 1 }}>
+          <Grid item xs={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', justifyContent: 'center' }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={Boolean(option.checked)}
+                    onChange={() => handleCheckboxChange(index)}  
+                    inputProps={{ 'aria-label': `Opción ${index}` }}              
+                  />
+                }
+                label=""
+                sx={{ m: 0 }}
+              />
+            </Box>
+          </Grid>
+          
+          <Grid item xs={10}>
+            <Box sx={{ position: 'relative', mt: 1 }}>
+              <TextField
+                className="readOnlyField"
+                label={t("vistaEncuestas.opcion_respuesta")}
                 value={option.text}
                 onChange={(e) => handleOptionChange(index, e.target.value)}
                 placeholder=" "
-                className="input-new"
+                fullWidth
+                variant="outlined"
+                size="small"
+                sx={{ mb: 0.5 }}
               />
-              <span className="labelName">{t("vistaEncuestas.opcion_respuesta")}</span>
-            </label>
-          </div>
-          <div className="col-1 me-2">
-            <button
-              onClick={() => removeOption(index)}
-              className="btn btn-rect"
-            >
-              <i className="fa-solid fa-delete-left"></i>
-            </button>
-          </div>
-        </div>
+              
+            </Box>
+          </Grid>
+          
+          <Grid item xs={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', justifyContent: 'center' }}>
+              <IconButton
+                onClick={() => removeOption(index)}
+                color="error"
+                size="small"
+              >
+                 <BackspaceIcon sx={{color: '#b62a8b'}}/>
+              </IconButton>
+            </Box>
+          </Grid>
+        </Grid>
       ))}
-      <button onClick={addOption} className="btn btn-primary m-2">
+      
+      <Button 
+        onClick={addOption} 
+        variant="contained" 
+        color="primary"
+        sx={{
+          color: 'white',
+          backgroundColor: '#b62a8b',
+          '&:hover': {
+            backgroundColor: '#581244',
+          },
+        }}
+      >
         + {t("vistaEncuestas.opcion")}
-      </button>
-      <div>{t("vistaEncuestas.respuestas_correctas")}: {localCorrectAnswers.join(", ")}</div>
-    </div>
+      </Button>
+      
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="body2">
+          {t("vistaEncuestas.respuestas_correctas")}: {localCorrectAnswers.join(", ")}
+        </Typography>
+      </Box>
+    </Box>
   );
 }
 
@@ -528,48 +637,73 @@ function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
   }, [localOptions, onChange]);
 
   return (
-    <div>
+    <Box>
       {localOptions.map((option, index) => (
-        <div
-          key={index}
-          className="row mx-2 form-group align-items-stretch d-flex"
-        >
-          <div className="col-1 p-1 mb-7">
-            <input
-              type="checkbox"
-              checked={option.checked}
-              onChange={() => handleCheckboxChange(index)}
-              className="form-check-input"
-              style={{ width: "100%", height: "50%" }}
-            />
-          </div>
-          <div className="col">
-            <label id="labelAnimation">
-              <input
-                type="text"
+        <Grid container key={index} spacing={1} alignItems="stretch" sx={{ mb: 2, mx: 1 }}>
+          <Grid item xs={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', justifyContent: 'center' }}>
+              <FormControlLabel
+                control={
+                  <Checkbox                  
+                    checked={option.checked}
+                    onChange={() => handleCheckboxChange(index)}                    
+                  />
+                }
+                label=""
+                sx={{ m: 0 }}
+              />
+            </Box>
+          </Grid>
+          
+          <Grid item xs={10}>
+            <Box sx={{ position: 'relative' }}>
+              <TextField
+               className="readOnlyField"
                 value={option.text}
                 onChange={(e) => handleOptionChange(index, e.target.value)}
                 placeholder=" "
-                className="input-new"
+                fullWidth
+                variant="outlined"
+                label={t("vistaEncuestas.opcion_respuesta")}
+                size="small"
+                sx={{ mb: 0.5 }}
               />
-              <span className="labelName">{t("vistaEncuestas.opcion_respuesta")}</span>
-            </label>
-          </div>
-          <div className="col-1 me-2">
-            <button
-              onClick={() => removeOption(index)}
-              className="btn btn-rect"
-            >
-              <i className="fa-solid fa-delete-left"></i>
-            </button>
-          </div>
-        </div>
+            </Box>
+          </Grid>
+          
+          <Grid item xs={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IconButton
+                onClick={() => removeOption(index)}
+                size="small"
+              >
+                <BackspaceIcon sx={{color: '#b62a8b'}}/>
+              </IconButton>
+            </Box>
+          </Grid>
+        </Grid>
       ))}
-      <button onClick={moreOption} className="btn btn-primary m-2">
+      
+      <Button 
+        onClick={moreOption} 
+        variant="text" 
+        sx={{
+          color: 'white',
+          backgroundColor: '#b62a8b',
+          '&:hover': {
+            backgroundColor: '#581244',
+          },
+        }}
+      >
         + {t("vistaEncuestas.opcion")}
-      </button>
-      <div>{t("vistaEncuestas.respuestas_correctas")}: {localCorrectAnswers.join(", ")}</div>
-    </div>
+      </Button>
+      
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="body2">
+          {t("vistaEncuestas.respuestas_correctas")}: {localCorrectAnswers.join(", ")}
+        </Typography>
+      </Box>
+    </Box>
   );
 }
 
