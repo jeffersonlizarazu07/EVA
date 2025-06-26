@@ -7,6 +7,24 @@ const config = {
   withCredentials: true,
 };
 
+// Crear instancia de Axios
+const axiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+});
+
+// Interceptor para incluir token automáticamente
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Obtener todos los administradores (agentes) desde el backend
 export const getAdmins = async (clients) => {
   try {
@@ -153,12 +171,7 @@ export const getBlocksForIdForm = async (formId) => {
 // Guardar feedback de la monitorización
 export const saveFeedback = async (id, feedback) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/monitoring/${id}`, { feedback }, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accesToken}`
-      }
-    });
+    const response = await axiosInstance.put(`/monitoring/${id}`, { feedback });
     return { success: true, data: response.data };
   } catch (error) {
     console.error("Error al guardar feedback:", error);
@@ -168,10 +181,9 @@ export const saveFeedback = async (id, feedback) => {
     };
   }
 };
-
 // Guardar monitorización
 export const saveMonitoring = async (payload) => {
-  console.log("🔼 Enviando al backend:", payload); // este debe imprimirse
+  console.log("Enviando al backend:", payload); // este debe imprimirse
   try {
     const response = await axios.post(`${API_BASE_URL}/monitoring`, payload, {
       headers: { "Content-Type": "application/json" },

@@ -25,11 +25,15 @@ import {
   getFormsByClient,
   getBlocksForIdForm,
   saveMonitoring,
+  saveFeedback,
 } from "../../services/agent_listService";
-import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
+import {
+  formatDate,
+  formatDateTimeShort,
+  formatDateTime,
+} from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
-import { formatDateTime } from "../../utils/dateUtils";
 
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
@@ -64,10 +68,12 @@ const AdminList = () => {
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
   const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
   const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
+  // Validaciones de la segunda vista del modal
   const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
-
-  // Campos que se deben guardar de la monitorización.
-  const [check, setCheck] = useState(false);
+  const [check, setCheck] = useState(false); // // Campos que se deben guardar de la monitorización.
+  const [questionsList, setQuestionsList] = useState([]); // Validación de preguntas bloques calificados
+  const [feedback, setFeedback] = useState(""); // Manejar el feedback
+  const [isSavingFeedback, setIsSavingFeedback] = useState(false); // Controlar al guardar el feedback
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -218,11 +224,7 @@ const AdminList = () => {
     }
   };
 
-  // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
   const handleNextStep = async () => {
-    console.log("Paso actual:", monitoringStep); // <-- log 1
-    console.log("🧭 handleNextStep ejecutado — paso:", monitoringStep);
-
     if (monitoringStep === 1) {
       const isClientValid = selectedClientId !== "";
       const isFormValid = selectedFormId !== "";
@@ -244,11 +246,35 @@ const AdminList = () => {
 
       setMonitoringStep(2);
     } else if (monitoringStep === 2) {
-      console.log("➡️ Parámetros antes de guardar:", {
-        score: calFormScore(),
-        check,
-        agentId: idToEdit,
-      });
+      // Validación mejorada para bloques completos
+      const validationResult = validateAllBlocks();
+
+      if (!validationResult.isValid) {
+        Swal.fire({
+          icon: "warning",
+          title: "Evaluación incompleta",
+          html: `
+          <div style="text-align: left;">
+            <p><strong>Los siguientes bloques no están completamente evaluados:</strong></p>
+            <ul style="margin-left: 20px;">
+              ${validationResult.incompleteBlocks
+                .map(
+                  (block) =>
+                    `<li><strong>${block.blockName}:</strong> ${block.unansweredCount} pregunta(s) sin evaluar</li>`
+                )
+                .join("")}
+            </ul>
+            <p style="margin-top: 15px;"><em>Todas las preguntas de todos los bloques deben ser evaluadas antes de continuar.</em></p>
+          </div>
+        `,
+          confirmButtonText: "Entendido",
+          customClass: {
+            htmlContainer: "swal-content-left",
+          },
+        });
+        return;
+      }
+
       try {
         const result = await handleSaveMonitoring(
           calFormScore(),
@@ -274,6 +300,7 @@ const AdminList = () => {
         });
       }
     } else if (monitoringStep === 3) {
+      // Validar que existe el ID de monitorización
       if (!monitoringId) {
         Swal.fire({
           icon: "error",
@@ -283,15 +310,34 @@ const AdminList = () => {
         return;
       }
 
+      // Validar que el feedback no esté vacío (opcional)
+      if (!feedback.trim()) {
+        Swal.fire({
+          icon: "warning",
+          title: "Feedback requerido",
+          text: "Por favor, ingresa un comentario antes de guardar.",
+        });
+        return;
+      }
+
       try {
-        const result = await saveFeedback(monitoringId, feedback);
+        setIsSavingFeedback(true);
+
+        const result = await saveFeedback(monitoringId, feedback, accessToken);
+
         if (result && result.success) {
-          setSaveFeedback(true);
           Swal.fire({
             icon: "success",
             title: "Feedback guardado",
             text: "La información adicional fue almacenada correctamente.",
           });
+
+          // Cerrar modal y resetear estados
+          formClientReset();
+          setFeedback(""); // Limpiar feedback
+
+          // Opcional: recargar la lista de agentes
+          await loadAdmins();
         } else {
           Swal.fire({
             icon: "error",
@@ -300,11 +346,14 @@ const AdminList = () => {
           });
         }
       } catch (error) {
+        console.error("Error al guardar feedback:", error);
         Swal.fire({
           icon: "error",
           title: "Error inesperado",
-          text: "No se pudo guardar la monitorización. Inténtalo de nuevo.",
+          text: "No se pudo guardar el feedback. Inténtalo de nuevo.",
         });
+      } finally {
+        setIsSavingFeedback(false);
       }
     }
   };
@@ -318,12 +367,25 @@ const AdminList = () => {
 
     if (fetchedBlocks && fetchedBlocks.length > 0) {
       setBlocksForForm(fetchedBlocks); // // Actualizar el estado con los bloques encontrados
+
+      // Extraer las preguntas para validar y guardar
+      const allQuestions = fetchedBlocks.flatMap(
+        (block) =>
+          Array.isArray(block.questions)
+            ? block.questions.map((q) => ({
+                ...q,
+                evaluacion: q.evaluacion ?? "",
+              }))
+            : [] // Si no hay preguntas, devolvuelve array vacío
+      );
+      setQuestionsList(allQuestions);
     } else {
       Toast.fire({
         icon: "info",
         title: "No existen bloques creados para este formulario",
       });
       setBlocksForForm([]); // Limpiar bloques si no existen
+      setQuestionsList([]);
     }
   };
 
@@ -337,7 +399,6 @@ const AdminList = () => {
 
   // Guarda una nueva monitorización en el sistema
   const handleSaveMonitoring = async (score, check, agentId) => {
-    console.log("➡️ Ejecutando handleSaveMonitoring...");
     const payload = {
       monitoring_date: formatDateTime(monitoringDate),
       score, // Puntuación total de la monitorización
@@ -499,6 +560,8 @@ const AdminList = () => {
     setSelectedFormId("");
     setFormOptions([]);
     setMonitoringStep(1); // Reinicia a la primera vista del modal
+    setFeedback(""); // Limpiar el feedback
+    setMonitoringId(null); // Limpiar el ID de monitorización
   };
 
   /* SCORE */
@@ -576,6 +639,37 @@ const AdminList = () => {
     setBlocksForForm(updated); // Vuelve a calcular el valor en % del bloque
   };
 
+  const validateAllBlocks = () => {
+    const incompleteBlocks = [];
+
+    // Validar cada bloque antes de guardar
+    blocksWithPer.forEach((block) => {
+      const unansweredQuestions = block.preguntas.filter(
+        (pregunta) => !pregunta.evaluacion || pregunta.evaluacion === ""
+      );
+
+      if (unansweredQuestions.length > 0) {
+        incompleteBlocks.push({
+          blockId: block.id,
+          blockName: block.block_name,
+          unansweredCount: unansweredQuestions.length,
+          totalQuestions: block.preguntas.length,
+          unansweredQuestions: unansweredQuestions.map((q) => ({
+            id: q.id,
+            name: q.question_name,
+          })),
+        });
+      }
+    });
+
+    return {
+      isValid: incompleteBlocks.length === 0,
+      incompleteBlocks: incompleteBlocks,
+      totalBlocks: blocksWithPer.length,
+      completedBlocks: blocksWithPer.length - incompleteBlocks.length,
+    };
+  };
+
   // Props que se pasan al modal principal para crear o editar monitorizaciones
   const modalAdminProps = {
     monitoringStep,
@@ -619,6 +713,9 @@ const AdminList = () => {
     handleNextStep,
     open: isModalOpen,
     accessToken,
+    feedback,
+    setFeedback,
+    isSavingFeedback,
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)

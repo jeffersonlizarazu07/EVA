@@ -24,10 +24,12 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import CancelButton from "../../components/buttons/cancelButton";
-import AcceptButton from "../../components/buttons/acceptButton";
-import ConfirmButton from "../buttons/confirmButton";
-// import { getThemeColor } from "../../style/ThemeColors";
+import {
+  AcceptButton,
+  saveButton,
+  CancelButton,
+} from "../../components/buttons/acceptButton";
+import { colors } from "../../style/ThemeColors";
 
 const ModalAdmin = ({
   // Props de agent_list
@@ -64,7 +66,11 @@ const ModalAdmin = ({
   handleNextStep,
   open,
   handleSaveMonitoring,
+  feedback,
+  setFeedback,
+  isSavingFeedback,
 }) => {
+  const { purpuraEva, grisButtonEva } = colors.light;
   return (
     <Dialog
       open={open}
@@ -74,7 +80,7 @@ const ModalAdmin = ({
       scroll="body"
     >
       <DialogTitle>
-        {monitoringStep === 2 ? (
+        {monitoringStep === 2 || monitoringStep === 3 ? (
           <Box
             display="flex"
             justifyContent="space-between"
@@ -82,7 +88,7 @@ const ModalAdmin = ({
           >
             <Box display="flex" alignItems="center">
               <IconButton
-                onClick={() => setMonitoringStep(1)}
+                onClick={() => setMonitoringStep(monitoringStep === 3 ? 2 : 1)}
                 sx={{ marginLeft: "-22px" }}
               >
                 <ArrowBackIcon />
@@ -351,14 +357,11 @@ const ModalAdmin = ({
                           </Accordion>
                         ))
                       )}
-                      <Box display="flex" justifyContent="flex-end" mt={2}>
-                        <ConfirmButton
-                          variant="contained"
-                          onClick={() => handleSaveBlock(block.id)}
-                        >
-                          Confirmar
-                        </ConfirmButton>
-                      </Box>
+                      <Box
+                        display="flex"
+                        justifyContent="flex-end"
+                        mt={2}
+                      ></Box>
                     </AccordionDetails>
                   </Accordion>
                 ))
@@ -366,6 +369,7 @@ const ModalAdmin = ({
             </Box>
           </Box>
         )}
+
         {monitoringStep === 3 && (
           <Box>
             <Typography fontWeight="bold" sx={{ marginBottom: "10px" }}>
@@ -375,10 +379,14 @@ const ModalAdmin = ({
               placeholder="Ingrese su feedback aquí"
               multiline
               fullWidth
+              value={feedback} // Conectar al estado
+              onChange={(e) => setFeedback(e.target.value)} // Manejar cambios
+              disabled={isSavingFeedback} // Deshabilitar mientras se guarda
               sx={{
                 "& .MuiInputBase-root": {
                   height: "150px",
-                  alignItems: "flex-start", // asegura que el texto inicie desde arriba
+                  width: "50%",
+                  alignItems: "flex-start",
                 },
                 "& .MuiInputBase-inputMultiline": {
                   padding: "10px",
@@ -387,6 +395,16 @@ const ModalAdmin = ({
                 },
               }}
             />
+            {/* Opcional: Mostrar estado de guardado */}
+            {isSavingFeedback && (
+              <Typography
+                variant="body2"
+                color="primary"
+                sx={{ marginTop: "10px" }}
+              >
+                Guardando feedback...
+              </Typography>
+            )}
           </Box>
         )}
       </DialogContent>
