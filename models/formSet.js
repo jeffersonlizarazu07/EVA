@@ -42,25 +42,36 @@ const FormSet = {
     }
   },
 
-  getById: async (id) =>{
-    try {
-      const result = await db("form_set").where({ id }).first()
-      return result;
-    } catch (error) {
-      console.error('Error al crear la respuesta:', error);
-      throw new Error('No se pudo crear la respuesta debido a un error en el servidor.' + error.message);
-    }
-  },
+  getById: (id) => db("form_set").where({ id }).first(), // Obtener un formulario por ID
 
+  // Obtener Id por ID del
   getByClients: (clientIdsArray) => {
-    try {
-      return db("form_set").whereIn("idClient", clientIdsArray).select("*");
-    } catch (error) {
-      console.error("Error al obtener formularios por clientes:", error);
-      throw new Error("No se pudieron obtener los formularios debido a un error en el servidor." + error.message);
+    // Validar que el array no esté vacío
+    if (!clientIdsArray || clientIdsArray.length === 0) {
+      throw new Error("Se requiere al menos un ID de cliente");
     }
-  },
 
+    // Validar que todos los IDs sean números enteros positivos
+    const invalidIds = clientIdsArray.filter(
+      (id) => !Number.isInteger(id) || id <= 0
+    );
+
+    if (invalidIds.length > 0) {
+      throw new Error(`IDs de cliente inválidos: ${invalidIds.join(", ")}`);
+    }
+
+    // Realizar la consulta a la base de datos
+    return db("form_set")
+      .whereIn("idClient", clientIdsArray)
+      .select("*") // Corregir el select que estaba vacío
+      .then((results) => {
+        return results;
+      })
+      .catch((error) => {
+        console.error("Error en consulta DB:", error);
+        throw error;
+      });
+  },
   // create: (data) => db("form_set").insert(data),
 
   create: async (data) => {

@@ -5,17 +5,12 @@ class AnswersFormModel {
   }
 
   async createAnswer(data) {
-    try{
-      const [id] = await this.knex(this.table).insert({
-      id_question: data.question_id,
-      answer_question: data.answer_question,
-      });
-    return { id, ...data };
-    }catch (error) {
-      console.error('Error al crear la respuesta:', error);
-      throw new Error('No se pudo crear la respuesta debido a un error en el servidor.' + error.message);
-    }
     
+  const [id] = await this.knex(this.table).insert({
+    question_id: data.question_id,
+    answer_question: data.answer_question,
+  });
+  return { id, ...data };
 }
 
   async getAllAnswers() {
