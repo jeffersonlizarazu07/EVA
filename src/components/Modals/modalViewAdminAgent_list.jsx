@@ -41,7 +41,7 @@ const ModalViewAdmin = ({
                 fontSize: "small",
               }}
             >
-              Información detallada del perfil de usuario.
+              Información detallada del perfil de agente.
             </p>
           </div>
           <div className="modal-body d-flex ">

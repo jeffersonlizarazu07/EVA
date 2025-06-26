@@ -793,11 +793,7 @@ const Reports = () => {
                           sx={{ borderRadius: "10px", marginBottom: "8px" }}
                         />
                         <Box className="d-flex">
-                          <Skeleton
-                            variant="text"
-                            width="50%"
-                            sx={{ marginRight: 5 }}
-                          />
+
                           <Skeleton variant="text" width="50%" />
                         </Box>
                       </Grid>

@@ -1,4 +1,4 @@
-export default function getRangeOptions(questionType, answers = "") {
+export default function getRangeOptions(questionType, answers = "",t) {
   switch (questionType) {
     case "range_zerototen":
       return [
@@ -16,22 +16,22 @@ export default function getRangeOptions(questionType, answers = "") {
 
     case "yes_no":
       return [
-        { optionText: "Si", value: "1" },
-        { optionText: "No", value: "0" },
+        { optionText: t("vistaEncuestas.SI"), value: "1" },
+        { optionText: t("vistaEncuestas.NO"), value: "0" },
       ];
 
     case "range_difficulty":
       return [
-        { optionText: ["Dificil o muy dificil"], value: "4,5" },
-        { optionText: ["Neutro"], value: "3" },
-        { optionText: ["Facil o muy facil"], value: "1,2" },
+        { optionText: [t("vistaEncuestas.dificil_muy_dificil")], value: "4,5" },
+        { optionText: [t("vistaEncuestas.neutro")], value: "3" },
+        { optionText: [t("vistaEncuestas.facil_muy_facil")], value: "1,2" },
       ];
 
     case "range_emoji":
       return [
-        { optionText: "Muy triste: 🙁 o Triste: 😐", value: "1,2" },
-        { optionText: "Neutro: 😐", value: "3" },
-        { optionText: "Feliz: 😄 o Muy feliz: 😊", value: "4,5" },
+        { optionText: t("vistaEncuestas.muy_triste_triste"), value: "1,2" },
+        { optionText: t("vistaEncuestas.neutro_emote"), value: "3" },
+        { optionText: t("vistaEncuestas.feliz_muy_feliz"), value: "4,5" },
       ];
 
     case "radio_opt": {

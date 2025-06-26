@@ -1,7 +1,35 @@
-import { useState } from "react";
 import Swal from "sweetalert2";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Typography,
+  Button,
+  Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Box,
+  FormControlLabel,
+  Checkbox,
+  CircularProgress,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CancelButton from "../../components/buttons/cancelButton";
+import AcceptButton from "../../components/buttons/acceptButton";
+import ConfirmButton from "../buttons/confirmButton";
+// import { getThemeColor } from "../../style/ThemeColors";
 
-const modalAdmin = ({
+const ModalAdmin = ({
   // Props de agent_list
   monitoringStep,
   setMonitoringStep,
@@ -19,372 +47,356 @@ const modalAdmin = ({
   userInfo,
   monitoringDate,
   setMonitoringDate,
+  blocksWithPer,
+  setBlocksWithPer,
+  calBlocksPercentage,
+  handleUpdatePregunta,
+  calFormScore,
+  handleSaveBlock,
+  clientError,
+  setClientError,
+  formError,
+  setFormError,
+  dateError,
+  setDateError,
+  selectedBlockId,
+  setSelectedBlockId,
+  handleNextStep,
+  open,
+  handleSaveMonitoring,
 }) => {
-  const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
-  const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
-  const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
-
-  // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
-  const handleNextStep = () => {
-    const isClientValid = selectedClientId !== "";
-    const isFormValid = selectedFormId !== "";
-    const isDateValid = monitoringDate !== "";
-
-    // Actualizar visualmente errores
-    setClientError(!isClientValid);
-    setFormError(!isFormValid);
-    setDateError(!isDateValid);
-
-    if (!isClientValid || !isFormValid || !isDateValid) {
-      Swal.fire({
-        icon: "error",
-        title: "Faltan campos obligatorios",
-        html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-        customClass: "swal-content-center",
-      });
-      return;
-    }
-
-    setMonitoringStep(2);
-  };
-
   return (
-    <div id="modalAdmin" className="modal fade">
-      <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-        <div className="modal-content">
-          <div className="modal-header justify-content-center pb-1">
-            {/* Encabezado principal con botón de volver y nombre */}
-            {monitoringStep === 2 ? (
-              <div className="w-100 d-flex justify-content-between align-items-center pb-1">
-                <div className="d-flex align-items-center">
-                  <button
-                    className="btn btn-sm btn-default btn-flat fw-bold acces-tabla me-2"
-                    onClick={() => setMonitoringStep(1)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      className="bi bi-arrow-90deg-left"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
-                      />
-                    </svg>
-                  </button>
-                  <label className="h5 mb-0">
-                    {userName || "Nuevo Agente"}
-                  </label>
-                </div>
-
-                {/* Botón cerrar modal */}
-                <button
-                  type="button"
-                  className="btn-close mb-2"
-                  data-bs-dismiss="modal"
-                  aria-label="close"
-                  onClick={formClientReset}
-                ></button>
-              </div>
-            ) : (
-              <div className="w-100 d-flex justify-content-between align-items-center">
-                <label className="h5 mb-2">{userName || "Nuevo Agente"}</label>
-                <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="close"
-                  onClick={formClientReset}
-                ></button>
-              </div>
-            )}
-          </div>
-
-          <div className="modal-body">
-            {/*Primer vista del modal de monitorización*/}
-            {monitoringStep === 1 && (
-              <>
-                <h4 className="fw-bold mb-4">Crear una monitorización</h4>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label">Monitor Client</label>
-                    <select
-                      className={`form-select ${
-                        clientError ? "is-invalid" : ""
-                      }`}
-                      value={selectedClientId || ""}
-                      onChange={(e) => {
-                        handleClientChange(e);
-                        setClientError(false);
-                      }}
-                      disabled={loading}
-                    >
-                      <option value="">Seleccione un cliente</option>
-                      {userClients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.name}
-                        </option>
-                      ))}
-                    </select>
-                    {loading && (
-                      <small className="text-info">
-                        <i className="fas fa-spinner fa-spin"></i> Cargando...
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">
-                      Monitorizaciones <span className="text-danger">*</span>
-                    </label>
-                    <select
-                      className={`form-select ${formError ? "is-invalid" : ""}`}
-                      value={selectedFormId || ""}
-                      onChange={(e) => {
-                        handleFormSelect(e);
-                        setFormError(false);
-                      }}
-                    >
-                      <option value="">
-                        {!selectedClientId
-                          ? "Primero seleccione un cliente"
-                          : loading
-                          ? "Cargando formularios..."
-                          : formOptions.length === 0
-                          ? "No hay formularios disponibles"
-                          : "Seleccionar formulario"}
-                      </option>
-                      {formOptions.map((form) => (
-                        <option key={form.id} value={form.id}>
-                          {form.title}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* Mensajes de estado */}
-                    {selectedClientId &&
-                      !loading &&
-                      formOptions.length === 0 && (
-                        <small className="text-warning d-block mt-1">
-                          <i className="fas fa-exclamation-triangle"></i>
-                          No hay formularios disponibles para este cliente
-                        </small>
-                      )}
-
-                    {selectedClientId && formOptions.length > 0 && (
-                      <small className="text-success d-block mt-1"></small>
-                    )}
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">
-                      Fecha de monitorización{" "}
-                      <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      className={`form-control ms-0 ${
-                        dateError ? "is-invalid" : ""
-                      }`}
-                      value={monitoringDate}
-                      onChange={(e) => {
-                        setMonitoringDate(e.target.value);
-                        setDateError(false);
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">
-                      Evaluador <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control ms-0"
-                      value={
-                        userInfo
-                          ? `${userInfo.firstname || ""} ${
-                              userInfo.lastname || ""
-                            }`
-                          : "Cargando..."
-                      }
-                      readOnly
-                    ></input>
-                  </div>
-                </div>
-              </>
-            )}
-            {/* Segunda vista del modal de monitorización */}
-            {monitoringStep === 2 ? (
-              <div
-                className="col-12"
-                style={{
-                  maxHeight: "65vh",
-                  overflowY: "auto",
-                  scrollbarWidth: "none",
-                }}
+    <Dialog
+      open={open}
+      onClose={formClientReset}
+      maxWidth="lg"
+      fullWidth
+      scroll="body"
+    >
+      <DialogTitle>
+        {monitoringStep === 2 ? (
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Box display="flex" alignItems="center">
+              <IconButton
+                onClick={() => setMonitoringStep(1)}
+                sx={{ marginLeft: "-22px" }}
               >
-                <h5 className="fw-bold mb-4 mt-0">
-                  Configuración de Monitorizaciones
-                </h5>
-                <div className="shadowbox5 p-3">
-                  <h4 className="text-center mb-3">
-                    Información del Formulario
-                  </h4>
+                <ArrowBackIcon />
+              </IconButton>
+              <Typography variant="h6" paddingLeft="0">
+                {userName || "Nuevo Agente"}
+              </Typography>
+            </Box>
+            <IconButton onClick={formClientReset}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        ) : (
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="h6">{userName || "Nuevo Agente"}</Typography>
+            <IconButton onClick={formClientReset}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        )}
+      </DialogTitle>
 
-                  <div className="infoForm d-flex align-items-center">
-                    <p className="fw-bold mb-0 me-2">Nombre del formulario:</p>
-                    <label className="mb-0">
-                      {callSelectedForm?.title || "Formulario no seleccionado"}
-                    </label>
-                  </div>
+      <DialogContent dividers>
+        {monitoringStep === 1 && (
+          <>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              Crear una monitorización
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth error={clientError} disabled={loading}>
+                  <InputLabel>Monitor Client</InputLabel>
+                  <Select
+                    value={selectedClientId || ""}
+                    label="Monitor Client"
+                    onChange={(e) => {
+                      handleClientChange(e);
+                      setClientError(false);
+                    }}
+                  >
+                    <MenuItem value="">Seleccione un cliente</MenuItem>
+                    {userClients.map((client) => (
+                      <MenuItem key={client.id} value={client.id}>
+                        {client.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {loading && (
+                  <Box mt={1} display="flex" alignItems="center">
+                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                    <Typography variant="body2">Cargando...</Typography>
+                  </Box>
+                )}
+              </Grid>
 
-                  <p className=" fw-bold m-0">Form Score:</p>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth error={formError}>
+                  <InputLabel>Monitorizaciones</InputLabel>
+                  <Select
+                    value={selectedFormId || ""}
+                    label="Monitorizaciones"
+                    onChange={(e) => {
+                      handleFormSelect(e);
+                      setFormError(false);
+                    }}
+                  >
+                    <MenuItem value="">
+                      {!selectedClientId
+                        ? "Primero seleccione un cliente"
+                        : loading
+                        ? "Cargando formularios..."
+                        : formOptions.length === 0
+                        ? "No hay formularios disponibles"
+                        : "Seleccionar formulario"}
+                    </MenuItem>
+                    {formOptions.map((form) => (
+                      <MenuItem key={form.id} value={form.id}>
+                        {form.title}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
 
-                  <div className="d-flex align-items-center">
-                    <p className="fw-bold mb-0">Posible puntuación:</p>
-                    <label className="m-0 p-0 ms-1">100%.</label>
-                  </div>
-                </div>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Fecha de monitorización"
+                  InputLabelProps={{ shrink: true }}
+                  value={monitoringDate}
+                  onChange={(e) => {
+                    setMonitoringDate(e.target.value);
+                    setDateError(false);
+                  }}
+                  error={dateError}
+                />
+              </Grid>
 
-                <div className="shadowbox5 mb-4 mt-3 ms-0 ps-0 align-items-center">
-                  {blocksForForm.length === 0 ? (
-                    <p>
-                      No se ha cargado o existe error al llamar los bloques.
-                    </p>
-                  ) : (
-                    blocksForForm.map((block) => (
-                      <div key={block.id} className="mb-4 pb-3">
-                        <h4 className="text-center mt-3">
-                          <label className="ms-1">{block.block_name}</label>
-                          {" - "}
-                          <label className="ms-1">
-                            {block.percentage || "No existe puntuación"}
-                          </label>
-                        </h4>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Evaluador"
+                  value={
+                    userInfo
+                      ? `${userInfo.firstname || ""} ${userInfo.lastname || ""}`
+                      : "Cargando..."
+                  }
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
+            </Grid>
+          </>
+        )}
 
-                        {/* Preguntas */}
-                        <div className="ms-3 mt-3">
-                          {block.preguntas.length === 0 ? (
-                            <p className="text-muted">
-                              Este bloque no tiene preguntas registradas.
-                            </p>
-                          ) : (
-                            <div
-                              className="accordion me-3"
-                              id={`accordionPreguntas-${block.id}`}
-                            >
-                              {block.preguntas.map((pregunta, idx) => (
-                                <div
-                                  className="accordion-item"
-                                  key={pregunta.id}
+        {monitoringStep === 2 && (
+          <Box maxHeight="65vh" overflow="auto">
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Configuración de Monitorizaciones
+            </Typography>
+            <Box mb={2} p={2} border={1} borderRadius={2}>
+              <Typography variant="h6" align="center" gutterBottom>
+                Información del Formulario
+              </Typography>
+              <Box display="flex" gap={1}>
+                <Typography fontWeight="bold">
+                  Nombre del formulario:
+                </Typography>
+                <Typography>
+                  {callSelectedForm?.title || "Formulario no seleccionado"}.
+                </Typography>
+              </Box>
+              <Box display="flex" gap={1}>
+                <Typography fontWeight="bold">Form Score:</Typography>
+                <Typography>{calFormScore()}%.</Typography>
+              </Box>
+              <Box display="flex" gap={1}>
+                <Typography fontWeight="bold">Posible puntuación:</Typography>
+                <Typography>100%.</Typography>
+              </Box>
+            </Box>
+
+            <Box border={1} borderRadius={2} overflow="hidden">
+              {blocksForForm.length === 0 ? (
+                <Typography color="text.secondary">
+                  No se ha cargado o existe error al llamar los bloques.
+                </Typography>
+              ) : (
+                blocksWithPer.map((block) => (
+                  <Accordion
+                    key={block.id}
+                    expanded={selectedBlockId === block.id}
+                    onChange={() =>
+                      setSelectedBlockId((prev) =>
+                        prev === block.id ? null : block.id
+                      )
+                    }
+                  >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Box
+                        flex={1}
+                        display="flex"
+                        justifyContent="space-between"
+                      >
+                        <Typography fontWeight="bold">
+                          {block.block_name}
+                        </Typography>
+                        <Typography fontWeight="bold">
+                          {block.porcentajeBloque}%
+                        </Typography>
+                      </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      {block.preguntas.length === 0 ? (
+                        <Typography color="text.secondary">
+                          Este bloque no tiene preguntas registradas.
+                        </Typography>
+                      ) : (
+                        block.preguntas.map((pregunta, idx) => (
+                          <Accordion
+                            key={pregunta.id}
+                            sx={{
+                              border: "1.5px solid #ccc",
+                              borderRadius: "8px",
+                              boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                              mb: 1,
+                            }}
+                          >
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                              <Box
+                                flex={1}
+                                display="flex"
+                                justifyContent="space-between"
+                              >
+                                <Typography>
+                                  {pregunta.question_name}
+                                </Typography>
+                                <Typography>
+                                  {pregunta.porcentajePregunta}%
+                                </Typography>
+                              </Box>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                              {pregunta.id_type_question === 1 &&
+                                (pregunta.select_option || "")
+                                  .split(";")
+                                  .map((opt, i) => (
+                                    <FormControlLabel
+                                      key={i}
+                                      control={<Checkbox disabled />}
+                                      label={opt}
+                                    />
+                                  ))}
+
+                              {pregunta.id_type_question === 2 && (
+                                <FormControl fullWidth margin="normal">
+                                  <Select
+                                    value={pregunta.selected_answer || ""}
+                                    disabled
+                                  >
+                                    {(pregunta.select_option || "")
+                                      .split(",")
+                                      .map((opt, i) => (
+                                        <MenuItem key={i} value={opt.trim()}>
+                                          {opt.trim()}
+                                        </MenuItem>
+                                      ))}
+                                  </Select>
+                                </FormControl>
+                              )}
+
+                              {pregunta.id_type_question === 3 && (
+                                <TextField
+                                  fullWidth
+                                  disabled
+                                  multiline
+                                  placeholder="Respuesta abierta..."
+                                  margin="normal"
+                                />
+                              )}
+
+                              <FormControl fullWidth margin="normal">
+                                <InputLabel>Evaluación</InputLabel>
+                                <Select
+                                  value={pregunta.evaluacion || ""}
+                                  label="Evaluación"
+                                  onChange={(e) =>
+                                    handleUpdatePregunta(
+                                      pregunta.id,
+                                      "evaluacion",
+                                      e.target.value
+                                    )
+                                  }
                                 >
-                                  <h2
-                                    className="accordion-header"
-                                    id={`heading-${block.id}-${idx}`}
-                                  >
-                                    <button
-                                      className="accordion-button collapsed"
-                                      type="button"
-                                      data-bs-toggle="collapse"
-                                      data-bs-target={`#collapse-${block.id}-${idx}`}
-                                      aria-expanded="false"
-                                      aria-controls={`collapse-${block.id}-${idx}`}
-                                    >
-                                      {pregunta.question_name}
-                                    </button>
-                                  </h2>
-                                  <div
-                                    id={`collapse-${block.id}-${idx}`}
-                                    className="accordion-collapse collapse"
-                                    aria-labelledby={`heading-${block.id}-${idx}`}
-                                    data-bs-parent={`#accordionPreguntas-${block.id}`}
-                                  >
-                                    <div className="accordion-body">
-                                      {/* Render dinámico por tipo */}
-                                      {pregunta.id_type_question === 1 && (
-                                        <div>
-                                          {(pregunta.select_option || "")
-                                            .split(";")
-                                            .map((opt, i) => (
-                                              <div
-                                                className="form-check"
-                                                key={i}
-                                              >
-                                                <input
-                                                  className="form-check-input"
-                                                  type="checkbox"
-                                                />
-                                                <label className="form-check-label">
-                                                  {opt}
-                                                </label>
-                                              </div>
-                                            ))}
-                                        </div>
-                                      )}
+                                  <MenuItem value="">Seleccionar</MenuItem>
+                                  <MenuItem value="1">✅ Buena</MenuItem>
+                                  <MenuItem value="0">❌ Mala</MenuItem>
+                                </Select>
+                              </FormControl>
+                            </AccordionDetails>
+                          </Accordion>
+                        ))
+                      )}
+                      <Box display="flex" justifyContent="flex-end" mt={2}>
+                        <ConfirmButton
+                          variant="contained"
+                          onClick={() => handleSaveBlock(block.id)}
+                        >
+                          Confirmar
+                        </ConfirmButton>
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+                ))
+              )}
+            </Box>
+          </Box>
+        )}
+        {monitoringStep === 3 && (
+          <Box>
+            <Typography fontWeight="bold" sx={{ marginBottom: "10px" }}>
+              Feedback
+            </Typography>
+            <TextField
+              placeholder="Ingrese su feedback aquí"
+              multiline
+              fullWidth
+              sx={{
+                "& .MuiInputBase-root": {
+                  height: "150px",
+                  alignItems: "flex-start", // asegura que el texto inicie desde arriba
+                },
+                "& .MuiInputBase-inputMultiline": {
+                  padding: "10px",
+                  height: "100%",
+                  overflow: "auto",
+                },
+              }}
+            />
+          </Box>
+        )}
+      </DialogContent>
 
-                                      {pregunta.id_type_question === 2 && (
-                                        <select
-                                          className="form-select"
-                                          value={pregunta.selected_answer || ""}
-                                          disabled
-                                        >
-                                          {(pregunta.select_option || "")
-                                            .split(",")
-                                            .map((opt, i) => (
-                                              <option
-                                                key={i}
-                                                value={opt.trim()}
-                                              >
-                                                {opt.trim()}
-                                              </option>
-                                            ))}
-                                        </select>
-                                      )}
-
-                                      {pregunta.id_type_question === 3 && (
-                                        <textarea
-                                          className="form-control"
-                                          placeholder="Respuesta abierta..."
-                                          disabled
-                                        />
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          <div className="modal-footer">
-            <button
-              type="button"
-              id="btnCerrar"
-              className="btn btn-secondary"
-              data-bs-dismiss="modal"
-              onClick={formClientReset}
-            >
-              Cancelar
-            </button>
-            <button onClick={handleNextStep} className="btn btn-primary">
-              Aceptar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <DialogActions sx={{ gap: 1 }}>
+        <CancelButton onClick={formClientReset}></CancelButton>
+        <AcceptButton onClick={handleNextStep}></AcceptButton>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-export default modalAdmin;
+export default ModalAdmin;

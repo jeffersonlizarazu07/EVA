@@ -157,7 +157,7 @@ export const saveMonitoring = async (payload) => {
       headers: { "Content-Type": "application/json" },
       ...config,
     });
-    return response.data;
+    return { success: true, data: response.data };
   } catch (error) {
     console.error("Error al guardar la monitorización:", error);
     throw error;
