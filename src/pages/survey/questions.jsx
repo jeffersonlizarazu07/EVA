@@ -1,214 +1,649 @@
 import "../../assets/css/questions.css";
+import React from 'react';
 import { useTranslation } from "react-i18next";
+import { 
+  Box, 
+  Typography, 
+  RadioGroup, 
+  FormControlLabel, 
+  Radio, 
+  Tooltip,
+  useTheme,
+  TextField,
+  FormGroup,
+  Checkbox, 
 
+} from '@mui/material';
 
 
 function Range_onetofive() {
     const { t } = useTranslation();
+    const theme = useTheme();
+    const [value, setValue] = React.useState('');  // Estados para manejar el valor seleccionado
+
+    const handleChange = (event) => {
+      setValue(event.target.value);
+    };
+
+    // Configuración de las opciones con sus colores y tooltips
+    const options = [
+      { 
+        value: '1', 
+        tooltip: 'Muy insatisfecho', 
+        color: theme.palette.error.main 
+      },
+      { 
+        value: '2', 
+        tooltip: 'Insatisfecho', 
+        color: theme.palette.error.main 
+      },
+      { 
+        value: '3', 
+        tooltip: 'Ni satisfecho/ni insatisfecho', 
+        color: theme.palette.primary.main 
+      },
+      { 
+        value: '4', 
+        tooltip: 'Satisfecho', 
+        color: theme.palette.success.main 
+      },
+      { 
+        value: '5', 
+        tooltip: 'Muy satisfecho', 
+        color: theme.palette.success.main 
+      }
+    ];
 
   return (
-    <div className="input-group justify-content-center mt-4 mb-4">
-    <div className="me-2">
-      <p className="ms-2 mt-2 fw-bold fs-6 redIncorrect">{t("vistaEncuestas.muy_insatisfecho")}</p>
-    </div>
-    <div className="btn-group " role="group" aria-label="Basic radio toggle button group">
-      <a data-bs-toggle="tooltip" data-bs-title="Muy insatisfecho" className=' m-1'>
-        <input type="radio" className="btn-check" name="probability" id="satisfaccion1" autoComplete="off" value="1"/>
-        <label className="btn btn-outline-danger" htmlFor="satisfaccion1">1</label>
-      </a>
-      <a data-bs-toggle="tooltip" data-bs-title="Insatisfecho" className=' m-1'>
-        <input type="radio" className="btn-check  m-2" name="probability" id="satisfaccion2" autoComplete="off" value="2"/>
-        <label className="btn btn-outline-danger" htmlFor="satisfaccion2">2</label>
-      </a>
-      <a data-bs-toggle="tooltip" data-bs-title="Ni satisfecho/ni insatisfecho" className=' m-1'>
-        <input type="radio" className="btn-check m-2" name="probability" id="satisfaccion3" autoComplete="off" value="3"/>
-        <label className="btn btn-outline-primary" htmlFor="satisfaccion3">3</label>
-      </a>
-      <a data-bs-toggle="tooltip" data-bs-title="Satisfecho" className=' m-1'>
-        <input type="radio" className="btn-check" name="probability" id="satisfaccion4" autoComplete="off" value="4"/>
-        <label className="btn btn-outline-success" htmlFor="satisfaccion4">4</label>
-      </a>
-      <a data-bs-toggle="tooltip" data-bs-title="Muy satisfecho" className=' m-1'>
-        <input type="radio" className="btn-check" name="probability" id="satisfaccion5" autoComplete="off" value="5"/>
-        <label className="btn btn-outline-success" htmlFor="satisfaccion5">5</label>
-      </a>
-    </div>
-    <div className="ms-2">
-      <p className="ms-2 fw-bold fs-6 mt-2 greenCorrect">{t("vistaEncuestas.muy_satisfecho")}</p>
-    </div>
-  </div>
+    <Box sx={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      mt: 4, 
+      mb: 4,
+      gap: 2 
+    }}>
+       {/* Etiqueta izquierda "Muy insatisfecho" */}
+      <Typography 
+        variant="body2" 
+        fontWeight="bold" 
+        fontSize={16}
+        sx={{ color: theme.palette.error.main }}
+      >
+        {t("vistaEncuestas.muy_insatisfecho")}
+      </Typography>
+
+      {/* Grupo de bottones */}
+      <RadioGroup
+        row
+        aria-label="satisfaccion"
+        name="probability"
+        value={value}
+        onChange={handleChange}
+        sx={{ gap: 1 }}
+      >
+        {options.map((option) => (
+          <Tooltip key={option.value}  arrow>
+            <FormControlLabel
+              value={option.value}
+              control={
+                <Radio
+                  sx={{
+                    display: 'none',
+                  }}
+                />
+              }
+              label={option.value}
+              sx={{
+                margin: 0,
+                '& .MuiFormControlLabel-label': {                  
+                  color: option.color,
+                  border: `1px solid ${option.color}`,
+                  borderRadius: 1,
+                  padding: '4px 12px',
+                  minWidth: '32px',
+                  textAlign: 'center',
+                  transition: 'all 0.2s ease',
+                  backgroundColor: value === option.value ? `${option.color}20` : 'transparent',
+                  '&:hover': {
+                      backgroundColor: `${option.color}10`,
+                      transform: 'scale(1.05)'
+                    }
+                }
+              }}
+            />
+          </Tooltip>
+        ))}
+      </RadioGroup>
+      
+      {/* Etiqueta derecha "Muy satisfecho" */}
+      <Typography 
+        variant="body2" 
+        fontWeight="bold" 
+        fontSize={16}
+        sx={{ color: theme.palette.success.main }}
+      >
+        {t("vistaEncuestas.muy_satisfecho")}
+      </Typography>
+  </Box>
   )
 }
 
 function Range_zerototen (){
   const { t } = useTranslation();
+  const theme = useTheme();
+
+  const [value, setValue] = React.useState('');  // Estado para manejar el valor seleccionado
+
+  const handleChange = (event) => {
+    setValue(event.target.value);
+  }
+
+  // Configuración de las opciones (0-10) con sus colores y tooltips
+  const options = [
+    { value: '0', tooltip: 'Nada probable', color: theme.palette.error.main },
+    { value: '1', tooltip: 'Nada probable', color: theme.palette.error.main },
+    { value: '2', tooltip: 'Nada probable', color: theme.palette.error.main },
+    { value: '3', tooltip: 'Nada probable', color: theme.palette.error.main },
+    { value: '4', tooltip: 'Nada probable', color: theme.palette.error.main },
+    { value: '5', tooltip: 'Nada probable', color: theme.palette.error.main },
+    { value: '6', tooltip: 'Nada probable', color: theme.palette.error.main },
+    { value: '7', tooltip: 'Neutro', color: theme.palette.primary.main },
+    { value: '8', tooltip: 'Neutro', color: theme.palette.primary.main },
+    { value: '9', tooltip: 'Muy probable', color: theme.palette.success.main },
+    { value: '10', tooltip: 'Muy probable', color: theme.palette.success.main }
+  ];
 
   return (
-  <div className="input-group justify-content-center mt-4 mb-4">
-  <div className="me-2">
-    <p className="ms-2 fw-bold fs-6 mt-2  redIncorrect" >{t("vistaEncuestas.nada_probable")}</p>
-  </div>
-  <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
-    <a data-bs-toggle="tooltip" data-bs-title="Nada probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar1" autoComplete="off" value="0"/>
-      <label className="btn btn-outline-danger" htmlFor="recomendar1">0</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Nada probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar2" autoComplete="off" value="1"/>
-      <label className="btn btn-outline-danger" htmlFor="recomendar2">1</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Nada probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar3" autoComplete="off" value="2"/>
-      <label className="btn btn-outline-danger" htmlFor="recomendar3">2</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Nada probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar4" autoComplete="off" value="3"/>
-      <label className="btn btn-outline-danger" htmlFor="recomendar4">3</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Nada probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar5" autoComplete="off" value="4"/>
-      <label className="btn btn-outline-danger" htmlFor="recomendar5">4</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Nada probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar6" autoComplete="off" value="5"/>
-      <label className="btn btn-outline-danger" htmlFor="recomendar6">5</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Nada probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar7" autoComplete="off" value="6"/>
-      <label className="btn btn-outline-danger" htmlFor="recomendar7">6</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Neutro" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar8" autoComplete="off" value="7"/>
-      <label className="btn btn-outline-primary" htmlFor="recomendar8">7</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Neutro" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar9" autoComplete="off" value="8"/>
-      <label className="btn btn-outline-primary" htmlFor="recomendar9">8</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Muy probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar10" autoComplete="off" value="9"/>
-      <label className="btn btn-outline-success" htmlFor="recomendar10">9</label>
-    </a>
-
-    <a data-bs-toggle="tooltip" data-bs-title="Muy probable" className=' m-1'>
-      <input type="radio" className="btn-check" name="probability" id="recomendar11" autoComplete="off" value="10"/>
-      <label className="btn btn-outline-success" htmlFor="recomendar11">10</label>
-    </a>
-  </div>
-  <div className="me-2">
-    <p className="ms-2 fw-bold fs-6 mt-2 greenCorrect">{t("vistaEncuestas.muy_probable")}</p>
-  </div>
-</div>)
+   <Box 
+      sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        mt: 4, 
+        mb: 4,
+        gap: 2,
+        flexWrap: 'wrap' // Permite que se ajuste en pantallas pequeñas
+      }}
+    >
+      {/* Etiqueta izquierda - "Nada probable" */}
+      <Typography 
+        variant="body2" 
+        fontWeight="bold" 
+        fontSize={16}
+        sx={{ 
+          color: theme.palette.error.main,
+          minWidth: 'fit-content' // Evita que se corte el texto
+        }}
+      >
+        {t("vistaEncuestas.nada_probable")}
+      </Typography>
+      
+      {/* Grupo de radio buttons del 0 al 10 */}
+      <RadioGroup
+        row
+        aria-label="probability"
+        name="probability"
+        value={value}
+        onChange={handleChange}
+        sx={{ 
+          gap: 0.5, // Espaciado más pequeño porque hay muchas opciones
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}
+      >
+        {options.map((option) => (
+          <Tooltip key={option.value}arrow>
+            <FormControlLabel
+              value={option.value}
+              control={
+                <Radio
+                  sx={{
+                    display: 'none', 
+                  }}
+                />
+                }
+                label={option.value}
+                sx={{
+                  margin: '2px', // Espaciado mínimo entre botones
+                  '& .MuiFormControlLabel-label': {
+                    color: option.color,
+                    border: `1px solid ${option.color}`,
+                    borderRadius: 1,
+                    padding: '6px 10px',                    
+                    width: '42px',
+                    textAlign: 'center',
+                    display: 'flex',          
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    backgroundColor: value === option.value ? `${option.color}20` : 'transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      backgroundColor: `${option.color}10`,
+                      transform: 'scale(1.05)'
+                    }
+                  }
+                }}
+            />
+          </Tooltip>
+        ))}
+      </RadioGroup>
+      
+      {/* Etiqueta derecha "Muy probable" */}
+      <Typography 
+        variant="body2" 
+        fontWeight="bold" 
+        fontSize={16}
+        sx={{ 
+          color: theme.palette.success.main,
+          minWidth: 'fit-content' // Evita que se corte el texto
+        }}
+      >
+        {t("vistaEncuestas.muy_probable")}
+      </Typography>
+    </Box>
+  )
 }
 
 function Range_difficulty(){
   const { t } = useTranslation();
+  const theme = useTheme();
+  
+  const [value, setValue] = React.useState(''); // Estado para manejar el valor seleccionado
+
+  const handleChange = (event) => {
+    setValue(event.target.value);
+  };
+
+  // Configuración de las opciones de dificultad con sus colores y textos
+  const options = [
+    { 
+      value: 'Muy dificil', 
+      label: t("vistaEncuestas.muy_dificil"), 
+      color: theme.palette.error.main 
+    },
+    { 
+      value: 'Dificil', 
+      label: t("vistaEncuestas.dificil"), 
+      color: theme.palette.error.main 
+    },
+    { 
+      value: 'Neutro', 
+      label: t("vistaEncuestas.facil_dificil"), 
+      color: theme.palette.primary.main 
+    },
+    { 
+      value: 'Facil', 
+      label: t("vistaEncuestas.facil"), 
+      color: theme.palette.success.main 
+    },
+    { 
+      value: 'Muy facil', 
+      label: t("vistaEncuestas.muy_facil"), 
+      color: theme.palette.success.main 
+    }
+  ];
 
   return(
-    <div className="input-group justify-content-center mt-4 mb-4">
-      <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
-        <input type="radio" className="btn-check" name="dificult" id="dificultad1" autoComplete="off" value="Muy dificil"/>
-        <label className="btn btn-outline-danger" htmlFor="dificultad1">{t("vistaEncuestas.muy_dificil")}</label>
-
-        <input type="radio" className="btn-check" name="dificult" id="dificultad2" autoComplete="off" value="Dificil"/>
-        <label className="btn btn-outline-danger" htmlFor="dificultad2">{t("vistaEncuestas.dificil")}</label>
-
-        <input type="radio" className="btn-check" name="dificult" id="dificultad3" autoComplete="off" value="Neutro"/>
-        <label className="btn btn-outline-primary" htmlFor="dificultad3">{t("vistaEncuestas.facil_dificil")}</label>
-
-        <input type="radio" className="btn-check" name="dificult" id="dificultad4" autoComplete="off" value="Facil"/>
-        <label className="btn btn-outline-success" htmlFor="dificultad4">{t("vistaEncuestas.facil")}</label>
-
-        <input type="radio" className="btn-check" name="dificult" id="dificultad5" autoComplete="off" value="Muy facil"/>
-        <label className="btn btn-outline-success" htmlFor="dificultad5">{t("vistaEncuestas.muy_facil")}</label>
-      </div>
-    </div>
-     )
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          mt: 4, 
+          mb: 4,
+          gap: 1,
+          flexWrap: 'wrap' // Permite que se ajuste en pantallas pequeñas
+        }}
+      >
+      {/* Grupo de radio buttons para dificultad */}
+      <RadioGroup
+        row
+        aria-label="dificultad"
+        name="dificult"
+        value={value}
+        onChange={handleChange}
+        sx={{ 
+          gap: 0.8,
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}
+      >
+        {options.map((option, index) => (
+          <FormControlLabel
+            key={option.value}
+            value={option.value}
+            control={
+              <Radio
+                sx={{
+                  display: 'none', 
+                }}
+              />
+            }
+            label={option.label}
+            sx={{
+              margin: '0',
+              '& .MuiFormControlLabel-label': {
+                color: option.color,
+                border: `1px solid ${option.color}`,
+                borderRadius: 1,
+                padding: '8px 16px',
+                minWidth: 'fit-content',
+                textAlign: 'center',
+                backgroundColor: value === option.value ? `${option.color}20` : 'transparent',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap', 
+                fontSize: '0.875rem',
+                '&:hover': {
+                  backgroundColor: `${option.color}10`,
+                  transform: 'scale(1.05)',
+                }
+              }
+            }}
+          />
+        ))}
+      </RadioGroup>
+    </Box>                      
+    )
 }
 function Yes_no(){
   const { t } = useTranslation();
+  const theme = useTheme();
+  const [value, setValue] = React.useState('');  // Estados para manejar el valor seleccionado
+
+  const handleChange = (event) => {
+    setValue(event.target.value);
+  };
+
+  const options = [
+    {
+      value: 'NO',
+      label: t("vistaEncuestas.NO"),
+      color: theme.palette.error.main,
+      tooltip: 'No'
+    },
+    {
+      value: 'SI',
+      color: theme.palette.success.main,
+      label: t("vistaEncuestas.SI"),
+      tooltip: 'Si'
+    },
+  ];
+
 
   return(
-    <div className="input-group justify-content-center mt-4 mb-4">
-    <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
-    <a data-bs-toggle="tooltip" data-bs-title="Muy probable" className=' m-1'>
-    <input type="radio" className="btn-check" name="yes_no" id="si_no1" autoComplete="off" value="NO" />
-    <label className="btn btn-outline-danger" htmlFor="si_no1">{t("vistaEncuestas.NO")}</label>
-    </a>
-    <a data-bs-toggle="tooltip" data-bs-title="Muy probable" className=' m-1'>
-    <input type="radio" className="btn-check" name="yes_no" id="si_no2" autoComplete="off" value="SI"/>
-    <label className="btn btn-outline-success" htmlFor="si_no2">{t("vistaEncuestas.SI")}</label>
-    </a>
-    </div>
-    </div>
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        mt: 4, 
+        mb: 4,
+        gap: 2
+      }}
+    >
+      {/* Grupo de radio buttons para Sí/No */}
+      <RadioGroup
+        row
+        aria-label="si-no"
+        name="yes_no"
+        value={value}
+        onChange={handleChange}
+        sx={{ 
+          gap: 0.8, 
+          justifyContent: 'center'
+        }}
+      >
+        {options.map((option) => (
+          <Tooltip key={option.value} arrow>
+            <FormControlLabel
+              value={option.value}
+              control={
+                <Radio
+                  sx={{
+                    display: 'none',
+                  }}
+                />
+              }
+              label={option.label}
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  color: option.color,
+                  border: `1px solid ${option.color}`,
+                  borderRadius: 2, 
+                  padding: '10px 20px', 
+                  width: '38px', 
+                  textAlign: 'center',
+                  display: 'flex',          
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  backgroundColor: value === option.value ? `${option.color}20` : 'transparent',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  fontSize: '1rem', // Texto más grande
+                  '&:hover': {
+                    backgroundColor: `${option.color}15`,
+                    transform: 'scale(1.05)',
+                    boxShadow: `0 4px 12px ${option.color}40`
+                  }
+                }
+              }}
+            />
+          </Tooltip>
+        ))}
+      </RadioGroup>
+    </Box>
   )
 }
 
 function Range_emoji(){
   const { t } = useTranslation();
+  const theme = useTheme();
+  const [value, setValue] = React.useState(''); // Estado para manejar el valor seleccionado
+
+  const handleChange = (event) => {
+    setValue(event.target.value);
+  };
+
+  const options = [
+    {
+      value : 'verybad',
+      color : theme.palette.error.main,
+      label : '🙁'
+    },
+    {
+      value : 'bad',
+      color : theme.palette.error.main,
+      label : '😐'
+    },
+    {
+      value : 'ok',
+      color : theme.palette.primary.main,
+      label : '🙂'
+    }, 
+    {
+      value : 'good',
+      color : theme.palette.success.main,
+      label : '😄'
+    },
+    {
+      value : 'awesome',
+      color : theme.palette.success.main,
+      label : '😊'
+    }
+
+  ]
 
   return(
-  <div className="input-group justify-content-center mt-4 mb-4">
-    <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
-    <input type="radio"   className="btn-check" autoComplete="off" value="bad"  id='notBad' name="emojis"/>
-      <label className="btn btn-outline-danger fs-5" htmlFor="notBad">🙁</label>
-      <input type="radio"   className="btn-check" autoComplete="off" value="bad"  id='bad' name="emojis"/>
-      <label className="btn btn-outline-danger fs-5" htmlFor="bad">😐</label>
-      <input type="radio"   className="btn-check" autoComplete="off" value="ok"  id='ok' name="emojis"/>
-      <label className="btn btn-outline-primary  fs-5" htmlFor="ok">🙂</label>
-      <input type="radio"   className="btn-check" autoComplete="off" value="good"  id='good' name="emojis"/>
-      <label className="btn btn-outline-success fs-5" htmlFor="good">😄</label>
-      <input type="radio"   className="btn-check btn-light" autoComplete="off" value="awesome"  id='awesome' name="emojis"/>
-      <label className="btn btn-outline-success fs-5" htmlFor="awesome">😊</label>
-      </div>
-  </div>)
+  <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          mt: 4, 
+          mb: 4,
+          gap: 1,
+          flexWrap: 'wrap' // Permite que se ajuste en pantallas pequeñas
+        }}
+      >
+      {/* Grupo de radio buttons para dificultad */}
+      <RadioGroup
+        row
+        aria-label="dificultad"
+        name="dificult"
+        value={value}
+        onChange={handleChange}
+        sx={{ 
+          gap: 0.8,
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}
+      >
+        {options.map((option, index) => (
+          <FormControlLabel
+            key={option.value}
+            value={option.value}
+            control={
+              <Radio
+                sx={{
+                  display: 'none', 
+                }}
+              />
+            }
+            label={option.label}
+            sx={{
+              margin: '0',
+              '& .MuiFormControlLabel-label': {
+                color: option.color,
+                border: `1px solid ${option.color}`,
+                borderRadius: 1,
+                padding: '6px 10px',
+                minWidth: 'fit-content',
+                textAlign: 'center',
+                backgroundColor: value === option.value ? `${option.color}20` : 'transparent',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap', 
+                fontSize: '1.25rem', 
+                '&:hover': {
+                  backgroundColor: `${option.color}10`,
+                  transform: 'scale(1.05)',
+                }
+              }
+            }}
+          />
+        ))}
+      </RadioGroup>
+    </Box>  
+  )
 }
 
 function Textfield_s(){
   const { t } = useTranslation();
+  const [value, setValue] = React.useState(''); // Estado para manejar el valor del textarea
 
+  const handleChange = (event) => {
+    setValue(event.target.value);
+  };
   return(
-  <div className="form-group">
-    <textarea name="" id="" cols="30" rows="3" className="form-control" placeholder={t("vistaEncuestas.escriba_respuesta")}></textarea>
-  </div>)
+   <Box sx={{ width: '100%' }}>
+      <TextField
+        multiline
+        rows={3}
+        fullWidth
+        variant="outlined"
+        placeholder={t("vistaEncuestas.escriba_respuesta")}
+        value={value}
+        onChange={handleChange}
+        sx={{
+          backgroundColor: 'white',           
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '18px',
+            '& fieldset': {
+              borderColor: '#b62a8b', // Color de borde por defecto
+            },
+            '&:hover fieldset': {
+              borderColor: '#b62a8b', // Color de borde al hacer hover
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#b62a8b', // Color de borde cuando está enfocado
+            }
+          },
+          '& .MuiOutlinedInput-input': {
+            padding: '12px 14px', // Padding interno del textarea
+            fontSize: '1rem', // Tamaño de fuente
+            lineHeight: '0.5', // Altura de línea para mejor legibilidad
+          },
+          '& .MuiInputBase-input::placeholder': {
+            color: 'rgba(0, 0, 0, 0.6)', // Color del placeholder
+            opacity: 1
+          }
+        }}
+      />
+    </Box>)
 }
 
 function SingleChoiceView({options,correctOption}){
   const { t } = useTranslation();
-
-  const optionsArray= options.split(",")
-  const correctOptionToInt=parseInt(correctOption) 
+  const theme = useTheme();
   
-  return(
-    <div className="mt-4 mb-4">
-    {optionsArray.map((option, index) => {
-      return (
-        <div key={index} className="row mb-3 ">
-        <div className="col">
-          <div className="form-check">
-            <input type="radio" className="form-check-input" autoComplete="off" readOnly value={option} id={`option-${index}`}  checked={correctOptionToInt === index} 
- />
-            <label className="form-check-label" htmlFor={`option-${index}`}>{option}</label>
-          </div>
-        </div>
-      </div>
-      
-      );
-    })}
-  </div>
-  )
+  const optionsArray = options.split(",");
+  const correctOptionToInt = parseInt(correctOption);
+  
+  return (
+    <Box sx={{ mt: 4, mb: 4 }}>
+      <RadioGroup
+        aria-label="single-choice-options"
+        name="single-choice"
+        value={correctOptionToInt.toString()} // Valor seleccionado basado en correctOption
+      >
+        {optionsArray.map((option, index) => {
+          const isSelected = correctOptionToInt === index;
+          
+          return (
+            <Box 
+              key={index}
+            >
+              <FormControlLabel
+                value={index.toString()}
+                control={
+                  <Radio
+                    readOnly
+                    checked={isSelected}
+                    sx={{
+                      color: isSelected ? theme.palette.primary.main : 'rgba(0, 0, 0, 0.6)',
+                      '&.Mui-checked': {
+                        color: theme.palette.primary.main,
+                      },
+                      '&.Mui-disabled': {
+                        color: isSelected ? theme.palette.primary.main : 'rgba(0, 0, 0, 0.26)',
+                      }
+                    }}
+                    disabled // Hacemos el radio de solo lectura
+                  />
+                }
+                label={
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      color: isSelected ? theme.palette.text.primary : theme.palette.text.secondary,
+                      fontWeight: isSelected ? 'medium' : 'normal',
+                    }}
+                  >
+                    {option.trim()} {/* Eliminamos espacios extra */}
+                  </Typography>
+                }
+              />
+            </Box>
+          );
+        })}
+      </RadioGroup>
+    </Box>
+  );
 }
 function MultipleChoiceView({ options, correctOption }) {
    const { t } = useTranslation();
+   const theme = useTheme();
 
   // Asegurar que 'options' sea un array
   const optionsArray = Array.isArray(options)
@@ -223,33 +658,53 @@ function MultipleChoiceView({ options, correctOption }) {
         .map((opt) => parseInt(opt, 10));
 
   return (
-    <div className="mt-4 mb-4">
-      {optionsArray.map((option, index) => {
-        return (
-          <div key={index} className="row mb-3">
-            <div className="col">
-              <div className="form-check">
-                <input
-                  type="radio"
-                  className="form-check-input"
-                  autoComplete="off"
-                  readOnly
-                  value={option}
-                  id={`optionMultiple-${index}`}
-                  checked={correctOptions.includes(index)}
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor={`optionMultiple-${index}`}
-                >
-                  {option}
-                </label>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+   <Box sx={{ mt: 4, mb: 4}}>
+      <FormGroup
+      >
+        {optionsArray.map((option, index) => {
+          const isSelected = correctOptions.includes(index);
+          
+          return (
+            <Box 
+              key={index}
+              sx={{ 
+                width: '100%',
+              }}
+            >
+              <FormControlLabel
+                control={
+                  <Radio
+                    readOnly
+                    checked={isSelected}
+                    disabled // Hacemos el checkbox de solo lectura
+                    sx={{
+                      color: isSelected ? theme.palette.primary.main : 'rgba(0, 0, 0, 0.6)',
+                      '&.Mui-checked': {
+                        color: theme.palette.primary.main,
+                      },
+                      '&.Mui-disabled': {
+                        color: isSelected ? theme.palette.primary.main : 'rgba(0, 0, 0, 0.26)',
+                      }
+                    }}
+                  />
+                }
+                label={
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      color: isSelected ? theme.palette.text.primary : theme.palette.text.secondary,
+                      fontWeight: isSelected ? 'medium' : 'normal',
+                    }}
+                  >
+                    {option.trim()} {/* Eliminamos espacios extra */}
+                  </Typography>
+                }
+              />
+            </Box>
+          );
+        })}
+      </FormGroup>
+    </Box>
   );
 }
 
