@@ -100,26 +100,44 @@ const updateClient = async (req, res) => {
       return res.status(400).json({ message: "No hay datos para actualizar" });
     }
 
-    // Prepara los datos a actualizar
-    let dataToUpdate = { client, state, color_tag1, color_tag2 };
+    try {
+       const { id } = req.params;
+       const { client, state, color_tag1, color_tag2 } = req.body;
+  
+       if (!client && !state && !color_tag1 && !color_tag2 && !req.file) {
+          return res.status(400).json({ message: 'No hay datos para actualizar' });
+       }
+       
+       // Prepara los datos a actualizar
+       let dataToUpdate = { client, state, color_tag1, color_tag2 };
 
-    if (req.file) {
-      // cliente existente para saber si tiene una imagen anterior
-      const existingClient = await clientModel.getById(id);
+       if (req.file) {
+           // cliente existente para saber si tiene una imagen anterior
+           const existingClient = await clientModel.getById(id);
+           
+           if (existingClient && existingClient.logo) {
+              // Construye la ruta absoluta de la imagen antigua
+              const oldImagePath = path.join(process.env.FILE_DIR, existingClient.logo);
+              if (fs.existsSync(oldImagePath)) {
+                  fs.unlinkSync(oldImagePath); 
+              }
+           }
+           
+           // Agrega el nombre del nuevo
+           dataToUpdate.logo = req.file.filename;
+       }
+       
+       // Actualiza el client
+       const updatedClient = await clientModel.update(id, dataToUpdate);
+       
+       return res.status(200).json({
+          status: true,
+          message: 'Cliente actualizado correctamente',
+          data: updatedClient
+       });
+    } catch (error) {
+       return res.status(500).json({ message: error.message });
 
-      if (existingClient && existingClient.logo) {
-        // Construye la ruta absoluta de la imagen antigua
-        const oldImagePath = path.join(
-          "C:\\Users\\moncayorojas.6\\Desktop\\Trabajos\\EVA\\tpco_transversal_EvaFe\\public\\clientes",
-          existingClient.logo
-        );
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      }
-
-      // Agrega el nombre del nuevo
-      dataToUpdate.logo = req.file.filename;
     }
 
     // Actualiza el client
