@@ -395,16 +395,7 @@ const ModalAdmin = ({
                 },
               }}
             />
-            {/* Opcional: Mostrar estado de guardado */}
-            {isSavingFeedback && (
-              <Typography
-                variant="body2"
-                color="primary"
-                sx={{ marginTop: "10px" }}
-              >
-                Guardando feedback...
-              </Typography>
-            )}
+            {/* <saveButton>Guardar cambios</saveButton> */}
           </Box>
         )}
       </DialogContent>
