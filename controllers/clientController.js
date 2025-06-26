@@ -112,7 +112,7 @@ const updateClient = async (req, res) => {
            
            if (existingClient && existingClient.logo) {
               // Construye la ruta absoluta de la imagen antigua
-              const oldImagePath = path.join('C:\\Users\\moncayorojas.6\\Desktop\\Trabajos\\EVA\\tpco_transversal_EvaFe\\public\\clientes', existingClient.logo);
+              const oldImagePath = path.join(process.env.FILE_DIR, existingClient.logo);
               if (fs.existsSync(oldImagePath)) {
                   fs.unlinkSync(oldImagePath); 
               }
