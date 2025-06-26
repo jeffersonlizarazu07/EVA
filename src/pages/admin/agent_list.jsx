@@ -17,6 +17,7 @@ import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import Alert from "@mui/material/Alert";
 import {
   getAdmins,
   getClients,
@@ -26,6 +27,7 @@ import {
   getBlocksForIdForm,
   saveMonitoring,
   saveFeedback,
+  getMonitoringByUserAndForm,
 } from "../../services/agent_listService";
 import {
   formatDate,
@@ -193,12 +195,9 @@ const AdminList = () => {
 
     if (isNaN(numericId) || numericId <= 0) {
       console.error("ID de cliente inválido:", selectedId);
-      Swal.fire({
-        title: "Error",
-        text: "ID de cliente inválido",
-        icon: "error",
-        confirmButtonText: "Ok",
-      });
+      <Alert severity="success" variant="filled">
+        "ID de cliente inválido",
+      </Alert>;
       return;
     }
 
@@ -235,12 +234,15 @@ const AdminList = () => {
       setDateError(!isDateValid);
 
       if (!isClientValid || !isFormValid || !isDateValid) {
-        Swal.fire({
-          icon: "error",
-          title: "Faltan campos obligatorios",
-          html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-          customClass: "swal-content-center",
-        });
+        // Swal.fire({
+        //   icon: "error",
+        //   title: "Faltan campos obligatorios",
+        //   html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+        //   customClass: "swal-content-center",
+        // });
+        <Alert severity="success" variant="filled">
+          Los campos cliente, formulario y fecha son necesarios para continuar
+        </Alert>;
         return;
       }
 
@@ -271,6 +273,15 @@ const AdminList = () => {
           customClass: {
             htmlContainer: "swal-content-left",
           },
+        });
+        return;
+      }
+
+      if (monitoringId) {
+        Swal.fire({
+          icon: "info",
+          title: "Evaluación ya registrada",
+          text: "No puedes volver a calificar este formulario. Solo puedes dejar feedback.",
         });
         return;
       }
@@ -310,33 +321,22 @@ const AdminList = () => {
         return;
       }
 
-      // Validar que el feedback no esté vacío (opcional)
-      if (!feedback.trim()) {
-        Swal.fire({
-          icon: "warning",
-          title: "Feedback requerido",
-          text: "Por favor, ingresa un comentario antes de guardar.",
-        });
-        return;
-      }
-
       try {
         setIsSavingFeedback(true);
 
         const result = await saveFeedback(monitoringId, feedback, accessToken);
 
         if (result && result.success) {
-          Swal.fire({
-            icon: "success",
-            title: "Feedback guardado",
-            text: "La información adicional fue almacenada correctamente.",
-          });
+          if (feedback.trim() !== "") {
+            Swal.fire({
+              icon: "success",
+              title: "Feedback guardado",
+              text: "La información adicional fue almacenada correctamente.",
+            });
+          }
 
-          // Cerrar modal y resetear estados
           formClientReset();
-          setFeedback(""); // Limpiar feedback
-
-          // Opcional: recargar la lista de agentes
+          setFeedback("");
           await loadAdmins();
         } else {
           Swal.fire({
@@ -392,9 +392,41 @@ const AdminList = () => {
   // Maneja la selección de un formulario, y carga sus bloques
   const handleFormSelect = async (e) => {
     const selectedId = e.target.value;
-    setSelectedFormId(selectedId); // actualizar ID del formulario
+    setSelectedFormId(selectedId);
 
-    await handleLoadBlocks(e); // también carga los bloques asociados al formulario seleccionado
+    if (idToEdit && selectedId) {
+      try {
+        const { monitoring } = await getMonitoringByUserAndForm(
+          idToEdit,
+          selectedId,
+          accessToken
+        );
+
+        console.log("🔍 Resultado API:", monitoring);
+
+        if (monitoring) {
+          setMonitoringId(monitoring.id);
+          setFeedback(monitoring.feedback || "");
+          setMonitoringStep(3); // Solo vista de feedback
+
+          // (Opcional) Muestra una alerta para que el usuario sepa que solo puede dejar feedback
+          Swal.fire({
+            icon: "info",
+            title: "Formulario ya evaluado",
+            text: "Este formulario ya fue usado para evaluar al agente. Solo puedes dejar o actualizar el feedback.",
+          });
+        } else {
+          // No hay evaluación previa, se puede iniciar desde cero
+          setMonitoringId(null);
+          setFeedback("");
+          setMonitoringStep(1);
+        }
+      } catch (error) {
+        console.error("Error al consultar evaluación previa:", error);
+      }
+    }
+
+    await handleLoadBlocks(e); // Cargar los bloques del formulario
   };
 
   // Guarda una nueva monitorización en el sistema
@@ -423,7 +455,6 @@ const AdminList = () => {
 
   // Abrir el modal para iniciar con el monitoreo
   const openModal = async (op, admin) => {
-    setIsModalOpen(true); // abre el modal
     setOperation(op);
 
     // Si la operación es 1, es para registrar
@@ -508,13 +539,7 @@ const AdminList = () => {
             agentData?.lastname || ""
           }`.trim()
         );
-        if (agentData.monitoring) {
-          setMonitoringStep(3); // Paso de feedback
-          setMonitoringId(agentData.monitoring.id);
-        } else {
-          setMonitoringStep(1); // Evaluación nueva
-          setMonitoringId(null);
-        }
+        setIsModalOpen(true); // abre el modal
       }
     }
   };

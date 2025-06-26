@@ -195,3 +195,27 @@ export const saveMonitoring = async (payload) => {
     throw error;
   }
 };
+
+export const getMonitoringByUserAndForm = async (
+  userId,
+  formId,
+  accessToken
+) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/monitoring/user/${userId}/form/${formId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error al consultar monitoreo por usuario y formulario:",
+      error
+    );
+    return { monitoring: null };
+  }
+};
