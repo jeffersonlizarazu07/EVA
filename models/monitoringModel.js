@@ -26,8 +26,23 @@ const MonitoringModel = {
       );
   },
 
+  getMonitoringByUserAndForm(userId, formId) {
+    return knex("monitoring")
+      .where({ id_user: userId, id_form: formId })
+      .first();
+  },
+
   // Obtener por ID
-  getById: (id) => db("monitoring").where({ id }).first(),
+  getById: (id) => {
+    return db("users as u")
+      .leftJoin("monitoring as m", "m.id_user", "u.id")
+      .select(
+        "u.*",
+        "m.id as monitoring_id" // Solo trae el ID de la monitorización
+      )
+      .where("u.id", id)
+      .first();
+  },
 
   // Actualizar
   update(id, data) {
