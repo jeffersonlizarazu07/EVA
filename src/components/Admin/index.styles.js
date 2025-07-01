@@ -2,6 +2,9 @@ import fondo from '../../assets/img/eva v8.png'
 import fondoOscuro from '../../assets/img/eva v10.png'
 import { createTheme } from '@mui/material/styles';
 
+
+
+
 const commonDarkBackground = '#383636';
 const commonTextWhite = '#ffffff';
 
@@ -39,6 +42,7 @@ export const darkTheme = createTheme({
           backgroundRepeat: 'no-repeat',
           color: commonTextWhite,
         },
+        
         '.modal-content': {
           backgroundColor: commonDarkBackground,
         },
@@ -104,6 +108,57 @@ export const darkTheme = createTheme({
         '.css-1jy569b-MuiFormLabel-root-MuiInputLabel-root': {
           color: commonTextWhite,
         },
+
+        //
+        '.css-1hqbmbt-MuiTableCell-root':{
+          color: `${commonDarkBackground} !important`,
+        },
+        '.table-light.tr-table th':{
+          color: `${commonDarkBackground} !important`,
+        },
+        '.h5, h5, .text-start, .fw-bold':{
+          color: `${commonTextWhite} !important`,
+        },
+        '.labelName, .acces-tabla, .text-muted ':{
+           color: `${commonTextWhite} !important`,
+        },
+        '.input-new ':{
+          color: `${commonTextWhite} !important`,
+          backgroundColor: `#383637 !important`,
+        },
+        '.row .form-control ':{
+          color: `${commonTextWhite} !important`,
+          backgroundColor: `#383637 !important`,
+          border: '1px solid rgb(255, 255, 255)',
+        },
+        '.bg-light':{
+          backgroundColor: `#383637 !important`,
+        },
+        // 
+        '.fa-solid, .fas':{
+          color: `${commonTextWhite} !important`,
+        },
+        
+        '.btn-option-view:hover': {
+            border: '2px solid rgb(199, 14, 143) !important',
+            color: `${commonTextWhite} !important`,
+          
+        },
+        '.btn-option-view:focus': {
+            border: '2px solid rgb(199, 14, 143) !important',
+            color: `${commonTextWhite} !important`,
+          
+        },
+        '.btn-option-view': {
+            backgroundColor: 'transparent !important',
+          
+        },
+
+        '.css-171xgwh-MuiPaper-root-MuiCard-root':{
+          border: '2px solid rgb(199, 14, 143)',
+        },
+        //
+
         '.swal2-popup.swal2-toast': {
           backgroundColor: '#797676',
           color: commonTextWhite,
