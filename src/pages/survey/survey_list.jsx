@@ -873,7 +873,7 @@ const SurveyList = () => {
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
         sx={{
-    zIndex: 5, // ⬅️ Reduce el z-index del modal (valor por defecto de MUI)
+        zIndex: 5, 
   }}
       >
         <Box sx={{

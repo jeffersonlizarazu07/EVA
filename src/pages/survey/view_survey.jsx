@@ -37,6 +37,45 @@ import {
 import getRangeOptions from "./conditional";
 import { useNavigate } from "react-router-dom";
 
+// Material-UI Imports
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Typography,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Switch,
+  FormControlLabel,
+  IconButton,
+  Menu,
+  MenuItem as MenuItemComponent,
+  Alert,
+  Paper,
+  Divider
+} from '@mui/material';
+import {
+  TurnLeft,
+  ArrowBack,
+  Add,
+  MoreVert,
+  Edit,
+  Delete,
+  Help,
+  Link, 
+  Update
+} from '@mui/icons-material';
+
 export default function View_survey() {
   const nav = useNavigate();
   const { id } = useParams();
@@ -58,11 +97,20 @@ export default function View_survey() {
     options: [],
     correctAnswers: [],
   });
+
+
   const [isChecked, setIsChecked] = useState(null);
   const [selectedRangeType, setSelectedRangeType] = useState({
     questionTypeRange: "",
     answersRange: "",
   });
+
+   // Estados para Material-UI Modal y Menu
+  const [modalOpen, setModalOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+
+  const [validationErrors, setValidationErrors] = useState({}); // estado para almacenar los errores de validación
 
   const question = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -89,6 +137,30 @@ export default function View_survey() {
   const { accessToken, languageUser } = useContext(UserContext);
 
   useEffect(() => {
+  // Limpiar errores cuando cambie el tipo de pregunta
+  if (questionType.input) {
+    clearValidationErrors();
+  }
+}, [questionType.input]);
+
+useEffect(() => {
+  // Limpiar errores cuando se actualice correctAnswer
+  if (singleChoiceData.correctAnswer !== null && 
+      singleChoiceData.correctAnswer !== undefined &&
+      singleChoiceData.correctAnswer !== -1) {
+    clearValidationErrors();
+  }
+}, [singleChoiceData.correctAnswer]);
+
+useEffect(() => {
+  // Limpiar errores cuando se actualicen las respuestas múltiples
+  if (multipleChoiceData.correctAnswers && 
+      multipleChoiceData.correctAnswers.length > 0) {
+    clearValidationErrors();
+  }
+}, [multipleChoiceData.correctAnswers]);
+
+  useEffect(() => {
     i18n.changeLanguage(languageUser);
     getSurvey(id, config, setSurveyData);
     updateSurveyQuestions();
@@ -113,6 +185,11 @@ const config = {
   },
   withCredentials: true,
 };
+ 
+  //Función para limpiar errores
+  const clearValidationErrors = () => {
+   setError("");
+  };
 
   const updateSurveyQuestions = async () => {
     try {
@@ -127,13 +204,17 @@ const config = {
   const handleCancel = () => {
     setValueConditional(false);
     setIsChecked(false);
-    setSingleChoiceData({ options: [], correctAnswer: null });
+    setSingleChoiceData({ options: [], correctAnswer: [] });
     setMultipleChoiceData({ options: [], correctAnswers: [] });
     setidToEdit(null);
     //limpiar también los valores de los inputs
     id_conditional.handleChange(0);
     conditional_answer.handleChange("");
     conditional.handleChange("NO");
+    setModalOpen(false); // Cerrar modal Material-UI
+    clearValidationErrors()
+     questionType.handleChange("");
+    description.handleChange("");
   };
 
   const conditionalHandleChange = (e) => {
@@ -151,13 +232,28 @@ const config = {
   useEffect(() => {
     if (!valueConditional) {
       setListConditional(false);
-      setSingleChoiceData({ options: [], correctAnswer: null });
+      setSingleChoiceData({ options: [], correctAnswer: [] });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
     }
     setListConditional(true);
   }, [valueConditional]);
 
+  useEffect(() => {
+  // Efecto para actualizar rangeOptions cuando cambie la pregunta condicional seleccionada
+  if (operation === 2 && id_conditional.input && selectedRangeType.questionTypeRange) {
+    // Force re-render of rangeOptions when conditional question changes
+    const questionFound = data.find(q => q.id.toString() === id_conditional.input.toString());
+    if (questionFound) {
+      setSelectedRangeType({
+        questionTypeRange: questionFound.type,
+        answersRange: questionFound.select_option,
+      });
+    }
+  }
+}, [operation, id_conditional.input, data]);
+
   const openModal = (op, idsurvey, questionDetails) => {
+    console.log("---question" , questionDetails);
     setOperation(op);
     if (op === 1) {
       setTitle(t("vistaEncuestas.nueva_pregunta"));
@@ -173,20 +269,40 @@ const config = {
       id_conditional.handleChange(0);
       conditional_answer.handleChange("NO");
       survey_id.handleChange(idsurvey);
-      setSingleChoiceData({ options: [], correctAnswer: null });
+      setSingleChoiceData({ options: [], correctAnswer: [] });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
+       setSelectedRangeType({
+      questionTypeRange: "",
+      answersRange: "",
+    });
     } else if (op === 2) {
       console.log({ questionDetails });
-      setSingleChoiceData({ options: [], correctAnswer: null });
+      setSingleChoiceData({ options: [], correctAnswer: [] });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
       setTitle(t("vistaEncuestas.editar_pregunta"));
       setDescriptionText(t("vistaEncuestas.descripcion_pregunta"));
       if (questionDetails.conditional == "SI") {
         setValueConditional(true);
         setIsChecked(true);
+        if (questionDetails.id_conditional && questionDetails.id_conditional !== 0) {
+        const conditionalQuestion = data.find(q => 
+          q.id.toString() === questionDetails.id_conditional.toString()
+        );
+        
+        if (conditionalQuestion) {
+          setSelectedRangeType({
+            questionTypeRange: conditionalQuestion.type,
+            answersRange: conditionalQuestion.select_option,
+          });
+        }
+      }
       } else {
         setValueConditional(false);
         setIsChecked(false);
+         setSelectedRangeType({
+        questionTypeRange: "",
+        answersRange: "",
+      });
       }
 
       if (questionDetails.type == "check_opt") {
@@ -202,6 +318,7 @@ const config = {
         const optiosnData = questionDetails?.select_option;
         const optionsDataArray = optiosnData.split(",");
         const answerSelected = questionDetails?.selected_answer.split(",");
+        console.log("res", answerSelected);
         setSingleChoiceData({
           options: optionsDataArray,
           correctAnswer: answerSelected,
@@ -216,15 +333,95 @@ const config = {
       );
       setidToEdit(questionDetails?.id);
     }
+    setModalOpen(true); // Abrir modal Material-UI
   };
+
+  
+  // Funciones para el menú de Material-UI
+  const handleMenuClick = (event, question) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedQuestion(question);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedQuestion(null);
+  };
+
+  const handleEditClick = () => {
+    openModal(2, id, selectedQuestion);
+    handleMenuClose();
+  };
+
+  const handleDeleteClick = () => {
+    deleteQuestion(selectedQuestion, config, updateSurveyQuestions, t);
+    handleMenuClose();
+  };
+
 
   const validar = (id, survey_idt) => {
     var parametros;
     var metodo;
-    console.log("??  ", singleChoiceData.correctAnswer);
+    clearValidationErrors();
+    console.log(" --******---??  ", singleChoiceData);
     if (questionType.input.trim() === "" || description.input.trim() === "") {
-      setError("Ingresa una pregunta valida.");
+      setError(t("alerts.ingrese_pregunta_valida"));
+      return
     } else {
+      if (questionType.input === "check_opt") {
+      // Validar que existan opciones
+      if (!multipleChoiceData.options || multipleChoiceData.options.length === 0) {
+         setError(t("alerts.debe_agregar_pregunta"));
+         return
+      }
+      
+      // Validar que haya opciones con texto
+      const hasEmptyOptions = multipleChoiceData.options.some(option => 
+        !option || (typeof option === 'object' ? !option.text?.trim() : !option.toString().trim())
+      );
+      
+      if (hasEmptyOptions) {
+        setError(t("alerts.debe_agregar_pregunta_respuesta"));
+        return
+      }
+      
+      // Validar que se haya seleccionado al menos una respuesta correcta
+      if (!multipleChoiceData.correctAnswers || multipleChoiceData.correctAnswers.length === 0) {
+        setError(t("alerts.debe_seleccionar_respuesta"));
+        return
+      }
+    }
+    
+    // Verificar si es una pregunta de opción única (radio_opt)
+    if (questionType.input === "radio_opt") {
+      // Validar que existan opciones
+      if (!singleChoiceData.options || singleChoiceData.options.length === 0) {
+         setError(t("alerts.debe_agregar_pregunta"));
+         return
+      }
+      
+      // Validar que haya opciones con texto
+      const hasEmptyOptions = singleChoiceData.options.some(option => 
+        !option || (typeof option === 'object' ? !option.text?.trim() : !option.toString().trim())
+      );
+      
+      if (hasEmptyOptions) {
+        setError(t("alerts.debe_agregar_pregunta_respuesta"));     
+        return
+      }   
+      
+      // Validar que se haya seleccionado una respuesta correcta
+      console.log("el valor", (singleChoiceData.correctAnswer === null))
+      console.log("el valor", (singleChoiceData.correctAnswer === undefined))
+      console.log("el valor", (singleChoiceData.correctAnswer === ''))
+      
+      if (singleChoiceData.correctAnswer === null || singleChoiceData.correctAnswer === undefined || singleChoiceData.correctAnswer === '' || singleChoiceData.correctAnswer.length === 0) {
+        setError(t("alerts.debe_seleccionar_respuesta_unica"));   
+        return
+      }
+    }
+
+      
       // Asegúrate de que selectedAnswer sea un índice (número) para radio_opt
       const selectedAnswer =
         questionType.input === "radio_opt"
@@ -236,13 +433,27 @@ const config = {
           ? singleChoiceData.options
           : multipleChoiceData.options;
 
+      let selectedAnswerToString = "";  
       // Para "radio_opt" debería ser solo un número, no un array
-      const selectedAnswerToString =
-        questionType.input === "radio_opt"
-          ? selectedAnswer.toString() // Convierte a string para guardarlo
-          : selectedAnswer.join(", "); // Para check_opt, une los valores
-
-      const optionsToSave = options.map((option) => option.text).join(", ");
+      // const selectedAnswerToString =
+      if( questionType.input === "radio_opt"){
+        selectedAnswerToString = selectedAnswer != null && selectedAnswer !== undefined 
+        ? selectedAnswer.toString() 
+        : "";
+      }else {
+      // Para check_opt, verificar si es un array válido antes de hacer join
+      selectedAnswerToString = Array.isArray(selectedAnswer) && selectedAnswer.length > 0
+        ? selectedAnswer.join(", ")
+        : "";
+    }
+       const optionsToSave = Array.isArray(options) && options.length > 0
+      ? options.map((option) => {
+          // CAMBIO 3: Verificar si option es un objeto con propiedad text o es un string directo
+          return typeof option === 'object' && option.text 
+            ? option.text 
+            : option.toString();
+        }).join(", ")
+      : "";
 
       if (operation === 1) {
         parametros = {
@@ -277,18 +488,16 @@ const config = {
           survey_id: survey_idt,
           conditional_answer: conditional_answer.input,
           id_conditional: id_conditional.input,
-          selected_answer:
-            questionType.input === "check_opt" ||
-            questionType.input === "radio_opt"
-              ? selectedAnswerToString.length > 1
-                ? selectedAnswerToString
-                : selectedAnswerToString
-              : null,
+           selected_answer:
+          questionType.input === "check_opt" ||
+          questionType.input === "radio_opt"
+            ? selectedAnswerToString || null
+            : null,
           select_option:
             questionType.input === "check_opt" ||
             questionType.input === "radio_opt"
-              ? optionsToSave
-              : null,
+            ? optionsToSave || null
+            : null,
         };
         console.log("parametros", parametros);
         metodo = "put";
@@ -307,8 +516,11 @@ const config = {
         .then(() => {
           // Actualizar preguntas después de la llamada a sendData
           //updateSurveyQuestions();
-          document.getElementById("btnClose").click();
+          //document.getElementById("btnClose").click();
+          setModalOpen(false); // Cerrar modal Material-UI
           setValueConditional(false);
+          setSingleChoiceData({ options: [], correctAnswer: [] });
+          setMultipleChoiceData({ options: [], correctAnswers: [] });
         })
         .catch((error) => {
           console.error("Error en la actualización de preguntas:", error);
@@ -317,22 +529,39 @@ const config = {
   };
 
   const handleSingleChoiceChange = (updatedData) => {
-    setSingleChoiceData(updatedData);
-    console.log("updated Data:", singleChoiceData.correctAnswer);
+        setSingleChoiceData(updatedData);
+    console.log("updated Data:", updatedData);
+    console.log("updated Data----:", updatedData.correctAnswer);
+
+    
   };
 
   const handleMultipleChoiceChange = (data) => {
+    console.log("Multiple Choice Data:", data);
     setMultipleChoiceData(data);
   };
   const handleSelectConditionalQuestionChange = (e) => {
     const selectedId = e.target.value; // Captura el value (question.id)
-    const selectedType = e.target.selectedOptions[0].getAttribute("data-type");
-    const selectedAnswers =
-      e.target.selectedOptions[0].getAttribute("data-answers"); // Convertimos de vuelta a un array u objeto
-    setSelectedRangeType({
-      questionTypeRange: selectedType,
-      answersRange: selectedAnswers,
-    });
+    const selectedQuestion = data.find(question => question.id.toString() === selectedId.toString());
+  
+    if (selectedQuestion) {
+      // Ahora obtenemos los datos directamente del objeto encontrado
+      const selectedType = selectedQuestion.type;
+      const selectedAnswers = selectedQuestion.select_option;
+      
+      setSelectedRangeType({
+        questionTypeRange: selectedType,
+        answersRange: selectedAnswers,
+      });
+        conditional_answer.handleChange("");
+    } else {
+      // Si no se encuentra la pregunta, limpiar los valores
+      setSelectedRangeType({
+        questionTypeRange: "",
+        answersRange: "",
+      });
+          conditional_answer.handleChange("");
+    }
     id_conditional.handleChange(selectedId);
   };
 
@@ -340,357 +569,448 @@ const config = {
     () =>
       getRangeOptions(
         selectedRangeType.questionTypeRange,
-        selectedRangeType.answersRange
+        selectedRangeType.answersRange,
+        t
       ),
     [selectedRangeType]
   );
 
   return (
-    <div className="App">
-      <div id="body">
+    <Box style={{ overflow: "hidden" }}>      
         <HeaderLT1/>
-        <section style={{alignItems:"stretch", flexWrap:"nowrap", padding:0}}>
+        <Box component = "section" 
+          sx={{alignItems: "stretch", 
+            flexWrap: "nowrap", 
+            padding: 0, 
+            height: "85vh", 
+            overflowY: "auto" 
+          }}>
         {/* <SidebarLT1/> */}
-        <div className="container mt-0">
-          <div className="row">            
-            <div className="col-md-12">
-              <button className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-1 mb-2" onClick={() => nav("/survey_list")} >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-90deg-left" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
-                </svg>
-              </button>
-              <div className="card p-4 borderEVA bg-light">             
-                <div className="text-center">
-                  <h3>{t("vistaEncuestas.informacion_encuesta")}</h3>
-                </div>
-                <div className="card-body p-0 py-2">
-                  <div className="container-fluid">
-                    <div className="row d-flex align-items-center">
-                      <div className="col-6">
-                      {console.log("-----surveyData aca ------", surveyData)}
-                        <h5>{surveyData.data?.title}</h5>
-                        <p className="fs-6">{surveyData.data?.description}</p>
-                      </div>
-                      <div className="col-6 text-end">
-                        {console.log("-----surveyData aca", surveyData)}
-                      {surveyData.data?.start_date ||  "Sin fecha"} / 
-                      {surveyData.data?.end_date || "Sin fecha"}
-                        <p className="fs-6">{t("vistaEncuestas.cantidad_preguntas")}: {surveyData.sampleCount || 0}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-12 mt-3">
-              <div className="card p-4 card-outline card-success borderEVA bg-light">
-                <div>
-                  <h3 className="text-center">{t("vistaEncuestas.preguntas_encuesta")}</h3>
-                  <div className="card-tools">
-                    <button className="btn fw-bold btn-sm acces-tabla" data-bs-toggle="modal"  data-bs-target="#modalManageQuestion" onClick={() => openModal(1,id)}> + {t("vistaEncuestas.agregar_pregunta")}</button>
-                  </div>
-                </div>
-            
-                  <div className="card-body ui-sorteable">
-                    {data.map((question) => (
-                      <div
-                        key={question.id}
-                        className="callout callout info shadowbox5 p-3 m-3"
-                      >
-                        <div className="row ">
-                          <div className="col-md-12 col-12"></div>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <h5 className="mt-2">{question.question}</h5>
-                          <div className="dropdown">
-                            <a
-                              className="btn  dropdown-toggle"
-                              href="#"
-                              role="button"
-                              data-bs-toggle="dropdown"
-                              aria-expanded="false"
-                            >
-                              <i className="fa-solid fa-ellipsis-vertical"></i>
-                            </a>
-                            <ul className="dropdown-menu">
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  type="button"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#modalManageQuestion"
-                                  onClick={() => openModal(2, id, question)}
-                                >
-                                  {t("survey.editar")}
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  type="button"
-                                  onClick={() =>
-                                    deleteQuestion(
-                                      question,
-                                      config,
-                                      updateSurveyQuestions,
-                                      t
-                                    )
-                                  }
-                                >
-                                  {t("vistaEncuestas.eliminar")}
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-
-                        {question.type == "range_onetofive" ? (
-                          <Range_onetofive />
-                        ) : question.type == "range_zerototen" ? (
-                          <Range_zerototen />
-                        ) : question.type == "range_difficulty" ? (
-                          <Range_difficulty />
-                        ) : question.type == "yes_no" ? (
-                          <Yes_no />
-                        ) : question.type == "range_emoji" ? (
-                          <Range_emoji />
-                        ) : question.type == "textfield_s" ? (
-                          <Textfield_s />
-                        ) : question.type == "radio_opt" ? (
-                          <SingleChoiceView
-                            options={question.select_option}
-                            correctOption={question.selected_answer}
-                          />
-                        ) : (
-                          <MultipleChoiceView
-                            options={question.select_option}
-                            correctOption={question.selected_answer}
-                          />
-                        )}
-
-                        <div className="text-end me-3">
-                          {question.conditional === "SI" ? (
-                            <div>
-                            <i
-                              className="fa-solid fa-question text-primary"
-                              data-bs-toggle="tooltip"
-                              data-bs-placement="top"
-                              data-bs-custom-class="custom-tooltip"
-                              data-bs-title="This top tooltip is themed via CSS variables."
-                            ></i> {t("vistaEncuestas.pregunta_condicionals")}</div>
-                          ) : (
-                            ""
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    <div
-      className="modal fade" id="modalManageQuestion" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" >
-      <div className={`${operation===1? "modal-lg":"modal-xl"} modal-dialog modal-dialog-centered modal-dialog-scrollable"`} >
-        <div className="modal-content">
-          <div className="modal-header">
-                <h5 className='text-start m-2 modal-title'>{title}</h5>
-          </div>
-          <div className="modal-body ">
-          <div className={`${operation === 1 ? "" : "pe-5"} row ` }>
-          <div className={`${operation === 1 ? "col-12" : "col-6"} p-3` } >
-                <small>
-                <p className='text-start  ms-2 text-secondary'>{descriptionText}</p>
-                </small>
-               
-                <div className="form-group m-2 mt-2 mb-4" >
-              
-                <label id="labelAnimation" htmlFor="question" >
-                  <input
-                    type="text"
-                    name="question"
-                    id="question"
-                    className="input-new"
-                    placeholder=" "
-                      value={description.input}
-                      onChange={(e) => description.handleChange(e.target.value)}
-                    required
-                  />
-                      <span className="labelName" >{t("vistaEncuestas.pregunta")}:</span>
-                      </label>
-              </div>
-              <div className="form-group m-2 ">
-           
-                <label htmlFor="middlename" id="labelAnimation">
-                <select   className="input-new text-center" placeholder=" "   name='questionType' onChange={(e)=> questionType.handleChange(e.target.value)} value={questionType.input} >
-                  <option value="" disabled>{t("vistaEncuestas.seleccione_pregunta")}</option>
-                  <option value="yes_no">{t("vistaEncuestas.si_no")}</option>
-                  <option value="range_emoji">{t("vistaEncuestas.rango_emoji")}</option>
-                  <option value="range_onetofive">{t("vistaEncuestas.rango_1_5")}</option>
-                  <option value="range_zerototen">{t("vistaEncuestas.rango_0_10")}</option>
-                  <option value="range_difficulty">{t("vistaEncuestas.rango_dificultad")}</option>
-                  <option value="textfield_s">{t("vistaEncuestas.campo_texto")}</option>
-                  <option value="radio_opt">{t("vistaEncuestas.seleccion_unica")}</option>
-                  <option value="check_opt">{t("vistaEncuestas.seleccion_multiple")}</option>
-                </select>
-                <span className="labelName">{t("vistaEncuestas.tipo_pregunta")}:</span>
-                </label>
-              </div>
-              {questionType.input==="radio_opt" && operation==1? (<SingleChoiceQuestion   options={singleChoiceData.options}  correctAnswer={singleChoiceData.correctAnswer}  onChange={handleSingleChoiceChange}/>)
-                :(questionType.input=="check_opt" && operation==1? <MultipleChoiceQuestion   options={multipleChoiceData.options}  correctAnswers={multipleChoiceData.correctAnswers}  onChange={handleMultipleChoiceChange}/>
-                :(questionType.input=="check_opt" && operation==2? <MultipleChoiceQuestionEdit idToEdit={idToEdit} options={multipleChoiceData.options} correctAnswers={multipleChoiceData.correctAnswers} onChange={handleMultipleChoiceChange}/>:
-                (questionType.input=="radio_opt" && operation==2?  <SingleChoiceQuestionEdit options={singleChoiceData.options} correctAnswer={singleChoiceData.correctAnswer} idToEdit={idToEdit} onChange={handleSingleChoiceChange}/> :"")
-                ))}
-                
-              {operation===1? ( <div className="mt-2 mb-2">
-                    {questionType.input=='range_onetofive'?(
-                      <Range_onetofive/>)
-                      :(questionType.input=="range_zerototen"?(
-                      <Range_zerototen/>)
-                      :(questionType.input=="range_difficulty"? (
-                      <Range_difficulty/>)
-                      :(questionType.input=="yes_no"? (
-                      <Yes_no/>)
-                      :(questionType.input=="range_emoji"?(
-                      <Range_emoji/>)
-                      :(questionType.input=="textfield_s"?
-                      <Textfield_s/>
-                    :"")))))}
-                  </div>):null}
-             
-                  </div>
-              
-              { questionType.input && operation===2?(
-                <>
-                <div className="col-6  p-2 shadowbox5 " style={{borderLeft:"5px solid gray"}}>
-                  {operation===2 && data.length>=1?( <div className="form-check form-switch  m-2">
-                    <input className="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked={isChecked} onChange={(e)=> conditionalHandleChange(e.target.checked)}/>
-                    <label className="form-check-label" htmlFor="flexSwitchCheckChecked">{t("vistaEncuestas.pregunta_condicional")}</label>
-                      </div>):(" ") }
-                      {listConditional && valueConditional? (
-                      <>
-                          <div className="text ms-2 p-0">
-                            <span> {t("vistaEncuestas.respuesta_pregunta_condicional")}</span>
-                          </div>
-
-                          <div className="form-group  mt-3 m-2 ">
-                            <label htmlFor="middlename" id="labelAnimation">
-                              <select
-                                className=" input-new conditionalQuestionSelect "
-                                name="questionConditional"
-                                placeholder=" "
-                                onChange={(e) =>
-                                  handleSelectConditionalQuestionChange(e)
-                                }
-                                value={id_conditional.input}
-                              >
-                                <option value="0" selected hidden>
-                                  {t("vistaEncuestas.seleccionar")}
-                                </option>
-                                {data.map((question) =>
-                                  question.type == "textfield_s" ||
-                                  question.id === idToEdit ? null : (
-                                    <option
-                                      key={question.id}
-                                      value={question.id}
-                                      data-type={question.type}
-                                      data-answers={question.select_option}
-                                    >
-                                      {question.question.length > 55
-                                        ? question.question.substring(0, 55) +
-                                          "..."
-                                        : question.question}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                              <span className="labelName">Pregunta:</span>
-                            </label>
-                          </div>
-                          {id_conditional.input && (
-                            <div className="mt-2">
-                              <div className="text ms-2 mt-2 p-0">
-                                <span> {t("vistaEncuestas.es")}</span>
-                              </div>
-                              <div className="form-group mt-3 m-2">
-                                <label id="labelAnimation">
-                                  <select
-                                    name="optionConditionalSelector"
-                                    className="input-new"
-                                    placeholder=" "
-                                    onChange={(e) =>
-                                      conditional_answer.handleChange(
-                                        e.target.value
-                                      )
-                                    }
-                                    value={conditional_answer.input}
-                                  >
-                                    <option value="0" selected hidden>
-                                      {t("vistaEncuestas.seleccionar_opcion")}
-                                    </option>
-                                    {rangeOptions.map((option, index) => (
-                                      <option key={index} value={option.value}>
-                                        {option.optionText}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  <span className="labelName">{t("vistaEncuestas.respuesta")}</span>
-                                </label>
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      ) : null}
-                    </div>
-                  </>
-                ) : null}
-                {error && <p className="text-danger text-center">{error}</p>}
-                {operation === 2 ? (
-                  <div className="mt-2 mb-2">
-                    {questionType.input == "range_onetofive" ? (
-                      <Range_onetofive />
-                    ) : questionType.input == "range_zerototen" ? (
-                      <Range_zerototen />
-                    ) : questionType.input == "range_difficulty" ? (
-                      <Range_difficulty />
-                    ) : questionType.input == "yes_no" ? (
-                      <Yes_no />
-                    ) : questionType.input == "range_emoji" ? (
-                      <Range_emoji />
-                    ) : questionType.input == "textfield_s" ? (
-                      <Textfield_s />
-                    ) : (
-                      ""
-                    )}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-            <div className="modal-footer">
-              {questionType.input && (
-                <button
-                  className="btn bg-gradient-guardar mr-2"
-                  id="btn-send-survey"
-                  onClick={() => validar(idToEdit, id)}
-                >
-                  {t("buttons.guardar")}
-                </button>
-              )}
-              <button
-                className="btn btn-secondary"
-                type="button"
-                data-bs-dismiss="modal"
-                id="btnClose"
-                onClick={handleCancel}
+        <Container sx={{mt:0, maxWidth: "93.5% !important"}}>
+          <Grid container >            
+            <Grid item xs={12} md={12} >
+              <Button 
+                variant="outlined"
+                size="small"
+                sx={{  
+                  minWidth: 0,       
+                  width: 30,
+                  height: 30,
+                  padding: 0,
+                  marginBottom: 1,
+                  borderRadius: '50%',        
+                  color: '#b62a8b',
+                  borderColor: '#b62a8b',    
+                  '&:hover': {
+                    borderColor: '#b62a8b',
+                    backgroundColor: '#b62a8b',
+                    color: 'white'
+                  }
+                }}
+                onClick={() => nav("/survey_list")} 
               >
-                {t("buttons.cancelar")}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                <TurnLeft /> 
+              </Button>
+              <Card className="borderEVA" sx={{padding: "1.25rem", backgroundColor: '#f8f9fa'}}>             
+                <Box textAlign="center">
+                  <Typography variant="h5" sx={{ fontWeight: "bold"}}>
+                    {t("vistaEncuestas.informacion_encuesta")}
+                  </Typography>
+                </Box>
+                <CardContent sx={{ p: 0, py: 2 }}>
+                   <Grid container alignItems="center">
+                    <Grid item xs={6}>
+                      {console.log("-----surveyData aca ------", surveyData)}
+                      <Typography variant="h6" sx={{ fontWeight: "bold"}}>{surveyData.data?.title}</Typography>
+                      <Typography variant="body2" >{surveyData.data?.description}</Typography>
+                    </Grid>
+                    <Grid item xs={6} textAlign="right">
+                      {console.log("-----surveyData aca", surveyData)}
+                      <Typography variant="body2" sx={{fontSize: 16}}>
+                        {surveyData.data?.start_date || "Sin fecha"} / 
+                        {surveyData.data?.end_date || "Sin fecha"}
+                      </Typography>
+                      <Typography variant="body2" sx={{fontSize: 16}}>
+                        {t("vistaEncuestas.cantidad_preguntas")}: {surveyData.sampleCount || 0}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sx={{ mt: 3 }}>
+              <Card className ="borderEVA" sx={{padding: "1.25rem", backgroundColor: '#f8f9fa'}}>
+                <Box display="flex" flexDirection="column"   mb={2}>
+                  <Box  sx={{ textAlign: 'center' }}>
+                    <Typography variant="h5" sx={{ fontWeight: "bold"}}>
+                      {t("vistaEncuestas.preguntas_encuesta")}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Button                      
+                      startIcon={<Add />}
+                      onClick={() => openModal(1, id)}
+                      variant="h5"
+                      size="small"
+                      sx={{
+                        height: 30, 
+                        width: 175,
+                        fontSize: 12,
+                        whiteSpace: 'nowrap',
+                        fontWeight: "bold",
+                        borderRadius: '18px',
+                        border: '1px solid #b62a8b',
+                        color: 'black',
+                        borderColor: '#b62a8b',    
+                        '&:hover': {
+                          borderColor: '#b62a8b',
+                          backgroundColor: '#b62a8b',
+                          color: 'white'
+                        }
+                      }}
+                    > {t("vistaEncuestas.agregar_pregunta")}</Button>
+                  </Box>
+                </Box>
+            
+                  <CardContent>
+                    {data.map((question) => (
+                      <Paper
+                      className="shadowbox5"
+                      key={question.id}
+                      elevation={3}
+                      sx={{ p: 3, m: 2, backgroundColor: '#f8f9fa' }}
+                      >
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="h6" sx={{ mt: 1, fontWeight: "bold" }}>
+                          {question.question}
+                        </Typography>
+                        <IconButton
+                          onClick={(e) => handleMenuClick(e, question)}
+                        >
+                          <MoreVert  
+                            sx={{ 
+                              color:' #b62a8b',
+                              '&:hover': { backgroundColor: '#e9ecef' }
+                            }} />
+                        </IconButton>
+                        <Menu
+                          anchorEl={anchorEl}
+                          open={Boolean(anchorEl)}
+                          onClose={handleMenuClose}
+                          PaperProps={{
+                            elevation: 0, // <- elimina la sombra
+                            sx: {
+                              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1) !important' // sombra más sutil
+                            }
+                          }}
+                        >
+                          <MenuItemComponent sx={{ 
+                              display: 'flex', 
+                              gap: 1,
+                              color:' #b62a8b',
+                              '&:hover': { backgroundColor: '#f8f9fa' }
+                              }}  
+                            onClick={handleEditClick}>
+                            <Edit sx={{ fontSize: 18 }} />
+                            {t("survey.editar")}
+                          </MenuItemComponent>
+                          <MenuItemComponent
+                            sx={{ 
+                                display: 'flex', 
+                                gap: 1,
+                                color:' #b62a8b',
+                                '&:hover': { backgroundColor: '#f8f9fa' }
+                                }}  
+                            onClick={handleDeleteClick}>
+                            <Delete sx={{ fontSize: 18 }} />
+                            {t("vistaEncuestas.eliminar")}
+                          </MenuItemComponent>
+                        </Menu>
+                      </Box>
+
+                      {question.type == "range_onetofive" ? (
+                        <Range_onetofive />
+                      ) : question.type == "range_zerototen" ? (
+                        <Range_zerototen />
+                      ) : question.type == "range_difficulty" ? (
+                        <Range_difficulty />
+                      ) : question.type == "yes_no" ? (
+                        <Yes_no />
+                      ) : question.type == "range_emoji" ? (
+                        <Range_emoji />
+                      ) : question.type == "textfield_s" ? (
+                        <Textfield_s />
+                      ) : question.type == "radio_opt" ? (
+                        <SingleChoiceView
+                          options={question.select_option}
+                          correctOption={question.selected_answer}
+                        />
+                      ) : (
+                        <MultipleChoiceView
+                          options={question.select_option}
+                          correctOption={question.selected_answer}
+                        />
+                      )}
+
+                      <Box textAlign="right" sx={{ mt: 2 }}>
+                        {question.conditional === "SI" && (
+                          <Box display="flex" alignItems="center" justifyContent="flex-end">
+                            <Help color="primary" sx={{ mr: 1 }} />
+                            <Typography variant="body2">
+                              {t("vistaEncuestas.pregunta_condicionals")}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    </Paper>
+                    ))}
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+      
+   
+      <Dialog
+        open={modalOpen}
+        onClose={handleCancel}
+        maxWidth={operation === 1 ? "md" : "md"}
+        fullWidth
+      >
+        <Box sx={{ borderBottom: '1px solid #e0e0e0'}}>
+          <DialogTitle>{title}</DialogTitle>
+        </Box>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={operation === 1 ? 12 : 6}>
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                {descriptionText}
+              </Typography>
+               
+              <TextField
+                className="readOnlyField"
+                fullWidth
+                label={t("vistaEncuestas.pregunta")}
+                variant="outlined"
+                value={description.input}
+                onChange={(e) => description.handleChange(e.target.value)}
+                sx={{ mb: 3 }}
+                required
+              />
+
+              <FormControl className="readOnlyField" fullWidth sx={{ mb: 3 }}>
+                <InputLabel>{t("vistaEncuestas.tipo_pregunta")}</InputLabel>
+                <Select
+                  value={questionType.input}
+                  onChange={(e) => questionType.handleChange(e.target.value)}
+                  label={t("vistaEncuestas.tipo_pregunta")}
+                >
+                  <MenuItem value="" disabled>
+                    {t("vistaEncuestas.seleccione_pregunta")}
+                  </MenuItem>
+                  <MenuItem value="yes_no">{t("vistaEncuestas.si_no")}</MenuItem>
+                  <MenuItem value="range_emoji">{t("vistaEncuestas.rango_emoji")}</MenuItem>
+                  <MenuItem value="range_onetofive">{t("vistaEncuestas.rango_1_5")}</MenuItem>
+                  <MenuItem value="range_zerototen">{t("vistaEncuestas.rango_0_10")}</MenuItem>
+                  <MenuItem value="range_difficulty">{t("vistaEncuestas.rango_dificultad")}</MenuItem>
+                  <MenuItem value="textfield_s">{t("vistaEncuestas.campo_texto")}</MenuItem>
+                  <MenuItem value="radio_opt">{t("vistaEncuestas.seleccion_unica")}</MenuItem>
+                  <MenuItem value="check_opt">{t("vistaEncuestas.seleccion_multiple")}</MenuItem>
+                </Select>
+              </FormControl>
+
+              {questionType.input==="radio_opt" && operation==1? (
+                <SingleChoiceQuestion   
+                  options={singleChoiceData.options}  
+                  correctAnswer={singleChoiceData.correctAnswer}  
+                  onChange={handleSingleChoiceChange}
+                />
+              ) : (questionType.input=="check_opt" && operation==1? (
+                <MultipleChoiceQuestion   
+                  options={multipleChoiceData.options}  
+                  correctAnswers={multipleChoiceData.correctAnswers}  
+                  onChange={handleMultipleChoiceChange}
+                />
+              ) : (questionType.input=="check_opt" && operation==2? (
+                <MultipleChoiceQuestionEdit 
+                  idToEdit={idToEdit} 
+                  options={multipleChoiceData.options} 
+                  correctAnswers={multipleChoiceData.correctAnswers} 
+                  onChange={handleMultipleChoiceChange}
+                />
+              ) : (questionType.input=="radio_opt" && operation==2? (
+                <SingleChoiceQuestionEdit 
+                  options={singleChoiceData.options} 
+                  correctAnswer={singleChoiceData.correctAnswer} 
+                  idToEdit={idToEdit} 
+                  onChange={handleSingleChoiceChange}
+                />
+              ) : "")))}
+                
+              {operation===1 && (
+                <Box sx={{ mt: 2, mb: 2 }}>
+                  {questionType.input=='range_onetofive'? (
+                    <Range_onetofive/>
+                  ) : (questionType.input=="range_zerototen"? (
+                    <Range_zerototen/>
+                  ) : (questionType.input=="range_difficulty"? (
+                    <Range_difficulty/>
+                  ) : (questionType.input=="yes_no"? (
+                    <Yes_no/>
+                  ) : (questionType.input=="range_emoji"? (
+                    <Range_emoji/>
+                  ) : (questionType.input=="textfield_s"?
+                    <Textfield_s/>
+                  : "")))))}
+                </Box>
+              )}
+            </Grid>
+              
+            {questionType.input && operation===2 && (
+              <Grid item xs={6}>
+                <Paper sx={{ p: 2, borderLeft: '5px solid gray' }}>
+                  {operation===2 && data.length>=1 && (
+                    <FormControlLabel
+                      control={
+                        <Switch 
+                          checked={isChecked} 
+                          onChange={(e) => conditionalHandleChange(e.target.checked)}
+                        />
+                      }
+                      label={t("vistaEncuestas.pregunta_condicional")}
+                      sx={{ mb: 2 }}
+                    />
+                  )}
+                  
+                  {listConditional && valueConditional && (
+                    <>
+                      <Typography variant="body2" sx={{ mb: 2 }}>
+                        {t("vistaEncuestas.respuesta_pregunta_condicional")}
+                      </Typography>
+
+                      <FormControl className="readOnlyField" fullWidth sx={{ mb: 3 }}>
+                        <InputLabel>{t("vistaEncuestas.pregunta")}</InputLabel>
+                        <Select
+                          placeholder=" "
+                          value={id_conditional.input}
+                          onChange={handleSelectConditionalQuestionChange}
+                          label="Pregunta"
+                        >
+                          <MenuItem value="0">
+                            {t("vistaEncuestas.seleccionar")}
+                          </MenuItem>
+                          {data.map((question) =>
+                            question.type == "textfield_s" ||
+                            question.id === idToEdit ? null : (
+                              <MenuItem
+                                key={question.id}
+                                value={question.id}
+                                // data-type={question.type}
+                                // data-answers={question.select_option}
+                              >
+                                {question.question.length > 55
+                                  ? question.question.substring(0, 55) + "..."
+                                  : question.question}
+                              </MenuItem>
+                            )
+                          )}
+                        </Select>
+                      </FormControl>
+                      
+                      {id_conditional.input && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant="body2" sx={{ mb: 2 }}>
+                            {t("vistaEncuestas.es")}
+                          </Typography>
+                          <FormControl className="readOnlyField" fullWidth>
+                            <InputLabel>{t("vistaEncuestas.respuesta")}</InputLabel>
+                            <Select
+                              value={conditional_answer.input}
+                              onChange={(e) => conditional_answer.handleChange(e.target.value)}
+                              label={t("vistaEncuestas.respuesta")}
+                            >
+                              <MenuItem value="0">
+                                {t("vistaEncuestas.seleccionar_opcion")}
+                              </MenuItem>
+                              {rangeOptions.map((option, index) => (
+                                <MenuItem key={index} value={option.value}>
+                                  {option.optionText}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Box>
+                      )}
+                    </>
+                  )}
+                </Paper>
+              </Grid>
+            )}
+            
+            {error && (
+              <Grid item xs={12}>
+                <Alert severity="error">{error}</Alert>
+              </Grid>
+            )}
+            
+            {operation === 2 && (
+              <Grid item xs={12}>
+                <Box sx={{ mt: 2, mb: 2 }}>
+                  {questionType.input == "range_onetofive" ? (
+                    <Range_onetofive />
+                  ) : questionType.input == "range_zerototen" ? (
+                    <Range_zerototen />
+                  ) : questionType.input == "range_difficulty" ? (
+                    <Range_difficulty />
+                  ) : questionType.input == "yes_no" ? (
+                    <Yes_no />
+                  ) : questionType.input == "range_emoji" ? (
+                    <Range_emoji />
+                  ) : questionType.input == "textfield_s" ? (
+                    <Textfield_s />
+                  ) : ""}
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        
+        <DialogActions>
+          {questionType.input && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => validar(idToEdit, id)}
+              sx={{
+                  backgroundColor: '#b62a8b',
+                  '&:hover': {
+                    backgroundColor: '#581244',
+                  }
+                }}
+            >              
+              {t("buttons.guardar")}
+            </Button>
+          )}
+          <Button
+            variant="outlined"
+            onClick={handleCancel}
+            sx={{            
+                  color: '#b62a8b',       // Texto morado
+                  borderColor: '#b62a8b',  // Borde morado
+                  '&:hover': {
+                    borderColor: '#b62a8b', // Borde morado oscuro al hover
+                    backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
+                  }
+                }}
+          >
+            {t("buttons.cancelar")}
+          </Button>
+        </DialogActions>
+          
+        </Dialog>
+      
+    </Box>
   );
 }

@@ -321,7 +321,7 @@ const HeaderLT1 = () => {
   const VerticalDivider = styled(Box)(({ theme }) => ({
     width: '1px',
     height: '24px',
-    backgroundColor: theme === 'dark' ? themeColors.light.Box.backgroundColor :  themeColors.dark.Box.backgroundColor,
+    //backgroundColor: theme === 'dark' ? themeColors.light.Box.backgroundColor :  themeColors.dark.Box.backgroundColor,
     margin: '0 16px',
   }));
 

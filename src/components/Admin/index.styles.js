@@ -5,6 +5,9 @@ import { createTheme } from '@mui/material/styles';
 
 
 
+
+
+
 const commonDarkBackground = '#383636';
 const commonTextWhite = '#ffffff';
 
@@ -21,6 +24,10 @@ export const lightTheme = createTheme({
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
           color: '#000000',
+        },
+        '.css-1ndauje-MuiPaper-root, .css-mjxahb-MuiTypography-root':{
+          backgroundColor: `#000000 !important`,
+          color: '#ffffff !important',
         },
       },
     },
@@ -42,7 +49,10 @@ export const darkTheme = createTheme({
           backgroundRepeat: 'no-repeat',
           color: commonTextWhite,
         },
-        
+        '.css-1ndauje-MuiPaper-root, .css-mjxahb-MuiTypography-root':{
+          backgroundColor: `#000000 !important`,
+          color: '#ffffff !important',
+        },
         '.modal-content': {
           backgroundColor: commonDarkBackground,
         },
@@ -142,6 +152,7 @@ export const darkTheme = createTheme({
         '.btn-option-view:hover': {
             border: '2px solid rgb(199, 14, 143) !important',
             color: `${commonTextWhite} !important`,
+            backgroundColor: 'transparent !important',
           
         },
         '.btn-option-view:focus': {
@@ -158,6 +169,39 @@ export const darkTheme = createTheme({
           border: '2px solid rgb(199, 14, 143)',
         },
         //
+        '.btn-check:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active':{
+          border: '2px solid rgb(199, 14, 143)'
+        },
+
+        '.btn-rect button':{
+          color: commonTextWhite
+        },
+        '.css-q7p9v4-MuiFormControl-root-MuiTextField-root, .css-veukw9-MuiInputBase-root-MuiOutlinedInput-root':{
+          backgroundColor: '#383637 !important',
+          
+        },
+        
+        //
+        '.css-txvfyh-MuiButtonBase-root-MuiMenuItem-root, .css-j5rcqz-MuiButtonBase-root-MuiMenuItem-root':{
+          color: '#ffffff !important' ,
+        },
+        ' .MuiButton-root, .css-16z1x8b-MuiTypography-root, .readOnlyField .MuiInputLabel-root, .readOnlyField label.Mui-focused, .text-area':{
+          color: `${commonTextWhite} !important`,
+          
+        },
+        '.css-12a0wne-MuiSvgIcon-root':{
+          backgroundColor: `transparent !important`,
+        },
+        
+        '.css-lb8oe6-MuiPaper-root-MuiCard-root, .css-1hy3n47-MuiPaper-root':{
+          backgroundColor: `#383637 !important`,
+        },
+        '.css-1l8wjdb-MuiPaper-root-MuiAccordion-root.Mui-expanded:last-of-type, .css-1l8wjdb-MuiPaper-root-MuiAccordion-root':{
+          border:'1px solid rgb(199, 14, 143) !important',
+        },
+        //
+
+
 
         '.swal2-popup.swal2-toast': {
           backgroundColor: '#797676',

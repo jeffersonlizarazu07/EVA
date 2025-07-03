@@ -53,7 +53,7 @@ const Index = () => {
 
                   <Grid item xs={12} md={6}>
                      <Link href="/satisfaction" underline="none">
-                      <Card id="card1"  sx={{
+                      <Card id="card2"  sx={{
                         color: "white",
                         display: "flex",
                         alignItems: "center",

@@ -352,7 +352,7 @@ const TableSurvey = ({
                   
                   ) : (
                   <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                    <Tooltip title="Activar" placement="bottom">
+                    <Tooltip title={t("survey.activar")} placement="bottom">
                       <IconButton
                         onClick={() => onActive(item)}
                         size="small"
@@ -361,7 +361,7 @@ const TableSurvey = ({
                       </IconButton>
                     </Tooltip>
                     
-                    <Tooltip title="Ver detalles" placement="bottom">
+                    <Tooltip title={t("survey.ver_detalle")} placement="bottom">
                       <IconButton                
                         onClick={() => onView(item)}
                         size="small"
