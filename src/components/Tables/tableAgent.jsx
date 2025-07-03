@@ -1,194 +1,270 @@
-import { useState,useContext,useEffect} from "react";
-import "../../assets/css/tabla.css";
+import { useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
-const TableAdmin = ({
-  header,
-  data,
-  onUpdate,
-  onView,
-  modalId,
-  modalId2
-}) => {
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Button,
+  IconButton,
+  Paper,
+  Box,
+  Grid,
+  InputAdornment,
+  TablePagination,
+} from "@mui/material";
+import {
+  TurnLeft,
+  Search
+} from "@mui/icons-material";
+import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
+
+const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
   const { languageUser } = useContext(UserContext);
-  useEffect(()=>{
-    i18n.changeLanguage(languageUser)
-  },[languageUser])
- 
-  const { t,i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, [languageUser, i18n]);
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage, setRecordsPerPage] = useState(25);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1); // Reset page to 1 on new search
+    setPage(0);
   };
 
-  const handleRecordsPerPageChange = (records) => {
-    setRecordsPerPage(records);
-    setCurrentPage(1); // Reset page to 1 on new records per page
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
   };
 
-  const capitalize = (text) => {
-    return text.replace(/\b\w/g, (char) => char.toUpperCase());
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
-  const filteredData = Array.isArray(data) ? data.filter((item) =>
-    Object.values(item).some(
-      (val) =>
-        typeof val == "string" &&
-        val.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  ) : [];
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const filteredData = Array.isArray(data)
+    ? data.filter((item) =>
+        Object.values(item).some(
+          (val) =>
+            typeof val === "string" &&
+            val.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      )
+    : [];
+
   const currentRecords = filteredData.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
   );
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+
+  const getHeaderLabel = (item) => {
+    switch (item) {
+      case "firstname":
+        return t("headerlt.First_name");
+      case "lastname":
+        return t("headerlt.Last_name");
+      case "type":
+        return t("headerlt.Role");
+      default:
+        return t("viewUserModal.State");
+    }
+  };
+
+  const getUserType = (type) => {
+    switch (type) {
+      case 1:
+        return t("userTable.SuperAdmin");
+      case 2:
+        return t("userTable.Admin");
+      case 3:
+        return t("userTable.Editor");
+      default:
+        return t("userTable.Viwer");
+    }
+  };
+
   return (
-    <div>
-      <div className="table-container table-responsive" id="table">
-        <div className="row d-flex mb-3">
-          <div className="col-6 col-sm-6 col-md-6 col-lg-6">
-          <input
-          className="w-50 inp-search"
-          placeholder={t("clientTable.Search")}
-          value={searchTerm}
-          onChange={handleSearch}
-          />
-          </div>
-        
-        </div>
-        <table className="table table-hover" id="tableDefault">
-          <thead>
-            <tr className="table-light tr-table">
+    <Box className="table-container">
+      <Grid container spacing={2} mb={2}>
+        <Grid item xs={12} sm={6} md={6} lg={6}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{
+                minWidth: 0,
+                width: 30,
+                height: 30,
+                padding: 0,
+                borderRadius: "50%",
+                color: "#b62a8b",
+                borderColor: "#b62a8b",
+                "&:hover": {
+                  borderColor: "#b62a8b",
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                },
+              }}
+              onClick={() => nav("/quality")}
+            >
+              <TurnLeft />
+            </Button>
+            <TextField
+              size="small"
+              placeholder={t("userTable.Search")}
+              value={searchTerm}
+              onChange={handleSearch}
+              className="inp-search"
+              variant="outlined"
+              sx={{
+                width: "100%",
+                "& .MuiOutlinedInput-root": {
+                  height: "4vh",
+                  "&.Mui-focused fieldset": {
+                    borderColor: "transparent",
+                  },
+                  "&.Mui-focused": {
+                    boxShadow: "none",
+                  },
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: "#888" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+        </Grid>
+      </Grid>
+
+      <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 450, overflowY: "auto" }}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
               {header.map((item, i) => (
-                <th key={i} className="col text-center">
-                  {item=="firstname"? (`${t("headerlt.First_name")}`):
-                  (item=="lastname"? (`${t("headerlt.Last_name")}`):
-                  (item=="type"?(`${t("headerlt.Role")}`):(`${t("viewUserModal.State")}`)))}
-                </th>
+                <TableCell
+                  key={i}
+                  sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}
+                >
+                  {getHeaderLabel(item)}
+                </TableCell>
               ))}
-              <th className="col text-center">{t("clientTable.Actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
+              <TableCell sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}>
+                {t("userTable.Actions")}
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {currentRecords.map((item, idx) => (
-             
-                <tr key={idx}>
-                  {header.map((key, i) => (
-                    <td key={i}>
-                      {key == "state" ? (item.state == 1 ? `${t("clientTable.Active")}` : `${t("clientTable.Inactive")}`):(
-                        key=="type"? (item.type==1? `${t("clientTable.SuperAdmin")}`:(item.type==2? `${t("clientTable.Admin")}`:(item.type==3? `${t("clientTable.Editor")}`:`${t("clientTable.Viwer")}`))): item[key]) }
-                    
-                  </td>
-                  ))}
-                  {item.state==1?(
-                    <td>
-                    <div className="row">
-                      <div className="col">
-                        <button
-                          className="btn btn-rect"
-                          data-bs-toggle="modal"
-                          data-bs-target={`#${modalId}`}
-                          onClick={() => onUpdate(item)}
-                        >
-                          <i className="fa-solid fa-clipboard-check"></i>
-                        </button>
-                        
-                        <button
-                          className="btn btn-rect"
-                          data-bs-toggle="modal"
-                          data-bs-target={`#${modalId2}`}
-                          onClick={() => onView(item)}
-                        >
-                          <i className="fa-solid fa-search"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </td>):( <td>
-                    <div className="row">
-                      <div className="col">
-                       
-                        <button
-                          className="btn btn-rect"
-                          data-bs-toggle="modal"
-                          data-bs-target={`#${modalId2}`}
-                          onClick={() => onView(item)}
-                        >
-                          <i className="fa-solid fa-search"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </td>)}
-                  
-                </tr>
-             
+              <TableRow key={idx}>
+                {header.map((key, i) => (
+                  <TableCell key={i} align="center">
+                    {key === "state"
+                      ? item.state === 1
+                        ? t("userTable.Active")
+                        : t("userTable.Inactive")
+                      : key === "type"
+                      ? getUserType(item.type)
+                      : item[key]}
+                  </TableCell>
+                ))}
+                
+                {item.state === 1 ? (
+                  <TableCell align="center">
+                    <Box sx={{ display: "flex", justifyContent: "center" }} gap={1}>
+                      <IconButton
+                        onClick={() => onUpdate(item)}
+                        size="small"
+                        sx={{
+                          color: "#b62a8b",
+                          "&:hover": {
+                            backgroundColor: "#b62a8b",
+                            color: "#fff",
+                          },
+                        }}
+                      >
+                        <FactCheckRoundedIcon />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => onView(item)}
+                        size="small"
+                        sx={{
+                          color: "#b62a8b",
+                          "&:hover": {
+                            backgroundColor: "#b62a8b",
+                            color: "#fff",
+                          },
+                        }}
+                      >
+                        <Search />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                ) : (
+                  <TableCell align="center">
+                    <Box sx={{ display: "flex", justifyContent: "center" }} gap={1}>
+                      <IconButton onClick={() => onView(item)} size="small">
+                        <Search />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                )}
+                
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-        <div className="row d-flex ps-5 pe-5 mt-3">
-        <div className="col-6 col-sm-6 col-md-6 col-lg-6">
-          <label>
-          {t("clientTable.Show")}
-            <button
-              className="dropdown-toggle inp-search"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              {recordsPerPage}
-            </button>
-            <ul className="dropdown-menu">
-              {[25, 50, 75].map((num) => (
-                <li key={num}>
-                  <a
-                    className="dropdown-item"
-                    href="#"
-                    onClick={() => handleRecordsPerPageChange(num)}
-                  >
-                    {num}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {t("clientTable.Registered")}
-          </label>
-        </div>
-        <div className="d-grid col-6 col-sm-6 col-md-6 col-lg-6 justify-content-end">
-          <div
-            className="btn-group"
-            role="group"
-            aria-label="Basic outlined example"
-          >
-            <button
-              type="button"
-              className="btn"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            >
-              &lt;
-            </button>
-            <label className="btn" htmlFor="btncheck2">
-              {currentPage}
-            </label>
-            <button
-              type="button"
-              className="btn"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </div>
-      </div>
-      
-    </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage={t("userTable.Show")}
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}-${to} ${t("userTable.Registered")} ${count !== -1 ? count : `more than ${to}`}`
+          }
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            ".MuiTablePagination-toolbar": {
+              alignItems: "center",
+            },
+            ".MuiTablePagination-selectLabel": {
+              display: "flex",
+              alignItems: "center",
+              marginBottom: 0,
+            },
+            ".MuiTablePagination-displayedRows": {
+              display: "flex",
+              alignItems: "center",
+              marginBottom: 0,
+            },
+            ".MuiInputBase-root": {
+              backgroundColor: "#b62a8b",
+              color: "white",
+              borderRadius: "4px",
+            },
+          }}
+        />
+      </Box>
+    </Box>
   );
 };
 

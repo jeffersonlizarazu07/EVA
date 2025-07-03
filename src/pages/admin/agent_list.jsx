@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import AsyncSelect from "react-select/async";
-import makeAnimated from "react-select/animated";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAgent";
 import Swal from "sweetalert2";
-import axios from "axios";
-import SidebarLT1 from "../../components/aside/sidebarLT1";
 import HeaderLT1 from "../../components/header/headerLT1";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
-import Checkbox from "@mui/material/Checkbox";
-import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import {
@@ -29,6 +21,7 @@ import {
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
+import { Box, Typography } from "@mui/material";
 
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
@@ -46,8 +39,7 @@ const AdminList = () => {
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
   const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, languageUser, clients, userInfo } =
-    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
+  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
@@ -57,6 +49,10 @@ const AdminList = () => {
   const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
+
+  const [openViewModal, setOpenViewModal] = React.useState(false);
+  const [viewAdminData, setViewAdminData] = React.useState(null);
+
 
   // Validaciones de la primer vista del modal
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
@@ -507,16 +503,12 @@ const AdminList = () => {
 
   // Esta función abre el modal de solo consulta (información del usuario)
   const openModalCont = async (admin) => {
-    // Trae los clientes del usuario
     await loadUserClients(admin.id);
 
-    // Obtenemos los datos completos del agente
     const agentData = await getAgentById(admin.id);
 
-    // Cambio el título del modal a "Información"
     setTitle("Información");
 
-    // Cargo la información del admin en los inputs
     firstName.handleChange(agentData?.firstname || "");
     lastName.handleChange(agentData?.lastname || "");
     middleName.handleChange(agentData?.middlename || "");
@@ -528,15 +520,24 @@ const AdminList = () => {
     registration_date.handleChange(agentData?.registration_date || "");
     last_visit_date.handleChange(agentData?.last_visit_date || "Nunca");
 
-    // Guardo el id del admin consultado
     setidToEdit(agentData?.id);
 
-    // Guarda el nombre completo para mostrarlo en el modal
     setUserName(
       `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${
         agentData?.lastname || ""
       }`.trim()
     );
+
+    // Guardamos los datos del agente para mostrar en el modal
+    setViewAdminData(agentData);
+
+    // Abrimos el modal de vista
+    setOpenViewModal(true);
+  };
+  //para cerrar el modal
+  const handleCloseViewModal = () => {
+    setOpenViewModal(false);
+    setViewAdminData(null);
   };
 
   // Resetea los estados del formulario y del modal al cerrarlo
@@ -668,54 +669,54 @@ const AdminList = () => {
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
-  const modalViewAdminProps = {
-    formatDateTimeShort,
-    registration_date,
-    type,
-    last_visit_date,
-    selectedClients,
-    firstName,
-    middleName,
-    lastName,
-    state,
-    language,
-    email,
-    listClients,
-    t,
-  };
+const modalViewAdminProps = {
+  open: openViewModal,
+  onClose: handleCloseViewModal,
+  formatDateTimeShort,
+  registration_date: { input: viewAdminData?.registration_date || "" },
+  type: { input: viewAdminData?.type || "" },
+  last_visit_date: { input: viewAdminData?.last_visit_date || "" },
+  selectedClients: viewAdminData?.clients || [],
+  firstName: { input: viewAdminData?.firstname || "" },
+  middleName: { input: viewAdminData?.middlename || "" },
+  lastName: { input: viewAdminData?.lastname || "" },
+  state: { input: viewAdminData?.state || 0 },
+  language: { input: viewAdminData?.language || "en" },
+  email: { input: viewAdminData?.email || "" },
+  listClients,
+  t,
+};
+
 
   return (
-    <div className="App">
-      <div id="body">
+    <Box className="App" sx={{ overflow: "hidden" }}>
+      <Box id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
-        <div className="row m-0">
-          <div className="col-1 d-none d-flex  align-items-center ms-0 p-0">
-            {/* <SidebarLT1 /> */}
-          </div>
-          <div className="col-12">
-            <div className="container-fluid mt-0 mx-auto">
-              {admins.length > 0 ? (
-                <TableAdmin
-                  header={selectedKeys}
-                  data={admins}
-                  modalId={"modalAdmin"}
-                  modalId2={"modalViewAdmin"}
-                  onUpdate={(payload) => openModal(2, payload)}
-                  onView={(payload) => openModalCont(payload)}
-                />
-              ) : (
-                <div className="text-center py-5">
-                  <h4>No existen agentes registrados</h4>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+        <Box sx={{lignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex"}}>
+          {/* <SidebarLT1 /> */}
+
+          <Box className="container" mt={0}>
+            {admins.length > 0 ? (
+              <TableAdmin
+                header={selectedKeys}
+                data={admins}
+                modalId={"modalAdmin"}
+                modalId2={"modalViewAdmin"}
+                onUpdate={(payload) => openModal(2, payload)}
+                onView={(payload) => openModalCont(payload)}
+              />
+            ) : (
+              <Box sx={{ textAlign: "center", py: 5 }}>
+                <Typography variant="h6">No existen agentes registrados</Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Box>
       <ModalAdmin {...modalAdminProps} />
       <ModalViewAdmin {...modalViewAdminProps} />
-    </div>
+    </Box>
   );
 };
 
