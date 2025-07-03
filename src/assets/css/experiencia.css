@@ -12,7 +12,7 @@
 }
 
 .card4 {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen8 slide4.jpeg");
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen8 slide4.jpeg") !important;
     background-size: 100% 100%;
     background-size: auto;
     background-position: center;
@@ -25,9 +25,9 @@
 }
 
 .card5 {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen9 slide4.jpg");
-    background-size: 100% 100%;
-    background-size: auto;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen9 slide4.jpg")!important;
+    background-size: cover;
+    
     background-position: center;
 }
 
@@ -38,7 +38,7 @@
 }
 
 .card6 {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen10 slide4.jpeg");
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen10 slide4.jpeg")!important;
     background-size: 100% 100%;
     background-size: cover;
 }
@@ -50,7 +50,7 @@
 }
 
 .outstanding-card2 {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen7 slide4.jpg");
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen7 slide4.jpg")!important;
     background-size: cover;
     background-repeat: no-repeat;
     border-radius: 35px !important;
@@ -64,9 +64,11 @@
 }
 .outstanding-card2:hover{
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen7 slide4.jpg");
-    border: 1px;
-    box-shadow: rgba(255, 255, 255, 0.326) 0px 5px 15px;
-  }
+    border: none !important;
+    box-shadow: rgba(0, 0, 0, 0.705) 0px 5px 25px;
+}
+
+
 /* ------------------- Estilos de modo lista   ------------------- */
 
 

@@ -1,5 +1,9 @@
 import React, { createContext, useState, useEffect } from 'react';
 
+import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
+import { lightTheme, darkTheme } from "../../components/Admin/index.styles";
+
+
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
@@ -20,9 +24,16 @@ export const ThemeProvider = ({ children }) => {
     document.body.className = newTheme;
   };
 
+  const muiTheme = theme === "light" ? lightTheme: darkTheme;
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
+      <MuiThemeProvider theme={muiTheme}>
+        <CssBaseline/>
+          {children}
+        
+      </MuiThemeProvider>
+      
     </ThemeContext.Provider>
   );
 };

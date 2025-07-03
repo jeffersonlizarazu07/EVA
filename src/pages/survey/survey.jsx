@@ -19,6 +19,7 @@ import {
     Button, 
     Grid
 } from '@mui/material';
+import zIndex from '@mui/material/styles/zIndex';
 
 
 
@@ -205,186 +206,180 @@ export default function Survey() {
         }
         return true; // Si no tiene condicionamiento, la pregunta se renderiza por defecto
     };
-
+    
     return (
-        <Box>
-             <LanguageSelector />
-            <svg
+    <Box sx={{ position: 'relative'  }}>
+      {/* Selector de idioma */}
+  
+      <LanguageSelector />
+
+
+      {/* Fondo SVG */}
+      <svg
                 id="personalized-svg"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 1920 1080"
-                fill={survey.color_tag1} style={{ zIndex: -1 }}
+                // #b62a8b fill={survey.color_tag1} style={{ zIndex: -1 }}
+                fill='#ffffff'
+                style={{zIndex:-1}}
             >
                 <path
                     d="m874.8,203.28S993.6-136.92,0,62.88v1587.6s186.3-116.1,189-197.1h729s359.1,267.3,494.1-62.1v-367.2s-30.34-99.56-132.3-198.84"
                 />
             </svg>
-            <Container maxWidth="lg" sx={{ mt: 4 }}>
-                <Box component="form" onSubmit={handleSubmit} 
-                    sx={{ 
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center'
-                    }}
+
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              mb: 4,
+              width: '80%',
+              boxShadow: `${survey.color_tag2} 0px 5px 15px`,
+              borderRadius: 2,
+            }}
+          >
+            {/* Título y logo */}
+            <Grid container spacing={2} justifyContent="center" sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 2,
+                  }}
                 >
-                    <Paper elevation={3}
-                        sx={{ 
-                            p: 4,
-                            mb: 4,
-                            width: '80%',
-                            boxShadow: `${survey.color_tag2} 0px 5px 15px`,
-                            borderRadius: 2
-                        }} style={{ boxShadow: `${survey.color_tag2} 0px 5px 15px` }}>
-                        {/* espacio que habia */}
-                        <Grid container spacing={2}>
-                            <Grid item xs={12}>
-                            </Grid>
-                        </Grid>
-
-                        {/* Título de la encuesta */}
-                        <Grid container spacing={2} sx={{ textAlign: 'center', mb: 3 }}>
-                            <Grid item xs={12}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                                    <img 
-                                        className="logo" 
-                                        src={`/clientes/${survey.logo}`} 
-                                        alt="" 
-                                        style={{ maxHeight: '60px' }}
-                                    />
-                                    <Typography 
-                                        variant="h5" 
-                                        component="h1"
-                                        sx={{ 
-                                            fontWeight: 'bold',
-                                            color: 'text.primary'
-                                        }}
-                                    >
-                                        {title}
-                                    </Typography>
-                                </Box>
-                            </Grid>
-                        </Grid>
-
-                        {/* Sección de preguntas */}
-                        <Grid container spacing={3}>
-                            <Grid item xs={12}>
-                                {/* Espacio adicional si es necesario */}
-                            </Grid>
-                            
-                            {visibleQuestions.map((question, index) => (
-                                <Grid item xs={12} key={index}>
-                                    <Box sx={{ mb: 3 }}>
-                                        <Typography 
-                                            variant="h6" 
-                                            component="p"
-                                            sx={{ 
-                                                fontWeight: 'bold',
-                                                mb: 2,
-                                                textAlign: 'center'
-                                            }}
-                                        >
-                                            {question.question}
-                                        </Typography>
-                                        
-                                        {/* Renderizado condicional de tipos de pregunta */}
-                                        {question.type === 'range_onetofive' ? (
-                                            <Range_onetofive_survey 
-                                                question={question} 
-                                                key={question.id} 
-                                                id={question.id} 
-                                                change={(e) => handleChange(e, question.id)} 
-                                            />
-                                        ) : question.type === 'range_zerototen' ? (
-                                            <Range_zerototen_survey 
-                                                question={question} 
-                                                key={question.id} 
-                                                id={question.id} 
-                                                change={(e) => handleChange(e, question.id)} 
-                                            />
-                                        ) : question.type === 'range_difficulty' ? (
-                                            <Range_difficulty_survey 
-                                                question={question} 
-                                                key={question.id} 
-                                                id={question.id} 
-                                                change={(e) => handleChange(e, question.id)} 
-                                            />
-                                        ) : question.type === 'yes_no' ? (
-                                            <Yes_no_survey 
-                                                question={question} 
-                                                key={question.id} 
-                                                id={question.id} 
-                                                change={(e) => handleChange(e, question.id)} 
-                                            />
-                                        ) : question.type === 'range_emoji' ? (
-                                            <Range_emoji_survey 
-                                                question={question} 
-                                                key={question.id} 
-                                                id={question.id} 
-                                                change={(e) => handleChange(e, question.id)} 
-                                            />
-                                        ) : question.type === 'radio_opt' ? (
-                                            <Single_choice_survey 
-                                                answers={question.select_option} 
-                                                key={question.id} 
-                                                id={question.id} 
-                                                change={(e) => handleChange(e, question.id)} 
-                                            />
-                                        ) : question.type === 'check_opt' ? (
-                                            <Multiple_choice_survey 
-                                                answers={question.select_option} 
-                                                key={question.id} 
-                                                id={question.id} 
-                                                change={handleChangeMultiple} 
-                                            />
-                                        ) : question.type === 'textfield_s' ? (
-                                            <TextField
-                                                fullWidth
-                                                variant="outlined"
-                                                margin="normal"
-                                                value={answers.find(a => a.question_id === question.id)?.answer || ''}
-                                                onChange={(e) => handleChange(e, question.id)}
-                                                sx={{
-                                                    width: '60%',
-                                                    margin: '16px auto !important',
-                                                    display: 'block',
-                                                    '& .MuiOutlinedInput-root': {
-                                                        borderRadius: '8px',
-                                                        '& fieldset, &:hover fieldset, &.Mui-focused fieldset': {
-                                                            borderColor: 'black',
-                                                            borderWidth: '1%',
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                        ) : null}
-                                    </Box>
-                                </Grid>
-                            ))}
-                            
-                            {/* Botón de envío */}
-                            <Grid item xs={12}>
-                                <Button 
-                                    type="submit" 
-                                    variant="contained" 
-                                    size="large"
-                                    sx={{                                         
-                                        fontSize: '0.8rem',
-                                        fontWeight: 'bold',
-                                        backgroundColor: '#b62a8b',
-                                        '&:hover': {
-                                            backgroundColor: '#581244',
-                                        }
-                                    }}
-                                    
-                                >
-                                    {t("buttons.enviar")}
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Paper>
+                  <Box
+                    component="img"
+                    src={`/clientes/${survey.logo}`}
+                    alt="Logo"
+                    sx={{ maxHeight: 60 }}
+                  />
+                  <Typography variant="h5" fontWeight="bold" color="text.primary">
+                    {title}
+                  </Typography>
                 </Box>
-            </Container>
+              </Grid>
+            </Grid>
+
+            {/* Preguntas */}
+            <Grid container spacing={3}>
+              {visibleQuestions.map((question, index) => (
+                <Grid item xs={12} key={index}>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      sx={{ mb: 2, textAlign: 'center' }}
+                    >
+                      {question.question}
+                    </Typography>
+
+                    {/* Renderizado condicional */}
+                    {question.type === 'range_onetofive' ? (
+                      <Range_onetofive_survey
+                        question={question}
+                        id={question.id}
+                        change={(e) => handleChange(e, question.id)}
+                      />
+                    ) : question.type === 'range_zerototen' ? (
+                      <Range_zerototen_survey
+                        question={question}
+                        id={question.id}
+                        change={(e) => handleChange(e, question.id)}
+                      />
+                    ) : question.type === 'range_difficulty' ? (
+                      <Range_difficulty_survey
+                        question={question}
+                        id={question.id}
+                        change={(e) => handleChange(e, question.id)}
+                      />
+                    ) : question.type === 'yes_no' ? (
+                      <Yes_no_survey
+                        question={question}
+                        id={question.id}
+                        change={(e) => handleChange(e, question.id)}
+                      />
+                    ) : question.type === 'range_emoji' ? (
+                      <Range_emoji_survey
+                        question={question}
+                        id={question.id}
+                        change={(e) => handleChange(e, question.id)}
+                      />
+                    ) : question.type === 'radio_opt' ? (
+                      <Single_choice_survey
+                        answers={question.select_option}
+                        id={question.id}
+                        change={(e) => handleChange(e, question.id)}
+                      />
+                    ) : question.type === 'check_opt' ? (
+                      <Multiple_choice_survey
+                        answers={question.select_option}
+                        id={question.id}
+                        change={handleChangeMultiple}
+                      />
+                    ) : question.type === 'textfield_s' ? (
+                      <TextField
+                        fullWidth
+                        variant="outlined"
+                        margin="normal"
+                        value={
+                          answers.find((a) => a.question_id === question.id)?.answer ||
+                          ''
+                        }
+                        onChange={(e) => handleChange(e, question.id)}
+                        sx={{
+                          width: '60%',
+                          mx: 'auto',
+                          display: 'block',
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                            '& fieldset, &:hover fieldset, &.Mui-focused fieldset': {
+                              borderColor: 'black',
+                              borderWidth: '1px',
+                            },
+                          },
+                        }}
+                      />
+                    ) : null}
+                  </Box>
+                </Grid>
+              ))}
+
+              {/* Botón de enviar */}
+              <Grid item xs={12}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                    backgroundColor: '#b62a8b',
+                    '&:hover': {
+                      backgroundColor: '#581244',
+                    },
+                  }}
+                >
+                  {t('buttons.enviar')}
+                </Button>
+              </Grid>
+            </Grid>
+          </Paper>
         </Box>
-    );
+      </Container>
+    </Box>
+  );
 }

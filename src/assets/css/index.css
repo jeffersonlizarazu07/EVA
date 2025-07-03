@@ -75,7 +75,7 @@ ul {
 }
 #card2 {
   background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-    url("../img/imagen2 slide 2.png");
+    url("../img/imagen2 slide 2.png") !important;
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -90,7 +90,7 @@ ul {
 #card2:hover {
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-  url("../img/imagen2 slide 2.png");
+  url("../img/imagen2 slide 2.png") !important;
 }
 
 #card2 a {

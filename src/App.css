@@ -5,14 +5,16 @@
   margin: 0;
 }
 
+
 /* MODO CLARO */
-body.light {
+/*
+body.light{
   --background-image: url("../src//assets/img/fondo\ slide\ 2.png");
   --text-color: #000000;
 }
-
+*/
 /* MODO OSCURO */
-
+/*
 body.dark {
   --background-image: url("../src/assets/img/eva\ v10.png");
   --text-color: #ffffff;
@@ -147,7 +149,7 @@ body.dark {
     opacity: var(--bs-btn-close-opacity);
   }
 }
-
+*/
 body {
   background-image: var(--background-image);
   background-size: cover;

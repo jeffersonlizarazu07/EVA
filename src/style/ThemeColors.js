@@ -1,3 +1,5 @@
+import { Box } from "@mui/material";
+
 
 export const themeColors = {
   light: {
@@ -14,9 +16,17 @@ export const themeColors = {
     // Clores personalizados que se utilizan en Eva
     purpuraEva: "rgb(199, 14, 143)",
     grisButtonEva: "#6c757d", // Color del botón cancelar po si se necesita utilizar en otros componentes que no sean botones
+
+    legend:{
+      color: "#000",
+    }
   },
 
-  dark: {},
+  dark: {
+    legend:{
+      color: "#ffffff",
+    }
+  },
 };
 
 /** 

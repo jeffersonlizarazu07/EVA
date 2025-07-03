@@ -39,6 +39,9 @@ import {
   faLineChart,
 } from "@fortawesome/free-solid-svg-icons";
 
+// temas
+import { ThemeContext } from '../../assets/js/ThemeContext';
+
 
 Chart.register(
   BarController,
@@ -58,8 +61,13 @@ Chart.register(
   Filler
 );
 import { useTranslation } from "react-i18next";
+import { themeColors } from "../../style/ThemeColors";
+import { useContext } from "react";
+
+
 
 const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const {t} = useTranslation();
 
   console.log("Componente LineStyleCharts renderizado");
@@ -319,15 +327,21 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
           legend: {
             display: true,
             position: "bottom",
+            labels: {
+              color: theme === "dark"?  themeColors.dark.legend.color : themeColors.light.legend.color ,
+            }  
           },
           title: {
+            
             display: true,
             text: label,
+            position: "top",
             font: {
               size: 15,
               style: "italic",
               weight: "bold",
             },
+             color: theme === "dark"?  themeColors.dark.legend.color : themeColors.light.legend.color ,
           },
           datalabels: {
             display: true,
