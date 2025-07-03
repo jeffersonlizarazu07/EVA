@@ -64,11 +64,6 @@ const TableAdmin = ({
     setPage(0);
   };
 
-
-  const capitalize = (text) => {
-    return text.replace(/\b\w/g, (char) => char.toUpperCase());
-  };
-
   // Filtrar datos según búsqueda
   const filteredData = Array.isArray(data)
     ? data.filter((item) =>
