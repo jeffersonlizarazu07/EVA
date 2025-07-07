@@ -3,33 +3,43 @@ const AnswersFormModel = require("../models/answersFormModel");
 
 exports.createAnswer = async (req, res) => {
   try {
-    const { question_id, answer_question } = req.body;
+    const { monitoringDate, userId, answers } = req.body;
 
-    console.log("🟡 Respuesta recibida en backend:", req.body);
-
-    console.log("Insertando en BD:", {
-      id_question: question_id,
-      answer_question,
-    });
-
-    if (!question_id || !answer_question) {
-      console.log("Faltan campos");
-      return res.status(400).json({ message: "Faltan campos obligatorios" });
+    if (!monitoringDate) {
+      return res.status(400).json({ message: "Fecha de monitorización requerida" });
     }
 
-    const result = await AnswersFormModel.createAnswer({
-      question_id,
-      answer_question,
-    });
+    if (!Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ message: "Se requiere un array de respuestas" });
+    }
 
-    console.log("Respuesta guardada en DB:", result);
+    // Validar campos de cada respuesta
+    for (const respuesta of answers) {
+      const { question_id, answer_question } = respuesta;
+      if (!question_id || !answer_question) {
+        return res.status(400).json({ message: "Faltan campos en una o más respuestas" });
+      }
+    }
 
-    res.status(201).json(result);
+    // Guardar cada respuesta con la fecha que viene desde frontend
+    const results = [];
+    for (const respuesta of answers) {
+      const result = await AnswersFormModel.createAnswer({
+        question_id: respuesta.question_id,
+        answer: respuesta.answer_question,
+        idUser: userId,
+        date: monitoringDate,  // <-- Usar fecha enviada desde frontend
+      });
+      results.push(result);
+    }
+
+    res.status(201).json({ message: "Respuestas guardadas", data: results });
   } catch (error) {
-    console.error("Error en createAnswer:", error);
-    res.status(500).json({ message: "Error al guardar la respuesta" });
+    console.error("Error en createAnswersBulk:", error);
+    res.status(500).json({ message: "Error al guardar respuestas" });
   }
 };
+
 exports.getAllAnswers = async (req, res) => {
   try {
     const answers = await AnswersFormModel.getAllAnswers();
