@@ -550,7 +550,6 @@ const AdminList = () => {
   };
 
   /* SCORE */
-
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
       const initBlockPer = 100; // Valor inicial del bloque = 100%
@@ -596,21 +595,87 @@ const AdminList = () => {
     return Math.round(total / blocksWithPer.length);
   };
 
-  const handleSaveBlock = (blockId) => {
-    const bloque = blocksWithPer.find((b) => b.id === blockId);
+  //Guarda lass respuestas del formulario
+  const handleSaveAnswers = async () => {
+    // Validar que se haya seleccionado una fecha
+    if (!monitoringDate) {
+      setDateError(true);
+      Swal.fire({
+        icon: "warning",
+        title: "Fecha requerida",
+        text: "Por favor selecciona una fecha para la monitorización.",
+      });
+      return;
+    }
 
-    if (!bloque) return;
-
-    // Crear payload
-    const payload = {
-      block_id: bloque.id,
-      block_score: bloque.porcentajeBloque,
-      questions: bloque.preguntas.map((p) => ({
-        question_id: p.id,
-        evaluacion: p.evaluacion,
-        porcentaje: p.porcentajePregunta,
-      })),
+    // Estructura para el backend: objeto con monitoringDate, userId y answers
+    const respuestasAEnviar = {
+      monitoringDate, // Fecha elegida en el formulario
+      userId: userInfo.id,
+      answers: [],
     };
+
+    // Llenar las respuestas
+    for (const bloque of blocksWithPer) {
+      for (const pregunta of bloque.preguntas) {
+        if (pregunta.evaluacion === "") {
+          console.warn(`⚠️ Pregunta sin evaluación (ID: ${pregunta.id})`);
+          continue;
+        }
+
+        const answer_text = pregunta.evaluacion === "1" ? "correcto" : "incorrecto";
+
+        respuestasAEnviar.answers.push({
+          question_id: pregunta.id,
+          answer_question: answer_text,
+        });
+      }
+    }
+
+    // Validar que haya respuestas
+    if (respuestasAEnviar.answers.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "No hay respuestas para guardar",
+        text: "Completa al menos una evaluación antes de guardar.",
+      });
+      return;
+    }
+
+    // Enviar al backend
+    try {
+      const response = await fetch("http://localhost:3000/api/answersform", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(respuestasAEnviar),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error al guardar respuestas");
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Formulario guardado",
+        text: "Todas las respuestas fueron guardadas correctamente.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      // Opcionalmente pasar al siguiente paso
+      // setMonitoringStep(3);
+
+    } catch (error) {
+      console.error("❌ Error al guardar el formulario completo:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error al guardar las respuestas.",
+      });
+    }
   };
 
   // Clacula el % del bloque en tiempo real
@@ -655,7 +720,7 @@ const AdminList = () => {
     calBlocksPercentage,
     handleUpdatePregunta,
     calFormScore,
-    handleSaveBlock,
+    handleSaveAnswers,
     clientError,
     setClientError,
     formError,

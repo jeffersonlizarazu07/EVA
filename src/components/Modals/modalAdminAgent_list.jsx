@@ -52,7 +52,7 @@ const ModalAdmin = ({
   calBlocksPercentage,
   handleUpdatePregunta,
   calFormScore,
-  handleSaveBlock,
+  handleSaveAnswers,
   clientError,
   setClientError,
   formError,
@@ -351,14 +351,6 @@ const ModalAdmin = ({
                           </Accordion>
                         ))
                       )}
-                      <Box display="flex" justifyContent="flex-end" mt={2}>
-                        <ConfirmButton
-                          variant="contained"
-                          onClick={() => handleSaveBlock(block.id)}
-                        >
-                          Confirmar
-                        </ConfirmButton>
-                      </Box>
                     </AccordionDetails>
                   </Accordion>
                 ))
@@ -389,6 +381,11 @@ const ModalAdmin = ({
             />
           </Box>
         )}
+        <Box display="flex" justifyContent="center" mt={2}>
+          <ConfirmButton variant="contained" onClick={handleSaveAnswers} >
+            Guardar Todo
+          </ConfirmButton>
+        </Box>
       </DialogContent>
 
       <DialogActions sx={{ gap: 1 }}>
