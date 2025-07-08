@@ -3,7 +3,8 @@ const { getDateTimeForSQL } = require("../helpers/dateHelper");
 class AnswersFormModel {
   constructor() {
     this.knex = require('../config/db');
-    this.table = 'answers_form'; // tu tabla
+    this.table = 'answers_form';
+    this.table_ = 'monitoring';
   }
 
   async createAnswer(data) {
@@ -15,6 +16,21 @@ class AnswersFormModel {
       idUser: data.idUser,
       answer: data.answer,
       date: fecha,
+    });
+
+    return { id, ...data };
+  }
+
+  async createMonitoring(data) {
+    // data: { date, score, feedback, id_user_agent, id_user_monitor, id_form }
+    const [id] = await this.knex(this.table_).insert({
+      date: data.date,
+      score: data.score,
+      feedback: data.feedback,
+      check: 0,
+      id_user_agent: data.id_user_agent,
+      id_user_monitor: data.id_user_monitor,
+      id_form: data.id_form,
     });
 
     return { id, ...data };

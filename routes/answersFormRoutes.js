@@ -20,6 +20,9 @@ router.get('/answersform/block-questions/:blockId', answersFormController.getQue
 // Crear una nueva respuesta
 router.post('/answersform', answersFormController.createAnswer);
 
+// Crear el monitoreo de las respuestas
+router.post('/answersform/monitoring', answersFormController.createMonitoring);
+
 // Actualizar una respuesta existente
 router.put('/answersform/:id', answersFormController.updateAnswer);
 
