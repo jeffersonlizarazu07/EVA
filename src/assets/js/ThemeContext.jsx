@@ -13,7 +13,7 @@ export const ThemeProvider = ({ children }) => {
     const storedTheme = localStorage.getItem('app-theme');
     if (storedTheme) {
       setTheme(storedTheme);
-      document.body.className = storedTheme;
+      //document.body.className = storedTheme;
     }
   }, []);
 
@@ -21,7 +21,7 @@ export const ThemeProvider = ({ children }) => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     localStorage.setItem('app-theme', newTheme);
-    document.body.className = newTheme;
+    //document.body.className = newTheme;
   };
 
   const muiTheme = theme === "light" ? lightTheme: darkTheme;

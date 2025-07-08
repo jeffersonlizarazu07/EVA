@@ -29,7 +29,13 @@ import AcceptButton from "../../components/buttons/acceptButton";
 import ConfirmButton from "../buttons/confirmButton";
 // import { getThemeColor } from "../../style/ThemeColors";
 
+/* Traer traduccion  */
+import { useEffect, useContext } from "react";
+import { useTranslation } from "react-i18next";
+import { UserContext } from "../../context/UserContext";
+
 const ModalAdmin = ({
+  
   // Props de agent_list
   monitoringStep,
   setMonitoringStep,
@@ -65,6 +71,15 @@ const ModalAdmin = ({
   open,
   handleSaveMonitoring,
 }) => {
+  /* Traer traduccion  */
+  const { t, i18n } = useTranslation();
+  const { languageUser } = useContext(UserContext);
+
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, [languageUser, i18n]);
+
+  
   return (
     <Dialog
       open={open}
@@ -72,6 +87,7 @@ const ModalAdmin = ({
       maxWidth="lg"
       fullWidth
       scroll="body"
+      
     >
       <DialogTitle>
         {(monitoringStep === 2 || monitoringStep === 3) ? (
@@ -384,9 +400,34 @@ const ModalAdmin = ({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ gap: 1 }}>
-        <CancelButton onClick={formClientReset}></CancelButton>
-        <AcceptButton onClick={handleNextStep}></AcceptButton>
+      <DialogActions sx={{ gap: 1, padding: "3%" }}>
+        {/*<CancelButton onClick={formClientReset}></CancelButton> */}
+        <Button
+          variant="outlined"
+          onClick={formClientReset}
+          sx={{            
+              color: '#b62a8b',       // Texto morado
+              borderColor: '#b62a8b',  // Borde morado
+              '&:hover': {
+              borderColor: '#b62a8b', // Borde morado oscuro al hover
+              backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
+           }
+          }}>
+          {t("clientModal.Close")}
+        </Button>
+        {/*<AcceptButton onClick={handleNextStep}></AcceptButton> */}
+        <Button 
+          variant="contained"
+          onClick={handleNextStep}
+          
+          sx={{
+                  backgroundColor: '#b62a8b',
+                  '&:hover': {
+                    backgroundColor: '#581244'
+                  }
+                }}
+        
+        >{t("UserModal.Save")}</Button>
       </DialogActions>
     </Dialog>
   );
