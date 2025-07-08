@@ -8,6 +8,11 @@ import { createTheme } from '@mui/material/styles';
 
 
 
+
+
+
+
+
 const commonDarkBackground = '#383636';
 const commonTextWhite = '#ffffff';
 
@@ -25,9 +30,24 @@ export const lightTheme = createTheme({
           backgroundRepeat: 'no-repeat',
           color: '#000000',
         },
-        '.css-1ndauje-MuiPaper-root, .css-mjxahb-MuiTypography-root':{
-          backgroundColor: `#000000 !important`,
+        '.css-1ndauje-MuiPaper-root, .css-mjxahb-MuiTypography-root, .css-155bsob-MuiPaper-root':{
+          backgroundColor: `#242424 !important`,
           color: '#ffffff !important',
+        },
+        //
+        
+        '.css-1d3z3hw-MuiOutlinedInput-notchedOutline':{
+          border:'2px solid #ffffff !important',
+          borderRadius: '0.375rem !important',
+        },
+        '.css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input, .css-1fgkew7-MuiTypography-root':{
+          color: `${commonTextWhite} !important`,
+        },
+        '.btn-group label, .css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input, .css-1fgkew7-MuiTypography-root':{
+            color: `${commonDarkBackground} !important`,
+        },
+        '.css-1d3z3hw-MuiOutlinedInput-notchedOutline':{
+          border:'2px solid #000000 !important',
         },
       },
     },
@@ -200,6 +220,22 @@ export const darkTheme = createTheme({
           border:'1px solid rgb(199, 14, 143) !important',
         },
         //
+        '.btn-group label':{
+          color: `${commonTextWhite} !important`,
+        },
+        '.css-9425fu-MuiOutlinedInput-notchedOutline':{
+          border:'2px solid #ffffff !important',
+          borderRadius: '0.375rem !important',
+        },
+        '.css-cy3cvs':{
+          backgroundColor: 'transparent !important',
+        },
+        '.greenCorrect':{
+          color: '#008000 !important',
+        },
+        '.redIncorrect':{
+          color : 'rgb(201, 23, 23) !important',
+        },
 
 
 

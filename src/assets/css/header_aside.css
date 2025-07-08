@@ -1,8 +1,8 @@
-.body-Claro {
+/*.body-Claro {
   background-image: url("../img/eva v8.png");
   background-size: cover;
   background-repeat: no-repeat;
-}
+}*/
 nav{
   border: 2px solid rgb(199, 14, 143);
   border-radius: 25px;
@@ -104,12 +104,12 @@ ul {
 }
 
 /* Estilos modo oscuro */
-
+/*
 .body-Oscuro {
   background-image: url("../img/eva v10.png");
   background-size: cover;
   background-repeat: repeat;
-}
+}*/
 
 #logo{
   width: 63px;
