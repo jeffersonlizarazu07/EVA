@@ -41,7 +41,7 @@ const LanguageSelector = () => {
   };
 
   return (
-    <div style={{ position: 'fixed', top: '2%', left: '94%', zIndex: 1000 }}>
+    <div style={{ display: 'flex', alignItems: 'center', zIndex: 1000 }}>
       <Tooltip placement="bottom">
         <MUIButton
           aria-controls="language-menu"
@@ -51,7 +51,7 @@ const LanguageSelector = () => {
           sx={{
             minWidth: 'auto',
             color: 'inherit',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'rgba(255, 255, 255, 1)',
             borderRadius: '50%',
             width: '50px',
             height: '50px',
