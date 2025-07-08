@@ -74,15 +74,13 @@ const ModalAdmin = ({
       scroll="body"
     >
       <DialogTitle>
-        {monitoringStep === 2 ? (
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-          >
+        {(monitoringStep === 2 || monitoringStep === 3) ? (
+          <Box display="flex" justifyContent="space-between" alignItems="center">
             <Box display="flex" alignItems="center">
               <IconButton
-                onClick={() => setMonitoringStep(1)}
+                onClick={() =>
+                  setMonitoringStep(monitoringStep === 2 ? 1 : 2)
+                }
                 sx={{ marginLeft: "-22px" }}
               >
                 <ArrowBackIcon />
@@ -96,11 +94,7 @@ const ModalAdmin = ({
             </IconButton>
           </Box>
         ) : (
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-          >
+          <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h6">{userName || "Nuevo Agente"}</Typography>
             <IconButton onClick={formClientReset}>
               <CloseIcon />
@@ -202,7 +196,6 @@ const ModalAdmin = ({
             </Grid>
           </>
         )}
-
         {monitoringStep === 2 && (
           <Box maxHeight="65vh" overflow="auto">
             <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -356,6 +349,11 @@ const ModalAdmin = ({
                 ))
               )}
             </Box>
+            <Box display="flex" justifyContent="center" mt={2}>
+              <ConfirmButton variant="contained" onClick={handleSaveAnswers} >
+                Guardar Todo
+              </ConfirmButton>
+            </Box>
           </Box>
         )}
         {monitoringStep === 3 && (
@@ -367,6 +365,8 @@ const ModalAdmin = ({
               placeholder="Ingrese su feedback aquí"
               multiline
               fullWidth
+              //value={feedback}
+              //onChange={(e) => setFeedback(e.target.value)}
               sx={{
                 "& .MuiInputBase-root": {
                   height: "150px",
@@ -379,13 +379,9 @@ const ModalAdmin = ({
                 },
               }}
             />
+            
           </Box>
         )}
-        <Box display="flex" justifyContent="center" mt={2}>
-          <ConfirmButton variant="contained" onClick={handleSaveAnswers} >
-            Guardar Todo
-          </ConfirmButton>
-        </Box>
       </DialogContent>
 
       <DialogActions sx={{ gap: 1 }}>

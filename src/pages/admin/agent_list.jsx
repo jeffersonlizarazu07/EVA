@@ -49,6 +49,8 @@ const AdminList = () => {
   const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
+  const [feedback, setFeedback] = React.useState("");
+
 
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
@@ -389,22 +391,36 @@ const AdminList = () => {
   };
 
   // Guarda una nueva monitorización en el sistema
-  const handleSaveMonitoring = async (score, feedback, check, agentId) => {
-    const payload = {
-      monitoring_date: new Date().toISOString().slice(0, 10),
-      score, // Puntuación total de la monitorización
-      feedback, // Comentarios u observaciones
-      check, // Checklist o validación binaria
-      id_user: agentId, // ID del agente evaluado
-      id_form: selectedFormId, // ID del formulario aplicado
-    };
-
+  const handleSaveMonitoring = async () => {
     try {
-      const result = await saveMonitoring(payload); // Enviar datos al backend
-      return result;
+      const score = calFormScore();
+
+      const payload = {
+        date: monitoringDate,
+        feedback,
+        idUserAgent: selectedClientId, // o userId
+        idUserMonitor: userInfo?.id,   // quien evalúa
+        idForm: selectedFormId,
+        score,
+      };
+
+      const response = await fetch('http://localhost:3000/api/answersform/monitoring', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error guardando monitoreo");
+      }
+
+      alert("Monitoreo guardado con éxito");
+      // Aquí puedes resetear estados o avanzar de paso
     } catch (error) {
-      console.error("Error al guardar la monitorización:", error);
-      throw error;
+      console.error(error);
+      alert("Error al guardar monitoreo: " + error.message);
     }
   };
 
@@ -595,7 +611,7 @@ const AdminList = () => {
     return Math.round(total / blocksWithPer.length);
   };
 
-  //Guarda lass respuestas del formulario
+  //Guarda las respuestas del formulario
   const handleSaveAnswers = async () => {
     // Validar que se haya seleccionado una fecha
     if (!monitoringDate) {
