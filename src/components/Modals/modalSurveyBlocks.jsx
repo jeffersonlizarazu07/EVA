@@ -1,4 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import Tooltip from "@mui/material/Tooltip";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
 import {
   SingleChoiceQuestion,
   MultipleChoiceQuestion,
@@ -50,6 +53,8 @@ const ModalSurveyBlocks = ({
   data,
   migrateQuestionData,
   setPositionType,
+  selectError,
+  handleErrorOpt,
 }) => {
   return (
     <div
@@ -286,6 +291,41 @@ const ModalSurveyBlocks = ({
                           }
                         />
                         <span className="labelName">Texto de la pregunta:</span>
+                      </label>
+                    </div>
+
+                    <div className="form-group m-2">
+                      <label id="labelAnimation">
+                        <select
+                          className="input-new text-center"
+                          value={q.error || ""}
+                          onChange={(e) =>
+                            handleInputChange(index, "error", e.target.value)
+                          }
+                        >
+                          <option value="" disabled>
+                            Seleccione error
+                          </option>
+                          <option
+                            value="ecc_opt"
+                            title="Error crítico de cumplimiento"
+                          >
+                            ECC
+                          </option>
+                          <option
+                            value="ecuf_opt"
+                            title="Error crítico de usuario final"
+                          >
+                            ECUF
+                          </option>
+                          <option
+                            value="ecn-opt"
+                            title="Error crítico de negocio"
+                          >
+                            ECN
+                          </option>
+                        </select>
+                        <span className="labelName">Tipo de error:</span>
                       </label>
                     </div>
 
