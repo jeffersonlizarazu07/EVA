@@ -7,18 +7,18 @@ class questionsFormModel {
   }
 
   async createQuestionsForBlock(blockId, questions) {
-    try{
+    try {
       const typeMap = {
         check_opt: 1,
         selector_opt: 2,
         textfield_s: 3,
-        // radio_opt: 4,
-        // yes_no: 5,
       };
 
       const dataToInsert = questions.map((q) => ({
         question_name: q.question_name || q.text || "Sin texto",
-        id_type_question: typeMap[q.id_type_question] || typeMap[q.type] || null,
+        error: q.error,
+        id_type_question:
+          typeMap[q.id_type_question] || typeMap[q.type] || null,
         conditional: q.conditional || "NO",
         id_conditional: q.id_conditional || null,
         conditional_answer: q.conditional_answer ?? "",
@@ -45,16 +45,18 @@ class questionsFormModel {
       const ids = insertedQuestions.map((q) => q.id);
       console.log("IDs insertados:", ids);
       return ids;
-    }
-    catch (error) {
-      console.error('Error al crear la respuesta:', error);
-      throw new Error('No se pudo crear la respuesta debido a un error en el servidor.' + error.message);
+    } catch (error) {
+      console.error("Error al crear la respuesta:", error);
+      throw new Error(
+        "No se pudo crear la respuesta debido a un error en el servidor." +
+          error.message
+      );
     }
   }
 
   async updateQuestionsForBlock(blockId, questions) {
-    console.log("Actualizando preguntas para bloque:", blockId);
-    console.log("Preguntas recibidas:", questions);
+    // console.log("Actualizando preguntas para bloque:", blockId);
+    // console.log("Preguntas recibidas:", questions);
 
     // Iniciar transacción para asegurar consistencia
     const trx = await this.knex.transaction();
@@ -62,7 +64,7 @@ class questionsFormModel {
     try {
       // 1. Eliminar preguntas existentes del bloque
       await trx(this.table).where({ block_id: blockId }).del();
-      console.log("Preguntas anteriores eliminadas");
+      // console.log("Preguntas anteriores eliminadas");
 
       // 2. Si hay nuevas preguntas, insertarlas
       if (questions && questions.length > 0) {
@@ -74,6 +76,7 @@ class questionsFormModel {
 
         const dataToInsert = questions.map((q) => ({
           question_name: q.question_name || q.text || "Sin texto",
+          error: q.error,
           id_type_question:
             typeMap[q.id_type_question] || typeMap[q.type] || null,
           conditional: q.conditional || "NO",
@@ -106,12 +109,14 @@ class questionsFormModel {
   }
 
   async getQuestionsByBlockId(blockId) {
-    try{
+    try {
       return await this.knex(this.table)
         .where({ block_id: blockId })
         .orderBy("id");
-    }catch (error) {
-      throw new Error(`Error al obtener preguntas por ID de bloque: ${error.message}`);
+    } catch (error) {
+      throw new Error(
+        `Error al obtener preguntas por ID de bloque: ${error.message}`
+      );
     }
   }
 }
