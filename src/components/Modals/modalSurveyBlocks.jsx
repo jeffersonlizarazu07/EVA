@@ -319,7 +319,7 @@ const ModalSurveyBlocks = ({
                             ECUF
                           </option>
                           <option
-                            value="ecn-opt"
+                            value="ecn_opt"
                             title="Error crítico de negocio"
                           >
                             ECN

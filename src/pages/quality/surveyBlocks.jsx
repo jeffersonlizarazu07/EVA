@@ -296,7 +296,7 @@ export default function SurveyBlocks({}) {
 
           const preguntaBase = {
             text: p.text || p.question_name || "",
-            error: p.error,
+            error: p.type_error,
             type: tipo,
             conditional: p.conditional || "NO",
           };
@@ -472,7 +472,7 @@ export default function SurveyBlocks({}) {
 
         return {
           question_name: q.text || q.question || "Sin texto",
-          error: q.error,
+          type_error: q.error,
           id_type_question: q.type || typeMap[q.type] || null,
           select_option,
           selected_answer,
@@ -1128,7 +1128,7 @@ export default function SurveyBlocks({}) {
               return {
                 id: preg.id,
                 text: preg.text || preg.question_name || "Sin texto",
-                error: preg.error,
+                error: preg.type_error,
                 type: tipo,
                 options: optionObjects,
                 select_option: preg.select_option || "",
