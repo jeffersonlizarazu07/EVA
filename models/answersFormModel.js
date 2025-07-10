@@ -1,17 +1,40 @@
+const { getDateTimeForSQL } = require("../helpers/dateHelper");
+
 class AnswersFormModel {
   constructor() {
     this.knex = require('../config/db');
-    this.table = 'answers'; // tu tabla
+    this.table = 'answers_form';
+    this.table_ = 'monitoring';
   }
 
   async createAnswer(data) {
-    
-  const [id] = await this.knex(this.table).insert({
-    question_id: data.question_id,
-    answer_question: data.answer_question,
-  });
-  return { id, ...data };
-}
+    // Si data.date viene, usarla, si no, usar fecha actual
+    const fecha = data.date || getDateTimeForSQL();
+
+    const [id] = await this.knex(this.table).insert({
+      question_id: data.question_id,
+      idUser: data.idUser,
+      answer: data.answer,
+      date: fecha,
+    });
+
+    return { id, ...data };
+  }
+
+  async createMonitoring(data) {
+    // data: { date, score, feedback, id_user_agent, id_user_monitor, id_form }
+    const [id] = await this.knex(this.table_).insert({
+      date: data.date,
+      score: data.score,
+      feedback: data.feedback,
+      check: 0,
+      id_user_agent: data.id_user_agent,
+      id_user_monitor: data.id_user_monitor,
+      id_form: data.id_form,
+    });
+
+    return { id, ...data };
+  }
 
   async getAllAnswers() {
     try {
@@ -37,7 +60,7 @@ class AnswersFormModel {
 
   async getAnswersByQuestionId(questionId) {
     try {
-      return await this.knex(this.table).where({ id_question: questionId });
+      return await this.knex(this.table).where({ question_id: questionId });
     }catch(error) {
       console.error('Error al obtener respuestas por ID de pregunta:', error);
       throw new Error('No se pudieron obtener las respuestas debido a un error en el servidor.' + error.message);
@@ -47,7 +70,7 @@ class AnswersFormModel {
   async updateAnswer(id, data) {
     try {
     await this.knex(this.table).where({ id }).update({
-      answer_question: data.answer,
+      answer: data.answer,
     });
       return this.getAnswerById(id);
     } catch (error) {
