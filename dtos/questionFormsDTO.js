@@ -43,7 +43,7 @@ class QuestionFormsDTO {
         conditional,
         id_conditional,
         conditional_answer,
-        error,
+        type_error,
       } = pregunta;
 
       //validar que los capos son obligatorios
@@ -80,7 +80,7 @@ class QuestionFormsDTO {
         };
       }
 
-      if (!allowedError.includes(error)) {
+      if (!allowedError.includes(type_error)) {
         return {
           status: false,
           message: "Tipo de error no válido",
@@ -109,6 +109,7 @@ class QuestionFormsDTO {
     const { preguntas } = data;
     const allowedTypes = ["check_opt", "textfield_s", "selector_opt"];
     const allowedConditional = ["SI", "NO"];
+    const allowedError = ["ecc_opt", "ecuf_opt", "ecn_opt"];
 
     //valida que todos los campos sean obligatorios
 
@@ -120,6 +121,7 @@ class QuestionFormsDTO {
     for (const pregunta of preguntas) {
       const {
         question_name,
+        type_error,
         id_type_question,
         select_option,
         selected_answer,
@@ -161,6 +163,14 @@ class QuestionFormsDTO {
           message: "Debe ingresar un conditional valido",
         };
       }
+
+      if (!allowedError.includes(type_error)) {
+        return {
+          status: false,
+          message: "Tipo de error no válido",
+        };
+      }
+
     }
 
     return { status: true };

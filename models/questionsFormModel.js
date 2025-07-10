@@ -16,7 +16,7 @@ class questionsFormModel {
 
       const dataToInsert = questions.map((q) => ({
         question_name: q.question_name || q.text || "Sin texto",
-        error: q.error,
+        type_error: q.type_error,
         id_type_question:
           typeMap[q.id_type_question] || typeMap[q.type] || null,
         conditional: q.conditional || "NO",
@@ -76,7 +76,7 @@ class questionsFormModel {
 
         const dataToInsert = questions.map((q) => ({
           question_name: q.question_name || q.text || "Sin texto",
-          error: q.error,
+          type_error: q.type_error,
           id_type_question:
             typeMap[q.id_type_question] || typeMap[q.type] || null,
           conditional: q.conditional || "NO",
