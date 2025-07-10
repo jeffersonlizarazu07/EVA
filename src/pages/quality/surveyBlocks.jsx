@@ -153,6 +153,9 @@ export default function SurveyBlocks({}) {
 
   const [collapsedQuestions, setCollapsedQuestions] = useState({}); // Estado para manejar el colapso de preguntas
 
+  // Select errores
+  const [selectError, setSelectError] = useState("");
+
   /* ***********************************************************************************************************/
   /* Component Logic*/
   /* ***********************************************************************************************************/
@@ -293,6 +296,7 @@ export default function SurveyBlocks({}) {
 
           const preguntaBase = {
             text: p.text || p.question_name || "",
+            error: p.type_error,
             type: tipo,
             conditional: p.conditional || "NO",
           };
@@ -449,7 +453,7 @@ export default function SurveyBlocks({}) {
               selected_answer = safeString(q.checkboxCorrectAnswers);
             }
           } else if (q.type === "selector_opt") {
-            // ARREGLO: Usar la misma lógica segura para selector
+            // Usar la misma lógica segura para selector
             if (Array.isArray(q.selectorOptions)) {
               const validOptions = q.selectorOptions
                 .map(safeString)
@@ -468,6 +472,7 @@ export default function SurveyBlocks({}) {
 
         return {
           question_name: q.text || q.question || "Sin texto",
+          type_error: q.error,
           id_type_question: q.type || typeMap[q.type] || null,
           select_option,
           selected_answer,
@@ -619,7 +624,7 @@ export default function SurveyBlocks({}) {
             // Actualizar metadatos del formulario
             const updatedForm = await updateFormMetadata(id_form, userId);
             if (updatedForm) {
-              setFormData(updatedForm); // 👈 Esto actualizará la fecha en tu UI
+              setFormData(updatedForm); // Actualizar fecha
             }
             await fetchFormData();
 
@@ -789,6 +794,7 @@ export default function SurveyBlocks({}) {
 
     const newQuestions = Array.from({ length: count }, () => ({
       text: "",
+      error: "",
       type: "",
       options: [],
       correctAnswers: [],
@@ -867,8 +873,7 @@ export default function SurveyBlocks({}) {
 
   const validateEditMode = () => {
     const basicBlocksInputs =
-      nombreInput.input.trim() !== "" &&
-      ponderacionInput.input.trim() !== ""
+      nombreInput.input.trim() !== "" && ponderacionInput.input.trim() !== "";
 
     if (questionsList.length === 0) return false;
 
@@ -892,8 +897,7 @@ export default function SurveyBlocks({}) {
 
   const validateCreateMode = () => {
     const basicBlocksInputs =
-      nombreInput.input.trim() !== "" &&
-      ponderacionInput.input.trim() !== ""
+      nombreInput.input.trim() !== "" && ponderacionInput.input.trim() !== "";
 
     if (questionsList.length === 0) return false;
 
@@ -942,6 +946,7 @@ export default function SurveyBlocks({}) {
     setIsChecked(false);
     setValueConditional(false);
     setHasValidQuestions(false);
+    setSelectError("");
   };
 
   // Id único para cada bloque
@@ -1123,6 +1128,7 @@ export default function SurveyBlocks({}) {
               return {
                 id: preg.id,
                 text: preg.text || preg.question_name || "Sin texto",
+                error: preg.type_error,
                 type: tipo,
                 options: optionObjects,
                 select_option: preg.select_option || "",
@@ -1230,8 +1236,7 @@ export default function SurveyBlocks({}) {
   };
 
   // Elimina el bloque - pendiente por revisar**
-  const onBulkEmail = (bloque) => {
-  };
+  const onBulkEmail = (bloque) => {};
 
   useEffect(() => {
     // Si no se recibió por navegación, hacer fetch
@@ -1282,6 +1287,24 @@ export default function SurveyBlocks({}) {
     setData(reorderedData);
     setStaticData(reorderedData);
   };
+
+  // Select errores
+  const handleErrorOpt = (index, field, value) => {
+    const updatedQuestions = [...questionsList];
+    updatedQuestions[index] = {
+      ...updatedQuestions[index],
+      [field]: value, // Actualiza el campo dinámicamente
+    };
+    setQuestionsList(updatedQuestions);
+  };
+
+  // Errores mapeados para mostrar en el render
+  const errorLabels = {
+    ecc_opt: "ECC - Error crítico de cumplimiento",
+    ecuf_opt: "ECUF - Error crítico de usuario final",
+    ecn_opt: "ECN - Error crítico de negocio",
+  };
+
   return (
     <div className="App">
       <div id="body">
@@ -1416,7 +1439,7 @@ export default function SurveyBlocks({}) {
                                               >
                                                 {/* Header de la pregunta con botón de colapso */}
                                                 <div className="d-flex justify-content-between align-items-center">
-                                                  <p className="mb-3 fs-5">
+                                                  <p className="mb-2 fs-5">
                                                     <strong>
                                                       {preg.text ||
                                                         preg.question_name ||
@@ -1434,6 +1457,14 @@ export default function SurveyBlocks({}) {
                                                   >
                                                     {isCollapsed ? "+" : "-"}
                                                   </button>
+                                                </div>
+
+                                                <div>
+                                                  <label className="mb-3 ms-1">
+                                                    {errorLabels[preg.error] ||
+                                                      "No seleccionado"}
+                                                    {"."}
+                                                  </label>
                                                 </div>
 
                                                 {/* Contenido expandible de la pregunta */}
@@ -1553,7 +1584,7 @@ export default function SurveyBlocks({}) {
                                                     )}
 
                                                     {/* Pregunta tipo Sí/No */}
-                                                    {preg.type === "yes_no" && (
+                                                    {/* {preg.type === "yes_no" && (
                                                       <Yes_no
                                                         value={
                                                           preg.selected_answer ||
@@ -1561,7 +1592,7 @@ export default function SurveyBlocks({}) {
                                                         }
                                                         readOnly
                                                       />
-                                                    )}
+                                                    )} */}
                                                   </>
                                                 )}
                                               </div>
@@ -1707,6 +1738,8 @@ export default function SurveyBlocks({}) {
         correctAnswers={multipleChoiceData.correctAnswers}
         onChange={handleMultipleChoiceChange}
         migrateQuestionData={migrateQuestionData}
+        selectError={selectError}
+        handleErrorOpt={handleErrorOpt}
       />
     </div>
   );
