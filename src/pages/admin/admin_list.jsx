@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 
 import {Close as CloseIcon, CloudUpload as CloudUploadIcon, Edit as EditIcon, Add as AddIcon } from '@mui/icons-material';
+import { use } from "react";
 
 const AdminList = () => {
   //ocultar o mostrar los modales
@@ -44,11 +45,16 @@ const AdminList = () => {
   const [loading, setLoading] = useState(false); // Bandera de carga (puede ser útil)
   const [selectedClients, setSelectedClients] = useState([]); // Clientes seleccionados para un admin
 
+  // exportar solo agente
+  const [agenteExport, setAgenteExport] = useState([]);
+
   // Traducción e idioma desde el contexto global del usuario
   const { t, i18n } = useTranslation();
   const { accessToken, languageUser, setClients, userId, clients } = useContext(UserContext);
 
   // Se ejecuta cuando cambia el idioma del usuario o se monta el componente
+
+ 
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
@@ -88,6 +94,19 @@ const AdminList = () => {
     });
 
   const type = useInput({ defaultValue: "", validate: /^[1-4]+$/ });
+
+  useEffect(() => {
+    const agentes = admins
+      .filter((admin) => admin.type === 4)
+      .map((admin) => admin.firstname);
+
+    setAgenteExport(agentes);
+    console.log("Agentes export:", agentes);
+  }, [admins]);
+
+
+ 
+  
   const state = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
   const language = useInput({ defaultValue: "", validate: /^(es|en|it|pt)$/ });
   const registration_date = useInput({

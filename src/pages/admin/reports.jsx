@@ -217,7 +217,7 @@ const Reports = () => {
         `http://localhost:3000/api/clients/surveys?clientIds=${clients}`,
         config
       );
-      console.log("Datos de Encuestas:", response.data.data);
+      console.log("Datos de Encuestas aqui:", response.data.data);
       setSurveys(response.data.data);
     } catch (error) {
       console.error("Error fetching data", error);
