@@ -22,11 +22,13 @@ const Index = () => {
 
     <Box >
       <HeaderLT1/>
-      <Box id="body">
+      {/* id="body" */}
+      <Box >
         
         <Box sx={{marginTop: 12}}>
             <Grid size={12}>
-              <Container sx={{marginLeft: 27}} >
+              {/* marginLeft: 27 */}
+              <Container sx={{display:"flex", justifyContent:"center", alignItems:"center"}} >
                 <Grid container spacing={1}>
                   
                   <Grid item xs={12} md={6}>
@@ -51,7 +53,7 @@ const Index = () => {
 
                   <Grid item xs={12} md={6}>
                      <Link href="/satisfaction" underline="none">
-                      <Card id="card1"  sx={{
+                      <Card id="card2"  sx={{
                         color: "white",
                         display: "flex",
                         alignItems: "center",

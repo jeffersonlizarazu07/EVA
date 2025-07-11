@@ -7,20 +7,19 @@ const config = {
   withCredentials: true,
 };
 
-// obtener todos los monitoreos
+// obtener todos los monitoreos 
 
-export const getMonitoring = async () => {
-  try {
-    const response = await axios.get(
-      `${API_BASE_URL}/answersform/monitoring`,
-      config
-    );
+export const getMonitoring = async ()=>{
+  try{
+    const response = await axios.get(`${API_BASE_URL}/answersform/monitoring`, config);
     return response.data;
-  } catch (error) {
+  }catch(error){
     console.error("Error fetching monitoring data:", error);
     throw error;
   }
-};
+}
+
+
 
 // Obtener todos los administradores (agentes) desde el backend
 export const getAdmins = async (clients) => {
@@ -191,4 +190,4 @@ export const saveMonitoring = async (payload) => {
     console.error("Error al guardar la monitorización:", error);
     throw error;
   }
-};
+}; 

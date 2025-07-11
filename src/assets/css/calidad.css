@@ -267,13 +267,13 @@ section .container {
   .cont-row {
     background-color: transparent !important;
   }
-  .body-Oscuro {
+  /*.body-Oscuro {
     background-repeat: repeat !important;
-  }
+  }*/
 }
 
 /* Modo oscuro */
-
+/*
 .body-Oscuro {
   background-image: url("../img/eva v10.png");
   background-size: cover;
@@ -281,7 +281,7 @@ section .container {
   height: auto;
   margin: 0;
   padding: 0;
-}
+}*/
 
 #nav-Oscuro {
   background-color: rgba(0, 0, 0, 0.082);

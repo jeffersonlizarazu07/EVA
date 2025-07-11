@@ -45,8 +45,7 @@ const AdminList = () => {
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
   const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, languageUser, clients, userInfo } =
-    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
+  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
@@ -456,6 +455,8 @@ const AdminList = () => {
     } catch (error) {
       console.error(error);
       alert("Error al guardar monitoreo: " + error.message);
+      console.error(error);
+      alert("Error al guardar monitoreo: " + error.message);
     }
   };
 
@@ -589,6 +590,17 @@ const AdminList = () => {
   const handleCloseViewModal = () => {
     setOpenViewModal(false);
     setViewAdminData(null);
+
+    // Guardamos los datos del agente para mostrar en el modal
+    setViewAdminData(agentData);
+
+    // Abrimos el modal de vista
+    setOpenViewModal(true);
+  };
+  //para cerrar el modal
+  const handleCloseViewModal = () => {
+    setOpenViewModal(false);
+    setViewAdminData(null);
   };
 
   // Resetea los estados del formulario y del modal al cerrarlo
@@ -606,6 +618,7 @@ const AdminList = () => {
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
       const initBlockPer = block.percentage; // Valor inicial del bloque = 100%
+      const initBlockPer = block.percentage; // Valor inicial del bloque = 100%
       const totalQuestions = block.preguntas.length; // Calcula el número de preguntas que contiene el bloque
       // Calcula el valor de cada pregunta dentro del bloque
       const perQuestion = initBlockPer / totalQuestions; // Calcula el porcentaje de cada pregunta dentro del bloque
@@ -621,11 +634,13 @@ const AdminList = () => {
         return {
           ...pregunta,
           porcentajePregunta: Math.round(perQuestion * 10) / 10, // porcentaje visual individual con solo un decimal
+          porcentajePregunta: Math.round(perQuestion * 10) / 10, // porcentaje visual individual con solo un decimal
         };
       });
 
       return {
         ...block,
+        porcentajeBloque: Math.round(finalBlockPer * 10) / 10, // Retorna el valor del bloque despues de finalizar la calificación
         porcentajeBloque: Math.round(finalBlockPer * 10) / 10, // Retorna el valor del bloque despues de finalizar la calificación
         preguntas: changeBlockPer, // Retorna el valor de cada pregunta para que sea visible por el usuario al evaluar el bloque
       };
@@ -801,6 +816,7 @@ const AdminList = () => {
     handleUpdatePregunta,
     calFormScore,
     handleSaveAnswers,
+    handleSaveAnswers,
     clientError,
     setClientError,
     formError,
@@ -840,6 +856,8 @@ const AdminList = () => {
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
+    <Box className="App" sx={{ overflow: "hidden" }}>
+      <Box id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
         <Box
@@ -874,6 +892,7 @@ const AdminList = () => {
       </Box>
       <ModalAdmin {...modalAdminProps} />
       <ModalViewAdmin {...modalViewAdminProps} />
+    </Box>
     </Box>
   );
 };

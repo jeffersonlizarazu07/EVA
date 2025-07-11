@@ -1,5 +1,18 @@
+import React from "react";
+import {
+  Modal,
+  Box,
+  Paper,
+  Typography,
+  IconButton,
+  Grid,
+  TextField,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+
 const ModalViewAdmin = ({
-// Props de agent_list
+  open,
+  onClose,
   formatDateTimeShort,
   registration_date,
   type,
@@ -15,146 +28,146 @@ const ModalViewAdmin = ({
   t,
 }) => {
   return (
-    <div id="modalViewAdmin" className="modal fade" aria-hidden="true">
-      <div className="modal-dialog modal-dialog-centered modal-md">
-        <div className="modal-content">
-          <div
-            className="modal-header mb-0 pb-0"
-            style={{ borderBottom: "none" }}
-          >
-            <label className="h5">{t("viewUserModal.UserDetails")}</label>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="close"
-            ></button>
-          </div>
-          <div>
-            {" "}
-            <p
-              style={{
-                marginLeft: "15px",
-                marginBottom: 0,
-                padding: 0,
-                color: "gray",
-                fontSize: "small",
-              }}
-            >
+    <Modal open={open} onClose={onClose} aria-labelledby="view-user-modal-title">
+      <Box className="modalBox">
+        <Paper elevation={0} sx={{ borderRadius: 2 }}>
+          {/* Header */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 3 }}>
+            <Typography variant="h6" fontWeight="bold">
+              {t("viewUserModal.UserDetails")}
+            </Typography>
+            <IconButton onClick={onClose} aria-label="close modal">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Subtitle */}
+          <Box sx={{ px: 3, pb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
               Información detallada del perfil de agente.
-            </p>
-          </div>
-          <div className="modal-body d-flex ">
-            <div className="col  m-2 ">
-              <div className="m-1 p-1">
-                <label className="fw-semibold ">
-                  {t("viewUserModal.Name")}
-                </label>
-                <input
-                  type="text"
-                  className="form-control mt-1"
-                  value={`${firstName.input} ${middleName.input} ${lastName.input}`}
-                  readOnly
+            </Typography>
+          </Box>
+
+          {/* Body */}
+          <Box sx={{ px: 3, pb: 3, mb: 2 }}>
+            <Grid container spacing={3}>
+              {/* Left column */}
+              <Grid item xs={12} sm={6}>
+
+                <TextField
+                  fullWidth
+                  label={t("viewUserModal.Name")}
+                  value={`${firstName.input} ${middleName.input} ${lastName.input}`.trim()}
+                  InputProps={{ readOnly: true }}
+                  sx={{ mb: 2 }}
+                  className="readOnlyField readOnlyField_"
                 />
-              </div>
-              <div className="m-1 p-1">
-                <span className="fw-semibold ">
-                  {" "}
-                  {t("viewUserModal.State")}
-                </span>
-                <p className="form-control mt-1">
-                  {`${
+
+                <TextField
+                  fullWidth
+                  label={t("viewUserModal.State")}
+                  value={
                     state.input === 1
-                      ? `${t("clientTable.Active")}`
-                      : `${t("clientTable.Inactive")}`
-                  }`}{" "}
-                </p>
-              </div>
-              <div className="m-1 p-1">
-                <span className="fw-semibold ">
-                  {t("viewUserModal.RegisterDate")}
-                </span>
-                <p className="form-control mt-1">
-                  {" "}
-                  {formatDateTimeShort(registration_date.input)}
-                </p>
-              </div>
-              <div className="m-1 p-1">
-                <span className="fw-semibold ">
-                  {t("viewUserModal.Language")}
-                </span>
-                <p className="form-control mt-1">
-                  {" "}
-                  {`${
-                    language.input == "es"
-                      ? `${t("headerlt.Spanish")}`
-                      : language.input == "en"
-                      ? `${t("headerlt.English")}`
-                      : language.input == "it"
-                      ? `${t("headerlt.Italian")}`
-                      : `${t("headerlt.Portuguese")}`
-                  }`}
-                </p>
-              </div>
-            </div>
-            <div className="col  m-2  ">
-              <div className="m-1 p-1">
-                <span className="fw-semibold ">{t("viewUserModal.Email")}</span>
-                <input
-                  type="text"
-                  className="form-control mt-1"
-                  value={email.input}
-                  readOnly
+                      ? t("clientTable.Active")
+                      : t("clientTable.Inactive")
+                  }
+                  InputProps={{ readOnly: true }}
+                  sx={{ mb: 2 }}
+                  className="readOnlyField readOnlyField_"
                 />
-              </div>
-              <div className="m-1 p-1">
-                <span className="fw-semibold ">{t("viewUserModal.Role")}</span>
-                <p type="text" className="form-control mt-1 role-option">
-                  {" "}
-                  {` ${
+
+                <TextField
+                  fullWidth
+                  label={t("viewUserModal.RegisterDate")}
+                  value={formatDateTimeShort(registration_date.input)}
+                  InputProps={{ readOnly: true }}
+                  sx={{ mb: 2 }}
+                  className="readOnlyField readOnlyField_"
+                />
+
+                <TextField
+                  fullWidth
+                  label={t("viewUserModal.Language")}
+                  value={
+                    language.input === "es"
+                      ? t("headerlt.Spanish")
+                      : language.input === "en"
+                      ? t("headerlt.English")
+                      : language.input === "it"
+                      ? t("headerlt.Italian")
+                      : t("headerlt.Portuguese")
+                  }
+                  InputProps={{ readOnly: true }}
+                  sx={{ mb: 2 }}
+                  className="readOnlyField readOnlyField_"
+                />
+              </Grid>
+
+              {/* Right column */}
+              <Grid item xs={12} sm={6}>
+
+                <TextField
+                  fullWidth
+                  label={t("viewUserModal.Email")}
+                  value={email.input}
+                  InputProps={{ readOnly: true }}
+                  sx={{ mb: 2 }}
+                  className="readOnlyField readOnlyField_"
+                />
+
+                <TextField
+                  fullWidth
+                  label={t("viewUserModal.Role")}
+                  value={
                     type.input === 1
                       ? "Super Administrador"
                       : type.input === 2
                       ? "Administrador"
-                      : type.input == 3
+                      : type.input === 3
                       ? "Editor"
-                      : type.input == 4
-                      ? "Agente"
-                      : "cual rol"
-                  }`}{" "}
-                </p>
-              </div>
-              <div className="m-1 p-1">
-                <span className="fw-semibold ">
-                  {t("viewUserModal.LastVisit")}
-                </span>
-                <p className="form-control mt-1">
-                  {formatDateTimeShort(last_visit_date.input)}{" "}
-                </p>
-              </div>
-              <div className="m-1 p-1">
-                <span className="fw-semibold ">
-                  {t("viewUserModal.Clients")}
-                </span>
+                      : "Agente"
+                  }
+                  InputProps={{ readOnly: true }}
+                  sx={{ mb: 2}}
+                  className="readOnlyField readOnlyField_"
+                />
 
-                <ul className="form-control mt-1">
-                  {selectedClients.length > 0 ? (
-                    selectedClients.map((clientId) => {
-                      const client = listClients.find((c) => c.id === clientId);
-                      return client ? (
-                        <li key={client.id}>{client.client}</li>
-                      ) : null;
-                    })
-                  ) : (
-                    <li>{t("viewUserModal.NotClients")}</li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                <TextField
+                  fullWidth
+                  label={t("viewUserModal.LastVisit")}
+                  value={formatDateTimeShort(last_visit_date.input)}
+                  InputProps={{ readOnly: true }}
+                  sx={{ mb: 2 }}
+                  className="readOnlyField readOnlyField_"
+                />
+
+                <Box>
+                  <Box className="textarea-box">
+                    <Typography className="text-area" variant="subtitle2" gutterBottom>
+                      {t("viewUserModal.Clients")}
+                    </Typography>
+                    {selectedClients.length > 0 ? (
+                      <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {selectedClients.map((clientId) => {
+                          const client = listClients.find((c) => c.id === clientId);
+                          return client ? (
+                            <li key={client.id}>{client.client}</li>
+                          ) : null;
+                        })}
+                      </ul>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary" sx={{ m: 1 }}>
+                        {t("viewUserModal.NotClients")}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+      </Box>
+    </Modal>
   );
 };
 

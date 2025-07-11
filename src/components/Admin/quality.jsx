@@ -240,7 +240,7 @@ const Quality = () => {
                         </div>
                         <div className="row button-container">
                           <div className="col-12 ">
-                            <button className="card-btn check">
+                            <button className="card-btn check "onClick={() => navigate("/forms_report")}>
                               {t("qualitySite.View_reports")}
                             </button>
                           </div>

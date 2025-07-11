@@ -1,8 +1,7 @@
-import { useState,useContext,useEffect} from "react";
+import { useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import "../../assets/css/tabla.css";
 import {
   Table,
   TableBody,
@@ -17,30 +16,17 @@ import {
   Box,
   Grid,
   InputAdornment,
+  TablePagination,
 } from "@mui/material";
 import {
   TurnLeft,
-  Add,
-  Edit,
-  PowerSettingsNew,
-  Search,
+  Search
 } from "@mui/icons-material";
-import TablePagination from "@mui/material/TablePagination";
+import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
 
-const TableAdmin = ({
-  header,
-  data,
-  onCreate,
-  onRemove,
-  onUpdate,
-  onView,
-  onActive,
-  modalId,
-  modalId2,
-}) => {
+const TableFormReport = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
-  const nav = useNavigate();
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
@@ -60,11 +46,10 @@ const TableAdmin = ({
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
+    setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  // Filtrar datos según búsqueda
   const filteredData = Array.isArray(data)
     ? data.filter((item) =>
         Object.values(item).some(
@@ -80,21 +65,30 @@ const TableAdmin = ({
     page * rowsPerPage + rowsPerPage
   );
 
-  // Traducción personalizada para header específico
   const getHeaderLabel = (item) => {
     switch (item) {
-      case "firstname":
-        return t("headerlt.First_name");
-      case "lastname":
-        return t("headerlt.Last_name");
-      case "type":
-        return t("headerlt.Role");
-      default:
-        return t("viewUserModal.State");
+        case"id":
+            return ("ID");
+        case "data":
+            return ("Data");
+        case "score":
+            return ("Score");
+        case "feedback":
+            return ("Feedback");
+        case "check":
+            return ("Check");
+        case "id_user_agent":
+            return ("Agent");
+
+        case "id_user_monitor":
+            return ("Monitor");
+        case "id_form":
+            return ("Form ID");    
+        default:
+            return t("viewUserModal.State");
     }
   };
 
-  // Traducción para tipo de usuario
   const getUserType = (type) => {
     switch (type) {
       case 1:
@@ -110,30 +104,10 @@ const TableAdmin = ({
 
   return (
     <Box className="table-container">
-      <Grid container spacing={2} mb={3}>
+      <Grid container spacing={2} mb={2}>
         <Grid item xs={12} sm={6} md={6} lg={6}>
           <Box display="flex" alignItems="center" gap={1}>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{
-                minWidth: 0,
-                width: 30,
-                height: 30,
-                padding: 0,
-                borderRadius: "50%",
-                color: "#b62a8b",
-                borderColor: "#b62a8b",
-                "&:hover": {
-                  borderColor: "#b62a8b",
-                  backgroundColor: "#b62a8b",
-                  color: "white",
-                },
-              }}
-              onClick={() => nav("/admin")}
-            >
-              <TurnLeft />
-            </Button>
+            
             <TextField
               size="small"
               placeholder={t("userTable.Search")}
@@ -163,27 +137,6 @@ const TableAdmin = ({
             />
           </Box>
         </Grid>
-        <Grid item xs={12} sm={6} md={6} lg={6}>
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button variant="h5"
-              size="small"
-              sx={{
-                borderRadius: "18px",
-                border: "1px solid #b62a8b",
-                color: " #b62a8b",
-                borderColor: "#b62a8b",
-                "&:hover": {
-                  borderColor: "#b62a8b",
-                  backgroundColor: "#b62a8b",
-                  color: "white",
-                },
-              }}
-              onClick={onCreate}
-            >
-              <Add sx={{ fontSize: "18px" }} /> {t("userTable.newUser")}
-            </Button>
-          </Box>
-        </Grid>
       </Grid>
 
       <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 450, overflowY: "auto" }}>
@@ -198,9 +151,12 @@ const TableAdmin = ({
                   {getHeaderLabel(item)}
                 </TableCell>
               ))}
+              {/*
               <TableCell sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}>
                 {t("userTable.Actions")}
               </TableCell>
+               */}
+              
             </TableRow>
           </TableHead>
           <TableBody>
@@ -217,7 +173,7 @@ const TableAdmin = ({
                       : item[key]}
                   </TableCell>
                 ))}
-
+                {/*
                 {item.state === 1 ? (
                   <TableCell align="center">
                     <Box sx={{ display: "flex", justifyContent: "center" }} gap={1}>
@@ -232,20 +188,7 @@ const TableAdmin = ({
                           },
                         }}
                       >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => onRemove(item)}
-                        size="small"
-                        sx={{
-                          color: "#b62a8b",
-                          "&:hover": {
-                            backgroundColor: "#b62a8b",
-                            color: "#fff",
-                          },
-                        }}
-                      >
-                        <PowerSettingsNew />
+                        <FactCheckRoundedIcon />
                       </IconButton>
                       <IconButton
                         onClick={() => onView(item)}
@@ -265,15 +208,15 @@ const TableAdmin = ({
                 ) : (
                   <TableCell align="center">
                     <Box sx={{ display: "flex", justifyContent: "center" }} gap={1}>
-                      <IconButton onClick={() => onActive(item)} size="small">
-                        <PowerSettingsNew />
-                      </IconButton>
                       <IconButton onClick={() => onView(item)} size="small">
                         <Search />
                       </IconButton>
                     </Box>
                   </TableCell>
                 )}
+                */}
+                
+                
               </TableRow>
             ))}
           </TableBody>
@@ -321,4 +264,4 @@ const TableAdmin = ({
   );
 };
 
-export default TableAdmin;
+export default TableFormReport;

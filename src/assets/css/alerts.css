@@ -4,3 +4,7 @@
 .small-alert-confirm-button2:hover{
     background-color: rgb(161, 42, 125);
 }
+
+.swal2-container.swal2-top-end {
+  z-index: 11000 !important;
+}

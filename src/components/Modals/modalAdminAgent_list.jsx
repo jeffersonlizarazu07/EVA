@@ -1,6 +1,11 @@
 import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import Swal from "sweetalert2";
 import {
+  Modal,
+  Box,
+  Paper,
+  Typography,
   Modal,
   Box,
   Paper,
@@ -27,6 +32,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useTranslation } from "react-i18next";
 import { UserContext } from "../../context/UserContext";
+import { useTranslation } from "react-i18next";
+import { UserContext } from "../../context/UserContext";
 
 const ModalAdmin = ({
   monitoringStep,
@@ -51,6 +58,7 @@ const ModalAdmin = ({
   handleUpdatePregunta,
   calFormScore,
   handleSaveAnswers,
+  handleSaveAnswers,
   clientError,
   setClientError,
   formError,
@@ -64,6 +72,13 @@ const ModalAdmin = ({
   handleSaveMonitoring,
   errorLabels,
 }) => {
+  const { t, i18n } = useTranslation();
+  const { languageUser } = useContext(UserContext);
+
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, [languageUser, i18n]);
+
   const { t, i18n } = useTranslation();
   const { languageUser } = useContext(UserContext);
 
@@ -103,10 +118,51 @@ const ModalAdmin = ({
             )}
 
             <IconButton onClick={formClientReset} size="large">
+            )}
+
+            <IconButton onClick={formClientReset} size="large">
               <CloseIcon />
             </IconButton>
           </Box>
 
+          {/* Cuerpo */}
+          <Box sx={{ px: 3, pb: 3 }}>
+            {monitoringStep === 1 && (
+              <>
+                <Typography variant="subtitle1" sx={{ mb: 3 }} gutterBottom>
+                  Crear una monitorización
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      select
+                      fullWidth
+                      label={t("Monitor Client")}
+                      value={selectedClientId || ""}
+                      onChange={(e) => {
+                        handleClientChange(e);
+                        setClientError(false);
+                      }}
+                      error={clientError}
+                      disabled={loading}
+                      sx={{ mb: 2 }}
+                      className="readOnlyField"
+                    >
+                      <MenuItem value="">{t("Seleccione un cliente")}</MenuItem>
+                      {userClients.map((client) => (
+                        <MenuItem key={client.id} value={client.id}>
+                          {client.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    {loading && (
+                      <Box mt={1} display="flex" alignItems="center">
+                        <CircularProgress size={16} sx={{ mr: 1 }} />
+                        <Typography variant="body2">Cargando...</Typography>
+                      </Box>
+                    )}
+                  </Grid>
           {/* Cuerpo */}
           <Box sx={{ px: 3, pb: 3 }}>
             {monitoringStep === 1 && (
@@ -177,6 +233,22 @@ const ModalAdmin = ({
                     </TextField>
                   </Grid>
 
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      label={t("Fecha de monitorización")}
+                      InputLabelProps={{ shrink: true }}
+                      value={monitoringDate}
+                      onChange={(e) => {
+                        setMonitoringDate(e.target.value);
+                        setDateError(false);
+                      }}
+                      error={dateError}
+                      sx={{ mb: 2 }}
+                      className="readOnlyField"
+                    />
+                  </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth

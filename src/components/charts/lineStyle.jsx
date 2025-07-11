@@ -17,14 +17,31 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import zoomPlugin from "chartjs-plugin-zoom";
+
+// MUI Components
+import {
+  Box,
+  Grid,
+  Typography,
+  TextField,
+  IconButton,
+  ToggleButtonGroup,
+  ToggleButton,
+  Tooltip as MUITextTooltip,
+} from "@mui/material";
 import ZoomInMapIcon from "@mui/icons-material/ZoomInMap";
+
+// FontAwesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPieChart,
   faBarChart,
   faLineChart,
 } from "@fortawesome/free-solid-svg-icons";
-import { Tooltip as MUITextTooltip } from "@mui/material";
+
+// temas
+import { ThemeContext } from '../../assets/js/ThemeContext';
+
 
 Chart.register(
   BarController,
@@ -44,8 +61,13 @@ Chart.register(
   Filler
 );
 import { useTranslation } from "react-i18next";
+import { themeColors } from "../../style/ThemeColors";
+import { useContext } from "react";
+
+
 
 const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const {t} = useTranslation();
 
   console.log("Componente LineStyleCharts renderizado");
@@ -305,15 +327,21 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
           legend: {
             display: true,
             position: "bottom",
+            labels: {
+              color: theme === "dark"?  themeColors.dark.legend.color : themeColors.light.legend.color ,
+            }  
           },
           title: {
+            
             display: true,
             text: label,
+            position: "top",
             font: {
               size: 15,
               style: "italic",
               weight: "bold",
             },
+             color: theme === "dark"?  themeColors.dark.legend.color : themeColors.light.legend.color ,
           },
           datalabels: {
             display: true,
@@ -372,92 +400,118 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
     };
   }, [chartType, filteredData, label]);
 
-  return (
-    <div>
-      <div className="row m-0 p-0 d-flex justify-content-around">
-        <div className="col d-flex justify-content-center">
-          <p className="fs-6 fw-bold fst-italic">{t("reports.porcentaje_minimo")}</p>
-        </div>
-        <div className="col d-flex justify-content-center">
-          <p className="fs-6 fw-bold fst-italic">{t("reports.porcentaje_maximo")}</p>
-        </div>
-      </div>
-      <div className="row mb-3 d-flex justify-content-around">
-        <input
-          style={{ width: "30%", borderRadius: "8px", borderColor: "#c7c7c7" }}
+  
+return (
+  <Box
+    sx={{
+      width: "100%",
+      maxWidth: 900,
+      mx: "auto",
+      mt: 2,
+    }}
+  >
+    <Grid container spacing={2} justifyContent="center" mb={1}>
+      <Grid item>
+        <Typography variant="subtitle2" fontStyle="italic" fontWeight="bold">
+          {t("reports.porcentaje_minimo")}
+        </Typography>
+      </Grid>
+      <Grid item>
+        <Typography variant="subtitle2" fontStyle="italic" fontWeight="bold">
+          {t("reports.porcentaje_maximo")}
+        </Typography>
+      </Grid>
+    </Grid>
+
+    <Grid container spacing={2} justifyContent="center" mb={2}>
+      <Grid item>
+        <TextField
+          label="Min"
           type="number"
           name="minValue"
           value={filters.minValue}
           onChange={handleFilterChange}
-          placeholder="Min Value"
-          min={0}
-          max={100}
+          size="small"
+          sx={{ width: 100 }}
+          inputProps={{ min: 0, max: 100 }}
         />
-        <input
-          style={{ width: "30%", borderRadius: "8px", borderColor: "#c7c7c7" }}
+      </Grid>
+      <Grid item>
+        <TextField
+          label="Max"
           type="number"
           name="maxValue"
           value={filters.maxValue}
           onChange={handleFilterChange}
-          placeholder="Max Value"
-          min={0}
-          max={100}
+          size="small"
+          sx={{ width: 100 }}
+          inputProps={{ min: 0, max: 100 }}
         />
-      </div>
-      <div className="row">
-        <div className="col-sm-12 col-md-12 col-lg-10">
-          <div
-            className="btn-group mb-3 d-flex justify-content-center"
-            role="group"
-            aria-label="Chart type selection"
-          >
-            <MUITextTooltip title="Circular">
-              <button
-                type="button"
-                className={`btn ${
-                  chartType === "pie" ? "btn-primary" : "btn-secondary"
-                }`}
-                onClick={() => setChartType("pie")}
-              >
-                <FontAwesomeIcon icon={faPieChart} />
-              </button>
-            </MUITextTooltip>
-            <MUITextTooltip title="Barras">
-              <button
-                type="button"
-                className={`btn ${
-                  chartType === "bar" ? "btn-primary" : "btn-secondary"
-                }`}
-                onClick={() => setChartType("bar")}
-              >
-                <FontAwesomeIcon icon={faBarChart} />
-              </button>
-            </MUITextTooltip>
-            <MUITextTooltip title="Línea">
-              <button
-                type="button"
-                className={`btn ${
-                  chartType === "line" ? "btn-primary" : "btn-secondary"
-                }`}
-                onClick={() => setChartType("line")}
-              >
-                <FontAwesomeIcon icon={faLineChart} />
-              </button>
-            </MUITextTooltip>
-          </div>
-        </div>
-        <div className="col">
-          <MUITextTooltip title="Reiniciar Zoom">
-            <button type="button" className="btn btn-light" onClick={resetZoom}>
-              <ZoomInMapIcon />
-            </button>
-          </MUITextTooltip>
-        </div>
-      </div>
+      </Grid>
+    </Grid>
 
-      <canvas ref={chartRef} width="400" height="400" />
-    </div>
-  );
+    <Grid container spacing={2} alignItems="center" justifyContent="center">
+      <Grid item>
+        <ToggleButtonGroup
+          value={chartType}
+          exclusive
+          onChange={(e, value) => value && setChartType(value)}
+          aria-label="Tipo de gráfico"
+          size="small"
+        >
+          {[
+            { type: "pie", icon: faPieChart, label: "Circular" },
+            { type: "bar", icon: faBarChart, label: "Barras" },
+            { type: "line", icon: faLineChart, label: "Línea" },
+          ].map(({ type, icon, label }) => (
+            <MUITextTooltip key={type} title={label}>
+              <ToggleButton
+                value={type}
+                aria-label={type}
+                sx={{
+                  color: "white",
+                  fontSize: "1.4rem",
+                  padding: "12px 24px",
+                  backgroundColor: chartType === type ? "#0d6efd" : "#6c757d",
+                  borderRadius: 1,
+                  mx: 1.5,
+                  "&:hover": {
+                    backgroundColor:
+                      chartType === type ? "#0b5ed7" : "#5a6268",
+                  },
+                }}
+              >
+                <FontAwesomeIcon icon={icon} />
+              </ToggleButton>
+            </MUITextTooltip>
+          ))}
+        </ToggleButtonGroup>
+      </Grid>
+
+      <Grid item>
+        <MUITextTooltip title="Reiniciar Zoom">
+          <IconButton onClick={resetZoom} size="large">
+            <ZoomInMapIcon />
+          </IconButton>
+        </MUITextTooltip>
+      </Grid>
+    </Grid>
+
+    <Box
+      mt={3}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        mx: 2,
+        transform: "scale(0.95)",
+        transformOrigin: "top center",
+      }}
+    >
+      <canvas ref={chartRef} width="475" height="475" />
+    </Box>
+  </Box>
+);
+
 };
 
 export default LineStyleCharts;

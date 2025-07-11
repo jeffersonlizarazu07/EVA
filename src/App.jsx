@@ -19,6 +19,7 @@ import AdminList from "./pages/admin/admin_list";
 import Agent_Monitoring from "./pages/admin/agent_monitoring";
 import Forms from "./pages/admin/form_list";
 import SurveyBlocks from "./pages/quality/surveyBlocks";
+import FormReport from "./pages/admin/form_report";
 /* ---------------------------------------------------------*/
 
 /* Admin Imports */
@@ -69,6 +70,7 @@ export const App = () => {
           <Route path="/gratitude" element={<Gratitude/>}/>
           <Route path="/agent_monitoring" element={<Agent_Monitoring />} />
           <Route path="/forms" element={<Forms />} />
+          <Route path="/forms_report" element={<FormReport/>}/>
           <Route path="/survey_blocks/:id_form" element={<SurveyBlocks />} />
           {/* Pruebas de barras */}
           {/*error views*/}
