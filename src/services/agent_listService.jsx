@@ -7,23 +7,20 @@ const config = {
   withCredentials: true,
 };
 
-// Crear instancia de Axios
-const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-});
+// obtener todos los monitoreos
 
-// Interceptor para incluir token automáticamente
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+export const getMonitoring = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/answersform/monitoring`,
+      config
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching monitoring data:", error);
+    throw error;
+  }
+};
 
 // Obtener todos los administradores (agentes) desde el backend
 export const getAdmins = async (clients) => {
@@ -193,29 +190,5 @@ export const saveMonitoring = async (payload) => {
   } catch (error) {
     console.error("Error al guardar la monitorización:", error);
     throw error;
-  }
-};
-
-export const getMonitoringByUserAndForm = async (
-  userId,
-  formId,
-  accessToken
-) => {
-  try {
-    const response = await axios.get(
-      `${API_BASE_URL}/monitoring/user/${userId}/form/${formId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error al consultar monitoreo por usuario y formulario:",
-      error
-    );
-    return { monitoring: null };
   }
 };

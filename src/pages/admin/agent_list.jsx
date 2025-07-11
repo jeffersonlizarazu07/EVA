@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import AsyncSelect from "react-select/async";
-import makeAnimated from "react-select/animated";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAgent";
 import Swal from "sweetalert2";
-import axios from "axios";
-import SidebarLT1 from "../../components/aside/sidebarLT1";
 import HeaderLT1 from "../../components/header/headerLT1";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
@@ -24,7 +19,6 @@ import {
   getBlocksForIdForm,
   saveMonitoring,
   saveFeedback,
-  getMonitoringByUserAndForm,
 } from "../../services/agent_listService";
 import {
   formatDate,
@@ -33,6 +27,7 @@ import {
 } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
+import { Box, Typography } from "@mui/material";
 
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
@@ -52,7 +47,7 @@ const AdminList = () => {
   const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
   const { accessToken, languageUser, clients, userInfo } =
     useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
-  // const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
+  const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
   const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
@@ -61,7 +56,9 @@ const AdminList = () => {
   const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
-  const [monitoringId, setMonitoringId] = useState(null); // Guarda el ID de Monitorización para enlazarlo con el feedvack posteriormente
+  const [feedback, setFeedback] = React.useState("");
+  const [openViewModal, setOpenViewModal] = React.useState(false);
+  const [viewAdminData, setViewAdminData] = React.useState(null);
 
   // Validaciones de la primer vista del modal
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
@@ -71,7 +68,6 @@ const AdminList = () => {
   const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
   const [check, setCheck] = useState(false); // // Campos que se deben guardar de la monitorización.
   const [questionsList, setQuestionsList] = useState([]); // Validación de preguntas bloques calificados
-  const [feedback, setFeedback] = useState(""); // Manejar el feedback
   const [isSavingFeedback, setIsSavingFeedback] = useState(false); // Controlar al guardar el feedback
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
@@ -427,24 +423,39 @@ const AdminList = () => {
   };
 
   // Guarda una nueva monitorización en el sistema
-  const handleSaveMonitoring = async (score, check, agentId) => {
-    const payload = {
-      monitoring_date: formatDateTime(monitoringDate),
-      score, // Puntuación total de la monitorización
-      check, // Checklist
-      id_user: agentId, // ID del agente evaluado
-      id_form: selectedFormId, // ID del formulario aplicado
-    };
-
+  const handleSaveMonitoring = async () => {
     try {
-      const result = await saveMonitoring(payload); // backend responde { success: true, data: { id, ... } }
-      if (result?.success) {
-        setMonitoringId(result.data?.id); // guarda el id para luego actualizar el feedback
+      const score = calFormScore();
+
+      const payload = {
+        date: monitoringDate,
+        feedback,
+        idUserAgent: selectedClientId, // o userId
+        idUserMonitor: userInfo?.id, // quien evalúa
+        idForm: selectedFormId,
+        score,
+      };
+
+      const response = await fetch(
+        "http://localhost:3000/api/answersform/monitoring",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error guardando monitoreo");
       }
-      return result;
+
+      alert("Monitoreo guardado con éxito");
+      // Aquí puedes resetear estados o avanzar de paso
     } catch (error) {
-      console.error("Error al guardar la monitorización:", error);
-      throw error;
+      console.error(error);
+      alert("Error al guardar monitoreo: " + error.message);
     }
   };
 
@@ -543,16 +554,12 @@ const AdminList = () => {
 
   // Esta función abre el modal de solo consulta (información del usuario)
   const openModalCont = async (admin) => {
-    // Trae los clientes del usuario
     await loadUserClients(admin.id);
 
-    // Obtenemos los datos completos del agente
     const agentData = await getAgentById(admin.id);
 
-    // Cambio el título del modal a "Información"
     setTitle("Información");
 
-    // Cargo la información del admin en los inputs
     firstName.handleChange(agentData?.firstname || "");
     lastName.handleChange(agentData?.lastname || "");
     middleName.handleChange(agentData?.middlename || "");
@@ -564,15 +571,24 @@ const AdminList = () => {
     registration_date.handleChange(agentData?.registration_date || "");
     last_visit_date.handleChange(agentData?.last_visit_date || "Nunca");
 
-    // Guardo el id del admin consultado
     setidToEdit(agentData?.id);
 
-    // Guarda el nombre completo para mostrarlo en el modal
     setUserName(
       `${agentData?.firstname || ""} ${agentData?.middlename || ""} ${
         agentData?.lastname || ""
       }`.trim()
     );
+
+    // Guardamos los datos del agente para mostrar en el modal
+    setViewAdminData(agentData);
+
+    // Abrimos el modal de vista
+    setOpenViewModal(true);
+  };
+  //para cerrar el modal
+  const handleCloseViewModal = () => {
+    setOpenViewModal(false);
+    setViewAdminData(null);
   };
 
   // Resetea los estados del formulario y del modal al cerrarlo
@@ -587,7 +603,6 @@ const AdminList = () => {
   };
 
   /* SCORE */
-
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
       const initBlockPer = block.percentage; // Valor inicial del bloque = 100%
@@ -605,13 +620,13 @@ const AdminList = () => {
 
         return {
           ...pregunta,
-          porcentajePregunta: perQuestion, // porcentaje visual individual
+          porcentajePregunta: Math.round(perQuestion * 10) / 10, // porcentaje visual individual con solo un decimal
         };
       });
 
       return {
         ...block,
-        porcentajeBloque: Math.round(finalBlockPer), // Retorna el valor del bloque despues de finalizar la calificación
+        porcentajeBloque: Math.round(finalBlockPer * 10) / 10, // Retorna el valor del bloque despues de finalizar la calificación
         preguntas: changeBlockPer, // Retorna el valor de cada pregunta para que sea visible por el usuario al evaluar el bloque
       };
     });
@@ -630,24 +645,79 @@ const AdminList = () => {
       0
     );
 
-    return Math.round(total / blocksWithPer.length);
+    return Math.round(total * 10) / 10;
   };
 
-  const handleSaveBlock = (blockId) => {
-    const bloque = blocksWithPer.find((b) => b.id === blockId);
+  //Guarda las respuestas del formulario
+  const handleSaveAnswers = async () => {
+    if (!monitoringDate) {
+      setDateError(true);
+      Toast.fire({
+        icon: "warning",
+        title: "📅 Por favor selecciona una fecha para la monitorización.",
+      });
+      return;
+    }
 
-    if (!bloque) return;
-
-    // Crear payload
-    const payload = {
-      block_id: bloque.id,
-      block_score: bloque.porcentajeBloque,
-      questions: bloque.preguntas.map((p) => ({
-        question_id: p.id,
-        evaluacion: p.evaluacion,
-        porcentaje: p.porcentajePregunta,
-      })),
+    const respuestasAEnviar = {
+      monitoringDate,
+      userId: userInfo.id,
+      answers: [],
     };
+
+    for (const bloque of blocksWithPer) {
+      for (const pregunta of bloque.preguntas) {
+        if (pregunta.evaluacion === "") {
+          console.warn(`⚠️ Pregunta sin evaluación (ID: ${pregunta.id})`);
+          continue;
+        }
+
+        const answer_text =
+          pregunta.evaluacion === "1" ? "correcto" : "incorrecto";
+
+        respuestasAEnviar.answers.push({
+          question_id: pregunta.id,
+          answer_question: answer_text,
+        });
+      }
+    }
+
+    if (respuestasAEnviar.answers.length === 0) {
+      Toast.fire({
+        icon: "warning",
+        title: "❗ Completa al menos una evaluación antes de guardar.",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/api/answersform", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(respuestasAEnviar),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error al guardar respuestas");
+      }
+
+      Toast.fire({
+        icon: "success",
+        title: "✅ Todas las respuestas fueron guardadas correctamente.",
+      });
+
+      // Opcionalmente pasar al siguiente paso
+      // setMonitoringStep(3);
+    } catch (error) {
+      console.error("❌ Error al guardar el formulario completo:", error);
+      Toast.fire({
+        icon: "error",
+        title: "❌ Ocurrió un error al guardar las respuestas.",
+      });
+    }
   };
 
   // Clacula el % del bloque en tiempo real
@@ -730,7 +800,7 @@ const AdminList = () => {
     calBlocksPercentage,
     handleUpdatePregunta,
     calFormScore,
-    handleSaveBlock,
+    handleSaveAnswers,
     clientError,
     setClientError,
     formError,
@@ -745,58 +815,66 @@ const AdminList = () => {
     feedback,
     setFeedback,
     isSavingFeedback,
-    errorLabels
+    errorLabels,
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
   const modalViewAdminProps = {
+    open: openViewModal,
+    onClose: handleCloseViewModal,
     formatDateTimeShort,
-    registration_date,
-    type,
-    last_visit_date,
-    selectedClients,
-    firstName,
-    middleName,
-    lastName,
-    state,
-    language,
-    email,
+    registration_date: { input: viewAdminData?.registration_date || "" },
+    type: { input: viewAdminData?.type || "" },
+    last_visit_date: { input: viewAdminData?.last_visit_date || "" },
+    selectedClients: viewAdminData?.clients || [],
+    firstName: { input: viewAdminData?.firstname || "" },
+    middleName: { input: viewAdminData?.middlename || "" },
+    lastName: { input: viewAdminData?.lastname || "" },
+    state: { input: viewAdminData?.state || 0 },
+    language: { input: viewAdminData?.language || "en" },
+    email: { input: viewAdminData?.email || "" },
     listClients,
     t,
   };
 
   return (
-    <div className="App">
-      <div id="body">
+    <Box className="App" sx={{ overflow: "hidden" }}>
+      <Box id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
-        <div className="row m-0">
-          <div className="col-1 d-none d-flex  align-items-center ms-0 p-0">
-            {/* <SidebarLT1 /> */}
-          </div>
-          <div className="col-12">
-            <div className="container-fluid mt-0 mx-auto">
-              {admins.length > 0 ? (
-                <TableAdmin
-                  header={selectedKeys}
-                  data={admins}
-                  modalId={"modalAdmin"}
-                  modalId2={"modalViewAdmin"}
-                  onUpdate={(payload) => openModal(2, payload)}
-                  onView={(payload) => openModalCont(payload)}
-                />
-              ) : (
-                <div className="text-center py-5">
-                  <h4>No existen agentes registrados</h4>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+        <Box
+          sx={{
+            lignItems: "stretch",
+            flexWrap: "nowrap",
+            padding: 0,
+            display: "flex",
+          }}
+        >
+          {/* <SidebarLT1 /> */}
+
+          <Box className="container" mt={0}>
+            {admins.length > 0 ? (
+              <TableAdmin
+                header={selectedKeys}
+                data={admins}
+                modalId={"modalAdmin"}
+                modalId2={"modalViewAdmin"}
+                onUpdate={(payload) => openModal(2, payload)}
+                onView={(payload) => openModalCont(payload)}
+              />
+            ) : (
+              <Box sx={{ textAlign: "center", py: 5 }}>
+                <Typography variant="h6">
+                  No existen agentes registrados
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Box>
       <ModalAdmin {...modalAdminProps} />
       <ModalViewAdmin {...modalViewAdminProps} />
-    </div>
+    </Box>
   );
 };
 
