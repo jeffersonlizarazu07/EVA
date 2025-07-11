@@ -20,6 +20,7 @@ import {
   CircularProgress,
   Divider,
   Button,
+  Autocomplete
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -294,43 +295,74 @@ const ModalAdmin = ({
                                   </Box>
                                 </AccordionSummary>
                                 <AccordionDetails>
-                                  {/*{pregunta.id_type_question === 1 &&
-                                    (pregunta.select_option || "")
-                                      .split(";")
-                                      .map((opt, i) => (
-                                        <FormControlLabel
-                                          key={i}
-                                          control={<Checkbox disabled />}
-                                          label={opt}
+                                  {pregunta.id_type_question === 1 && (
+                                    <Autocomplete
+                                      multiple
+                                      options={pregunta.select_option.split(',').map(opt => opt.trim())}
+                                      disableCloseOnSelect
+                                      getOptionLabel={(option) => option}  // aquí option es directamente string
+                                      onChange={(event, newValue) => {
+                                        // newValue es un array con las opciones seleccionadas (strings)
+                                        // Aquí puedes actualizar el estado con setSelectedOptions(newValue)
+                                        console.log(newValue);
+                                      }}
+                                      value={pregunta.select_option.split(',').map(opt => opt.trim())}
+                                      renderOption={(props, option, { selected }) => (
+                                        <li {...props} key={option}>
+                                          <Checkbox checked={selected} style={{ marginRight: 8 }} />
+                                          {option}
+                                        </li>
+                                      )}
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          label={t("Evaluación")}
+                                          placeholder="Seleccionar:"
                                         />
-                                      ))}
+                                      )}
+                                      sx={{ mb: 2 }}
+                                      className="readOnlyField"
+                                    />
+                                  )}
 
                                   {pregunta.id_type_question === 2 && (
-                                    <FormControl fullWidth margin="normal">
-                                      <Select
-                                        value={pregunta.selected_answer || ""}
-                                        disabled
-                                      >
-                                        {(pregunta.select_option || "")
-                                          .split(",")
-                                          .map((opt, i) => (
-                                            <MenuItem key={i} value={opt.trim()}>
-                                              {opt.trim()}
-                                            </MenuItem>
-                                          ))}
-                                      </Select>
-                                    </FormControl>
+                                    <TextField
+                                      select
+                                      fullWidth
+                                      label="Seleccionar:"
+                                      sx={{ mb: 2 }}
+                                      className="readOnlyField"
+                                    >
+                                      <MenuItem value="0" disabled>{t("Evaluación")}</MenuItem>
+                                      {pregunta.select_option.split(',').map((option, index) => (
+                                        <MenuItem key={index + 1} value={index + 1}>
+                                          {option.trim()}
+                                        </MenuItem>
+                                      ))}
+                                    </TextField>
                                   )}
 
                                   {pregunta.id_type_question === 3 && (
-                                    <TextField
-                                      fullWidth
-                                      disabled
-                                      multiline
-                                      placeholder={t("Respuesta abierta...")}
-                                      margin="normal"
-                                    />
-                                  )}*/}
+                                    <Box>
+                                      <TextField
+                                        placeholder={t("Ingrese sus indicaciones")}
+                                        multiline
+                                        fullWidth
+                                        className="readOnlyField"
+                                        sx={{
+                                          "& .MuiInputBase-root": {
+                                            height: "90px",
+                                            alignItems: "flex-start",
+                                          },
+                                          "& .MuiInputBase-inputMultiline": {
+                                            padding: "10px",
+                                            height: "100%",
+                                            overflow: "auto",
+                                          },
+                                        }}
+                                      />
+                                    </Box>
+                                  )}
 
                                   <FormControl fullWidth margin="normal">
                                     <InputLabel>{t("Evaluación")}</InputLabel>

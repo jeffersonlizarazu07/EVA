@@ -569,7 +569,7 @@ const AdminList = () => {
   /* SCORE */
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
-      const initBlockPer = 100; // Valor inicial del bloque = 100%
+      const initBlockPer = block.percentage; // Valor inicial del bloque = 100%
       const totalQuestions = block.preguntas.length; // Calcula el número de preguntas que contiene el bloque
       // Calcula el valor de cada pregunta dentro del bloque
       const perQuestion = initBlockPer / totalQuestions; // Calcula el porcentaje de cada pregunta dentro del bloque
@@ -590,7 +590,7 @@ const AdminList = () => {
 
       return {
         ...block,
-        porcentajeBloque: Math.round(finalBlockPer), // Retorna el valor del bloque despues de finalizar la calificación
+        porcentajeBloque: Math.round(finalBlockPer * 10) / 10, // Retorna el valor del bloque despues de finalizar la calificación
         preguntas: changeBlockPer, // Retorna el valor de cada pregunta para que sea visible por el usuario al evaluar el bloque
       };
     });
@@ -609,7 +609,7 @@ const AdminList = () => {
       0
     );
 
-    return Math.round(total / blocksWithPer.length);
+    return Math.round(total * 10) / 10;
   };
 
   //Guarda las respuestas del formulario

@@ -162,4 +162,4 @@ export const saveMonitoring = async (payload) => {
     console.error("Error al guardar la monitorización:", error);
     throw error;
   }
-};
+}; 
