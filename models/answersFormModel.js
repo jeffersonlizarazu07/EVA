@@ -7,6 +7,20 @@ class AnswersFormModel {
     this.table_ = 'monitoring';
   }
 
+
+  // traer todas las respuestas del monitoreo
+  async getMonitoring(){
+    try{
+      return await this.knex(this.table_).select('*');
+    } catch (error) {
+      console.error('Error al obtener el monitoreo:', error);
+      throw new Error('No se pudo obtener el monitoreo debido a un error en el servidor.' + error.message);
+    }
+  }
+
+
+  // ...
+
   async createAnswer(data) {
     // Si data.date viene, usarla, si no, usar fecha actual
     const fecha = data.date || getDateTimeForSQL();

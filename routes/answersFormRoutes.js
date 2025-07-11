@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const answersFormController = require('../controllers/answersFormController');
 
+
+// ruta para ver monitoreo
+router.get('/answersform/monitoring', answersFormController.getMonitoring);
+
 // Obtener todas las respuestas
 router.get('/answersform', answersFormController.getAllAnswers);
 
