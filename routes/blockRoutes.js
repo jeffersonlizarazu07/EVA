@@ -3,21 +3,21 @@ const router = express.Router();
 const blockController = require('../controllers/blockController');
 
 // Crear un nuevo bloque
-router.post('/', blockController.createBlock);
+router.post('/blocks', blockController.createBlock);
 
 // Obtener todos los bloques
-router.get('/', blockController.getAllBlocks);
+router.get('/blocks', blockController.getAllBlocks);
 
 // Obtener bloques por ID de formulario
-router.get('/form/:formId?', blockController.getBlocksByFormId);
+router.get('/blocks/form/:formId?', blockController.getBlocksByFormId);
 
 // Obtener un bloque por ID
-router.get('/:id?', blockController.getBlockById);
+router.get('/blocks/:id?', blockController.getBlockById);
 
 // Actualizar un bloque por ID
-router.put('/:id?', blockController.updateBlock);
+router.put('/blocks/:id?', blockController.updateBlock);
 
 // Eliminar un bloque por ID
-router.delete('/:id?', blockController.deleteBlock);
+router.delete('/blocks/:id?', blockController.deleteBlock);
 
 module.exports = router;

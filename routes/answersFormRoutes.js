@@ -2,28 +2,35 @@ const express = require('express');
 const router = express.Router();
 const answersFormController = require('../controllers/answersFormController');
 
+
+// ruta para ver monitoreo
+router.get('/answersform/monitoring', answersFormController.getMonitoring);
+
 // Obtener todas las respuestas
-router.get('/', answersFormController.getAllAnswers);
+router.get('/answersform', answersFormController.getAllAnswers);
 
 // Obtener una respuesta específica por ID
-router.get('/:id', answersFormController.getAnswerById);
+router.get('/answersform/id/:id', answersFormController.getAnswerById);
 
 // Obtener respuestas por ID de bloque
-router.get('/block/:blockId', answersFormController.getAnswersByBlockId);
+router.get('/answersform/block/:blockId', answersFormController.getAnswersByBlockId);
 
 // Obtener respuestas por ID de pregunta
-router.get('/question/:questionId', answersFormController.getAnswersByQuestionId);
+router.get('/answersform/question/:questionId', answersFormController.getAnswersByQuestionId);
 
-// Obtener respuesta por ID de pregunta y bloque
-router.get('/block/full/:blockId', answersFormController.getQuestionsAndAnswersByBlockId);
+// Obtener preguntas y respuestas por ID de bloque
+router.get('/answersform/block-questions/:blockId', answersFormController.getQuestionsAndAnswersByBlockId);
 
 // Crear una nueva respuesta
-router.post('/', answersFormController.createAnswer);
+router.post('/answersform', answersFormController.createAnswer);
+
+// Crear el monitoreo de las respuestas
+router.post('/answersform/monitoring', answersFormController.createMonitoring);
 
 // Actualizar una respuesta existente
-router.put('/:id', answersFormController.updateAnswer);
+router.put('/answersform/:id', answersFormController.updateAnswer);
 
 // Eliminar una respuesta
-router.delete('/:id', answersFormController.deleteAnswer);
+router.delete('/answersform/:id', answersFormController.deleteAnswer);
 
 module.exports = router;

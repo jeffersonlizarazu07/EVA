@@ -3,33 +3,67 @@ const AnswersFormModel = require("../models/answersFormModel");
 
 exports.createAnswer = async (req, res) => {
   try {
-    const { question_id, answer_question } = req.body;
+    const { monitoringDate, userId, answers } = req.body;
 
-    console.log("🟡 Respuesta recibida en backend:", req.body);
-
-    console.log("Insertando en BD:", {
-      id_question: question_id,
-      answer_question,
-    });
-
-    if (!question_id || !answer_question) {
-      console.log("Faltan campos");
-      return res.status(400).json({ message: "Faltan campos obligatorios" });
+    if (!monitoringDate) {
+      return res.status(400).json({ message: "Fecha de monitorización requerida" });
     }
 
-    const result = await AnswersFormModel.createAnswer({
-      question_id,
-      answer_question,
-    });
+    if (!Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ message: "Se requiere un array de respuestas" });
+    }
 
-    console.log("Respuesta guardada en DB:", result);
+    // Validar campos de cada respuesta
+    for (const respuesta of answers) {
+      const { question_id, answer_question } = respuesta;
+      if (!question_id || !answer_question) {
+        return res.status(400).json({ message: "Faltan campos en una o más respuestas" });
+      }
+    }
 
-    res.status(201).json(result);
+    // Guardar cada respuesta con la fecha que viene desde frontend
+    const results = [];
+    for (const respuesta of answers) {
+      const result = await AnswersFormModel.createAnswer({
+        question_id: respuesta.question_id,
+        answer: respuesta.answer_question,
+        idUser: userId,
+        date: monitoringDate,  // <-- Usar fecha enviada desde frontend
+      });
+      results.push(result);
+    }
+
+    res.status(201).json({ message: "Respuestas guardadas", data: results });
   } catch (error) {
-    console.error("Error en createAnswer:", error);
-    res.status(500).json({ message: "Error al guardar la respuesta" });
+    console.error("Error en createAnswersBulk:", error);
+    res.status(500).json({ message: "Error al guardar respuestas" });
   }
 };
+
+exports.createMonitoring = async (req, res) => {
+  try {
+    const { date, feedback, idUserAgent, idUserMonitor, idForm, score } = req.body;
+
+    if (!date || !idUserAgent || !idUserMonitor || !idForm || score === undefined) {
+      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    }
+
+    const result = await AnswersFormModel.createMonitoring({
+      date,
+      score,
+      feedback,
+      id_user_agent: idUserAgent,
+      id_user_monitor: idUserMonitor,
+      id_form: idForm,
+    });
+
+    res.status(201).json({ message: "Monitoreo guardado", data: result });
+  } catch (error) {
+    console.error("Error guardando monitoreo final:", error);
+    res.status(500).json({ message: "Error interno al guardar monitoreo" });
+  }
+};
+
 exports.getAllAnswers = async (req, res) => {
   try {
     const answers = await AnswersFormModel.getAllAnswers();
@@ -39,6 +73,19 @@ exports.getAllAnswers = async (req, res) => {
     res.status(500).json({ message: "Error al obtener respuestas" });
   }
 };
+
+// Obtener el monitoreo de respuestas
+exports.getMonitoring = async (req, res) => {
+  try{
+    const monitoring = await AnswersFormModel.getMonitoring();
+    res.json(monitoring);
+  }catch (error) {
+    console.error('Error al obtener el monitoreo:', error.message);
+    res.status(500).json({ message: 'Error al obtener el monitoreo' });
+  }
+}
+
+// ...
 
 exports.getAnswerById = async (req, res) => {
   const { id } = req.params;
