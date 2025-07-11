@@ -1,56 +1,52 @@
 import { useState, useEffect, useContext } from "react";
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
+import { Close } from "@mui/icons-material";
 import HeaderLT1 from "../../components/header/headerLT1";
 import HeaderLT2 from "../../components/header/headerLT2";
-import useInput from "../../components/hooks/useInput";
 import TableForms from "../../components/Tables/tableForm.jsx";
+import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { smallAlertDelete, Toast } from "../../assets/js/alertConfig";
-import Cookies from "js-cookie";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { smallAlertDelete, Toast } from "../../assets/js/alertConfig";
 
-// Función para formatear las fechas
 const formatDateTime = (dateString) => {
-  // Check if dateString is null, undefined, or "No actualizada"
-  if (!dateString || dateString === "No actualizada" || dateString === "NULL") {
-    return "No actualizada";
-  }
-
-  // Create Date object and check if it's valid
+  if (!dateString || dateString === "No actualizada" || dateString === "NULL") return "No actualizada";
   const date = new Date(dateString);
-  if (isNaN(date.getTime() || " ")) {
-    return "No actualizada";
-  }
-
-  // Proceed with your formatting logic for valid dates
-  // Ajustar manualmente para UTC-5 (restando 5 horas)
+  if (isNaN(date.getTime())) return "No actualizada";
   const utcMinus5 = new Date(date.getTime() - 5 * 60 * 60 * 1000);
-
-  // Formatear cada componente de la fecha con dos dígitos
   const day = ("0" + utcMinus5.getDate()).slice(-2);
   const month = ("0" + (utcMinus5.getMonth() + 1)).slice(-2);
   const year = utcMinus5.getFullYear();
-
   const hours = ("0" + utcMinus5.getHours()).slice(-2);
   const minutes = ("0" + utcMinus5.getMinutes()).slice(-2);
   const seconds = ("0" + utcMinus5.getSeconds()).slice(-2);
-
-  // Devolver en formato dd/mm/yyyy hh:mm:ss
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
 
 const FormList = () => {
   const headersArray = [
-    "id",
-    "title",
-    "description",
-    "client_name",
-    "creation_date",
-    "created_by_name",
-    "updated_date",
-    "updated_by_name",
-    "state",
+    "id", "title", "description", "client_name",
+    "creation_date", "created_by_name", "updated_date",
+    "updated_by_name", "state",
   ];
 
   const { userType, languageUser } = useContext(UserContext);
@@ -64,15 +60,12 @@ const FormList = () => {
   const [modalTitle, setModalTitle] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [idToEdit, setIdToEdit] = useState(null);
+  const [clients, setClients] = useState([]);
 
-  // Inputs
   const title = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const state = useInput({ defaultValue: "1", validate: /^[0-2]$/ });
   const idClient = useInput({ defaultValue: "", validate: /^[0-9]+$/ });
-
-  // Clientes de ejemplo o traídos de API
-  const [clients, setClients] = useState([]);
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
@@ -81,41 +74,26 @@ const FormList = () => {
   }, [languageUser]);
 
   const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers: { Authorization: `Bearer ${accessToken}` },
     withCredentials: true,
   };
 
   const getForms = async () => {
-  setLoading(true);
-
-  try {
-    const response = await axios.get(
-      "http://localhost:3000/api/forms",
-      config
-    );
-
-    const forms = response.data.data;
-
-    if (Array.isArray(forms) && forms.length === 0) {
-      console.log("No existen formularios");
-      // También puedes usar setForms([]) y mostrar un mensaje en la interfaz
-    } else {
-      setForms(forms);
+    setLoading(true);
+    try {
+      const response = await axios.get("http://localhost:3000/api/forms", config);
+      setForms(Array.isArray(response.data.data) ? response.data.data : []);
+    } catch (error) {
+      console.error("Error al obtener formularios:", error);
+    } finally {
+      setLoading(false);
     }
-
-  } catch (error) {
-    console.error("Error al obtener formularios:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const getClients = async () => {
     try {
       const res = await axios.get("http://localhost:3000/api/clients", config);
-      setClients(res.data.data);
+      setClients(res.data.data || []);
     } catch (err) {
       console.error("Error cargando clientes", err);
     }
@@ -127,91 +105,44 @@ const FormList = () => {
 
   const activateForm = async (form) => {
     try {
-      await axios.patch(
-        `http://localhost:3000/api/form/${form.id}`,
-        { state: 1 },
-        config
-      );
-      Toast.fire({
-        icon: "success",
-        title: `${form.title}${t("alertActivate.SuccessAlert")}`,
-      });
+      await axios.patch(`http://localhost:3000/api/form/${form.id}`, { state: 1 }, config);
+      Toast.fire({ icon: "success", title: `${form.title} ${t("alertActivate.SuccessAlert")}` });
       getForms();
     } catch (error) {
-      Toast.fire({
-        icon: "error",
-        title: `${form.title}${t("alertActivate.ErrorAlert")}`,
-      });
+      Toast.fire({ icon: "error", title: `${form.title} ${t("alertActivate.ErrorAlert")}` });
       console.error("Error al activar formulario:", error);
     }
   };
 
   const deactivateForm = async (form) => {
-    smallAlertDelete
-      .fire({
-        icon: "warning",
-        title: "",
-        html: `<p style="text-align:center;">El formulario <strong>${form.title}</strong> será deshabilitado.<br>¿Desea continuar?</p>`,
-        showCancelButton: true,
-        confirmButtonText: "Confirmar",
-        cancelButtonText: "Cancelar",
-        confirmButtonColor: "#b62a8b",
-        customClass: {
-          popup: "my-swal-popup",
-          actions: "swal2-actions-center",
-          icon: "swal2-icon-center", // Asegura que el icono esté centrado
-          title: "swal2-title-center", // Centra el título si lo deseas
-        },
-        didOpen: () => {
-          // Alineamos el ícono y el texto
-          const icon = document.querySelector(".swal2-icon");
-          const title = document.querySelector(".swal2-title");
-          if (icon && title) {
-            icon.style.marginRight = "10px"; // Espacio entre el ícono y el título
-          }
-        },
-      })
-
-      .then(async (result) => {
-        if (result.isConfirmed) {
-          try {
-            await axios.patch(
-              `http://localhost:3000/api/form/${form.id}`,
-              { state: 0 },
-              config
-            );
-            Toast.fire({
-              icon: "success",
-              title: `${form.title}${t("alertDeactivate.SuccessAlert")}`,
-            });
-            getForms();
-          } catch (error) {
-            Toast.fire({
-              icon: "error",
-              title: `${form.title}${t("alertDeactivate.ErrorAlert")}`,
-            });
-            console.error("Error al desactivar formulario:", error);
-          }
+    smallAlertDelete.fire({
+      icon: "warning",
+      html: `<p style="text-align:center;">El formulario <strong>${form.title}</strong> será deshabilitado.<br>¿Desea continuar?</p>`,
+      showCancelButton: true,
+      confirmButtonText: "Confirmar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#b62a8b",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.patch(`http://localhost:3000/api/form/${form.id}`, { state: 0 }, config);
+          Toast.fire({ icon: "success", title: `${form.title} ${t("alertDeactivate.SuccessAlert")}` });
+          getForms();
+        } catch (error) {
+          Toast.fire({ icon: "error", title: `${form.title} ${t("alertDeactivate.ErrorAlert")}` });
+          console.error("Error al desactivar formulario:", error);
         }
-      });
+      }
+    });
   };
 
   const openModal = (mode, form = null) => {
-    if (mode === "create") {
-      setModalTitle(t("formModal.NewForm"));
-      setIdToEdit(null);
-      title.handleChange("");
-      description.handleChange("");
-      state.handleChange("1");
-      idClient.handleChange("");
-    } else if (mode === "edit" && form) {
-      setModalTitle(t("formModal.EditClient"));
-      setIdToEdit(form.id);
-      title.handleChange(form.title || "");
-      description.handleChange(form.description || "");
-      state.handleChange(1);
-      idClient.handleChange(form.idClient || "");
-    }
+    setModalTitle(mode === "create" ? t("formModal.NewForm") : t("formModal.EditClient"));
+    setIdToEdit(form?.id || null);
+    title.handleChange(form?.title || "");
+    description.handleChange(form?.description || "");
+    state.handleChange("1");
+    idClient.handleChange(form?.idClient || "");
     setModalOpen(true);
   };
 
@@ -222,43 +153,26 @@ const FormList = () => {
 
   const saveForm = async () => {
     if (!title.input || !idClient.input) {
-      alert(t("alerts.fillRequiredFields")); // Aquí también podrías traducir el mensaje de alerta
+      alert(t("alerts.fillRequiredFields"));
       return;
     }
-
     const now = new Date().toISOString().slice(0, 19).replace("T", " ");
-
     const dataToSend = {
       title: title.input,
       description: description.input,
       state: parseInt(state.input),
       idClient: parseInt(idClient.input),
+      ...(idToEdit
+        ? { updated_date: now, updated_by: userId }
+        : { creation_date: now, created_by: userId }),
     };
-
-    if (idToEdit) {
-      // Solo datos de actualización
-      dataToSend.updated_date = now;
-      dataToSend.updated_by = userId;
-    } else {
-      // Solo datos de creación
-      dataToSend.creation_date = now;
-      dataToSend.created_by = userId;
-    }
-
     try {
       if (idToEdit) {
-        await axios.put(
-          `http://localhost:3000/api/form/${idToEdit}`,
-          dataToSend,
-          config
-        );
+        await axios.put(`http://localhost:3000/api/form/${idToEdit}`, dataToSend, config);
       } else {
         await axios.post("http://localhost:3000/api/forms", dataToSend, config);
       }
-      Toast.fire({
-        icon: "success",
-        title: title.input + t("alertCreateEdit.SuccessAlert"),
-      });
+      Toast.fire({ icon: "success", title: `${title.input} ${t("alertCreateEdit.SuccessAlert")}` });
       getForms();
       closeModal();
     } catch (error) {
@@ -266,148 +180,207 @@ const FormList = () => {
       Toast.fire({ icon: "error", title: t("alertCreateEdit.ErrorAlert") });
     }
   };
-
   return (
-    <div className="App">
-      <div id="body">
-        {userType == "1" || userType == "2" ? <HeaderLT1 /> : <HeaderLT2 />}
-        <div className="row m-0">
-          <div className="w-100 d-flex justify-content-center px-2">
-            <div className="w-100 px-3" style={{ maxWidth: "97%" }}>
-              {loading ? (
-                <p>Cargando...</p>
-              ) : forms.length > 0 ? (
-                <TableForms
-                  header={headersArray}
-                  data={forms.map((form) => ({
-                    ...form,
-                    creation_date: form.creation_date, // Aquí aplicamos el formato
-                    updated_date: form.updated_date, // Aquí aplicamos el formato
-                  }))}
-                  onView={openForm}
-                  onActive={activateForm}
-                  onRemove={deactivateForm}
-                  onCreate={() => openModal("create")}
-                  onUpdate={(form) => openModal("edit", form)}
-                />
-              ) : (
-                <div className="text-center py-5">
-                  <h4>No existen formularios disponibles</h4>
-                  <button
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalFormList"
-                    className="btn btn-primary mt-3"
-                    onClick={() => openModal("create")}
-                  >
-                    Crear nuevo formulario
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+    <>
+      <Box sx={{ bgcolor: "#fafafa", minHeight: "100vh" }}>
+        {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
 
-      {/* Modal */}
-      {modalOpen && (
-        <div
-          className="modal fade show d-block"
-          tabIndex="-1"
-          aria-modal="true"
-          role="dialog"
+        <Box sx={{ px: 3, py: 4 }}>
+          <Paper elevation={2} sx={{ borderRadius: 3, px: 3, py: 4 }}>
+            {loading ? (
+              <Box textAlign="center" py={4}>
+                <CircularProgress sx={{ color: "#b62a8b" }} />
+                <Typography mt={2}>Cargando formularios...</Typography>
+              </Box>
+            ) : forms.length > 0 ? (
+              <TableForms
+                header={headersArray}
+                data={forms.map((form) => ({
+                  ...form,
+                  creation_date: formatDateTime(form.creation_date),
+                  updated_date: formatDateTime(form.updated_date),
+                }))}
+                onView={openForm}
+                onActive={activateForm}
+                onRemove={deactivateForm}
+                onCreate={() => openModal("create")}
+                onUpdate={(form) => openModal("edit", form)}
+              />
+            ) : (
+              <Box textAlign="center" py={5}>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  No existen formularios disponibles.
+                </Typography>
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#b62a8b",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    "&:hover": { backgroundColor: "#a02179" },
+                  }}
+                  onClick={() => openModal("create")}
+                >
+                  Crear nuevo formulario
+                </Button>
+              </Box>
+            )}
+          </Paper>
+        </Box>
+      </Box>
+
+      {/* Modal para crear / editar formulario */}
+      <Dialog
+        open={modalOpen}
+        onClose={closeModal}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            border: "2px solid #b62a8b",
+            backgroundColor: "#fff",
+            boxShadow: "0px 8px 28px rgba(0, 0, 0, 0.3)",
+            px: 2,
+            py: 1,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            backgroundColor: "#f8ecf5",
+            pb: 0,
+          }}
         >
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <label className="h5">{modalTitle}</label>
-                <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="close"
-                  onClick={closeModal}
-                ></button>
-              </div>
-              <div className="modal-body ">
-                {/* Título y Cliente */}
-                <div className="row">
-                  <div className="col-8 mb-3">
-                    <label id="labelAnimation">
-                      <input
-                        placeholder=" "
-                        className="input-new"
-                        type="text"
-                        name="title"
-                        value={title.input}
-                        onChange={(e) => title.handleChange(e.target.value)}
-                      />
-                      <span className="labelName">{t("formModal.title")}</span>
-                    </label>
-                  </div>
-                  <div className="col-4 mb-3">
-                    <label id="labelAnimation">
-                      <select
-                        className="input-new"
-                        value={idClient.input}
-                        onChange={(e) => idClient.handleChange(e.target.value)}
-                      >
-                        <option value="" disabled>
-                          Seleccione un cliente
-                        </option>
-                        {clients.map((client) => (
-                          <option key={client.id} value={client.id}>
-                            {client.client}
-                          </option>
-                        ))}
-                      </select>
-                      <span className="labelName">
-                        {t("formModal.client_name")}
-                      </span>
-                    </label>
-                  </div>
-                </div>
+          <Typography variant="h6" fontWeight="bold" color="#b62a8b">
+            {modalTitle}
+          </Typography>
+          <IconButton onClick={closeModal} sx={{ color: "#b62a8b" }}>
+            <Close />
+          </IconButton>
+        </DialogTitle>
 
-                {/* Descripción */}
-                <div className="row mt-2">
-                  <div className="col mb-3">
-                    <label id="labelAnimation">
-                      <textarea
-                        placeholder={t("formModal.description")}
-                        className="input-new"
-                        name="description"
-                        value={description.input}
-                        onChange={(e) =>
-                          description.handleChange(e.target.value)
-                        }
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
+        <DialogContent dividers>
+          <Box display="flex" flexDirection="column" gap={3}>
+            {/* Título */}
+            <TextField
+              label={t("formModal.title")}
+              value={title.input}
+              onChange={(e) => title.handleChange(e.target.value)}
+              fullWidth
+              variant="outlined"
+              sx={{
+                  borderRadius: 2,
+                  "& .MuiSelect-select": {
+                    color: "#b62a8b",
+                    fontWeight: "bold",
+                  },
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "& svg": {
+                    color: "#b62a8b",
+                  },
+                }}
+            />
 
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  id="btnCerrarModalCrear"
-                  className="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                  onClick={closeModal}
-                >
-                  {t("formModal.Close")}
-                </button>
-                <button
-                  id="saveButton"
-                  onClick={saveForm}
-                  className="btn btn-primary"
-                >
-                  {t("formModal.Save")}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+            {/* Cliente */}
+            <FormControl fullWidth>
+              <InputLabel sx={{ color: "#b62a8b", fontWeight: "bold" }}>
+                {t("formModal.client_name")}
+              </InputLabel>
+              <Select
+                label={t("formModal.client_name")}
+                value={idClient.input}
+                onChange={(e) => idClient.handleChange(e.target.value)}
+                sx={{
+                  borderRadius: 2,
+                  "& .MuiSelect-select": {
+                    color: "#b62a8b",
+                    fontWeight: "bold",
+                  },
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "& svg": {
+                    color: "#b62a8b",
+                  },
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Seleccione un cliente
+                </MenuItem>
+                {clients.map((client) => (
+                  <MenuItem key={client.id} value={client.id}>
+                    {client.client}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Descripción */}
+            <TextField
+              label={t("formModal.description")}
+              multiline
+              rows={3}
+              value={description.input}
+              onChange={(e) => description.handleChange(e.target.value)}
+              variant="outlined"
+              fullWidth
+              sx={{
+                  borderRadius: 2,
+                  "& .MuiSelect-select": {
+                    color: "#b62a8b",
+                    fontWeight: "bold",
+                  },
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "& svg": {
+                    color: "#b62a8b",
+                  },
+                }}
+            />
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ justifyContent: "flex-end", pt: 2, pb: 1 }}>
+          <Button
+            onClick={closeModal}
+            variant="outlined"
+            sx={{
+              borderRadius: 4,
+              border: "2px solid #b62a8b",
+              color: "#b62a8b",
+              textTransform: "none",
+              fontWeight: "bold",
+              "&:hover": { backgroundColor: "#f3e0f1" },
+            }}
+          >
+            {t("formModal.Close")}
+          </Button>
+          <Button
+            onClick={saveForm}
+            variant="contained"
+            sx={{
+              ml: 2,
+              borderRadius: 4,
+              backgroundColor: "#b62a8b",
+              color: "#fff",
+              fontWeight: "bold",
+              textTransform: "none",
+              "&:hover": { backgroundColor: "#a02179" },
+            }}
+          >
+            {t("formModal.Save")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

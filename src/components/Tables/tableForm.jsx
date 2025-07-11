@@ -1,20 +1,48 @@
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  Grid,
+  TableHead,
+  TableRow,
+  Select,
+  MenuItem as SelectItem,
+  Menu,
+} from "@mui/material";
+import {
+  TurnLeft,
+  Add,
+  Edit,
+  PowerSettingsNew,
+  CheckCircle,
+  MoreVert,
+  HelpOutline,
+  Search,
+} from "@mui/icons-material";
+import { MenuItem } from "@mui/material";
+
 import { useState, useContext, useEffect } from "react";
 import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/tabla.css";
-import SurveyBlocks from "../../pages/quality/surveyBlocks";
+import TablePagination from "@mui/material/TablePagination";
 
 const TableForms = ({
   header,
-  data = [], // <- Aquí pones valor por defecto para evitar undefined
+  data = [],
   onCreate,
   onRemove,
   onUpdate,
   onActive,
   onView,
-  modalId,
-  modalId2,
+  resetPageSignal
 }) => {
   const nav = useNavigate();
   const { languageUser } = useContext(UserContext);
@@ -25,23 +53,40 @@ const TableForms = ({
   }, [languageUser]);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const [menuAnchor, setMenuAnchor] = useState({});
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+
+  useEffect(() => {
+    if (resetPageSignal) {
+      setPage(0);
+    }
+  }, [resetPageSignal]);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    setCurrentPage(1);
+    setPage(0);
   };
 
-  const handleRecordsPerPageChange = (records) => {
-    setRecordsPerPage(records);
-    setCurrentPage(1);
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
   };
 
-  const capitalize = (text) =>
-    text.replace(/\b\w/g, (char) => char.toUpperCase());
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
 
-  // Aquí se asegura que data sea arreglo
+  const handleMenuOpen = (event, id) => {
+    setMenuAnchor({ ...menuAnchor, [id]: event.currentTarget });
+  };
+
+  const handleMenuClose = (id) => {
+    setMenuAnchor({ ...menuAnchor, [id]: null });
+  };
+
+  const filteredHeader = header.filter((h) => h !== "id");
+
   const filteredData = (Array.isArray(data) ? data : []).filter((item) =>
     Object.values(item).some(
       (val) =>
@@ -50,252 +95,196 @@ const TableForms = ({
     )
   );
 
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = filteredData.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
+  const visibleRows = filteredData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
   );
 
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
-
   return (
-    <div className="table-container">
-      <div className="row d-flex mb-3">
-        <div className="col-6">
-          <button
-            className="btn hola btn-block btn-sm btn-default btn-flat fw-bold acces-tabla m-1 mb-2"
-            onClick={() => nav("/quality")}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              className="bi bi-arrow-90deg-left"
-              viewBox="0 0 16 16"
+    <Box className="table-container">
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12} sm={6} md={6} lg={6}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{
+                minWidth: 0,
+                width: 30,
+                height: 30,
+                padding: 0,
+                borderRadius: "50%",
+                color: "#b62a8b",
+                borderColor: "#b62a8b",
+                "&:hover": {
+                  borderColor: "#b62a8b",
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                },
+              }}
+              onClick={() => nav("/admin")}
             >
-              <path
-                fillRule="evenodd"
-                d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
-              />
-            </svg>
-          </button>
-          <input
-            className="w-50 inp-search"
-            placeholder={t("formTable.Search")}
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </div>
-        <div className="col-6 d-flex justify-content-end">
-          <button
-            className="btn hola btn-sm fw-bold acces-tabla m-2"
-            data-bs-toggle="modal"
-            data-bs-target={`#${modalId}`}
-            onClick={onCreate}
-          >
-            <i className="fa fa-plus"></i> {t("formTable.newForm")}
-          </button>
-        </div>
-      </div>
+              <TurnLeft />
+            </Button>
+            <TextField
+              size="small"
+              placeholder={t("formTable.Search")}
+              value={searchTerm}
+              onChange={handleSearch}
+              variant="outlined"
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  height: "4vh",
+                  borderRadius: "6px",
+                  color: "#b62a8b",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "& input": {
+                    color: "#b62a8b",
+                    fontWeight: "bold",
+                  },
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: "#b62a8b" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+        </Grid>
 
-      <table className="table table-hover">
-        <thead>
-          <tr className="table-light tr-table">
-            {header.map((item, i) => (
-              <th key={i} className="text-center">
-                {t(`formTable.${item}`)}
-              </th>
-            ))}
-            <th className="text-center">{t("formTable.Actions")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentRecords.map((form, idx) => (
-            <tr key={idx}>
-              {header.map((key, i) => (
-                <td key={i}>
-                  {key === "state"
-                    ? form.state === "Activo"
-                      ? t("formTable.Active")
-                      : t("formTable.Inactive")
-                    : form[key]}
-                </td>
+        {/* Botón crear formulario */}
+        <Grid item xs={12} sm={6}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{
+                borderRadius: "18px",
+                border: "2px solid #b62a8b",
+                color: "#b62a8b",
+                fontWeight: "bold",
+                "&:hover": {
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                },
+              }}
+              onClick={onCreate}
+            >
+              <Add sx={{ fontSize: "18px", mr: 0.5 }} />
+              {t("formTable.newForm")}
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
+
+      {/* Tabla de formularios */}
+      <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 450 }}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              {filteredHeader.map((item, i) => (
+                <TableCell key={i} align="center" sx={{ fontWeight: "bold", color: "#b62a8b" }}>
+                  {t(`formTable.${item}`)}
+                </TableCell>
               ))}
-              <td>
-                {form.state === "Activo" ? (
-                  <div className="dropdown">
-                    <button
-                      className="btn-rect btn-dropdown"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      <div className="dropdown-toggle">
-                        <i className="fa-solid fa-ellipsis-vertical"></i>
-                      </div>
-                    </button>
-                    <ul className="dropdown-menu p-0">
-                      <li className="text-start btn-rect">
-                        <button
-                          className="btn btn-rect"
-                          onClick={() => onView(form)}
-                        >
-                          <i className="fa-solid fa-circle-question"></i>{" "}
-                          <span>{t("buttons.WatchSections")}</span>
-                        </button>
-                      </li>
-                      <li className="text-start btn-rect">
-                        <button
-                          className="btn text-start w-100"
-                          data-bs-toggle="modal"
-                          data-bs-target={`#${modalId}`}
-                          onClick={() => onUpdate(form)}
-                        >
-                          <i className="fa-solid fa-edit"></i>{" "}
-                          {t("buttons.Edit")}
-                        </button>
-                      </li>
-                      <li className="text-start btn-rect">
-                        <button
-                          className="btn text-start w-100"
-                          onClick={() => onRemove(form)} // Deshabilitar
-                        >
-                          <i className="fa-solid fa-power-off"></i> {""}
-                          <span>{t("buttons.Deactivate")}</span>
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                ) : (
-                  <div className="dropdown">
-                    <button
-                      className="btn-rect btn-dropdown"
-                      type="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      <div className="dropdown-toggle">
-                        <i className="fa-solid fa-ellipsis-vertical"></i>
-                      </div>
-                    </button>
-                    <ul className="dropdown-menu p-0">
-                      <li className="text-start btn-rect">
-                        <button
-                          className="btn btn-rect"
-                          onClick={() => onView(form)}
-                        >
-                          <i className="fa-solid fa-circle-question"></i>{" "}
-                          <span>{t("buttons.WatchSections")}</span>
-                        </button>
-                      </li>
-                      <li className="text-start btn-rect">
-                        <button
-                          className="btn btn-rect"
-                          onClick={() => onActive(form)}
-                        >
-                          <i className="bi bi-check-circle-fill"></i>{" "}
-                          <span>{t("buttons.Activate")}</span>
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                  //
-                  //
-                  //
-                  //
-                  // <div className="dropdown">
-                  //   <button
-                  //     className="btn-rect btn-dropdown"
-                  //     type="button"
-                  //     data-bs-toggle="dropdown"
-                  //     aria-expanded="false"
-                  //   >
-                  //     <div className="dropdown-toggle">
-                  //       <i className="fa-solid fa-ellipsis-vertical"></i>
-                  //     </div>
-                  //   </button>
-                  //   <ul className="dropdown-menu p-0">
-                  //     <li className="text-start">
-                  //       <button
-                  //         className="btn btn-rect"
-                  //         onClick={() => onView(form)}
-                  //       >
-                  //         <i className="fa-solid fa-circle-question"></i>{" "}
-                  //         <span>{t("buttons.WatchSections")}</span>
-                  //       </button>
-                  //     </li>
-                  //     <li>
-                  //       <button
-                  //         className="btn btn-rect d-flex flex-column align-items-center"
-                  //         onClick={() => onActive(form)}
-                  //       >
-                  //         <i className="bi bi-check-circle-fill"></i>
-                  //         <span>{t("buttons.Activate")}</span>
-                  //       </button>
-                  //     </li>
-                  //   </ul>
-                  // </div>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="row d-flex ps-5 pe-5 mt-3">
-        <div className="col-6">
-          <label>
-            {t("formTable.Show")}
-            <button
-              className="dropdown-toggle inp-search"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              {recordsPerPage}
-            </button>
-            <ul className="dropdown-menu">
-              {[10, 25, 50].map((num) => (
-                <li key={num}>
-                  <a
-                    className="dropdown-item"
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleRecordsPerPageChange(num);
-                    }}
+              <TableCell align="center" sx={{ fontWeight: "bold", color: "#b62a8b" }}>
+                {t("formTable.Actions")}
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {visibleRows.map((form, idx) => (
+              <TableRow key={idx}>
+                {filteredHeader.map((key, i) => (
+                  <TableCell key={i} align="center">
+                    {key === "state"
+                      ? form.state === "Activo"
+                        ? t("formTable.Active")
+                        : t("formTable.Inactive")
+                      : form[key]}
+                  </TableCell>
+                ))}
+                <TableCell align="center">
+                  <IconButton onClick={(e) => handleMenuOpen(e, form.id)}>
+                    <MoreVert sx={{ color: "#b62a8b" }} />
+                  </IconButton>
+                  <Menu
+                    anchorEl={menuAnchor[form.id]}
+                    open={Boolean(menuAnchor[form.id])}
+                    onClose={() => handleMenuClose(form.id)}
                   >
-                    {num}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {t("formTable.Registered")}
-          </label>
-        </div>
-        <div className="col-6 d-flex justify-content-end">
-          <div className="btn-group">
-            <button
-              className="btn"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            >
-              &lt;
-            </button>
-            <label className="btn">{currentPage}</label>
-            <button
-              className="btn"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+                    <MenuItem onClick={() => onView(form)}>
+                      <HelpOutline fontSize="small" sx={{ mr: 1 }} />
+                      {t("buttons.WatchSections")}
+                    </MenuItem>
+                    {form.state === "Activo" ? (
+                      <>
+                        <MenuItem onClick={() => onUpdate(form)}>
+                          <Edit fontSize="small" sx={{ mr: 1 }} />
+                          {t("buttons.Edit")}
+                        </MenuItem>
+                        <MenuItem onClick={() => onRemove(form)}>
+                          <PowerSettingsNew fontSize="small" sx={{ mr: 1 }} />
+                          {t("buttons.Deactivate")}
+                        </MenuItem>
+                      </>
+                    ) : (
+                      <MenuItem onClick={() => onActive(form)}>
+                        <CheckCircle fontSize="small" sx={{ mr: 1 }} />
+                        {t("buttons.Activate")}
+                      </MenuItem>
+                    )}
+                  </Menu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Paginación */}
+      <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage={t("userTable.Show")}
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}-${to} ${t("userTable.Registered")} ${count !== -1 ? count : `más de ${to}`
+            }`
+          }
+          sx={{
+            ".MuiTablePagination-toolbar": {
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            },
+            ".MuiInputBase-root": {
+              border: "2px solid #b62a8b",
+              borderRadius: "6px",
+              color: "#b62a8b",
+                borderColor: "#b62a8b",
+        fontWeight: "bold",
+            },
+        ".MuiTablePagination-actions .MuiIconButton-root": {
+          color: "#b62a8b",
+            },
+          }}
+        />
+      </Box>
+    </Box>
   );
 };
 
