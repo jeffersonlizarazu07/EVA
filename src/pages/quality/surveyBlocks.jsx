@@ -1459,14 +1459,6 @@ export default function SurveyBlocks({}) {
                                                   </button>
                                                 </div>
 
-                                                <div>
-                                                  <label className="mb-3 ms-1">
-                                                    {errorLabels[preg.error] ||
-                                                      "No seleccionado"}
-                                                    {"."}
-                                                  </label>
-                                                </div>
-
                                                 {/* Contenido expandible de la pregunta */}
                                                 {!isCollapsed && (
                                                   <>
@@ -1595,6 +1587,13 @@ export default function SurveyBlocks({}) {
                                                     )} */}
                                                   </>
                                                 )}
+                                                <div>
+                                                  <label className="text-end w-100 mb-3 ms-1 mt-1 fs-6">
+                                                    {errorLabels[preg.error] ||
+                                                      "No seleccionado"}
+                                                    {"."}
+                                                  </label>
+                                                </div>
                                               </div>
                                             );
                                           })}
