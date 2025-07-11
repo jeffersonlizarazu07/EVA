@@ -294,15 +294,6 @@ const ModalAdmin = ({
                                   <Typography>
                                     {pregunta.question_name}
                                   </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    color="textSecondary"
-                                    sx={{ marginTop: 1 }}
-                                  >
-                                    {errorLabels[pregunta.type_error] ||
-                                      "No seleccionado"}
-                                    {"."}
-                                  </Typography>
                                 </Box>
 
                                 {/* Porcentaje alineado a la derecha */}
@@ -368,6 +359,17 @@ const ModalAdmin = ({
                                   <MenuItem value="0">❌ Mala</MenuItem>
                                 </Select>
                               </FormControl>
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  color="textSecondary"
+                                  sx={{ marginTop: 1, textAlign: "end" }}
+                                >
+                                  {errorLabels[pregunta.type_error] ||
+                                    "No seleccionado"}
+                                  {"."}
+                                </Typography>
+                              </Box>
                             </AccordionDetails>
                           </Accordion>
                         ))
