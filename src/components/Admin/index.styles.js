@@ -47,7 +47,7 @@ export const lightTheme = createTheme({
             color: `${commonDarkBackground} !important`,
         },
         '.css-1d3z3hw-MuiOutlinedInput-notchedOutline':{
-          border:'2px solid #000000 !important',
+          border:'2px solid #000000',
         },
       },
     },

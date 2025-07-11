@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api/answers'; // Ruta de respuestas de formularios
+const API_URL = 'http://localhost:3000/api/answersform'; // Ruta de respuestas de formularios
 
 class AnswersFormService {
   // Obtener todas las respuestas
   async getAllAnswers() {
     try {
-      const response = await axios.get(`${API_URL}/answers`);
+      const response = await axios.get(`${API_URL}/`);
       return response.data;
     } catch (error) {
       console.error('Error al obtener todas las respuestas:', error);
@@ -17,7 +17,7 @@ class AnswersFormService {
   // Obtener una respuesta específica por ID
   async getAnswerById(id) {
     try {
-      const response = await axios.get(`${API_URL}/answers/${id}`);
+      const response = await axios.get(`${API_URL}/id/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener la respuesta con ID ${id}:`, error);
@@ -28,7 +28,7 @@ class AnswersFormService {
   // Obtener respuestas por ID de bloque
   async getAnswersByBlockId(blockId) {
     try {
-      const response = await axios.get(`${API_URL}/answers/block/${blockId}`);
+      const response = await axios.get(`${API_URL}/block/${blockId}`);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener respuestas para el bloque ${blockId}:`, error);
@@ -39,7 +39,7 @@ class AnswersFormService {
   // Obtener respuestas por ID de pregunta
   async getAnswersByQuestionId(questionId) {
     try {
-      const response = await axios.get(`${API_URL}/answers/question/${questionId}`);
+      const response = await axios.get(`${API_URL}/question/${questionId}`);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener respuestas para la pregunta ${questionId}:`, error);
@@ -50,7 +50,7 @@ class AnswersFormService {
   // Obtener respuesta por ID de pregunta y bloque
   async getAnswerByQuestionAndBlockId(questionId, blockId) {
     try {
-      const response = await axios.get(`${API_URL}/answers/question/${questionId}/block/${blockId}`);
+      const response = await axios.get(`${API_URL}/block-questions/${questionId}/block/${blockId}`);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener respuesta para pregunta ${questionId} y bloque ${blockId}:`, error);
@@ -72,7 +72,7 @@ class AnswersFormService {
   // Actualizar una respuesta existente
   async updateAnswer(id, answerData) {
     try {
-      const response = await axios.put(`${API_URL}/answers/${id}`, answerData);
+      const response = await axios.put(`${API_URL}/${id}`, answerData);
       return response.data;
     } catch (error) {
       console.error(`Error al actualizar la respuesta con ID ${id}:`, error);
@@ -83,7 +83,7 @@ class AnswersFormService {
   // Eliminar una respuesta
   async deleteAnswer(id) {
     try {
-      const response = await axios.delete(`${API_URL}/answers/${id}`);
+      const response = await axios.delete(`${API_URL}/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error al eliminar la respuesta con ID ${id}:`, error);
@@ -93,7 +93,7 @@ class AnswersFormService {
 
   async getQuestionsAndAnswersByBlockId(blockId) {
     try {
-      const response = await axios.get(`${API_URL}/block/full/${blockId}`);
+      const response = await axios.get(`${API_URL}/block-questions/${blockId}`);
       return response.data;
     } catch (error) {
       console.error(`Error al obtener preguntas y respuestas para el bloque ${blockId}:`, error);

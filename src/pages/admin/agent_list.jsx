@@ -23,6 +23,7 @@ import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
 import { Box, Typography } from "@mui/material";
 
+
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
@@ -49,6 +50,8 @@ const AdminList = () => {
   const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
+  const [feedback, setFeedback] = React.useState("");
+
 
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
@@ -389,22 +392,36 @@ const AdminList = () => {
   };
 
   // Guarda una nueva monitorización en el sistema
-  const handleSaveMonitoring = async (score, feedback, check, agentId) => {
-    const payload = {
-      monitoring_date: new Date().toISOString().slice(0, 10),
-      score, // Puntuación total de la monitorización
-      feedback, // Comentarios u observaciones
-      check, // Checklist o validación binaria
-      id_user: agentId, // ID del agente evaluado
-      id_form: selectedFormId, // ID del formulario aplicado
-    };
-
+  const handleSaveMonitoring = async () => {
     try {
-      const result = await saveMonitoring(payload); // Enviar datos al backend
-      return result;
+      const score = calFormScore();
+
+      const payload = {
+        date: monitoringDate,
+        feedback,
+        idUserAgent: selectedClientId, // o userId
+        idUserMonitor: userInfo?.id,   // quien evalúa
+        idForm: selectedFormId,
+        score,
+      };
+
+      const response = await fetch('http://localhost:3000/api/answersform/monitoring', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error guardando monitoreo");
+      }
+
+      alert("Monitoreo guardado con éxito");
+      // Aquí puedes resetear estados o avanzar de paso
     } catch (error) {
-      console.error("Error al guardar la monitorización:", error);
-      throw error;
+      console.error(error);
+      alert("Error al guardar monitoreo: " + error.message);
     }
   };
 
@@ -550,10 +567,9 @@ const AdminList = () => {
   };
 
   /* SCORE */
-
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
-      const initBlockPer = 100; // Valor inicial del bloque = 100%
+      const initBlockPer = block.percentage; // Valor inicial del bloque = 100%
       const totalQuestions = block.preguntas.length; // Calcula el número de preguntas que contiene el bloque
       // Calcula el valor de cada pregunta dentro del bloque
       const perQuestion = initBlockPer / totalQuestions; // Calcula el porcentaje de cada pregunta dentro del bloque
@@ -568,13 +584,13 @@ const AdminList = () => {
 
         return {
           ...pregunta,
-          porcentajePregunta: perQuestion, // porcentaje visual individual
+          porcentajePregunta: Math.round(perQuestion * 10) / 10, // porcentaje visual individual con solo un decimal
         };
       });
 
       return {
         ...block,
-        porcentajeBloque: Math.round(finalBlockPer), // Retorna el valor del bloque despues de finalizar la calificación
+        porcentajeBloque: Math.round(finalBlockPer * 10) / 10, // Retorna el valor del bloque despues de finalizar la calificación
         preguntas: changeBlockPer, // Retorna el valor de cada pregunta para que sea visible por el usuario al evaluar el bloque
       };
     });
@@ -593,25 +609,81 @@ const AdminList = () => {
       0
     );
 
-    return Math.round(total / blocksWithPer.length);
+    return Math.round(total * 10) / 10;
   };
 
-  const handleSaveBlock = (blockId) => {
-    const bloque = blocksWithPer.find((b) => b.id === blockId);
+  //Guarda las respuestas del formulario
+const handleSaveAnswers = async () => {
+  if (!monitoringDate) {
+    setDateError(true);
+    Toast.fire({
+      icon: "warning",
+      title: "📅 Por favor selecciona una fecha para la monitorización.",
+    });
+    return;
+  }
 
-    if (!bloque) return;
-
-    // Crear payload
-    const payload = {
-      block_id: bloque.id,
-      block_score: bloque.porcentajeBloque,
-      questions: bloque.preguntas.map((p) => ({
-        question_id: p.id,
-        evaluacion: p.evaluacion,
-        porcentaje: p.porcentajePregunta,
-      })),
-    };
+  const respuestasAEnviar = {
+    monitoringDate,
+    userId: userInfo.id,
+    answers: [],
   };
+
+  for (const bloque of blocksWithPer) {
+    for (const pregunta of bloque.preguntas) {
+      if (pregunta.evaluacion === "") {
+        console.warn(`⚠️ Pregunta sin evaluación (ID: ${pregunta.id})`);
+        continue;
+      }
+
+      const answer_text = pregunta.evaluacion === "1" ? "correcto" : "incorrecto";
+
+      respuestasAEnviar.answers.push({
+        question_id: pregunta.id,
+        answer_question: answer_text,
+      });
+    }
+  }
+
+  if (respuestasAEnviar.answers.length === 0) {
+    Toast.fire({
+      icon: "warning",
+      title: "❗ Completa al menos una evaluación antes de guardar.",
+    });
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:3000/api/answersform", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(respuestasAEnviar),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Error al guardar respuestas");
+    }
+
+    Toast.fire({
+      icon: "success",
+      title: "✅ Todas las respuestas fueron guardadas correctamente.",
+    });
+
+    // Opcionalmente pasar al siguiente paso
+    // setMonitoringStep(3);
+
+  } catch (error) {
+    console.error("❌ Error al guardar el formulario completo:", error);
+    Toast.fire({
+      icon: "error",
+      title: "❌ Ocurrió un error al guardar las respuestas.",
+    });
+  }
+};
+
 
   // Clacula el % del bloque en tiempo real
   const handleUpdatePregunta = (idPregunta, campo, valor) => {
@@ -655,7 +727,7 @@ const AdminList = () => {
     calBlocksPercentage,
     handleUpdatePregunta,
     calFormScore,
-    handleSaveBlock,
+    handleSaveAnswers,
     clientError,
     setClientError,
     formError,
