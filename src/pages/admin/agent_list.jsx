@@ -695,6 +695,13 @@ const AdminList = () => {
     };
   };
 
+  // Mapeo de tipo de errores
+  const errorLabels = {
+    ecc_opt: "ECC - Error crítico de cumplimiento",
+    ecuf_opt: "ECUF - Error crítico de usuario final",
+    ecn_opt: "ECN - Error crítico de negocio",
+  };
+
   // Props que se pasan al modal principal para crear o editar monitorizaciones
   const modalAdminProps = {
     monitoringStep,
@@ -741,6 +748,7 @@ const AdminList = () => {
     feedback,
     setFeedback,
     isSavingFeedback,
+    errorLabels
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)

@@ -69,6 +69,7 @@ const ModalAdmin = ({
   feedback,
   setFeedback,
   isSavingFeedback,
+  errorLabels,
 }) => {
   const { purpuraEva, grisButtonEva } = colors.light;
   return (
@@ -288,9 +289,23 @@ const ModalAdmin = ({
                                 display="flex"
                                 justifyContent="space-between"
                               >
-                                <Typography>
-                                  {pregunta.question_name}
-                                </Typography>
+                                {/* Contenedor vertical para nombre + error */}
+                                <Box display="flex" flexDirection="column">
+                                  <Typography>
+                                    {pregunta.question_name}
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    sx={{ marginTop: 1 }}
+                                  >
+                                    {errorLabels[pregunta.type_error] ||
+                                      "No seleccionado"}
+                                    {"."}
+                                  </Typography>
+                                </Box>
+
+                                {/* Porcentaje alineado a la derecha */}
                                 <Typography>
                                   {pregunta.porcentajePregunta}%
                                 </Typography>
