@@ -74,6 +74,19 @@ exports.getAllAnswers = async (req, res) => {
   }
 };
 
+// Obtener el monitoreo de respuestas
+exports.getMonitoring = async (req, res) => {
+  try{
+    const monitoring = await AnswersFormModel.getMonitoring();
+    res.json(monitoring);
+  }catch (error) {
+    console.error('Error al obtener el monitoreo:', error.message);
+    res.status(500).json({ message: 'Error al obtener el monitoreo' });
+  }
+}
+
+// ...
+
 exports.getAnswerById = async (req, res) => {
   const { id } = req.params;
   try {
