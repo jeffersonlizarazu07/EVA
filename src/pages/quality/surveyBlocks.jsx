@@ -67,41 +67,9 @@ import {
   TextField,
   Grid,
 } from "@mui/material";
-
-import {
-  ExpandMore,
-  Edit,
-  Delete,
-  Add,
-  MoreVert,
-} from "@mui/icons-material";
-
-import {
-  Box,
-  Card,
-  CardHeader,
-  CardContent,
-  Typography,
-  IconButton,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  Button,
-  Menu,
-  TextField,
-  Grid,
-} from "@mui/material";
-
 import { ExpandMore, Edit, Delete, Add, MoreVert } from "@mui/icons-material";
 
-export default function SurveyBlocks({ }) {
+export default function SurveyBlocks({}) {
   const { id_form } = useParams();
   const { userId } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
@@ -128,22 +96,6 @@ export default function SurveyBlocks({ }) {
     questionTypeRange: "",
     answersRange: "",
   });
-
-  const [menuAnchor, setMenuAnchor] = useState({});
-
-  const handleMenuOpen = (event, blockId) => {
-    setMenuAnchor((prev) => ({
-      ...prev,
-      [blockId]: event.currentTarget,
-    }));
-  };
-
-  const handleMenuClose = (blockId) => {
-    setMenuAnchor((prev) => ({
-      ...prev,
-      [blockId]: null,
-    }));
-  };
 
   const [menuAnchor, setMenuAnchor] = useState({});
 
@@ -294,7 +246,6 @@ export default function SurveyBlocks({ }) {
       });
   };
 
-
   const handleCancel = () => {
     setValueConditional(false);
     setIsChecked(false);
@@ -415,8 +366,8 @@ export default function SurveyBlocks({ }) {
             case "check_opt":
               const checkboxOptions = p.select_option
                 ? p.select_option
-                  .split(",")
-                  .map((o) => ({ text: o.trim(), checked: false }))
+                    .split(",")
+                    .map((o) => ({ text: o.trim(), checked: false }))
                 : [];
 
               const selectedAnswers = (p.selected_answer || "")
@@ -678,8 +629,8 @@ export default function SurveyBlocks({ }) {
           console.error("Error al crear el bloque:", apiError);
           setError(
             apiError.response?.data?.message ||
-            apiError.message ||
-            "Error al crear el bloque"
+              apiError.message ||
+              "Error al crear el bloque"
           );
           Toast.fire({
             icon: "error",
@@ -1198,34 +1149,22 @@ export default function SurveyBlocks({ }) {
         // Mapear preguntas si existen
         const preguntasMapeadas = Array.isArray(bloque.preguntas)
           ? bloque.preguntas.map((preg) => {
-            const opciones = preg.select_option
-              ? preg.select_option.split(",").map((o) => o.trim())
-              : [];
+              const opciones = preg.select_option
+                ? preg.select_option.split(",").map((o) => o.trim())
+                : [];
 
-            const optionObjects = opciones.map((opt) => ({ text: opt }));
+              const optionObjects = opciones.map((opt) => ({ text: opt }));
 
-            let tipo = preg.type || "";
-            if (!tipo && preg.id_type_question) {
-              const typeMap = {
-                1: "check_opt",
-                2: "selector_opt",
-                3: "textfield_s",
-              };
-              tipo = typeMap[preg.id_type_question] || "unknown";
-            }
+              let tipo = preg.type || "";
+              if (!tipo && preg.id_type_question) {
+                const typeMap = {
+                  1: "check_opt",
+                  2: "selector_opt",
+                  3: "textfield_s",
+                };
+                tipo = typeMap[preg.id_type_question] || "unknown";
+              }
 
-            return {
-              id: preg.id,
-              text: preg.text || preg.question_name || "Sin texto",
-              type: tipo,
-              options: optionObjects,
-              select_option: preg.select_option || "",
-              selected_answer:
-                preg.conditional_answer || preg.selected_answer || "",
-              conditional: preg.conditional || "NO",
-              question_name: preg.question_name || preg.text || "Sin texto",
-            };
-          })
               return {
                 id: preg.id,
                 text: preg.text || preg.question_name || "Sin texto",
@@ -1354,8 +1293,6 @@ export default function SurveyBlocks({ }) {
     setLoading(false);
   };
 
-
-
   const toggleCollapse = (blockId, questionIndex) => {
     const key = `${blockId}-${questionIndex}`;
     setCollapsedQuestions((prev) => ({
@@ -1391,7 +1328,6 @@ export default function SurveyBlocks({ }) {
     setStaticData(reorderedData);
   };
 
-
   // Select errores
   const handleErrorOpt = (index, field, value) => {
     const updatedQuestions = [...questionsList];
@@ -1412,486 +1348,698 @@ export default function SurveyBlocks({ }) {
   return (
     <Box sx={{ p: 3 }}>
       <HeaderLT1 />
-    <Box sx={{ p: 3 }}>
-      <HeaderLT1 />
+      <Box sx={{ p: 3 }}>
+        <HeaderLT1 />
 
-      {/* Información del formulario */}
-      <Card sx={{ mb: 4, p: 2, border: '2px solid #b62a8b' }}>
-        <CardHeader title="Información del Formulario" />
-        <CardContent>
-          {formData ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <Typography><strong>Nombre:</strong> {formData.title}</Typography>
-                <Typography><strong>Descripción:</strong> {formData.description}</Typography>
+        {/* Información del formulario */}
+        <Card sx={{ mb: 4, p: 2, border: "2px solid #b62a8b" }}>
+          <CardHeader title="Información del Formulario" />
+          <CardContent>
+            {formData ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <Typography>
+                    <strong>Nombre:</strong> {formData.title}
+                  </Typography>
+                  <Typography>
+                    <strong>Descripción:</strong> {formData.description}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography>
+                    <strong>Creado:</strong>{" "}
+                    {formatDateTimeShort(formData.creation_date)}
+                  </Typography>
+                  <Typography>
+                    <strong>Actualizado:</strong>{" "}
+                    {formatDateTimeShort(formData.updated_date) ||
+                      "Sin actualizar"}
+                  </Typography>
+                </Grid>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography><strong>Creado:</strong> {formatDateTimeShort(formData.creation_date)}</Typography>
-                <Typography><strong>Actualizado:</strong> {formatDateTimeShort(formData.updated_date) || "Sin actualizar"}</Typography>
-              </Grid>
-            </Grid>
-          ) : (
-            <Typography align="center" sx={{ mt: 2 }}>
-              Sesión caducada, por favor inicie sesión nuevamente.
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Sección de bloques de preguntas */}
-      <Card sx={{ border: '2px solid #b62a8b', p: 2 }}>
-        <Box sx={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: '#fff', pb: 2 }}>
-          <Grid container justifyContent="space-between" alignItems="center">
-            <Grid item>
-              <Typography variant="h6" fontWeight="bold">Preguntas</Typography>
-            </Grid>
-            <Grid item>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => setIsModalOpen(true)}
-                sx={{ backgroundColor: 'black', textTransform: 'none' }}
-              >
-                Crear Bloque
-              </Button>
-
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* Drag and Drop */}
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="blocksDroppable">
-            {(provided) => (
-              <Box ref={provided.innerRef} {...provided.droppableProps}>
-                {data.map((bloque, index) => (
-                  <Draggable key={bloque.id} draggableId={String(bloque.id)} index={index}>
-                    {(provided) => (
-                      <Card
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        sx={{ mb: 3, boxShadow: 4, borderRadius: 2 }}
-                      >
-                        <CardHeader
-                          title={bloque.block_name || bloque.nombre || "Sin nombre"}
-                          subheader={`Ponderación: ${bloque.percentage}%`}
-                          action={
-                            <>
-
-                              <IconButton onClick={(e) => handleMenuOpen(e, bloque.id)}>
-                                <MoreVert sx={{ color: "#b62a8b" }} />
-                              </IconButton>
-
-                              <Menu
-                                anchorEl={menuAnchor[bloque.id]}
-                                open={Boolean(menuAnchor[bloque.id])}
-                                onClose={() => handleMenuClose(bloque.id)}
-                              >
-                                <MenuItem onClick={() => onUpdate(bloque)}>
-                                  <Edit sx={{ mr: 1 }} fontSize="small" />
-                                  Editar
-                                </MenuItem>
-                                <MenuItem onClick={() => handleDeleteBlock(bloque.id, bloque.block_name)}>
-                                  <Delete sx={{ mr: 1 }} fontSize="small" />
-                                  Eliminar
-                                </MenuItem>
-                              </Menu>
-
-                            </>
-                          }
-                        />
-                        <CardContent>
-                          {bloque.preguntas?.map((preg, idx) => {
-                            const isCollapsed = collapsedQuestions[`${bloque.id}-${idx}`];
-                            return (
-                              <Accordion
-                                key={idx}
-                                expanded={!isCollapsed}
-                                onChange={() => toggleCollapse(bloque.id, idx)}
-                                sx={{ mb: 2 }}
-                              >
-                                <AccordionSummary expandIcon={<ExpandMore />}>
-                                  <Typography fontWeight="bold">
-                                    {preg.text || preg.question_name || "Sin texto"}
-                                  </Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                  {preg.type === "check_opt" && (
-                                    <FormGroup>
-                                      {preg.options?.map((opt, i) => {
-                                        const optionText = typeof opt === "object" ? opt.text : String(opt);
-                                        const isChecked = preg.selected_answer?.split(",").includes(optionText);
-                                        return (
-                                          <FormControlLabel
-                                            key={i}
-                                            control={
-                                              <Checkbox
-                                                checked={isChecked}
-                                                onChange={() =>
-                                                  handleAnswerChange(bloque.id, idx, optionText)
-                                                }
-                                              />
-                                            }
-                                            label={optionText}
-                                          />
-                                        );
-                                      })}
-                                    </FormGroup>
-                                  )}
-
-                                  {preg.type === "selector_opt" && (
-                                    <FormControl fullWidth sx={{ mt: 2 }}>
-                                      <InputLabel>Selecciona una opción</InputLabel>
-                                      <Select
-                                        value={preg.selected_answer || ""}
-                                        onChange={(e) =>
-                                          handleAnswerChange(bloque.id, idx, e.target.value)
-                                        }
-                                        label="Selecciona una opción"
-                                      >
-                                        {preg.options?.map((opt, i) => {
-                                          const optionText = typeof opt === "string" ? opt : opt.text || "";
-                                          return (
-                                            <MenuItem key={i} value={optionText}>
-                                              {optionText}
-                                            </MenuItem>
-                                          );
-                                        })}
-                                      </Select>
-                                    </FormControl>
-                                  )}
-      {/* Información del formulario */}
-      <Card sx={{ mb: 4, p: 2, border: "2px solid #b62a8b" }}>
-        <CardHeader title="Información del Formulario" />
-        <CardContent>
-          {formData ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <Typography>
-                  <strong>Nombre:</strong> {formData.title}
-                </Typography>
-                <Typography>
-                  <strong>Descripción:</strong> {formData.description}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography>
-                  <strong>Creado:</strong>{" "}
-                  {formatDateTimeShort(formData.creation_date)}
-                </Typography>
-                <Typography>
-                  <strong>Actualizado:</strong>{" "}
-                  {formatDateTimeShort(formData.updated_date) ||
-                    "Sin actualizar"}
-                </Typography>
-              </Grid>
-            </Grid>
-          ) : (
-            <Typography align="center" sx={{ mt: 2 }}>
-              Sesión caducada, por favor inicie sesión nuevamente.
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Sección de bloques de preguntas */}
-      <Card sx={{ border: "2px solid #b62a8b", p: 2 }}>
-        <Box
-          sx={{
-            position: "sticky",
-            top: 0,
-            zIndex: 1000,
-            backgroundColor: "#fff",
-            pb: 2,
-          }}
-        >
-          <Grid container justifyContent="space-between" alignItems="center">
-            <Grid item>
-              <Typography variant="h6" fontWeight="bold">
-                Preguntas
+            ) : (
+              <Typography align="center" sx={{ mt: 2 }}>
+                Sesión caducada, por favor inicie sesión nuevamente.
               </Typography>
-            </Grid>
-            <Grid item>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => setIsModalOpen(true)}
-                sx={{ backgroundColor: "black", textTransform: "none" }}
-              >
-                Crear Bloque
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
+            )}
+          </CardContent>
+        </Card>
 
-        {/* Drag and Drop */}
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="blocksDroppable">
-            {(provided) => (
-              <Box ref={provided.innerRef} {...provided.droppableProps}>
-                {data.map((bloque, index) => (
-                  <Draggable
-                    key={bloque.id}
-                    draggableId={String(bloque.id)}
-                    index={index}
-                  >
-                    {(provided) => (
-                      <Card
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        sx={{ mb: 3, boxShadow: 4, borderRadius: 2 }}
-                      >
-                        <CardHeader
-                          title={
-                            bloque.block_name || bloque.nombre || "Sin nombre"
-                          }
-                          subheader={`Ponderación: ${bloque.percentage}%`}
-                          action={
-                            <>
-                              <IconButton
-                                onClick={(e) => handleMenuOpen(e, bloque.id)}
-                              >
-                                <MoreVert sx={{ color: "#b62a8b" }} />
-                              </IconButton>
+        {/* Sección de bloques de preguntas */}
+        <Card sx={{ border: "2px solid #b62a8b", p: 2 }}>
+          <Box
+            sx={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1000,
+              backgroundColor: "#fff",
+              pb: 2,
+            }}
+          >
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <Typography variant="h6" fontWeight="bold">
+                  Preguntas
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => setIsModalOpen(true)}
+                  sx={{ backgroundColor: "black", textTransform: "none" }}
+                >
+                  Crear Bloque
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
 
-                              <Menu
-                                anchorEl={menuAnchor[bloque.id]}
-                                open={Boolean(menuAnchor[bloque.id])}
-                                onClose={() => handleMenuClose(bloque.id)}
-                              >
-                                <MenuItem onClick={() => onUpdate(bloque)}>
-                                  <Edit sx={{ mr: 1 }} fontSize="small" />
-                                  Editar
-                                </MenuItem>
-                                <MenuItem
-                                  onClick={() =>
-                                    handleDeleteBlock(
-                                      bloque.id,
-                                      bloque.block_name
-                                    )
-                                  }
+          {/* Drag and Drop */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="blocksDroppable">
+              {(provided) => (
+                <Box ref={provided.innerRef} {...provided.droppableProps}>
+                  {data.map((bloque, index) => (
+                    <Draggable
+                      key={bloque.id}
+                      draggableId={String(bloque.id)}
+                      index={index}
+                    >
+                      {(provided) => (
+                        <Card
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          sx={{ mb: 3, boxShadow: 4, borderRadius: 2 }}
+                        >
+                          <CardHeader
+                            title={
+                              bloque.block_name || bloque.nombre || "Sin nombre"
+                            }
+                            subheader={`Ponderación: ${bloque.percentage}%`}
+                            action={
+                              <>
+                                <IconButton
+                                  onClick={(e) => handleMenuOpen(e, bloque.id)}
                                 >
-                                  <Delete sx={{ mr: 1 }} fontSize="small" />
-                                  Eliminar
-                                </MenuItem>
-                              </Menu>
-                            </>
-                          }
-                        />
-                        <CardContent>
-                          {bloque.preguntas?.map((preg, idx) => {
-                            const isCollapsed =
-                              collapsedQuestions[`${bloque.id}-${idx}`];
-                            return (
-                              <Accordion
-                                key={idx}
-                                expanded={!isCollapsed}
-                                onChange={() => toggleCollapse(bloque.id, idx)}
-                                sx={{ mb: 2 }}
-                              >
-                                <AccordionSummary expandIcon={<ExpandMore />}>
-                                  <Typography fontWeight="bold">
-                                    {preg.text ||
-                                      preg.question_name ||
-                                      "Sin texto"}
-                                  </Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                  {preg.type === "check_opt" && (
-                                    <FormGroup>
-                                      {preg.options?.map((opt, i) => {
-                                        const optionText =
-                                          typeof opt === "object"
-                                            ? opt.text
-                                            : String(opt);
-                                        const isChecked = preg.selected_answer
-                                          ?.split(",")
-                                          .includes(optionText);
-                                        return (
-                                          <FormControlLabel
-                                            key={i}
-                                            control={
-                                              <Checkbox
-                                                checked={isChecked}
-                                                onChange={() =>
-                                                  handleAnswerChange(
-                                                    bloque.id,
-                                                    idx,
-                                                    optionText
-                                                  )
-                                                }
-                                              />
-                                            }
-                                            label={optionText}
-                                          />
-                                        );
-                                      })}
-                                    </FormGroup>
-                                  )}
+                                  <MoreVert sx={{ color: "#b62a8b" }} />
+                                </IconButton>
 
-                                  {preg.type === "selector_opt" && (
-                                    <FormControl fullWidth sx={{ mt: 2 }}>
-                                      <InputLabel>
-                                        Selecciona una opción
-                                      </InputLabel>
-                                      <Select
-                                        value={preg.selected_answer || ""}
-                                        onChange={(e) =>
-                                          handleAnswerChange(
-                                            bloque.id,
-                                            idx,
-                                            e.target.value
-                                          )
-                                        }
-                                        label="Selecciona una opción"
-                                      >
+                                <Menu
+                                  anchorEl={menuAnchor[bloque.id]}
+                                  open={Boolean(menuAnchor[bloque.id])}
+                                  onClose={() => handleMenuClose(bloque.id)}
+                                >
+                                  <MenuItem onClick={() => onUpdate(bloque)}>
+                                    <Edit sx={{ mr: 1 }} fontSize="small" />
+                                    Editar
+                                  </MenuItem>
+                                  <MenuItem
+                                    onClick={() =>
+                                      handleDeleteBlock(
+                                        bloque.id,
+                                        bloque.block_name
+                                      )
+                                    }
+                                  >
+                                    <Delete sx={{ mr: 1 }} fontSize="small" />
+                                    Eliminar
+                                  </MenuItem>
+                                </Menu>
+                              </>
+                            }
+                          />
+                          <CardContent>
+                            {bloque.preguntas?.map((preg, idx) => {
+                              const isCollapsed =
+                                collapsedQuestions[`${bloque.id}-${idx}`];
+                              return (
+                                <Accordion
+                                  key={idx}
+                                  expanded={!isCollapsed}
+                                  onChange={() =>
+                                    toggleCollapse(bloque.id, idx)
+                                  }
+                                  sx={{ mb: 2 }}
+                                >
+                                  <AccordionSummary expandIcon={<ExpandMore />}>
+                                    <Typography fontWeight="bold">
+                                      {preg.text ||
+                                        preg.question_name ||
+                                        "Sin texto"}
+                                    </Typography>
+                                  </AccordionSummary>
+                                  <AccordionDetails>
+                                    {preg.type === "check_opt" && (
+                                      <FormGroup>
                                         {preg.options?.map((opt, i) => {
                                           const optionText =
-                                            typeof opt === "string"
-                                              ? opt
-                                              : opt.text || "";
+                                            typeof opt === "object"
+                                              ? opt.text
+                                              : String(opt);
+                                          const isChecked = preg.selected_answer
+                                            ?.split(",")
+                                            .includes(optionText);
                                           return (
-                                            <MenuItem
+                                            <FormControlLabel
                                               key={i}
-                                              value={optionText}
-                                            >
-                                              {optionText}
-                                            </MenuItem>
+                                              control={
+                                                <Checkbox
+                                                  checked={isChecked}
+                                                  onChange={() =>
+                                                    handleAnswerChange(
+                                                      bloque.id,
+                                                      idx,
+                                                      optionText
+                                                    )
+                                                  }
+                                                />
+                                              }
+                                              label={optionText}
+                                            />
                                           );
                                         })}
-                                      </Select>
-                                    </FormControl>
-                                  )}
+                                      </FormGroup>
+                                    )}
 
-                                  {preg.type === "textfield_s" && (
-                                    <TextField
-                                      label="Respuesta"
-                                      value={preg.selected_answer || ""}
-                                      fullWidth
-                                      variant="outlined"
-                                      InputProps={{ readOnly: true }}
-                                      sx={{ mt: 2 }}
-                                    />
-                                  )}
+                                    {preg.type === "selector_opt" && (
+                                      <FormControl fullWidth sx={{ mt: 2 }}>
+                                        <InputLabel>
+                                          Selecciona una opción
+                                        </InputLabel>
+                                        <Select
+                                          value={preg.selected_answer || ""}
+                                          onChange={(e) =>
+                                            handleAnswerChange(
+                                              bloque.id,
+                                              idx,
+                                              e.target.value
+                                            )
+                                          }
+                                          label="Selecciona una opción"
+                                        >
+                                          {preg.options?.map((opt, i) => {
+                                            const optionText =
+                                              typeof opt === "string"
+                                                ? opt
+                                                : opt.text || "";
+                                            return (
+                                              <MenuItem
+                                                key={i}
+                                                value={optionText}
+                                              >
+                                                {optionText}
+                                              </MenuItem>
+                                            );
+                                          })}
+                                        </Select>
+                                      </FormControl>
+                                    )}
+                                    {/* Información del formulario */}
+                                    <Card
+                                      sx={{
+                                        mb: 4,
+                                        p: 2,
+                                        border: "2px solid #b62a8b",
+                                      }}
+                                    >
+                                      <CardHeader title="Información del Formulario" />
+                                      <CardContent>
+                                        {formData ? (
+                                          <Grid container spacing={2}>
+                                            <Grid item xs={12} md={6}>
+                                              <Typography>
+                                                <strong>Nombre:</strong>{" "}
+                                                {formData.title}
+                                              </Typography>
+                                              <Typography>
+                                                <strong>Descripción:</strong>{" "}
+                                                {formData.description}
+                                              </Typography>
+                                            </Grid>
+                                            <Grid item xs={12} md={6}>
+                                              <Typography>
+                                                <strong>Creado:</strong>{" "}
+                                                {formatDateTimeShort(
+                                                  formData.creation_date
+                                                )}
+                                              </Typography>
+                                              <Typography>
+                                                <strong>Actualizado:</strong>{" "}
+                                                {formatDateTimeShort(
+                                                  formData.updated_date
+                                                ) || "Sin actualizar"}
+                                              </Typography>
+                                            </Grid>
+                                          </Grid>
+                                        ) : (
+                                          <Typography
+                                            align="center"
+                                            sx={{ mt: 2 }}
+                                          >
+                                            Sesión caducada, por favor inicie
+                                            sesión nuevamente.
+                                          </Typography>
+                                        )}
+                                      </CardContent>
+                                    </Card>
 
-                                  {preg.type === "yes_no" && (
-                                    <TextField
-                                      label="Respuesta"
-                                      value={preg.selected_answer || ""}
-                                      fullWidth
-                                      variant="outlined"
-                                      InputProps={{ readOnly: true }}
-                                      sx={{ mt: 2 }}
-                                    />
-                                  )}
-                                </AccordionDetails>
-                              </Accordion>
-                            );
-                          })}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </Box>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </Card>
+                                    {/* Sección de bloques de preguntas */}
+                                    <Card
+                                      sx={{ border: "2px solid #b62a8b", p: 2 }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          position: "sticky",
+                                          top: 0,
+                                          zIndex: 1000,
+                                          backgroundColor: "#fff",
+                                          pb: 2,
+                                        }}
+                                      >
+                                        <Grid
+                                          container
+                                          justifyContent="space-between"
+                                          alignItems="center"
+                                        >
+                                          <Grid item>
+                                            <Typography
+                                              variant="h6"
+                                              fontWeight="bold"
+                                            >
+                                              Preguntas
+                                            </Typography>
+                                          </Grid>
+                                          <Grid item>
+                                            <Button
+                                              variant="contained"
+                                              startIcon={<Add />}
+                                              onClick={() =>
+                                                setIsModalOpen(true)
+                                              }
+                                              sx={{
+                                                backgroundColor: "black",
+                                                textTransform: "none",
+                                              }}
+                                            >
+                                              Crear Bloque
+                                            </Button>
+                                          </Grid>
+                                        </Grid>
+                                      </Box>
 
-                                  {preg.type === "textfield_s" && (
-                                    <TextField
-                                      label="Respuesta"
-                                      value={preg.selected_answer || ""}
-                                      fullWidth
-                                      variant="outlined"
-                                      InputProps={{ readOnly: true }}
-                                      sx={{ mt: 2 }}
-                                    />
-                                  )}
+                                      {/* Drag and Drop */}
+                                      <DragDropContext
+                                        onDragEnd={handleDragEnd}
+                                      >
+                                        <Droppable droppableId="blocksDroppable">
+                                          {(provided) => (
+                                            <Box
+                                              ref={provided.innerRef}
+                                              {...provided.droppableProps}
+                                            >
+                                              {data.map((bloque, index) => (
+                                                <Draggable
+                                                  key={bloque.id}
+                                                  draggableId={String(
+                                                    bloque.id
+                                                  )}
+                                                  index={index}
+                                                >
+                                                  {(provided) => (
+                                                    <Card
+                                                      ref={provided.innerRef}
+                                                      {...provided.draggableProps}
+                                                      {...provided.dragHandleProps}
+                                                      sx={{
+                                                        mb: 3,
+                                                        boxShadow: 4,
+                                                        borderRadius: 2,
+                                                      }}
+                                                    >
+                                                      <CardHeader
+                                                        title={
+                                                          bloque.block_name ||
+                                                          bloque.nombre ||
+                                                          "Sin nombre"
+                                                        }
+                                                        subheader={`Ponderación: ${bloque.percentage}%`}
+                                                        action={
+                                                          <>
+                                                            <IconButton
+                                                              onClick={(e) =>
+                                                                handleMenuOpen(
+                                                                  e,
+                                                                  bloque.id
+                                                                )
+                                                              }
+                                                            >
+                                                              <MoreVert
+                                                                sx={{
+                                                                  color:
+                                                                    "#b62a8b",
+                                                                }}
+                                                              />
+                                                            </IconButton>
 
-                                  {preg.type === "yes_no" && (
-                                    <TextField
-                                      label="Respuesta"
-                                      value={preg.selected_answer || ""}
-                                      fullWidth
-                                      variant="outlined"
-                                      InputProps={{ readOnly: true }}
-                                      sx={{ mt: 2 }}
-                                    />
-                                  )}
-                                  <div>
-                                    <label className="text-end w-100 mb-3 ms-1 mt-1 fs-6">
-                                      {errorLabels[preg.error] ||
-                                        "No seleccionado"}
-                                      {"."}
-                                    </label>
-                                  </div>
-                                </AccordionDetails>
-                              </Accordion>
-                            );
-                          })}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </Box>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </Card>
+                                                            <Menu
+                                                              anchorEl={
+                                                                menuAnchor[
+                                                                  bloque.id
+                                                                ]
+                                                              }
+                                                              open={Boolean(
+                                                                menuAnchor[
+                                                                  bloque.id
+                                                                ]
+                                                              )}
+                                                              onClose={() =>
+                                                                handleMenuClose(
+                                                                  bloque.id
+                                                                )
+                                                              }
+                                                            >
+                                                              <MenuItem
+                                                                onClick={() =>
+                                                                  onUpdate(
+                                                                    bloque
+                                                                  )
+                                                                }
+                                                              >
+                                                                <Edit
+                                                                  sx={{ mr: 1 }}
+                                                                  fontSize="small"
+                                                                />
+                                                                Editar
+                                                              </MenuItem>
+                                                              <MenuItem
+                                                                onClick={() =>
+                                                                  handleDeleteBlock(
+                                                                    bloque.id,
+                                                                    bloque.block_name
+                                                                  )
+                                                                }
+                                                              >
+                                                                <Delete
+                                                                  sx={{ mr: 1 }}
+                                                                  fontSize="small"
+                                                                />
+                                                                Eliminar
+                                                              </MenuItem>
+                                                            </Menu>
+                                                          </>
+                                                        }
+                                                      />
+                                                      <CardContent>
+                                                        {bloque.preguntas?.map(
+                                                          (preg, idx) => {
+                                                            const isCollapsed =
+                                                              collapsedQuestions[
+                                                                `${bloque.id}-${idx}`
+                                                              ];
+                                                            return (
+                                                              <Accordion
+                                                                key={idx}
+                                                                expanded={
+                                                                  !isCollapsed
+                                                                }
+                                                                onChange={() =>
+                                                                  toggleCollapse(
+                                                                    bloque.id,
+                                                                    idx
+                                                                  )
+                                                                }
+                                                                sx={{ mb: 2 }}
+                                                              >
+                                                                <AccordionSummary
+                                                                  expandIcon={
+                                                                    <ExpandMore />
+                                                                  }
+                                                                >
+                                                                  <Typography fontWeight="bold">
+                                                                    {preg.text ||
+                                                                      preg.question_name ||
+                                                                      "Sin texto"}
+                                                                  </Typography>
+                                                                </AccordionSummary>
+                                                                <AccordionDetails>
+                                                                  {preg.type ===
+                                                                    "check_opt" && (
+                                                                    <FormGroup>
+                                                                      {preg.options?.map(
+                                                                        (
+                                                                          opt,
+                                                                          i
+                                                                        ) => {
+                                                                          const optionText =
+                                                                            typeof opt ===
+                                                                            "object"
+                                                                              ? opt.text
+                                                                              : String(
+                                                                                  opt
+                                                                                );
+                                                                          const isChecked =
+                                                                            preg.selected_answer
+                                                                              ?.split(
+                                                                                ","
+                                                                              )
+                                                                              .includes(
+                                                                                optionText
+                                                                              );
+                                                                          return (
+                                                                            <FormControlLabel
+                                                                              key={
+                                                                                i
+                                                                              }
+                                                                              control={
+                                                                                <Checkbox
+                                                                                  checked={
+                                                                                    isChecked
+                                                                                  }
+                                                                                  onChange={() =>
+                                                                                    handleAnswerChange(
+                                                                                      bloque.id,
+                                                                                      idx,
+                                                                                      optionText
+                                                                                    )
+                                                                                  }
+                                                                                />
+                                                                              }
+                                                                              label={
+                                                                                optionText
+                                                                              }
+                                                                            />
+                                                                          );
+                                                                        }
+                                                                      )}
+                                                                    </FormGroup>
+                                                                  )}
 
-      <ModalSurveyBlocks
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-        operation={operation}
-        title={title}
-        descriptionText={descriptionText}
-        questionsList={questionsList}
-        handleInputChange={handleInputChange}
-        singleChoiceData={singleChoiceData}
-        multipleChoiceData={multipleChoiceData}
-        selectorData={selectorData}
-        handleSingleChoiceChange={handleSingleChoiceChange}
-        handleMultipleChoiceChange={handleMultipleChoiceChange}
-        handleSelectorChange={handleSelectorChange}
-        isChecked={isChecked}
-        listConditional={listConditional}
-        valueConditional={valueConditional}
-        conditionalHandleChange={conditionalHandleChange}
-        error={error}
-        validar={validar}
-        idToEdit={idToEdit}
-        id_form={id_form}
-        areAllFieldsCompleted={areAllFieldsCompleted}
-        handleCancel={handleCancel}
-        addNewQuestion={addNewQuestion}
-        questionCountInput={questionCountInput}
-        setQuestionCountInput={setQuestionCountInput}
-        nombreInput={nombreInput}
-        ponderacionInput={ponderacionInput}
-        posicionInput={posicionInput}
-        positionType={positionType}
-        setPositionType={setPositionType}
-        referenceBlockId={referenceBlockId}
-        setReferenceBlockId={setReferenceBlockId}
-        data={data}
-        options={multipleChoiceData.options}
-        correctAnswers={multipleChoiceData.correctAnswers}
-        onChange={handleMultipleChoiceChange}
-        migrateQuestionData={migrateQuestionData}
+                                                                  {preg.type ===
+                                                                    "selector_opt" && (
+                                                                    <FormControl
+                                                                      fullWidth
+                                                                      sx={{
+                                                                        mt: 2,
+                                                                      }}
+                                                                    >
+                                                                      <InputLabel>
+                                                                        Selecciona
+                                                                        una
+                                                                        opción
+                                                                      </InputLabel>
+                                                                      <Select
+                                                                        value={
+                                                                          preg.selected_answer ||
+                                                                          ""
+                                                                        }
+                                                                        onChange={(
+                                                                          e
+                                                                        ) =>
+                                                                          handleAnswerChange(
+                                                                            bloque.id,
+                                                                            idx,
+                                                                            e
+                                                                              .target
+                                                                              .value
+                                                                          )
+                                                                        }
+                                                                        label="Selecciona una opción"
+                                                                      >
+                                                                        {preg.options?.map(
+                                                                          (
+                                                                            opt,
+                                                                            i
+                                                                          ) => {
+                                                                            const optionText =
+                                                                              typeof opt ===
+                                                                              "string"
+                                                                                ? opt
+                                                                                : opt.text ||
+                                                                                  "";
+                                                                            return (
+                                                                              <MenuItem
+                                                                                key={
+                                                                                  i
+                                                                                }
+                                                                                value={
+                                                                                  optionText
+                                                                                }
+                                                                              >
+                                                                                {
+                                                                                  optionText
+                                                                                }
+                                                                              </MenuItem>
+                                                                            );
+                                                                          }
+                                                                        )}
+                                                                      </Select>
+                                                                    </FormControl>
+                                                                  )}
 
-        // selectError={selectError}
-        // handleErrorOpt={handleErrorOpt}
-      />
-    </Box>
+                                                                  {preg.type ===
+                                                                    "textfield_s" && (
+                                                                    <TextField
+                                                                      label="Respuesta"
+                                                                      value={
+                                                                        preg.selected_answer ||
+                                                                        ""
+                                                                      }
+                                                                      fullWidth
+                                                                      variant="outlined"
+                                                                      InputProps={{
+                                                                        readOnly: true,
+                                                                      }}
+                                                                      sx={{
+                                                                        mt: 2,
+                                                                      }}
+                                                                    />
+                                                                  )}
+
+                                                                  {preg.type ===
+                                                                    "yes_no" && (
+                                                                    <TextField
+                                                                      label="Respuesta"
+                                                                      value={
+                                                                        preg.selected_answer ||
+                                                                        ""
+                                                                      }
+                                                                      fullWidth
+                                                                      variant="outlined"
+                                                                      InputProps={{
+                                                                        readOnly: true,
+                                                                      }}
+                                                                      sx={{
+                                                                        mt: 2,
+                                                                      }}
+                                                                    />
+                                                                  )}
+                                                                </AccordionDetails>
+                                                              </Accordion>
+                                                            );
+                                                          }
+                                                        )}
+                                                      </CardContent>
+                                                    </Card>
+                                                  )}
+                                                </Draggable>
+                                              ))}
+                                              {provided.placeholder}
+                                            </Box>
+                                          )}
+                                        </Droppable>
+                                      </DragDropContext>
+                                    </Card>
+
+                                    {preg.type === "textfield_s" && (
+                                      <TextField
+                                        label="Respuesta"
+                                        value={preg.selected_answer || ""}
+                                        fullWidth
+                                        variant="outlined"
+                                        InputProps={{ readOnly: true }}
+                                        sx={{ mt: 2 }}
+                                      />
+                                    )}
+
+                                    {preg.type === "yes_no" && (
+                                      <TextField
+                                        label="Respuesta"
+                                        value={preg.selected_answer || ""}
+                                        fullWidth
+                                        variant="outlined"
+                                        InputProps={{ readOnly: true }}
+                                        sx={{ mt: 2 }}
+                                      />
+                                    )}
+                                    <div>
+                                      <label className="text-end w-100 mb-3 ms-1 mt-1 fs-6">
+                                        {errorLabels[preg.error] ||
+                                          "No seleccionado"}
+                                        {"."}
+                                      </label>
+                                    </div>
+                                  </AccordionDetails>
+                                </Accordion>
+                              );
+                            })}
+                          </CardContent>
+                        </Card>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </Box>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </Card>
+
+        <ModalSurveyBlocks
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          operation={operation}
+          title={title}
+          descriptionText={descriptionText}
+          questionsList={questionsList}
+          handleInputChange={handleInputChange}
+          singleChoiceData={singleChoiceData}
+          multipleChoiceData={multipleChoiceData}
+          selectorData={selectorData}
+          handleSingleChoiceChange={handleSingleChoiceChange}
+          handleMultipleChoiceChange={handleMultipleChoiceChange}
+          handleSelectorChange={handleSelectorChange}
+          isChecked={isChecked}
+          listConditional={listConditional}
+          valueConditional={valueConditional}
+          conditionalHandleChange={conditionalHandleChange}
+          error={error}
+          validar={validar}
+          idToEdit={idToEdit}
+          id_form={id_form}
+          areAllFieldsCompleted={areAllFieldsCompleted}
+          handleCancel={handleCancel}
+          addNewQuestion={addNewQuestion}
+          questionCountInput={questionCountInput}
+          setQuestionCountInput={setQuestionCountInput}
+          nombreInput={nombreInput}
+          ponderacionInput={ponderacionInput}
+          posicionInput={posicionInput}
+          positionType={positionType}
+          setPositionType={setPositionType}
+          referenceBlockId={referenceBlockId}
+          setReferenceBlockId={setReferenceBlockId}
+          data={data}
+          options={multipleChoiceData.options}
+          correctAnswers={multipleChoiceData.correctAnswers}
+          onChange={handleMultipleChoiceChange}
+          migrateQuestionData={migrateQuestionData}
+
+          // selectError={selectError}
+          // handleErrorOpt={handleErrorOpt}
+        />
+      </Box>
     </Box>
   );
-};
+}

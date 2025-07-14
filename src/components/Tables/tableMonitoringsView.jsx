@@ -1,0 +1,10 @@
+
+
+
+const monitoringsView = () => {
+
+
+   return (
+    w
+   ) 
+}  

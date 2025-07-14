@@ -1,7 +1,5 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
 import {
@@ -21,8 +19,8 @@ import {
   TablePagination,
 } from "@mui/material";
 import { TurnLeft, Search } from "@mui/icons-material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import FactCheckRoundedIcon from "@mui/icons-material/FactCheckRounded";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
   const { languageUser } = useContext(UserContext);
@@ -32,26 +30,15 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
     i18n.changeLanguage(languageUser);
   }, [languageUser, i18n]);
 
-  const { t, i18n } = useTranslation();
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
     setPage(0);
-    setPage(0);
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -59,20 +46,7 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
-
-  const filteredData = Array.isArray(data)
-    ? data.filter((item) =>
-        Object.values(item).some(
-          (val) =>
-            typeof val === "string" &&
-            val.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      )
-    : [];
 
   const filteredData = Array.isArray(data)
     ? data.filter((item) =>
@@ -85,36 +59,6 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
     : [];
 
   const currentRecords = filteredData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
-  const getHeaderLabel = (item) => {
-    switch (item) {
-      case "firstname":
-        return t("headerlt.First_name");
-      case "lastname":
-        return t("headerlt.Last_name");
-      case "type":
-        return t("headerlt.Role");
-      default:
-        return t("viewUserModal.State");
-    }
-  };
-
-  const getUserType = (type) => {
-    switch (type) {
-      case 1:
-        return t("userTable.SuperAdmin");
-      case 2:
-        return t("userTable.Admin");
-      case 3:
-        return t("userTable.Editor");
-      default:
-        return t("userTable.Viwer");
-    }
-  };
-
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
@@ -257,6 +201,7 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
                       <IconButton
                         onClick={() => onUpdate(item)}
                         size="small"
+                        title="Crear monitorización"
                         sx={{
                           color: "#b62a8b",
                           "&:hover": {
@@ -270,6 +215,7 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
                       <IconButton
                         onClick={() => onView(item)}
                         size="small"
+                        title="Información del agente"
                         sx={{
                           color: "#b62a8b",
                           "&:hover": {
@@ -281,14 +227,20 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
                         <Search />
                       </IconButton>
 
-                      <button
-                        className="btn btn-rect"
-                        data-bs-toggle="modal"
-                        // data-bs-target=
-                        // onclick={}
+                      <IconButton
+                        onClick={() => onViewModal(item)}
+                        size="small"
+                        title="Ver monitoreos"
+                        sx={{
+                          color: "#b62a8b",
+                          "&:hover": {
+                            backgroundColor: "#b62a8b",
+                            color: "#fff",
+                          },
+                        }}
                       >
-                        <VisibilityIcon></VisibilityIcon>
-                      </button>
+                        <VisibilityIcon />
+                      </IconButton>
                     </Box>
                   </TableCell>
                 ) : (
@@ -360,4 +312,3 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
 };
 
 export default TableAdmin;
-
