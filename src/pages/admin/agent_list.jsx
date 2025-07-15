@@ -569,29 +569,13 @@ const AdminList = () => {
   /* SCORE */
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
-      const initBlockPer = block.percentage; // Valor inicial del bloque = 100%
-      const totalQuestions = block.preguntas.length; // Calcula el número de preguntas que contiene el bloque
-      // Calcula el valor de cada pregunta dentro del bloque
-      const perQuestion = initBlockPer / totalQuestions; // Calcula el porcentaje de cada pregunta dentro del bloque
-
-      let finalBlockPer = initBlockPer; // Guarda el valor actual del bloque al calificar cada pregunta
-
-      const changeBlockPer = block.preguntas.map((pregunta) => {
-        const evaluation = pregunta.evaluacion;
-        if (evaluation === "0") {
-          finalBlockPer -= perQuestion; // Se resta el valor del porcentaje de la pregunta al valor actual del bloque
-        }
-
-        return {
-          ...pregunta,
-          porcentajePregunta: Math.round(perQuestion * 10) / 10, // porcentaje visual individual con solo un decimal
-        };
-      });
+      const initBlockPer = block.percentage;
+      const allCorrect = block.preguntas.every((pregunta) => pregunta.evaluacion !== "1");
+      const finalBlockPer = allCorrect ? initBlockPer : 0;
 
       return {
         ...block,
-        porcentajeBloque: Math.round(finalBlockPer * 10) / 10, // Retorna el valor del bloque despues de finalizar la calificación
-        preguntas: changeBlockPer, // Retorna el valor de cada pregunta para que sea visible por el usuario al evaluar el bloque
+        porcentajeBloque: Math.round(finalBlockPer * 10) / 10,
       };
     });
   };
@@ -612,88 +596,141 @@ const AdminList = () => {
     return Math.round(total * 10) / 10;
   };
 
-  //Guarda las respuestas del formulario
-const handleSaveAnswers = async () => {
-  if (!monitoringDate) {
-    setDateError(true);
-    Toast.fire({
-      icon: "warning",
-      title: "📅 Por favor selecciona una fecha para la monitorización.",
-    });
-    return;
-  }
+  const validarRespuesta = (pregunta) => {
 
-  const respuestasAEnviar = {
-    monitoringDate,
-    userId: userInfo.id,
-    answers: [],
+    if (pregunta.id_type_question === 1) {
+      const respuestasCorrectas = pregunta.selected_answer
+      ? pregunta.selected_answer.split(",").map((r) => parseInt(r.trim()))
+      : [];
+
+      const seleccionUsuario = pregunta.seleccionMultiple || [];
+
+      const opciones = pregunta.select_option
+        ? pregunta.select_option.split(",").map((opt) => opt.trim())
+        : [];
+
+      const indicesSeleccion = seleccionUsuario.map((opt) => opciones.indexOf(opt)).sort();// Convertimos selección del usuario a índices
+      respuestasCorrectas.sort();// Ordenamos también las respuestas correctas
+
+      return (
+        indicesSeleccion.length === respuestasCorrectas.length &&
+        indicesSeleccion.every((val, idx) => val === respuestasCorrectas[idx])
+      );
+    }
+
+    if (pregunta.id_type_question === 2) {
+      const respuestasCorrectas = pregunta.selected_answer
+        ? pregunta.selected_answer.split(",").map((r) => r.trim())
+        : [];
+      const seleccionUsuario = pregunta.respuestaSeleccionada || "";
+      return respuestasCorrectas.length === 1 && seleccionUsuario === respuestasCorrectas[0];
+    }
+
+    return false;
   };
 
-  for (const bloque of blocksWithPer) {
-    for (const pregunta of bloque.preguntas) {
-      if (pregunta.evaluacion === "") {
-        console.warn(`⚠️ Pregunta sin evaluación (ID: ${pregunta.id})`);
-        continue;
+  const handleUpdatePregunta = (idPregunta, campo, valor) => {
+    const updatedBlocks = blocksForForm.map((block) => {
+      const updatedPreguntas = block.preguntas.map((preg) => {
+        if (preg.id === idPregunta) {
+          const preguntaActualizada = { ...preg, [campo]: valor };
+
+          const esCorrecta = validarRespuesta(preguntaActualizada);
+
+          // 🔍 ver si respondió bien o no
+          /*console.log(`Pregunta ID: ${preg.id}`);
+          console.log(`Campo actualizado: ${campo}`);
+          console.log(`Valor ingresado:`, valor);
+          console.log(`¿Respuesta correcta?:`, esCorrecta ? "✅ SÍ" : "❌ NO");
+          console.log(`Respuesta esperada:`, preguntaActualizada.selected_answer);
+          console.log(`Respuesta del usuario:`, preguntaActualizada);*/
+
+          return {
+            ...preguntaActualizada, evaluacion: esCorrecta ? "0" : "1",
+          };
+        }
+        return preg;
+      });
+
+      return { ...block, preguntas: updatedPreguntas };
+    });
+
+    setBlocksForForm(updatedBlocks);
+
+    const updatedBlocksWithPer = calBlocksPercentage(updatedBlocks);
+    setBlocksWithPer(updatedBlocksWithPer);
+  };
+
+  //Guarda las respuestas del formulario
+  const handleSaveAnswers = async () => {
+    if (!monitoringDate) {
+      setDateError(true);
+      Toast.fire({
+        icon: "warning",
+        title: "📅 Por favor selecciona una fecha para la monitorización.",
+      });
+      return;
+    }
+
+    const respuestasAEnviar = {
+      monitoringDate,
+      userId: userInfo.id,
+      answers: [],
+    };
+
+    for (const bloque of blocksWithPer) {
+      for (const pregunta of bloque.preguntas) {
+        if (pregunta.evaluacion === "") {
+          console.warn(`⚠️ Pregunta sin evaluación (ID: ${pregunta.id})`);
+          continue;
+        }
+
+        const answer_text = pregunta.evaluacion === "1" ? "correcto" : "incorrecto";
+
+        respuestasAEnviar.answers.push({
+          question_id: pregunta.id,
+          answer_question: answer_text,
+        });
+      }
+    }
+
+    if (respuestasAEnviar.answers.length === 0) {
+      Toast.fire({
+        icon: "warning",
+        title: "❗ Completa al menos una evaluación antes de guardar.",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/api/answersform", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(respuestasAEnviar),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error al guardar respuestas");
       }
 
-      const answer_text = pregunta.evaluacion === "1" ? "correcto" : "incorrecto";
+      Toast.fire({
+        icon: "success",
+        title: "✅ Todas las respuestas fueron guardadas correctamente.",
+      });
 
-      respuestasAEnviar.answers.push({
-        question_id: pregunta.id,
-        answer_question: answer_text,
+      // Opcionalmente pasar al siguiente paso
+      // setMonitoringStep(3);
+
+    } catch (error) {
+      console.error("❌ Error al guardar el formulario completo:", error);
+      Toast.fire({
+        icon: "error",
+        title: "❌ Ocurrió un error al guardar las respuestas.",
       });
     }
-  }
-
-  if (respuestasAEnviar.answers.length === 0) {
-    Toast.fire({
-      icon: "warning",
-      title: "❗ Completa al menos una evaluación antes de guardar.",
-    });
-    return;
-  }
-
-  try {
-    const response = await fetch("http://localhost:3000/api/answersform", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(respuestasAEnviar),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Error al guardar respuestas");
-    }
-
-    Toast.fire({
-      icon: "success",
-      title: "✅ Todas las respuestas fueron guardadas correctamente.",
-    });
-
-    // Opcionalmente pasar al siguiente paso
-    // setMonitoringStep(3);
-
-  } catch (error) {
-    console.error("❌ Error al guardar el formulario completo:", error);
-    Toast.fire({
-      icon: "error",
-      title: "❌ Ocurrió un error al guardar las respuestas.",
-    });
-  }
-};
-
-
-  // Clacula el % del bloque en tiempo real
-  const handleUpdatePregunta = (idPregunta, campo, valor) => {
-    const updated = blocksForForm.map((block) => ({
-      ...block,
-      preguntas: block.preguntas.map((p) =>
-        p.id === idPregunta ? { ...p, [campo]: valor } : p
-      ),
-    }));
-    setBlocksForForm(updated); // Vuelve a calcular el valor en % del bloque
   };
 
   // Props que se pasan al modal principal para crear o editar monitorizaciones

@@ -49,6 +49,8 @@ const ModalAdmin = ({
   setBlocksWithPer,
   calBlocksPercentage,
   handleUpdatePregunta,
+  validarRespuesta,
+  handleUpdatePreguntaMultiple,
   calFormScore,
   handleSaveAnswers,
   clientError,
@@ -289,24 +291,17 @@ const ModalAdmin = ({
                                     <Typography>
                                       {pregunta.question_name}
                                     </Typography>
-                                    <Typography>
-                                      {pregunta.porcentajePregunta}%
-                                    </Typography>
                                   </Box>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                   {pregunta.id_type_question === 1 && (
                                     <Autocomplete
                                       multiple
-                                      options={pregunta.select_option.split(',').map(opt => opt.trim())}
-                                      disableCloseOnSelect
-                                      getOptionLabel={(option) => option}  // aquí option es directamente string
-                                      onChange={(event, newValue) => {
-                                        // newValue es un array con las opciones seleccionadas (strings)
-                                        // Aquí puedes actualizar el estado con setSelectedOptions(newValue)
-                                        console.log(newValue);
+                                      options={pregunta.select_option.split(",").map((opt) => opt.trim())}
+                                      value={pregunta.seleccionMultiple || []}
+                                      onChange={(e, selectedOptions) => {
+                                        handleUpdatePregunta(pregunta.id, "seleccionMultiple", selectedOptions);
                                       }}
-                                      value={pregunta.select_option.split(',').map(opt => opt.trim())}
                                       renderOption={(props, option, { selected }) => (
                                         <li {...props} key={option}>
                                           <Checkbox checked={selected} style={{ marginRight: 8 }} />
@@ -314,11 +309,7 @@ const ModalAdmin = ({
                                         </li>
                                       )}
                                       renderInput={(params) => (
-                                        <TextField
-                                          {...params}
-                                          label={t("Evaluación")}
-                                          placeholder="Seleccionar:"
-                                        />
+                                        <TextField {...params} label={t("Evaluación")} placeholder="Seleccionar:" />
                                       )}
                                       sx={{ mb: 2 }}
                                       className="readOnlyField"
@@ -329,13 +320,17 @@ const ModalAdmin = ({
                                     <TextField
                                       select
                                       fullWidth
-                                      label="Seleccionar:"
+                                      label={t("Evaluación")}
+                                      value={pregunta.respuestaSeleccionada || ""}
+                                      onChange={(e) => {
+                                        const seleccion = e.target.value;
+                                        handleUpdatePregunta(pregunta.id, "respuestaSeleccionada", seleccion);
+                                      }}
                                       sx={{ mb: 2 }}
                                       className="readOnlyField"
                                     >
-                                      <MenuItem value="0" disabled>{t("Evaluación")}</MenuItem>
-                                      {pregunta.select_option.split(',').map((option, index) => (
-                                        <MenuItem key={index + 1} value={index + 1}>
+                                      {pregunta.select_option.split(",").map((option, index) => (
+                                        <MenuItem key={index} value={index.toString()}>
                                           {option.trim()}
                                         </MenuItem>
                                       ))}
@@ -363,25 +358,6 @@ const ModalAdmin = ({
                                       />
                                     </Box>
                                   )}
-
-                                  <FormControl fullWidth margin="normal">
-                                    <InputLabel>{t("Evaluación")}</InputLabel>
-                                    <Select
-                                      value={pregunta.evaluacion || ""}
-                                      label={t("Evaluación")}
-                                      onChange={(e) =>
-                                        handleUpdatePregunta(
-                                          pregunta.id,
-                                          "evaluacion",
-                                          e.target.value
-                                        )
-                                      }
-                                    >
-                                      <MenuItem value="">{t("Seleccionar")}</MenuItem>
-                                      <MenuItem value="1">✅ {t("Buena")}</MenuItem>
-                                      <MenuItem value="0">❌ {t("Mala")}</MenuItem>
-                                    </Select>
-                                  </FormControl>
                                 </AccordionDetails>
                               </Accordion>
                             ))
