@@ -7,19 +7,20 @@ const config = {
   withCredentials: true,
 };
 
-// obtener todos los monitoreos 
+// obtener todos los monitoreos
 
-export const getMonitoring = async ()=>{
-  try{
-    const response = await axios.get(`${API_BASE_URL}/answersform/monitoring`, config);
+export const getMonitoring = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/answersform/monitoring`,
+      config
+    );
     return response.data;
-  }catch(error){
+  } catch (error) {
     console.error("Error fetching monitoring data:", error);
     throw error;
   }
-}
-
-
+};
 
 // Obtener todos los administradores (agentes) desde el backend
 export const getAdmins = async (clients) => {
@@ -179,7 +180,7 @@ export const saveFeedback = async (id, feedback) => {
 };
 // Guardar monitorización
 export const saveMonitoring = async (payload) => {
-  console.log("Enviando al backend:", payload); // este debe imprimirse
+  console.log("Enviando al backend:", payload);
   try {
     const response = await axios.post(`${API_BASE_URL}/monitoring`, payload, {
       headers: { "Content-Type": "application/json" },
@@ -190,4 +191,23 @@ export const saveMonitoring = async (payload) => {
     console.error("Error al guardar la monitorización:", error);
     throw error;
   }
-}; 
+};
+
+// Traer monitorizaciones por agente
+export const getMonitoringByUser = async (id) => {
+  if (!id) {
+    console.error("getMonitoringByUser fue llamado sin userId");
+    throw new Error("userId no proporcionado");
+  }
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/monitoring/user/${id}`,
+      config
+    );
+    console.log("📡 Respuesta de la API:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener monitoreos del agente:", error);
+    throw error; 
+  }
+};

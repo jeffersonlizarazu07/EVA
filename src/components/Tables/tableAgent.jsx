@@ -22,7 +22,15 @@ import { TurnLeft, Search } from "@mui/icons-material";
 import FactCheckRoundedIcon from "@mui/icons-material/FactCheckRounded";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
+const TableAdmin = ({
+  header,
+  data,
+  onUpdate,
+  onView,
+  modalId,
+  modalId2,
+  userId,
+}) => {
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
 
@@ -33,6 +41,7 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  const navigate = useNavigate();
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -46,6 +55,12 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  // Traer los monitoreos del agente seleccionado en la tabla
+  const agentSelect = (agentId) => {
+    console.log("Agente seleccionado:", agentId);
+    getMonitoringByUser(agentId);
   };
 
   const filteredData = Array.isArray(data)
@@ -228,7 +243,9 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
                       </IconButton>
 
                       <IconButton
-                        onClick={() => onViewModal(item)}
+                        onClick={() => {
+                          navigate(`/monitoring_view/${item.id}`);
+                        }}
                         size="small"
                         title="Ver monitoreos"
                         sx={{
