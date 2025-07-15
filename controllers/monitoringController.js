@@ -56,6 +56,29 @@ exports.getById = async (req, res) => {
   }
 };
 
+exports.getByUserId = async (req, res) => {
+  const { userId } = req.params; // Obtener el userId desde la URL
+  console.log("📥 Backend recibió userId:", userId);
+
+  try {
+    // Llamar al servicio que consulta las monitorizaciones
+    const data = await Monitoring.getByUserId(userId);
+
+    if (!data || data.length === 0) {
+      // Si no hay monitorizaciones asociadas al usuario
+      return res.status(200).json([]);
+    }
+
+    // Devolver las monitorizaciones
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error("Error al obtener monitorizaciones del agente:", error);
+    return res.status(500).json({
+      message: "Error interno del servidor",
+    });
+  }
+};
+
 exports.update = async (req, res) => {
   try {
     const updated = await Monitoring.update(req.params.id, req.body);

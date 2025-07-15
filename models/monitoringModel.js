@@ -44,6 +44,27 @@ const MonitoringModel = {
       .first();
   },
 
+  // Obtener monitorizaciones por agente
+  getByUserId: (userId) => {
+    return knex("monitoring")
+      .join("form_set", "monitoring.id_form", "form_set.id")
+      .join("clients", "form_set.idClient", "clients.id")
+      .join("users", "monitoring.id_user_monitor", "users.id")
+      .select(
+        knex.raw("DATE_FORMAT(monitoring.date, '%d/%m/%Y') as monitoring_date"),
+        knex.raw("DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_dateWithHour"),
+        "monitoring.*",
+        "form_set.title as form_title",
+        "clients.client as client_name",
+        knex.raw(
+          "CONCAT(users.firstname, ' ', users.lastname) as evaluator_name"
+        )
+      )
+      .where("monitoring.id_user_agent", userId);
+
+    return;
+  },
+
   // Actualizar
   update(id, data) {
     return knex("monitoring").where({ id }).update({
