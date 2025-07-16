@@ -50,19 +50,21 @@ const MonitoringModel = {
       .join("form_set", "monitoring.id_form", "form_set.id")
       .join("clients", "form_set.idClient", "clients.id")
       .join("users", "monitoring.id_user_monitor", "users.id")
+      .join("users as agent", "monitoring.id_user_agent", "agent.id")
       .select(
         knex.raw("DATE_FORMAT(monitoring.date, '%d/%m/%Y') as monitoring_date"),
-        knex.raw("DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_dateWithHour"),
+        knex.raw(
+          "DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_dateWithHour"
+        ),
         "monitoring.*",
         "form_set.title as form_title",
         "clients.client as client_name",
         knex.raw(
           "CONCAT(users.firstname, ' ', users.lastname) as evaluator_name"
-        )
+        ),
+        knex.raw("CONCAT(agent.firstname, ' ', agent.lastname) as agent_name")
       )
       .where("monitoring.id_user_agent", userId);
-
-    return;
   },
 
   // Actualizar
