@@ -24,17 +24,28 @@ import {
   Typography,
   InputAdornment,
 } from "@mui/material";
-import { TurnLeft, Search } from "@mui/icons-material";
+import { TurnLeft, Search, Today } from "@mui/icons-material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SearchIcon from "@mui/icons-material/Search";
 import TablePagination from "@mui/material/TablePagination";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
+import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+
+  //Formateo de fecha
+  const currentDate = new Date().toISOString().split("T")[0];
+
+  // Estados para manejar filtrado de fechas
+  const [startDate, setStartDate] = useState(currentDate);
+  const [endDate, setEndDate] = useState(currentDate);
+  const [filteredMonitorings, setFilteredMonitorings] = useState([]); // Guarda el filtro de los monitoreos según rango de fechas
+  const [tableData, setTableData] = useState([]); // Datos que realmente se ven
 
   const nav = useNavigate();
   const { languageUser } = useContext(UserContext);
@@ -46,8 +57,22 @@ const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
     }
   }, [resetPageSignal]);
 
+  // Filtro en campos específicos: form_title, client_name, monitoring_date
   const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
+    const value = event.target.value;
+    setSearchTerm(value);
+
+    const filtered = getMonitoring.filter((item) => {
+      const search = value.toLowerCase();
+      const matchesFormTitle = item.form_title?.toLowerCase().includes(search);
+      const matchesClientName = item.client_name
+        ?.toLowerCase()
+        .includes(search);
+      const matchesDate = item.monitoring_date?.toLowerCase().includes(search);
+      return matchesFormTitle || matchesClientName || matchesDate;
+    });
+
+    setTableData(filtered);
     setPage(0);
   };
 
@@ -60,26 +85,51 @@ const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
     setPage(newPage);
   };
 
-  // 🔎 Filtro en campos específicos: form_title, client_name, monitoring_date
-  const filteredData = (
-    Array.isArray(getMonitoring) ? getMonitoring : []
-  ).filter((item) => {
-    const search = searchTerm.toLowerCase();
+  // const tableData = (
+  //   Array.isArray(getMonitoring) ? getMonitoring : []
+  // ).filter((item) => {
+  //   const search = searchTerm.toLowerCase();
 
-    const matchesFormTitle = item.form_title?.toLowerCase().includes(search);
-    const matchesClientName = item.client_name?.toLowerCase().includes(search);
-    const matchesDate = item.monitoring_date?.toLowerCase().includes(search);
+  //   const matchesFormTitle = item.form_title?.toLowerCase().includes(search);
+  //   const matchesClientName = item.client_name?.toLowerCase().includes(search);
+  //   const matchesDate = item.monitoring_date?.toLowerCase().includes(search);
 
-    return matchesFormTitle || matchesClientName || matchesDate;
-  });
+  //   return matchesFormTitle || matchesClientName || matchesDate;
+  // });
 
-  const visibleRows = filteredData.slice(
+  const visibleRows = tableData.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
 
+  // Inicializa la tabla con todos los monitoreos
+  useEffect(() => {
+    if (getMonitoring) {
+      setTableData(getMonitoring);
+    }
+  }, [getMonitoring]);
+
+  // Función para aplicar filtros por fecha de monitorización
+  const filterMonitoringsForDate = () => {
+    const filtered = getMonitoring.filter((monitoreo) => {
+      const itemDate = new Date(monitoreo.monitoring_date);
+      return (
+        (!startDate || itemDate >= new Date(startDate)) &&
+        (!endDate || itemDate <= new Date(endDate))
+      );
+    });
+    setTableData(filtered);
+  };
+
   return (
-    <Box className="table-container" margin={4}>
+    <Box
+      className="table-container"
+      margin={4}
+      sx={{
+        overflowY: "scroll", // fuerza la reserva del espacio
+        height: "100vh", // asegura el alto completo de la pantalla
+      }}
+    >
       {/* Header */}
       <Grid container spacing={2} mb={3}>
         {/* Botón de retroceso y buscador */}
@@ -143,28 +193,115 @@ const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
         </Grid>
       </Grid>
 
+      {/*Filtro de monitorizaciones: Fecha inicial - Fecha final */}
+      <Accordion sx={{ width: "30%", mb: 2 }}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ color: "#b62a8b" }} />}
+          aria-controls="filter-content"
+          id="filter-header"
+          sx={{
+            backgroundColor: "#e6e3e1ff",
+            color: "black",
+            height: "50px",
+            "& .MuiAccordionSummary-content": {
+              justifyContent: "space-between",
+            },
+          }}
+        >
+          <Typography sx={{ paddingLeft: "8px", fontWeight: "bold" }}>
+            Employee Monitor Search
+          </Typography>
+        </AccordionSummary>
+
+        <AccordionDetails>
+          <Typography fontWeight="bold" sx={{ mb: 1 }}>
+            Fecha de inicio
+          </Typography>
+          <TextField
+            type="date"
+            value={startDate || ""}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              mb: 2,
+              width: "100%",
+              "& .MuiInputBase-root": { height: "45px" },
+              "& input": { height: "45px", padding: "0 8px" },
+            }}
+          />
+
+          <Typography fontWeight="bold" sx={{ mb: 1 }}>
+            Fecha de finalización
+          </Typography>
+          <TextField
+            type="date"
+            value={endDate || ""}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              mb: 2,
+              width: "100%",
+              "& .MuiInputBase-root": { height: "45px" },
+              "& input": { height: "45px", padding: "0 8px" },
+            }}
+          />
+
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              variant="contained"
+              sx={{
+                mt: 2,
+                width: "30%",
+                backgroundColor: "#b62a8b",
+                "&:hover": { backgroundColor: "#9b2376" },
+              }}
+              onClick={filterMonitoringsForDate}
+              disabled={!startDate || !endDate}
+            >
+              Filtrar
+            </Button>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Mapeo de nombre del agente */}
+      {getMonitoring.map((monitoreo) => (
+        <Box key={monitoreo.id} sx={{ marginLeft: "4px" }}>
+          <h3>{monitoreo.agent_name}</h3>
+        </Box>
+      ))}
+
       {/* Tabla */}
       <TableContainer
         component={Paper}
+        elevation={2}
         sx={{
           borderRadius: "10px",
           boxShadow: "none",
           border: "1px solid #f8bbd0",
+          maxHeight: 450,
         }}
       >
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#fce4ec", fontWeight: "bold" }}>
+            <TableRow
+              sx={{
+                backgroundColor: "#fce4ec",
+                "& .MuiTableCell-root": {
+                  padding: "12px 8px 8px 12px",
+                  lineHeight: 1,
+                  fontWeight: "bold",
+                },
+              }}
+            >
               <TableCell align="center">Identificador</TableCell>
               <TableCell align="center">Formulario</TableCell>
               <TableCell align="center">Cliente</TableCell>
               <TableCell align="center">Fecha de monitorización</TableCell>
               <TableCell align="center">Enviada</TableCell>
-              <TableCell align="center">Fecha fin</TableCell>
               <TableCell align="center">Score</TableCell>
               <TableCell align="center">Evaluador</TableCell>
               <TableCell align="center">Feedback</TableCell>
-              <TableCell align="center">Estado</TableCell>
             </TableRow>
           </TableHead>
 
@@ -194,12 +331,9 @@ const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
                 <TableCell align="center">
                   {monitoreo.monitoring_dateWithHour}
                 </TableCell>
-                <TableCell align="center">{monitoreo.createdBy}</TableCell>
                 <TableCell align="center">{monitoreo.score}</TableCell>
                 <TableCell align="center">{monitoreo.evaluator_name}</TableCell>
-
                 <TableCell align="center">{monitoreo.feedback}</TableCell>
-                <TableCell align="center">{monitoreo.state}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -218,10 +352,17 @@ const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
         }}
       >
         {/*Selector y texto */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, paddingLeft: "10px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            paddingLeft: "10px",
+          }}
+        >
           <Typography>{t("userTable.Show")}</Typography>
           <Select
-          size="small"
+            size="small"
             value={rowsPerPage}
             onChange={handleChangeRowsPerPage}
             sx={{
@@ -231,7 +372,7 @@ const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
               fontWeight: "bold",
               fontSize: "15px",
               width: "67px",
-              height: "37px"
+              height: "37px",
             }}
           >
             {[10, 25, 50].map((option) => (
@@ -247,8 +388,8 @@ const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
           <Typography>
             {`${page * rowsPerPage + 1}-${Math.min(
               (page + 1) * rowsPerPage,
-              filteredData.length
-            )} ${t("userTable.Registered")} ${filteredData.length}`}
+              tableData.length
+            )} ${t("userTable.Registered")} ${tableData.length}`}
           </Typography>
         </Box>
 
@@ -263,8 +404,8 @@ const MonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
           </IconButton>
           <IconButton
             onClick={() => handleChangePage(null, page + 1)}
-            disabled={page >= Math.ceil(filteredData.length / rowsPerPage) - 1}
-            sx={{ color: "#b62a8b" }}
+            disabled={page >= Math.ceil(tableData.length / rowsPerPage) - 1}
+            sx={{ color: "#e9e8e9ff" }}
           >
             <KeyboardArrowRight />
           </IconButton>

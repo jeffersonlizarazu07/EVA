@@ -34,14 +34,14 @@ const AgentMonitoringView = () => {
 
   useEffect(() => {
     if (!agentId) {
-      console.warn("⚠️ agentId aún no está disponible");
+      console.warn("agentId aún no está disponible");
       return;
     }
 
     const fetchMonitoring = async () => {
       try {
         const monitoringData = await getMonitoringByUser(agentId);
-        console.log("📦 Data de monitorización:", monitoringData);
+        console.log("Data de monitorización:", monitoringData);
         setGetMonitoring(monitoringData);
       } catch (error) {
         console.error("Error al cargar los monitoreos", {
