@@ -65,43 +65,8 @@ const TableFormReport = ({ header, data, onUpdate, onView, modalId, modalId2 }) 
     page * rowsPerPage + rowsPerPage
   );
 
-  const getHeaderLabel = (item) => {
-    switch (item) {
-        case"id":
-            return ("ID");
-        case "data":
-            return ("Data");
-        case "score":
-            return ("Score");
-        case "feedback":
-            return ("Feedback");
-        case "check":
-            return ("Check");
-        case "id_user_agent":
-            return ("Agent");
-
-        case "id_user_monitor":
-            return ("Monitor");
-        case "id_form":
-            return ("Form ID");    
-        default:
-            return t("viewUserModal.State");
-    }
-  };
-
-  const getUserType = (type) => {
-    switch (type) {
-      case 1:
-        return t("userTable.SuperAdmin");
-      case 2:
-        return t("userTable.Admin");
-      case 3:
-        return t("userTable.Editor");
-      default:
-        return t("userTable.Viwer");
-    }
-  };
-
+  const indexOffset = header.findIndex(h => h.key.startsWith("Pregunta"));
+  
   return (
     <Box className="table-container">
       <Grid container spacing={2} mb={2}>
@@ -139,18 +104,22 @@ const TableFormReport = ({ header, data, onUpdate, onView, modalId, modalId2 }) 
         </Grid>
       </Grid>
 
-      <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 450, overflowY: "auto" }}>
+      <TableContainer component={Paper} elevation={0} sx={{ width:"100%", overflowY: "auto" }}>
         <Table size="small">
           <TableHead>
             <TableRow>
               {header.map((item, i) => (
-                <TableCell
-                  key={i}
-                  sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}
-                >
-                  {getHeaderLabel(item)}
+                <TableCell key={i} align="center" sx={{
+                  fontWeight: "bold",
+                  whiteSpace: "normal",
+                  minWidth: item.key === "feedback" ? 250 : 200,
+                  maxWidth: item.key === "feedback" ? "none" : 300,
+                  wordWrap: "break-word",
+                }}>
+                  {item.label}
                 </TableCell>
               ))}
+              
               {/*
               <TableCell sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}>
                 {t("userTable.Actions")}
@@ -160,63 +129,15 @@ const TableFormReport = ({ header, data, onUpdate, onView, modalId, modalId2 }) 
             </TableRow>
           </TableHead>
           <TableBody>
-            {currentRecords.map((item, idx) => (
+            {currentRecords.map((row, idx) => (
               <TableRow key={idx}>
-                {header.map((key, i) => (
+                {header.map((col, i) => (
                   <TableCell key={i} align="center">
-                    {key === "state"
-                      ? item.state === 1
-                        ? t("userTable.Active")
-                        : t("userTable.Inactive")
-                      : key === "type"
-                      ? getUserType(item.type)
-                      : item[key]}
+                    {col.key.startsWith("Pregunta")
+                    ? row.preguntas?.[i - indexOffset]?.respuesta || ""
+                    : row[col.key]}
                   </TableCell>
                 ))}
-                {/*
-                {item.state === 1 ? (
-                  <TableCell align="center">
-                    <Box sx={{ display: "flex", justifyContent: "center" }} gap={1}>
-                      <IconButton
-                        onClick={() => onUpdate(item)}
-                        size="small"
-                        sx={{
-                          color: "#b62a8b",
-                          "&:hover": {
-                            backgroundColor: "#b62a8b",
-                            color: "#fff",
-                          },
-                        }}
-                      >
-                        <FactCheckRoundedIcon />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => onView(item)}
-                        size="small"
-                        sx={{
-                          color: "#b62a8b",
-                          "&:hover": {
-                            backgroundColor: "#b62a8b",
-                            color: "#fff",
-                          },
-                        }}
-                      >
-                        <Search />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                ) : (
-                  <TableCell align="center">
-                    <Box sx={{ display: "flex", justifyContent: "center" }} gap={1}>
-                      <IconButton onClick={() => onView(item)} size="small">
-                        <Search />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                )}
-                */}
-                
-                
               </TableRow>
             ))}
           </TableBody>
