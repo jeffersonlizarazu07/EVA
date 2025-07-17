@@ -49,30 +49,6 @@ exports.saveMonitoringAndAnswers = async (req, res) => {
   }
 };
 
-exports.createMonitoring = async (req, res) => {
-  try {
-    const { date, feedback, idUserAgent, idUserMonitor, idForm, score } = req.body;
-
-    if (!date || !idUserAgent || !idUserMonitor || !idForm || score === undefined) {
-      return res.status(400).json({ message: "Faltan datos obligatorios" });
-    }
-
-    const result = await AnswersFormModel.createMonitoring({
-      date,
-      score,
-      feedback,
-      id_user_agent: idUserAgent,
-      id_user_monitor: idUserMonitor,
-      id_form: idForm,
-    });
-
-    res.status(201).json({ message: "Monitoreo guardado", data: result });
-  } catch (error) {
-    console.error("Error guardando monitoreo final:", error);
-    res.status(500).json({ message: "Error interno al guardar monitoreo" });
-  }
-};
-
 exports.getAllAnswers = async (req, res) => {
   try {
     const answers = await AnswersFormModel.getAllAnswers();

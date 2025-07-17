@@ -17,7 +17,6 @@ class AnswersFormModel {
 
   }
 
-
   // traer todas las respuestas del monitoreo
   async getMonitoring(){
     try{
@@ -27,9 +26,6 @@ class AnswersFormModel {
       throw new Error('No se pudo obtener el monitoreo debido a un error en el servidor.' + error.message);
     }
   }
-
-
-  // ...
 
   // traer reporte filtrados 
 
@@ -66,8 +62,6 @@ class AnswersFormModel {
     }
   }
 
-  // ...
-
   // obtener clientes y informacion de los forms_set
   async getClientsAndForms(){
     try {
@@ -86,9 +80,6 @@ class AnswersFormModel {
       throw new Error('No se pudieron obtener los clientes y formularios debido a un error en el servidor.' + error.message);
     }
   }
-
-  // ... 
-
 
   // traer reporte de los monitoreos 
  
@@ -121,14 +112,7 @@ class AnswersFormModel {
     }
   }
   
-
-  // ... 
-
-
-
-  async createAnswer(data) {
-    // Si data.date viene, usarla, si no, usar fecha actual
-    const fecha = data.date || getDateTimeForSQL();
+  //guardar las respuestas de formulario y el monitoreo de agente
   async saveMonitoringAndAnswers(data) {
     const {
       monitoringDate,
@@ -166,23 +150,7 @@ class AnswersFormModel {
       return { monitoringId, answersCount: answers.length };
     });
   }
-
-
-  async createMonitoring(data) {
-    // data: { date, score, feedback, id_user_agent, id_user_monitor, id_form }
-    const [id] = await this.knex(this.table_).insert({
-      date: data.date,
-      score: data.score,
-      feedback: data.feedback,
-      check: 0,
-      id_user_agent: data.id_user_agent,
-      id_user_monitor: data.id_user_monitor,
-      id_form: data.id_form,
-    });
-
-    return { id, ...data };
-  }
-
+ 
   async getAllAnswers() {
     try {
       return await this.knex(this.table).select('*');
