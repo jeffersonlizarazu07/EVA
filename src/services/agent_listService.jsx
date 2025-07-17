@@ -164,16 +164,16 @@ export const getBlocksForIdForm = async (formId) => {
   }
 };
 
-// Guardar monitorización
-export const saveMonitoring = async (payload) => {
+// Guardar monitorización y respuestas
+export const saveMonitoringAndAnswers = async (payload) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/monitoring`, payload, {
+    const response = await axios.post(`${API_BASE_URL}/answersform`, payload, {
       headers: { "Content-Type": "application/json" },
       ...config,
     });
     return { success: true, data: response.data };
   } catch (error) {
-    console.error("Error al guardar la monitorización:", error);
+    console.error("Error al guardar la monitorización y respuestas:", error);
     throw error;
   }
 }; 
