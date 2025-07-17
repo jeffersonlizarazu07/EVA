@@ -20,6 +20,7 @@ router.get('/answers/:id?', authMiddleware, AnswerController.answersByQuestion);
 // Ruta para obtener los porcentajes de respuestas por tipo de pregunta
 router.get('/answers/percentage/:id?',authMiddleware,  AnswerController.answersByQuestionPercentage);
 
+
 // Ruta para obtener los porcentajes de respuestas de una encuesta
 
 router.get('/answers/survey/:id?/percentage', answerController.percentagesXSurvey);
