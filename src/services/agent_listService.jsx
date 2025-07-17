@@ -7,11 +7,24 @@ const config = {
   withCredentials: true,
 };
 
+//obtener Clientes y informacion de los forms_set
+
+export const getClientsAndForms = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/answersform/clients-forms`, config);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching clients and forms:", error);
+    throw error;
+  }
+}
+
+
 // obtener todos los monitoreos 
 
 export const getMonitoring = async ()=>{
   try{
-    const response = await axios.get(`${API_BASE_URL}/answersform/monitoring`, config);
+    const response = await axios.get(`${API_BASE_URL}/answersform/report-monitoring`, config);
     return response.data;
   }catch(error){
     console.error("Error fetching monitoring data:", error);
