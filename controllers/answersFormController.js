@@ -1,42 +1,51 @@
 const knex = require("../config/db");
 const AnswersFormModel = require("../models/answersFormModel");
 
-exports.createAnswer = async (req, res) => {
+exports.saveMonitoringAndAnswers = async (req, res) => {
   try {
-    const { monitoringDate, userId, answers } = req.body;
+    const {
+      monitoringDate,
+      id_user_monitor,
+      id_user_agent,
+      id_form,
+      score,
+      feedback,
+      answers,
+    } = req.body;
 
-    if (!monitoringDate) {
-      return res.status(400).json({ message: "Fecha de monitorización requerida" });
+    // Validaciones básicas
+    if (!monitoringDate || !id_user_monitor || !id_user_agent || !id_form) {
+      return res.status(400).json({ message: "Datos obligatorios faltantes" });
     }
 
     if (!Array.isArray(answers) || answers.length === 0) {
       return res.status(400).json({ message: "Se requiere un array de respuestas" });
     }
 
-    // Validar campos de cada respuesta
-    for (const respuesta of answers) {
-      const { question_id, answer_question } = respuesta;
-      if (!question_id || !answer_question) {
-        return res.status(400).json({ message: "Faltan campos en una o más respuestas" });
+    for (const ans of answers) {
+      if (!ans.question_id || !ans.answer_question) {
+        return res.status(400).json({ message: "Campos incompletos en respuestas" });
       }
     }
 
-    // Guardar cada respuesta con la fecha que viene desde frontend
-    const results = [];
-    for (const respuesta of answers) {
-      const result = await AnswersFormModel.createAnswer({
-        question_id: respuesta.question_id,
-        answer: respuesta.answer_question,
-        idUser: userId,
-        date: monitoringDate,  // <-- Usar fecha enviada desde frontend
-      });
-      results.push(result);
-    }
+    // Llamar al modelo para insertar monitorización y respuestas
+    const result = await AnswersFormModel.saveMonitoringAndAnswers({
+      monitoringDate,
+      id_user_monitor,
+      id_user_agent,
+      id_form,
+      score,
+      feedback,
+      answers,
+    });
 
-    res.status(201).json({ message: "Respuestas guardadas", data: results });
+    return res.status(201).json({
+      message: "Monitorización y respuestas guardadas correctamente",
+      data: result,
+    });
   } catch (error) {
-    console.error("Error en createAnswersBulk:", error);
-    res.status(500).json({ message: "Error al guardar respuestas" });
+    console.error("Error al guardar monitorización y respuestas:", error);
+    return res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 

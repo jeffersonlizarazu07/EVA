@@ -7,33 +7,44 @@ class AnswersFormModel {
     this.table_ = 'monitoring';
   }
 
+  async saveMonitoringAndAnswers(data) {
+    const {
+      monitoringDate,
+      id_user_monitor,
+      id_user_agent,
+      id_form,
+      score,
+      feedback,
+      answers,
+    } = data;
 
-  // traer todas las respuestas del monitoreo
-  async getMonitoring(){
-    try{
-      return await this.knex(this.table_).select('*');
-    } catch (error) {
-      console.error('Error al obtener el monitoreo:', error);
-      throw new Error('No se pudo obtener el monitoreo debido a un error en el servidor.' + error.message);
-    }
-  }
+    const fecha = monitoringDate || getDateTimeForSQL();
 
+    // Transacción para que todo se guarde o nada
+    return await this.knex.transaction(async (trx) => {
+     const monitoringId = await trx('monitoring').insert({
+        date: fecha,
+        score,
+        feedback,
+        id_user_agent,
+        id_user_monitor,
+        id_form,
+      });
 
-  // ...
+      // Insertar todas las respuestas relacionadas
+      const answersToInsert = answers.map((ans) => ({
+        question_id: ans.question_id,
+        idUser: id_user_agent,
+        answer: ans.answer_question,
+        date: fecha
+      }));
 
-  async createAnswer(data) {
-    // Si data.date viene, usarla, si no, usar fecha actual
-    const fecha = data.date || getDateTimeForSQL();
+      await trx('answers_form').insert(answersToInsert);
 
-    const [id] = await this.knex(this.table).insert({
-      question_id: data.question_id,
-      idUser: data.idUser,
-      answer: data.answer,
-      date: fecha,
+      return { monitoringId, answersCount: answers.length };
     });
-
-    return { id, ...data };
   }
+
 
   async createMonitoring(data) {
     // data: { date, score, feedback, id_user_agent, id_user_monitor, id_form }
