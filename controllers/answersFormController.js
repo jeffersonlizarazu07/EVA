@@ -96,6 +96,53 @@ exports.getMonitoring = async (req, res) => {
 
 // ...
 
+// obtener clientes y infomacion de forms_set
+
+
+exports.getClientsAndForms = async (req, res)=>{
+  try {
+    const response = await AnswersFormModel.getClientsAndForms();
+    res.json(response);
+  } catch (error) {
+    console.error('Error al obtener clientes y formularios:', error.message);
+    res.status(500).json({ message: 'Error al obtener clientes y formularios' });
+  }
+}
+
+// ...
+
+// obtener los reportes filtrados 
+
+exports.getReportFilter= async(req,res)=>{
+  const {fromId, starDate, endDate} = req.params
+  try {
+    const response = await AnswersFormModel.getReportFilter(fromId, starDate, endDate);
+    if(!response){
+      return res.status(404).json({message:'Reporte no encontrada'})
+    }
+    res.json(response)
+  } catch (error) {
+     console.error('Error al obtener el reporte filtrado:', error.message);
+    res.status(500).json({ message: 'Error al obtener el reporte filtrado' });
+  }
+}
+
+// ...
+
+// obtener los reportes de los monitores para agentes
+
+exports.getReportMonitoring = async (req, res)=>{
+  try {
+    const report = await AnswersFormModel.getReportMonitoring();
+    res.json(report)
+  } catch (error) {
+    console.error('Error al obtener el reporte de monitoreos:', error.message);
+    res.status(500).json({ message: 'Error al obtener el reporte de monitoreos' });
+  }
+}
+
+// ...
+
 exports.getAnswerById = async (req, res) => {
   const { id } = req.params;
   try {

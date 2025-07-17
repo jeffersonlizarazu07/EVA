@@ -3,6 +3,16 @@ const router = express.Router();
 const answersFormController = require('../controllers/answersFormController');
 
 
+// obtener reportes filtrados
+
+router.get('/answersform/filter/:fromId/:starDate/:endDate', answersFormController.getReportFilter);
+
+// obtener clientes y informacion de los forms_set
+router.get('/answersform/clients-forms', answersFormController.getClientsAndForms);
+
+// obtener monitores de los agentes 
+router.get('/answersform/report-monitoring', answersFormController.getReportMonitoring);
+
 // ruta para ver monitoreo
 router.get('/answersform/monitoring', answersFormController.getMonitoring);
 
