@@ -2036,8 +2036,8 @@ export default function SurveyBlocks({}) {
           onChange={handleMultipleChoiceChange}
           migrateQuestionData={migrateQuestionData}
 
-          // selectError={selectError}
-          // handleErrorOpt={handleErrorOpt}
+          selectError={selectError}
+          handleErrorOpt={handleErrorOpt}
         />
       </Box>
     </Box>

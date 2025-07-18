@@ -53,8 +53,8 @@ const ModalSurveyBlocks = ({
   data,
   migrateQuestionData,
   setPositionType,
-  // selectError,
-  // handleErrorOpt,
+  selectError,
+  handleErrorOpt,
   errorLabels
 }) => {
   return (
