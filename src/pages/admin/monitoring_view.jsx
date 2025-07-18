@@ -46,8 +46,9 @@ const AgentMonitoringView = () => {
   const [forms, setForms] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [open, setOpen] = useState(false); 
+  const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+
   // Manejo de cambio de fechas
   const handleStartDateChange = (date) => setStartDate(date);
   const handleEndDateChange = (date) => setEndDate(date);
@@ -58,7 +59,7 @@ const AgentMonitoringView = () => {
     "client_name",
     "monitoring_date",
     "monitoring_dateWithHour",
-    "Score",
+    "score",
     "evaluator_name",
     "feedback",
   ];
@@ -68,12 +69,6 @@ const AgentMonitoringView = () => {
   useEffect(() => {
     i18n.changeLanguage(languageUser);
   }, [languageUser, i18n]);
-
-  // Formateo de fecha
-  const formattedDate = () =>
-    startDate || endDate
-      ? dayjs(startDate || endDate).format("YYYY-MM-DD")
-      : "";
 
   useEffect(() => {
     if (!agentId) {
@@ -122,21 +117,48 @@ const AgentMonitoringView = () => {
     console.log("Obteniendo datos de monitoreos...", getMonitoring);
   }, [languageUser, i18n]);
 
-  const monitoringViewProps = {
-    getMonitoring,
-    header: selectedKeys,
+  const openModal = (row) => {
+    setSelectedRow(row);
+    setOpen(true);
   };
 
-  const handleOpenModal = (row) => {
-    setSelectedRow(row); // guarda la fila seleccionada
-    setOpen(true);       // abre el modal
-  };
-
-  const handleCloseModal = () => {
+  const closeModal = () => {
     setOpen(false);
     setSelectedRow(null);
   };
 
+  // Filtra monitorización por rango de fecha
+  const filteredMonitoring = getMonitoring.filter((item) => {
+    // Validación formato válido de fecha para dayjs
+    const monitoringDate = dayjs(item.monitoring_date);
+
+    if (!monitoringDate.isValid()) {
+      console.warn("Fecha inválida encontrada:", item.monitoring_date);
+      return false;
+    }
+
+    const isAfterStart = startDate
+      ? monitoringDate.isSame(dayjs(startDate), "day") ||
+        monitoringDate.isAfter(dayjs(startDate), "day")
+      : true;
+
+    const isBeforeEnd = endDate
+      ? monitoringDate.isSame(dayjs(endDate), "day") ||
+        monitoringDate.isBefore(dayjs(endDate), "day")
+      : true;
+
+    return isAfterStart && isBeforeEnd;
+  });
+
+  const monitoringViewProps = {
+    getMonitoring:
+      filteredMonitoring.length > 0 || startDate || endDate
+        ? filteredMonitoring
+        : getMonitoring,
+    header: selectedKeys,
+    openModal,
+    closeModal,
+  };
 
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
@@ -162,41 +184,8 @@ const AgentMonitoringView = () => {
                   gap={2}
                   sx={{ mb: 2 }}
                 >
-                  {/* Boton de regresar */}
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => nav("/quality")}
-                    sx={{
-                      py: 2,
-                      minWidth: "2%",
-                      fontWeight: "bold",
-                      color: "#b62a8b",
-                      borderColor: "#b62a8b",
-                      borderTopLeftRadius: "20px",
-                      borderBottomLeftRadius: "20px",
-                      "&:hover": {
-                        borderColor: "#b62a8b",
-                        backgroundColor: "rgba(156, 39, 176, 0.04)",
-                      },
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
-                      />
-                    </svg>
-                  </Button>
-
                   {/* clientes*/}
-                  <FormControl
+                  {/* <FormControl
                     required
                     sx={{ minWidth: "20%" }}
                     className="readOnlyField"
@@ -225,10 +214,10 @@ const AgentMonitoringView = () => {
                         <MenuItem disabled>Cargando Clientes ...</MenuItem>
                       )}
                     </Select>
-                  </FormControl>
+                  </FormControl> */}
 
                   {/* vista formularios */}
-                  <FormControl
+                  {/* <FormControl
                     required
                     sx={{ minWidth: "20%" }}
                     className="readOnlyField"
@@ -255,7 +244,7 @@ const AgentMonitoringView = () => {
                           </MenuItem>
                         ))}
                     </Select>
-                  </FormControl>
+                  </FormControl> */}
                   {/* vista fechas */}
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
@@ -275,8 +264,8 @@ const AgentMonitoringView = () => {
                       sx={{ width: "22%" }}
                     />
                   </LocalizationProvider>
-                  {/*
-                              <FormControl required sx={{ minWidth: "10%" }} className="readOnlyField">
+
+                  {/* <FormControl required sx={{ minWidth: "10%" }} className="readOnlyField">
                             <TextField
                                 id="outlined-basic"
                                 label="Evaluador"
@@ -284,8 +273,7 @@ const AgentMonitoringView = () => {
                                 value={userName? userName : ""}
                                 InputProps={{ readOnly: true }}
                             />
-                            </FormControl>
-                            */}
+                            </FormControl> */}
 
                   {/* vista del agente
                               <FormControl required sx={{ minWidth: "10%" }} className="readOnlyField">

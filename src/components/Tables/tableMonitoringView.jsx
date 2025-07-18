@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
 import {
@@ -30,8 +31,16 @@ import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ModalMonitoringView from "../../components/Modals/modalMonitoring_view"
 
-const TableMonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
+const TableMonitoringView = ({
+  getMonitoring,
+  resetPageSignal,
+  header,
+  openModal,
+  closeModal,
+}) => {
+  const nav = useNavigate();
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
 
@@ -120,6 +129,27 @@ const TableMonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
       <Grid container spacing={2} mb={2}>
         <Grid item xs={12} sm={6} md={6} lg={6}>
           <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{
+                minWidth: 0,
+                width: 30,
+                height: 30,
+                padding: 0,
+                borderRadius: "50%",
+                color: "#b62a8b",
+                borderColor: "#b62a8b",
+                "&:hover": {
+                  borderColor: "#b62a8b",
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                },
+              }}
+              onClick={() => nav("/agent_list")}
+            >
+              <TurnLeft />
+            </Button>
             <TextField
               size="small"
               placeholder={t("userTable.Search")}
@@ -180,23 +210,25 @@ const TableMonitoringView = ({ getMonitoring, resetPageSignal, header }) => {
               <TableRow key={idx}>
                 {header.map((key, i) => (
                   <TableCell key={i} align="center">
-                    {key === "state"
-                      ? item.state === 1
-                        ? t("userTable.Active")
-                        : t("userTable.Inactive")
-                      : key === "type"
-                      ? getUserType(item.type)
-                      : key === "id"
-                      ? (
-                        <Button
-                          variant="text"
-                          color="primary"
-                          onClick={() => handleOpenModal(item)}
-                        >
-                          {item[key]}
-                        </Button>
+                    {key === "state" ? (
+                      item.state === 1 ? (
+                        t("userTable.Active")
+                      ) : (
+                        t("userTable.Inactive")
                       )
-                      : item[key]}
+                    ) : key === "type" ? (
+                      getUserType(item.type)
+                    ) : key === "id" ? (
+                      <Button
+                        variant="text"
+                        color="primary"
+                        onClick={() => openModal(item)}
+                      >
+                        {item[key]}
+                      </Button>
+                    ) : (
+                      item[key]
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
