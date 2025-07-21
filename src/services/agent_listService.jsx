@@ -7,6 +7,19 @@ const config = {
   withCredentials: true,
 };
 
+//obtener Clientes y informacion de los forms_set
+
+export const getClientsAndForms = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/answersform/clients-forms`, config);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching clients and forms:", error);
+    throw error;
+  }
+}
+
+
 // obtener todos los monitoreos
 
 export const getMonitoring = async () => {
@@ -182,7 +195,7 @@ export const saveFeedback = async (id, feedback) => {
 export const saveMonitoring = async (payload) => {
   console.log("Enviando al backend:", payload);
   try {
-    const response = await axios.post(`${API_BASE_URL}/monitoring`, payload, {
+    const response = await axios.post(`${API_BASE_URL}/answersform`, payload, {
       headers: { "Content-Type": "application/json" },
       ...config,
     });

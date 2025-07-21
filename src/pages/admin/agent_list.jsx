@@ -7,8 +7,6 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import {
   getAdmins,
   getClients,
@@ -16,7 +14,7 @@ import {
   getAgentById,
   getFormsByClient,
   getBlocksForIdForm,
-  saveMonitoring,
+  saveMonitoringAndAnswers
 } from "../../services/agent_listService";
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
@@ -26,7 +24,6 @@ import { Box, Typography } from "@mui/material";
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
-  const [admin, setAdmin] = useState([]); // Administrador seleccionado o en edición
   const [listClients, setListClients] = useState([]); // Clientes disponibles en el sistema
   const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
   const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
@@ -43,8 +40,6 @@ const AdminList = () => {
     useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
-  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />; // Iconos para los checkboxes (vacío y seleccionado)
-  const checkedIcon = <CheckBoxIcon fontSize="small" />; //Icono para checbox seleccionado
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
   const [monitoringDate, setMonitoringDate] = useState(""); // Control de la fecha de monitorización
@@ -117,7 +112,6 @@ const AdminList = () => {
   });
 
   //REQUEST//
-
   // Obtener todos los administradores (agentes) desde el backend
   const loadAdmins = async () => {
     try {
@@ -426,7 +420,6 @@ const AdminList = () => {
   };
 
   // MODALS //
-
   // Abrir el modal para iniciar con el monitoreo
   const openModal = async (op, admin) => {
     setIsModalOpen(true); // abre el modal
@@ -569,35 +562,21 @@ const AdminList = () => {
     setSelectedClientId("");
     setSelectedFormId("");
     setFormOptions([]);
+    setFeedback("");
+    setMonitoringDate(""); 
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
 
   /* SCORE */
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
-      const initBlockPer = block.percentage; // Valor inicial del bloque = 100%
-      const totalQuestions = block.preguntas.length; // Calcula el número de preguntas que contiene el bloque
-      // Calcula el valor de cada pregunta dentro del bloque
-      const perQuestion = initBlockPer / totalQuestions; // Calcula el porcentaje de cada pregunta dentro del bloque
-
-      let finalBlockPer = initBlockPer; // Guarda el valor actual del bloque al calificar cada pregunta
-
-      const changeBlockPer = block.preguntas.map((pregunta) => {
-        const evaluation = pregunta.evaluacion;
-        if (evaluation === "0") {
-          finalBlockPer -= perQuestion; // Se resta el valor del porcentaje de la pregunta al valor actual del bloque
-        }
-
-        return {
-          ...pregunta,
-          porcentajePregunta: Math.round(perQuestion * 10) / 10, // porcentaje visual individual con solo un decimal
-        };
-      });
+      const initBlockPer = block.percentage;
+      const allCorrect = block.preguntas.every((pregunta) => pregunta.evaluacion !== "1");
+      const finalBlockPer = allCorrect ? initBlockPer : 0;
 
       return {
         ...block,
-        porcentajeBloque: Math.round(finalBlockPer * 10) / 10, // Retorna el valor del bloque despues de finalizar la calificación
-        preguntas: changeBlockPer, // Retorna el valor de cada pregunta para que sea visible por el usuario al evaluar el bloque
+        porcentajeBloque: Math.round(finalBlockPer * 10) / 10,
       };
     });
   };
@@ -729,7 +708,6 @@ const AdminList = () => {
     blocksForForm,
     userInfo,
     formattedDate,
-    handleSaveMonitoring,
     idToEdit,
     t,
     monitoringDate,
@@ -739,7 +717,6 @@ const AdminList = () => {
     calBlocksPercentage,
     handleUpdatePregunta,
     calFormScore,
-    handleSaveAnswers,
     clientError,
     setClientError,
     formError,

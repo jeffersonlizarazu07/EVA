@@ -30,6 +30,7 @@
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
     "eva": "file:",
+    "file-saver": "^2.0.5",
     "flag-icon-css": "^4.1.7",
     "html2canvas": "^1.4.1",
     "i18next": "^23.11.5",

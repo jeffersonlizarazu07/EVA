@@ -49,8 +49,9 @@ const ModalAdmin = ({
   setBlocksWithPer,
   calBlocksPercentage,
   handleUpdatePregunta,
+  validarRespuesta,
+  handleUpdatePreguntaMultiple,
   calFormScore,
-  handleSaveAnswers,
   clientError,
   setClientError,
   formError,
@@ -180,8 +181,8 @@ const ModalAdmin = ({
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      type="date"
-                      label={t("Fecha de monitorización")}
+                      type="datetime-local"
+                      label={t("Fecha y hora de monitorización")}
                       InputLabelProps={{ shrink: true }}
                       value={monitoringDate}
                       onChange={(e) => {
@@ -192,6 +193,7 @@ const ModalAdmin = ({
                       sx={{ mb: 2 }}
                       className="readOnlyField"
                     />
+
                   </Grid>
 
                   <Grid item xs={12} md={6}>
@@ -325,9 +327,6 @@ const ModalAdmin = ({
                                     <Typography>
                                       {pregunta.question_name}
                                     </Typography>
-                                    <Typography>
-                                      {pregunta.porcentajePregunta}%
-                                    </Typography>
                                   </Box>
                                 </AccordionSummary>
                                 <AccordionDetails>
@@ -361,11 +360,7 @@ const ModalAdmin = ({
                                         </li>
                                       )}
                                       renderInput={(params) => (
-                                        <TextField
-                                          {...params}
-                                          label={t("Evaluación")}
-                                          placeholder="Seleccionar:"
-                                        />
+                                        <TextField {...params} label={t("Evaluación")} placeholder="Seleccionar:" />
                                       )}
                                       sx={{ mb: 2 }}
                                       className="readOnlyField"
@@ -376,7 +371,12 @@ const ModalAdmin = ({
                                     <TextField
                                       select
                                       fullWidth
-                                      label="Seleccionar:"
+                                      label={t("Evaluación")}
+                                      value={pregunta.respuestaSeleccionada || ""}
+                                      onChange={(e) => {
+                                        const seleccion = e.target.value;
+                                        handleUpdatePregunta(pregunta.id, "respuestaSeleccionada", seleccion);
+                                      }}
                                       sx={{ mb: 2 }}
                                       className="readOnlyField"
                                     >
@@ -404,6 +404,8 @@ const ModalAdmin = ({
                                         )}
                                         multiline
                                         fullWidth
+                                        value={pregunta.textoRespuesta || ""}
+                                        onChange={(e) => handleUpdatePregunta(pregunta.id, "textoRespuesta", e.target.value)}
                                         className="readOnlyField"
                                         sx={{
                                           "& .MuiInputBase-root": {
@@ -465,21 +467,6 @@ const ModalAdmin = ({
                     ))
                   )}
                 </Box>
-
-                <Box display="flex" justifyContent="center" mt={2}>
-                  <Button
-                    variant="contained"
-                    onClick={handleSaveAnswers}
-                    sx={{
-                      backgroundColor: "#b62a8b",
-                      "&:hover": {
-                        backgroundColor: "#581244",
-                      },
-                    }}
-                  >
-                    {t("Guardar Todo")}
-                  </Button>
-                </Box>
               </Box>
             )}
 
@@ -493,6 +480,8 @@ const ModalAdmin = ({
                   multiline
                   fullWidth
                   className="readOnlyField"
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
                   sx={{
                     "& .MuiInputBase-root": {
                       height: "150px",
