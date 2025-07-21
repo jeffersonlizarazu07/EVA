@@ -200,23 +200,23 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
       </Grid>
 
       {/* Traer el nombre del agente al que se estan revisando las monitorizaciones */}
-      {data.map((item, index) => (
-        <Box key={index} sx={{ mb: 1 }}>
+      {data.length > 0 && (
+        <Box sx={{ mb: 1 }}>
           <Typography
             variant="body1"
             textAlign="center"
             sx={{ fontWeight: "bold", fontSize: "20px", paddingTop: "6px" }}
           >
-            {item.agent_name}
+            {data[0].agent_name}
           </Typography>
         </Box>
-      ))}
+      )}
 
       {/* Tabla */}
       <TableContainer
         component={Paper}
         elevation={0}
-        sx={{ maxHeight: 450, overflowY: "auto" }}
+        sx={{ maxHeight: 450, overflowY: "auto", marginBottom: "3rem" }}
       >
         <Table size="small">
           <TableHead>

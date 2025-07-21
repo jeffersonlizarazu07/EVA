@@ -39,7 +39,8 @@ import SearchIcon from "@mui/icons-material/Search";
 const AgentMonitoringView = () => {
   // Estados
   const { agentId } = useParams();
-  const [getMonitoring, setGetMonitoring] = useState([]);
+  const [getMonitoring, setGetMonitoring] = useState([]); // Trae los minitoreos del agente
+  const [filterMonitoring, setFilterMonitoring] = useState([]); // Trae los monitores del agente filtrados por fecha
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   // Manejo de cambio de fechas
@@ -64,70 +65,61 @@ const AgentMonitoringView = () => {
   }, [languageUser, i18n]);
 
   useEffect(() => {
-    if (!agentId) {
-      console.warn("agentId aún no está disponible");
-      return;
-    }
+    if (!agentId) return;
 
     const fetchMonitoring = async () => {
       try {
-        // Formateo de fechas para enviar al backend
-        const formattedStart = startDate
-          ? dayjs(startDate).format("YYYY-MM-DD")
-          : null;
-        const formattedEnd = endDate
-          ? dayjs(endDate).format("YYYY-MM-DD")
-          : null;
+        const monitoringData = await getMonitoringByUser(agentId);
 
-        const monitoringData = await getMonitoringByUser(agentId, {
-          startDate: formattedStart,
-          endDate: formattedEnd,
-        });
+        // Guarda la lista original en cache
         setGetMonitoring(monitoringData);
+
+        // Guarda monitorizaciones filtradas por fecha
+        setFilterMonitoring(monitoringData);
       } catch (error) {
-        console.error("Error al cargar los monitoreos", {
-          message: error.message,
-          status: error.response?.status,
-          data: error.response?.data,
-        });
+        console.error("Error al cargar monitoreos:", error);
       }
     };
 
-    if (agentId) {
-      fetchMonitoring();
-    }
-  }, [startDate, endDate, agentId]);
+    fetchMonitoring();
+  }, [agentId]);
 
+  // Filtrado en memoria según fechas
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
-    console.log("Obteniendo datos de monitoreos...", getMonitoring);
-  }, [languageUser, i18n]);
+    if (startDate && endDate) {
+      const filtered = getMonitoring.filter((item) => {
+        const monitoringDate = dayjs(item.monitoring_date, "DD/MM/YYYY");
 
-  // Filtra monitorización por rango de fecha
-  const filteredMonitoring = getMonitoring.filter((item) => {
-    // Validación formato válido de fecha para dayjs
-    const monitoringDate = dayjs(item.monitoring_date);
+        // Formatear fecha
+        const start = dayjs(startDate);
+        const end = dayjs(endDate);
 
-    if (!monitoringDate.isValid()) {
-      console.warn("Fecha inválida encontrada:", item.monitoring_date);
-      return false;
+        console.log("monitoring_date:", item.monitoring_date);
+        console.log(
+          "parsed:",
+          dayjs(item.monitoring_date, "DD/MM/YYYY").isValid()
+        );
+
+        const isAfterStart =
+          monitoringDate.isSame(start, "day") ||
+          monitoringDate.isAfter(start, "day");
+
+        const isBeforeEnd =
+          monitoringDate.isSame(end, "day") ||
+          monitoringDate.isBefore(end, "day");
+
+        return isAfterStart && isBeforeEnd;
+      });
+
+      setFilterMonitoring(filtered);
+    } else {
+      // Si los inputs de fechas están vacías, vuelve a la lista original cacheada
+      setFilterMonitoring(getMonitoring);
     }
-
-    const isAfterStart = startDate
-      ? monitoringDate.isSame(dayjs(startDate), "day") ||
-        monitoringDate.isAfter(dayjs(startDate), "day")
-      : true;
-
-    const isBeforeEnd = endDate
-      ? monitoringDate.isSame(dayjs(endDate), "day") ||
-        monitoringDate.isBefore(dayjs(endDate), "day")
-      : true;
-
-    return isAfterStart && isBeforeEnd;
-  });
+  }, [startDate, endDate, getMonitoring]);
 
   const monitoringViewProps = {
-    data: startDate || endDate ? filteredMonitoring : getMonitoring, // Si existen filtro de fechas envia datos filtrados, de lo contrario envia la data total
+    data: startDate || endDate ? filterMonitoring : getMonitoring, // Si existen filtro de fechas envia datos filtrados, de lo contrario envia la data total
     header: selectedKeys,
   };
 
