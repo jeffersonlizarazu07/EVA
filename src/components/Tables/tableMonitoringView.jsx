@@ -31,22 +31,21 @@ import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ModalMonitoringView from "../../components/Modals/modalMonitoring_view"
+import ModalMonitoringView from "../../components/Modals/modalMonitoring_view";
 
-const TableMonitoringView = ({
-  getMonitoring,
-  resetPageSignal,
-  header,
-  openModal,
-  closeModal,
-}) => {
+const TableMonitoringView = ({ data, resetPageSignal, header }) => {
   const nav = useNavigate();
+  // Traducción
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
-
+  // Paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+
+  //Modal
+  const [open, setOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
@@ -72,8 +71,8 @@ const TableMonitoringView = ({
     setPage(newPage);
   };
 
-  const filteredData = Array.isArray(getMonitoring)
-    ? getMonitoring.filter((item) =>
+  const filteredData = Array.isArray(data)
+    ? data.filter((item) =>
         Object.values(item).some(
           (val) =>
             typeof val === "string" &&
@@ -122,6 +121,25 @@ const TableMonitoringView = ({
         return t("userTable.Viwer");
     }
   };
+
+  // Manejo del modal
+  const openModal = (row) => {
+    setSelectedRow(row);
+    setOpen(true);
+  };
+
+  const closeModal = () => {
+    setOpen(false);
+    setSelectedRow(null);
+  };
+
+  const ModalMonitoringViewProps = {
+    open,
+    closeModal,
+    data: selectedRow,
+  };
+
+  console.log("Esta es la data que envía la tabla", data);
 
   return (
     <Box className="table-container">
@@ -181,6 +199,19 @@ const TableMonitoringView = ({
         </Grid>
       </Grid>
 
+      {/* Traer el nombre del agente al que se estan revisando las monitorizaciones */}
+      {data.map((item, index) => (
+        <Box key={index} sx={{ mb: 1 }}>
+          <Typography
+            variant="body1"
+            textAlign="center"
+            sx={{ fontWeight: "bold", fontSize: "20px", paddingTop: "6px" }}
+          >
+            {item.agent_name}
+          </Typography>
+        </Box>
+      ))}
+
       {/* Tabla */}
       <TableContainer
         component={Paper}
@@ -222,7 +253,7 @@ const TableMonitoringView = ({
                       <Button
                         variant="text"
                         color="primary"
-                        onClick={() => openModal(item)}
+                        onClick={() => openModal(currentRecords)}
                       >
                         {item[key]}
                       </Button>
@@ -309,6 +340,11 @@ const TableMonitoringView = ({
             <KeyboardArrowRight />
           </IconButton>
         </Box>
+      </Box>
+      <Box>
+        {open && data && data.length > 0 && (
+          <ModalMonitoringView {...ModalMonitoringViewProps} />
+        )}
       </Box>
     </Box>
   );
