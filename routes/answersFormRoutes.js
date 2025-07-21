@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const answersFormController = require('../controllers/answersFormController');
 
+// obtener respuestas multiples 
+
+router.get('/answersform/getResponseMult', answersFormController.getResponseMult)
 
 // obtener reportes filtrados
-
 router.get('/answersform/filter/:fromId/:starDate/:endDate', answersFormController.getReportFilter);
 
 // obtener clientes y informacion de los forms_set

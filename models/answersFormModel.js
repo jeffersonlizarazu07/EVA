@@ -31,6 +31,29 @@ class AnswersFormModel {
 
   // ...
 
+  // traer respuestas multiples 
+
+  async getResponseMult(){
+    try {
+      return await this.knex(`${this.table} as af`)
+      .select(
+        'af.id',
+        'af.answer',
+        'af.question_id',
+        'q.id', 
+        'q.selected_answer', 
+        'q.select_option'
+      )
+      .join(`${this.table_questions_form} as q`, 'af.question_id', 'q.id')
+    } catch (error) {
+       console.error('Error al obtener  respuestas multiples:', error);
+      throw new Error('No se pudo obtener  respuestas multiples' + error.message);
+
+    }
+  }
+
+  // ...
+
   // traer reporte filtrados 
 
   async getReportFilter(fromId, starDate, endDate){
@@ -44,7 +67,8 @@ class AnswersFormModel {
           'af.answer',
           'm.date as fecha_monitoreo',
           'm.score',
-          'm.feedback'
+          'm.feedback',
+          'q.id'
         )
         .join(`${this.table_users} as a`, 'm.id_user_agent', 'a.id')
         .join(`${this.table_users} as mo`, 'm.id_user_monitor', 'mo.id')
@@ -103,7 +127,8 @@ class AnswersFormModel {
           'af.answer',
           'm.date as fecha_monitoreo',
           'm.score',
-          'm.feedback'
+          'm.feedback',
+          'q.id'
         )
         .join(`${this.table_users} as a`, 'm.id_user_agent', 'a.id')
         .join(`${this.table_users} as mo`, 'm.id_user_monitor', 'mo.id')

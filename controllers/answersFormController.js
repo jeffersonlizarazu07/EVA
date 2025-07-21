@@ -102,6 +102,20 @@ exports.getClientsAndForms = async (req, res)=>{
 
 // ...
 
+
+// obtener respuestas multiple 
+
+exports.getResponseMult = async (req, res)=>{
+  try {
+    const response = await AnswersFormModel.getResponseMult()
+    res.json(response)
+  } catch (error) {
+     console.error('Error al obtener respuestas multiple :', error.message);
+    res.status(500).json({ message: 'Error al obtener respuestas multiple ' });
+  }
+}
+
+// ...
 // obtener los reportes filtrados 
 
 exports.getReportFilter= async(req,res)=>{
