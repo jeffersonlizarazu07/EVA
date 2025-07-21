@@ -20,20 +20,19 @@ export const getClientsAndForms = async () => {
 }
 
 
-// obtener todos los monitoreos
+// obtener todos los monitoreos 
 
-export const getMonitoring = async () => {
-  try {
-    const response = await axios.get(
-      `${API_BASE_URL}/answersform/monitoring`,
-      config
-    );
+export const getMonitoring = async ()=>{
+  try{
+    const response = await axios.get(`${API_BASE_URL}/answersform/report-monitoring`, config);
     return response.data;
-  } catch (error) {
+  }catch(error){
     console.error("Error fetching monitoring data:", error);
     throw error;
   }
-};
+}
+
+
 
 // Obtener todos los administradores (agentes) desde el backend
 export const getAdmins = async (clients) => {
@@ -178,22 +177,8 @@ export const getBlocksForIdForm = async (formId) => {
   }
 };
 
-// Guardar feedback de la monitorización
-export const saveFeedback = async (id, feedback) => {
-  try {
-    const response = await axiosInstance.put(`/monitoring/${id}`, { feedback });
-    return { success: true, data: response.data };
-  } catch (error) {
-    console.error("Error al guardar feedback:", error);
-    return {
-      success: false,
-      message: error.response?.data?.message || "Error al guardar el feedback.",
-    };
-  }
-};
-// Guardar monitorización
-export const saveMonitoring = async (payload) => {
-  console.log("Enviando al backend:", payload);
+// Guardar monitorización y respuestas
+export const saveMonitoringAndAnswers = async (payload) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/answersform`, payload, {
       headers: { "Content-Type": "application/json" },
@@ -201,10 +186,10 @@ export const saveMonitoring = async (payload) => {
     });
     return { success: true, data: response.data };
   } catch (error) {
-    console.error("Error al guardar la monitorización:", error);
+    console.error("Error al guardar la monitorización y respuestas:", error);
     throw error;
   }
-};
+}; 
 
 // Traer monitorizaciones por agente
 export const getMonitoringByUser = async (id) => {

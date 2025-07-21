@@ -68,32 +68,30 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
       <DialogTitle>Resumen de Monitorización</DialogTitle>
       <Grid item xs={2}>
         <DialogContent dividers>
-          {data.map((item, index) => (
-            <Grid container spacing={1}>
-              {header.map((key, i) => (
-                <Grid container key={i} spacing={1}>
-                  {/* Columna 1: Etiqueta */}
-                  <Grid item xs={6} sm={4}>
-                    <Typography
-                      variant="body2"
-                      fontWeight="bold"
-                      sx={{ paddingTop: "5px", paddingLeft: "10px" }}
-                    >
-                      {getHeaderLabel(key)}
-                    </Typography>
-                  </Grid>
-
-                  {/* Columna 2: Valor */}
-                  <Grid item xs={6} sm={8} key={index}>
-                    <Typography variant="body2" sx={{ paddingTop: "5px" }}>
-                      {" "}
-                      {item[key] ?? "Campo no disponible"}{" "}
-                    </Typography>
-                  </Grid>
+          <Grid container spacing={1}>
+            {header.map((key, i) => (
+              <Grid container key={i} spacing={1}>
+                {/* Columna 1: Etiqueta */}
+                <Grid item xs={6} sm={4}>
+                  <Typography
+                    variant="body2"
+                    fontWeight="bold"
+                    sx={{ paddingTop: "5px", paddingLeft: "10px" }}
+                  >
+                    {getHeaderLabel(key)}
+                  </Typography>
                 </Grid>
-              ))}
-            </Grid>
-          ))}
+
+                {/* Columna 2: Valor */}
+                <Grid item xs={6} sm={8}>
+                  <Typography variant="body2" sx={{ paddingTop: "5px" }}>
+                    {" "}
+                    {data[key] ?? "Campo no disponible"}{" "}
+                  </Typography>
+                </Grid>
+              </Grid>
+            ))}
+          </Grid>
         </DialogContent>
       </Grid>
       <Box>

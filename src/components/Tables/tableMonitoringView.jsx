@@ -123,8 +123,8 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
   };
 
   // Manejo del modal
-  const openModal = (row) => {
-    setSelectedRow(row);
+  const openModal = (rowData) => {
+    setSelectedRow(rowData);
     setOpen(true);
   };
 
@@ -253,7 +253,7 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
                       <Button
                         variant="text"
                         color="primary"
-                        onClick={() => openModal(currentRecords)}
+                        onClick={() => openModal(item)}
                       >
                         {item[key]}
                       </Button>
