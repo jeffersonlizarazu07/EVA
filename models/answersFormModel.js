@@ -79,8 +79,10 @@ class AnswersFormModel {
         .andWhere('mo.type', 1)
         // 
         .andWhere('f.id', '=' , fromId)
+        .andWhereRaw('m.date  = af.date')
         .andWhere(this.knex.raw('DATE(m.date) >=?' , [starDate] ))
         .andWhere(this.knex.raw('DATE(m.date) <=?' , [endDate] ));
+        
         // ...
         
     } catch (error) {
@@ -132,6 +134,7 @@ class AnswersFormModel {
         .join(`${this.table_form_set} as f`, 'f.id', 'b.form_id')
         .where('a.type', 4)
         .andWhere('mo.type', 1)
+        .andWhereRaw('m.date  = af.date');
         
         
     } catch (error) {
