@@ -10,8 +10,10 @@ import {
   Box,
   Divider,
   Chip,
+  TextareaAutosize,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import shadows from "@mui/material/styles/shadows";
 
 const ModalMonitoringView = ({ open, closeModal, data }) => {
   console.log("Data recibida en el modal:", data);
@@ -102,10 +104,24 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
           </Grid>
         </DialogContent>
       </Grid>
-      
-      <Box sx={{ width: "100%" }}>
+
+      <Box>
         <DialogTitle>Datos del monitoreo</DialogTitle>
         <DialogContent dividers>
+          {/* Feedback */}
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{ borderBottom: "2px solid", borderColor: "divider" }}
+            >
+              Form Feedback Summary
+            </Typography>
+            <Typography fontSize={14} sx={{marginBottom: "10px"}}>Feedback Summary Comment</Typography>
+            <Typography sx={{ boxShadow: 2, marginBottom: "10px", minHeight: "90px", paddingLeft: "5px"}}>
+              Aquí se mostrará el comentario.
+            </Typography>
+          </Box>
+
           {/* Tipología */}
           <Box
             mb={2}
@@ -115,8 +131,8 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
               borderColor: "divider",
             }}
           >
-            <Typography variant="h6">Tipología</Typography>
             <Grid container justifyContent="space-between" alignItems="center">
+              <Typography variant="h6">Tipología</Typography>
               <Typography variant="body2" color="text.secondary">
                 Puntuación: 0.00 | Media ponderada: N/A
               </Typography>
@@ -129,8 +145,8 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
             mb={2}
             sx={{ borderBottom: "1px solid", borderColor: "divider" }}
           >
-            <Typography variant="h6">FCR</Typography>
             <Grid container justifyContent="space-between" alignItems="center">
+              <Typography variant="h6">FCR</Typography>
               <Typography variant="body2" color="text.secondary">
                 Puntuación: 0.00 | Media ponderada: N/A
               </Typography>
@@ -141,19 +157,53 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
           {/* Relacionamiento 1 */}
           <Box
             mb={2}
-            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+            sx={{
+              borderBottom: "1px solid",
+              borderColor: "divider",
+              paddingBottom: "1.25rem",
+            }}
           >
-            <Typography variant="h6">Relacionamiento 1</Typography>
-            <Typography variant="body2" sx={{ ml: 2 }}>
-              1. Asistir de forma oportuna dentro del tiempo establecido. (INC)
-            </Typography>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" color="text.secondary">
-                Puntuación: 5.00 | Media ponderada: 100.00
-              </Typography>
-              <Chip label="Correcto" color="success" />
+            <Grid
+              container
+              justifyContent="space-between"
+              alignItems="flex-start"
+              spacing={2}
+              wrap="wrap"
+            >
+              {/* Título */}
+              <Grid item xs={12} sm="auto">
+                <Typography variant="h6">Relacionamiento 1</Typography>
+              </Grid>
+
+              {/* Puntuación y ponderación */}
+              <Grid item xs={12} sm="auto">
+                <Typography variant="body2" color="text.secondary">
+                  Puntuación: 5.00 | Media ponderada: 100.00
+                </Typography>
+              </Grid>
+
+              {/* Descripción */}
+              <Grid item xs={12} sm={8}>
+                <Typography variant="body2" sx={{ ml: 2 }}>
+                  1. Asistir de forma oportuna dentro del tiempo establecido.
+                  (INC)
+                </Typography>
+              </Grid>
+
+              {/* Chip alineado derecha */}
+              <Grid
+                item
+                xs={12}
+                sm="auto"
+                sx={{
+                  display: "flex",
+                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                  width: "100%",
+                }}
+              >
+                <Chip label="Correcto" color="success" />
+              </Grid>
             </Grid>
-            <Divider sx={{ my: 1 }} />
           </Box>
 
           {/* Relacionamiento 2 */}
@@ -161,15 +211,38 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
             mb={2}
             sx={{ borderBottom: "1px solid", borderColor: "divider" }}
           >
-            <Typography variant="h6">Relacionamiento 2</Typography>
-            <Typography variant="body2" sx={{ ml: 2 }}>
-              1. Bienvenida y presentación clara. (INC)
-            </Typography>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" color="text.secondary">
-                Puntuación: 5.00 | Media ponderada: 100.00
-              </Typography>
-              <Chip label="Correcto" color="success" />
+            <Grid
+              container
+              justifyContent="space-between"
+              alignItems="flex-start"
+              spacing={2}
+              wrap="wrap"
+            >
+              <Grid item xs={12} sm="auto">
+                <Typography variant="h6">Relacionamiento 2</Typography>
+              </Grid>
+              <Grid item xs={12} sm="auto">
+                <Typography variant="body2" color="text.secondary">
+                  Puntuación: 5.00 | Media ponderada: 100.00
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm="8">
+                <Typography variant="body2" sx={{ ml: 2 }}>
+                  1. Bienvenida y presentación clara. (INC)
+                </Typography>
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                sm="auto"
+                sx={{
+                  display: "flex",
+                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                  width: "100%",
+                }}
+              >
+                <Chip label="Correcto" color="success" />
+              </Grid>
             </Grid>
             <Divider sx={{ my: 1 }} />
           </Box>
@@ -179,15 +252,32 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
             mb={2}
             sx={{ borderBottom: "1px solid", borderColor: "divider" }}
           >
-            <Typography variant="h6">Validación Información</Typography>
-            <Typography variant="body2" sx={{ ml: 2 }}>
-              1. Todas las preguntas correctamente. (INC)
-            </Typography>
             <Grid container justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" color="text.secondary">
-                Puntuación: 0.00 | Media ponderada: 0.00
-              </Typography>
-              <Chip label="Incorrecto" color="error" />
+              <Grid item xs={12} sm="auto">
+                <Typography variant="h6">Validación Información</Typography>
+              </Grid>
+              <Grid item xs={12} sm="auto" sx={{ paddingBottom: "30px" }}>
+                <Typography variant="body2" color="text.secondary">
+                  Puntuación: 0.00 | Media ponderada: 0.00
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <Typography variant="body2" sx={{ ml: 2 }}>
+                  1. Todas las preguntas correctamente. (INC)
+                </Typography>
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                sm="auto"
+                sx={{
+                  display: "flex",
+                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                  width: "100%",
+                }}
+              >
+                <Chip label="Incorrecto" color="error" />
+              </Grid>
             </Grid>
             <Divider sx={{ my: 1 }} />
           </Box>
@@ -197,15 +287,32 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
             mb={2}
             sx={{ borderBottom: "1px solid", borderColor: "divider" }}
           >
-            <Typography variant="h6">Habilidades blandas 1</Typography>
-            <Typography variant="body2" sx={{ ml: 2 }}>
-              1. Manejar información clara y lenguaje adecuado. (INC)
-            </Typography>
             <Grid container justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" color="text.secondary">
-                Puntuación: 5.00 | Media ponderada: 100.00
-              </Typography>
-              <Chip label="Correcto" color="success" />
+              <Grid item xs={12} sm="auto">
+                <Typography variant="h6">Habilidades blandas 1</Typography>
+              </Grid>
+              <Grid item xs={12} sm="auto" sx={{ paddingBottom: "40px" }}>
+                <Typography variant="body2" sx={{ ml: 2 }}>
+                  1. Manejar información clara y lenguaje adecuado. (INC)
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <Typography variant="body2" color="text.secondary">
+                  Puntuación: 5.00 | Media ponderada: 100.00
+                </Typography>
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                sm="auto"
+                sx={{
+                  display: "flex",
+                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                  width: "100%",
+                }}
+              >
+                <Chip label="Correcto" color="success" />
+              </Grid>
             </Grid>
             <Divider sx={{ my: 1 }} />
           </Box>
