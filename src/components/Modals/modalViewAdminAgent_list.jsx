@@ -24,7 +24,7 @@ const ModalViewAdmin = ({
   state,
   language,
   email,
-  listClients,
+  userClients,
   t,
 }) => {
   return (
@@ -146,14 +146,11 @@ const ModalViewAdmin = ({
                     <Typography className="text-area" variant="subtitle2" gutterBottom>
                       {t("viewUserModal.Clients")}
                     </Typography>
-                    {selectedClients.length > 0 ? (
+                    {userClients.length > 0 ? (
                       <ul style={{ margin: 0, paddingLeft: 16 }}>
-                        {selectedClients.map((clientId) => {
-                          const client = listClients.find((c) => c.id === clientId);
-                          return client ? (
-                            <li key={client.id}>{client.client}</li>
-                          ) : null;
-                        })}
+                        {userClients.map((client) => (
+                            <li key={client.id}>{client.name}</li>
+                        ))}
                       </ul>
                     ) : (
                       <Typography variant="body2" color="text.secondary" sx={{ m: 1 }}>

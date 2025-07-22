@@ -24,7 +24,7 @@ import { Box, Typography } from "@mui/material";
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
-  const [listClients, setListClients] = useState([]); // Clientes disponibles en el sistema
+  const [setListClients] = useState([]); // Clientes disponibles en el sistema
   const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
   const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
   const [title, setTitle] = useState(); // Estado para el título del formulario/modal
@@ -657,7 +657,7 @@ const modalViewAdminProps = {
   state: { input: viewAdminData?.state || 0 },
   language: { input: viewAdminData?.language || "en" },
   email: { input: viewAdminData?.email || "" },
-  listClients,
+  userClients,
   t,
 };
 
