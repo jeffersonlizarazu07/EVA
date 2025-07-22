@@ -393,160 +393,160 @@ const FormReport= () => {
             <Box id="body">
                  <HeaderLT1 />
             </Box>
-            <Box sx={{m:0, p:0}} >
+            <Box sx={{m:0, p:0, display: "flex", justifyContent: "center",}} >
                 <Box
-                          sx={{
-                            width: "100%",
-                            px: 3,
-                            maxWidth: "96%",
-                          }}
-                        >
-                    <Grid item xs={12} sx={{ mb: 4 }}>
-                      <Card>
-                        <CardContent sx={{ borderRadius: "50px" }}>
-                          <Box
-                            display="flex"
-                            flexWrap="wrap"
-                            alignItems="center"
-                            justifyContent="center"
-                            gap={2}
-                            sx={{ mb: 2 }}
-                          > 
-                            {/* Boton de regresar */}
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => nav("/quality")}
-                              sx={{
-                                py: 2,
-                                minWidth: "2%",
-                                fontWeight: "bold",
-                                color: "#b62a8b",
+                  sx={{
+                    width: "100%",
+                    px: 3,
+                    maxWidth: "96%",
+                  }}
+                >
+                  <Grid item xs={12} sx={{ mb: 4 }}>
+                    <Card>
+                      <CardContent sx={{ borderRadius: "50px" }}>
+                        <Box
+                          display="flex"
+                          flexWrap="wrap"
+                          alignItems="center"
+                          justifyContent="center"
+                          gap={2}
+                          sx={{ mb: 2 }}
+                        > 
+                          {/* Boton de regresar */}
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => nav("/quality")}
+                            sx={{
+                              py: 2,
+                              minWidth: "2%",
+                              fontWeight: "bold",
+                              color: "#b62a8b",
+                              borderColor: "#b62a8b",
+                              borderTopLeftRadius: "20px",
+                              borderBottomLeftRadius: "20px",
+                              "&:hover": {
                                 borderColor: "#b62a8b",
-                                borderTopLeftRadius: "20px",
-                                borderBottomLeftRadius: "20px",
-                                "&:hover": {
-                                  borderColor: "#b62a8b",
-                                  backgroundColor: "rgba(156, 39, 176, 0.04)",
-                                },
+                                backgroundColor: "rgba(156, 39, 176, 0.04)",
+                              },
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              fill="currentColor"
+                              viewBox="0 0 16 16"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
+                              />
+                            </svg>
+                          </Button>
+
+                          {/* clientes*/}
+                          <FormControl required sx={{ minWidth: "20%" }} className="readOnlyField">
+                            <InputLabel id="demo-simple-select-label">{t("survey.selecciona_cliente")}</InputLabel>
+                            <Select
+                              labelId="demo-simple-select-label"
+                              id="demo-simple-select"
+                              value={idClienteFiltro}
+                              label={t("survey.selecciona_cliente")}
+                              onChange={(e)=>{
+                                setIdClienteFiltro(e.target.value);
+                                
                               }}
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                fill="currentColor"
-                                viewBox="0 0 16 16"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
-                                />
-                              </svg>
-                            </Button>
-
-                            {/* clientes*/}
-                            <FormControl required sx={{ minWidth: "20%" }} className="readOnlyField">
-                              <InputLabel id="demo-simple-select-label">{t("survey.selecciona_cliente")}</InputLabel>
-                              <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={idClienteFiltro}
-                                label={t("survey.selecciona_cliente")}
-                                onChange={(e)=>{
-                                  setIdClienteFiltro(e.target.value);
-                                  
-                                }}
-                              >
-                                <MenuItem value={''}>None</MenuItem>
-                                {clientsAndFroms.length > 0 ? (
-                                  clientsAndFroms.map((i) => (
-                                    <MenuItem value={i.idClient} key={i.idClient}>
-                                      {i.client}
-                                      
-                                    </MenuItem>
-                                  ))
-                                ) : (
-                                  <MenuItem disabled>Cargando Clientes ...</MenuItem>
-                                )}
-                              </Select>
-                            </FormControl>
-
-                            {/* vista formularios */}
-                            <FormControl required sx={{ minWidth: "20%" }} className="readOnlyField">
-                              <InputLabel>{("Formulario")}</InputLabel>
-                              <Select
-                                labelId="survey-select-label"
-                                id="survey-select"
-                                value={filtroSeleccionado}
-                                onChange={(e) => {
-                                  
-                                  const response = parseInt(e.target.value);
-                                  const infoCapturado = formsInfo.find(i=> i.id === response)
-                                  setFiltroSeleccionado(Number(infoCapturado.id));
-                                  
-                                }}
-                                input={<OutlinedInput label="Formulario" />}
-                              >
-                                <MenuItem value="">
-                                  <em>None</em>
-                                </MenuItem>
-                                {formsInfo
-                                .filter(item => item.idClient=== idClienteFiltro )
-                                .map((item, i) =>  (
-                                  <MenuItem key={i} value={item.id}>
-                                    {item.title}
+                              <MenuItem value={''}>None</MenuItem>
+                              {clientsAndFroms.length > 0 ? (
+                                clientsAndFroms.map((i) => (
+                                  <MenuItem value={i.idClient} key={i.idClient}>
+                                    {i.client}
+                                    
                                   </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                            {/* vista fechas */}
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    className="readOnlyField"
-                                    label={t("reports.fecha_inicio")}
-                                    value={startDate}
-                                    onChange={handleStartDateChange}
-                                    sx={{ width: "22%" }}
-                                />
-                                <DatePicker
-                                    className="readOnlyField"
-                                    label={t("reports.fecha_fin")}
-                                    value={endDate}
-                                    onChange={handleEndDateChange}
-                                    sx={{ width: "22%" }}
-                                />
+                                ))
+                              ) : (
+                                <MenuItem disabled>Cargando Clientes ...</MenuItem>
+                              )}
+                            </Select>
+                          </FormControl>
+
+                          {/* vista formularios */}
+                          <FormControl required sx={{ minWidth: "20%", maxWidth: "20%" }} className="readOnlyField">
+                            <InputLabel>{("Formulario")}</InputLabel>
+                            <Select
+                              labelId="survey-select-label"
+                              id="survey-select"
+                              value={filtroSeleccionado}
+                              onChange={(e) => {
                                 
-                            </LocalizationProvider>
-                           
-                            <ButtonGroup>
-                              <IconButton
-                                color="secondary"
-                                onClick={getFilterReports}
-                                disabled={!(filtroSeleccionado && startDate && endDate)}
-                              >
-                                <SearchIcon />
-                              </IconButton>
-                              <IconButton
-                                color="secondary"
-                                onClick={exportExel}
-                                disabled={!(filtroSeleccionado && startDate && endDate)}
-                              >
-                                <FileDownloadIcon />
-                              </IconButton>
-                            </ButtonGroup>
-                          </Box>
-                          {fullMonitoring.length === 0 && (
-                                                <Box mt={3}>
-                                                  <Alert severity="info" sx={{ textAlign: "center" }}>
-                                                    {("Llena los datos de la consulta para generar los Formularios.")}
-                                                  </Alert>
-                                                </Box>
-                          )}
+                                const response = parseInt(e.target.value);
+                                const infoCapturado = formsInfo.find(i=> i.id === response)
+                                setFiltroSeleccionado(Number(infoCapturado.id));
+                                
+                              }}
+                              input={<OutlinedInput label="Formulario" />}
+                            >
+                              <MenuItem value="">
+                                <em>None</em>
+                              </MenuItem>
+                              {formsInfo
+                              .filter(item => item.idClient=== idClienteFiltro )
+                              .map((item, i) =>  (
+                                <MenuItem key={i} value={item.id}>
+                                  {item.title}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          {/* vista fechas */}
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DatePicker
+                                  className="readOnlyField"
+                                  label={t("reports.fecha_inicio")}
+                                  value={startDate}
+                                  onChange={handleStartDateChange}
+                                  sx={{ width: "22%" }}
+                              />
+                              <DatePicker
+                                  className="readOnlyField"
+                                  label={t("reports.fecha_fin")}
+                                  value={endDate}
+                                  onChange={handleEndDateChange}
+                                  sx={{ width: "22%" }}
+                              />
+                              
+                          </LocalizationProvider>
                           
-                        </CardContent>
-                      </Card>
-                    </Grid>
+                          <ButtonGroup>
+                            <IconButton
+                              color="secondary"
+                              onClick={getFilterReports}
+                              disabled={!(filtroSeleccionado && startDate && endDate)}
+                            >
+                              <SearchIcon />
+                            </IconButton>
+                            <IconButton
+                              color="secondary"
+                              onClick={exportExel}
+                              disabled={!(filtroSeleccionado && startDate && endDate)}
+                            >
+                              <FileDownloadIcon />
+                            </IconButton>
+                          </ButtonGroup>
+                        </Box>
+                        {fullMonitoring.length === 0 && (
+                          <Box mt={3}>
+                            <Alert severity="info" sx={{ textAlign: "center" }}>
+                              {("Llena los datos de la consulta para generar los Formularios.")}
+                            </Alert>
+                          </Box>
+                        )}
+                        
+                      </CardContent>
+                    </Card>
+                  </Grid>
                 </Box>
             </Box>
 
