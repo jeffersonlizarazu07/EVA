@@ -12,6 +12,13 @@ import {
     FormControl,
     Select,
     Alert ,
+    Paper,
+    
+    Typography,
+    
+    Stack,
+    Divider,
+    Tooltip,
     
 } from "@mui/material";
 import axios from "axios";
@@ -386,14 +393,14 @@ const FormReport= () => {
         console.error("error al obtener los monitoreos:", error);
       }
     };
- 
+    
 
     return(
         <Box className="App" sx={{ overflow: "hidden" }}>
             <Box id="body">
                  <HeaderLT1 />
             </Box>
-            <Box sx={{m:0, p:0}} >
+            <Box sx={{m:0, p:0, display: "flex", justifyContent:"center", alignItems:"center"}} >
                 <Box
                           sx={{
                             width: "100%",
@@ -537,11 +544,11 @@ const FormReport= () => {
                             </ButtonGroup>
                           </Box>
                           {fullMonitoring.length === 0 && (
-                                                <Box mt={3}>
-                                                  <Alert severity="info" sx={{ textAlign: "center" }}>
-                                                    {("Llena los datos de la consulta para generar los Formularios.")}
-                                                  </Alert>
-                                                </Box>
+                            <Box mt={3}>
+                              <Alert severity="info" sx={{ textAlign: "center" }}>
+                                {("Llena los datos de la consulta para generar los Formularios.")}
+                              </Alert>
+                            </Box>
                           )}
                           
                         </CardContent>
@@ -562,6 +569,135 @@ const FormReport= () => {
                           )}
                       </Box>
               </Box>
+
+
+              {
+                fullMonitoring.length === 0 &&(
+                   <Box sx={{ m: 10, mt: 4 }}>
+                    <Grid container spacing={4}>
+                      {/* Clientes burbujeantes */}
+                      <Grid item xs={12} md={6} >
+                        <Typography
+                          variant="h6"
+                          sx={{ mb: 2, fontWeight: "bold", color: "#cc0e8f" }}
+                        >
+                          👥 Clientes
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 2,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            minHeight: 300,
+                            
+                            p: 3,
+                            borderRadius: 4,
+                            border:"1px solid #c4c4c4"
+                          }}
+                        >
+                          {clientsAndFroms.length > 0 ? (
+                            clientsAndFroms.map((client, i) => (
+                              <Tooltip title={client.client} key={client.idClient}>
+                                <Box
+                                  sx={{
+                                    width: 80,
+                                    height: 80,
+                                    bgcolor: "#e00085",
+                                    borderRadius: "50%",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                    fontSize: 12,
+                                    textAlign: "center",
+                                    p: 1,
+                                    boxShadow: "0 4px 10px rgba(224, 0, 133, 0.3)",
+                                    transition: "transform 0.3s",
+                                    cursor: "pointer",
+                                    "&:hover": {
+                                      transform: "scale(1.1)",
+                                      bgcolor: "#4b006e",
+                                    },
+                                  }}
+                                >
+                                  {client.client.length > 10
+                                    ? client.client.slice(0, 8) + "…"
+                                    : client.client}
+                                </Box>
+                              </Tooltip>
+                            ))
+                          ) : (
+                            <Typography variant="body2">Cargando Clientes...</Typography>
+                          )}
+                        </Box>
+                      </Grid>
+
+                      {/* Formularios burbujeantes */}
+                      <Grid item xs={12} md={6}>
+                        <Typography
+                          variant="h6"
+                          sx={{ mb: 2, fontWeight: "bold", color: "#cc0e8f" }}
+                        >
+                          📝 Formularios
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 2,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            minHeight: 300,
+                            
+                            p: 3,
+                            borderRadius: 4,
+                            border:"1px solid #c4c4c4"
+                          }}
+                        >
+                          {formsInfo.length > 0 ? (
+                            formsInfo.map((form, i) => (
+                              <Tooltip title={form.title} key={form.id}>
+                                <Box
+                                  sx={{
+                                    width: 80,
+                                    height: 80,
+                                    bgcolor: "#e00085",
+                                    borderRadius: "50%",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                    fontSize: 12,
+                                    textAlign: "center",
+                                    p: 1,
+                                    boxShadow: "0 4px 10px rgba(224, 0, 133, 0.3)",
+                                    transition: "transform 0.3s",
+                                    cursor: "pointer",
+                                    "&:hover": {
+                                      transform: "scale(1.1)",
+                                      bgcolor: "#4b006e",
+                                    },
+                                  }}
+                                >
+                                  {form.title.length > 10
+                                    ? form.title.slice(0, 8) + "…"
+                                    : form.title}
+                                </Box>
+                              </Tooltip>
+                            ))
+                          ) : (
+                            <Typography variant="body2">Cargando Formularios...</Typography>
+                          )}
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                )
+              }
             
         </Box>
         
