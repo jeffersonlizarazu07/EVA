@@ -5,6 +5,7 @@ const API_URL = "http://localhost:3000/api/questions";
 // Crear preguntas para un bloque
 export const createQuestions = async (blockId, preguntas) => {
   try {
+    console.log("Preguntas enviadas:", preguntas);
     const response = await axios.post(
       `${API_URL}`,
       {

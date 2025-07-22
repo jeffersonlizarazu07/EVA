@@ -20,7 +20,7 @@ import {
   CircularProgress,
   Divider,
   Button,
-  Autocomplete
+  Autocomplete,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -62,8 +62,8 @@ const ModalAdmin = ({
   setSelectedBlockId,
   handleNextStep,
   open,
-  feedback,
-  setFeedback,
+  handleSaveMonitoring,
+  errorLabels,
 }) => {
   const { t, i18n } = useTranslation();
   const { languageUser } = useContext(UserContext);
@@ -73,11 +73,15 @@ const ModalAdmin = ({
   }, [languageUser, i18n]);
 
   return (
-    <Modal open={open} onClose={formClientReset} aria-labelledby="modal-admin-title">
+    <Modal
+      open={open}
+      onClose={formClientReset}
+      aria-labelledby="modal-admin-title"
+    >
       <Box className="modalBox">
         <Paper elevation={0} sx={{ borderRadius: 2 }}>
           {/* Encabezado */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", p: 3 }}>
             {monitoringStep === 2 || monitoringStep === 3 ? (
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <IconButton
@@ -172,7 +176,6 @@ const ModalAdmin = ({
                         </MenuItem>
                       ))}
                     </TextField>
-
                   </Grid>
 
                   <Grid item xs={12} md={6}>
@@ -199,7 +202,9 @@ const ModalAdmin = ({
                       label={t("Evaluador")}
                       value={
                         userInfo
-                          ? `${userInfo.firstname || ""} ${userInfo.lastname || ""}`
+                          ? `${userInfo.firstname || ""} ${
+                              userInfo.lastname || ""
+                            }`
                           : t("Cargando...")
                       }
                       InputProps={{ readOnly: true }}
@@ -217,30 +222,58 @@ const ModalAdmin = ({
                   {t("Configuración de Monitorizaciones")}
                 </Typography>
 
-                <Box mb={2} p={2} border={1} borderColor="#e0e0e0" borderRadius={2} >
-                  <Typography variant="subtitle1" sx={{ mb: 3 }} fontWeight="bold" align="center" gutterBottom>
+                <Box
+                  mb={2}
+                  p={2}
+                  border={1}
+                  borderColor="#e0e0e0"
+                  borderRadius={2}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ mb: 3 }}
+                    fontWeight="bold"
+                    align="center"
+                    gutterBottom
+                  >
                     {t("Información del Formulario")}
                   </Typography>
                   <Box display="flex" gap={1}>
-                    <Typography variant="subtitle1" fontWeight="bold">{t("Nombre del formulario")}:</Typography>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {t("Nombre del formulario")}:
+                    </Typography>
                     <Typography>
-                      {callSelectedForm?.title || t("Formulario no seleccionado")}.
+                      {callSelectedForm?.title ||
+                        t("Formulario no seleccionado")}
+                      .
                     </Typography>
                   </Box>
                   <Box display="flex" gap={1}>
-                    <Typography fontWeight="bold">{t("Form Score")}:</Typography>
+                    <Typography fontWeight="bold">
+                      {t("Form Score")}:
+                    </Typography>
                     <Typography>{calFormScore()}%.</Typography>
                   </Box>
                   <Box display="flex" gap={1}>
-                    <Typography fontWeight="bold">{t("Posible puntuación")}:</Typography>
+                    <Typography fontWeight="bold">
+                      {t("Posible puntuación")}:
+                    </Typography>
                     <Typography>100%.</Typography>
                   </Box>
                 </Box>
 
-                <Box mb={2} border={1} borderColor="#e0e0e0" borderRadius={2} overflow="hidden">
+                <Box
+                  mb={2}
+                  border={1}
+                  borderColor="#e0e0e0"
+                  borderRadius={2}
+                  overflow="hidden"
+                >
                   {blocksForForm.length === 0 ? (
                     <Typography color="text.secondary">
-                      {t("No se ha cargado o existe error al llamar los bloques.")}
+                      {t(
+                        "No se ha cargado o existe error al llamar los bloques."
+                      )}
                     </Typography>
                   ) : (
                     blocksWithPer.map((block) => (
@@ -283,7 +316,9 @@ const ModalAdmin = ({
                                   mb: 1,
                                 }}
                               >
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <AccordionSummary
+                                  expandIcon={<ExpandMoreIcon />}
+                                >
                                   <Box
                                     flex={1}
                                     display="flex"
@@ -298,14 +333,29 @@ const ModalAdmin = ({
                                   {pregunta.id_type_question === 1 && (
                                     <Autocomplete
                                       multiple
-                                      options={pregunta.select_option.split(",").map((opt) => opt.trim())}
-                                      value={pregunta.seleccionMultiple || []}
-                                      onChange={(e, selectedOptions) => {
-                                        handleUpdatePregunta(pregunta.id, "seleccionMultiple", selectedOptions);
+                                      options={pregunta.select_option
+                                        .split(",")
+                                        .map((opt) => opt.trim())}
+                                      disableCloseOnSelect
+                                      getOptionLabel={(option) => option} // aquí option es directamente string
+                                      onChange={(event, newValue) => {
+                                        // newValue es un array con las opciones seleccionadas (strings)
+                                        // Aquí puedes actualizar el estado con setSelectedOptions(newValue)
+                                        console.log(newValue);
                                       }}
-                                      renderOption={(props, option, { selected }) => (
+                                      value={pregunta.select_option
+                                        .split(",")
+                                        .map((opt) => opt.trim())}
+                                      renderOption={(
+                                        props,
+                                        option,
+                                        { selected }
+                                      ) => (
                                         <li {...props} key={option}>
-                                          <Checkbox checked={selected} style={{ marginRight: 8 }} />
+                                          <Checkbox
+                                            checked={selected}
+                                            style={{ marginRight: 8 }}
+                                          />
                                           {option}
                                         </li>
                                       )}
@@ -330,18 +380,28 @@ const ModalAdmin = ({
                                       sx={{ mb: 2 }}
                                       className="readOnlyField"
                                     >
-                                      {pregunta.select_option.split(",").map((option, index) => (
-                                        <MenuItem key={index} value={index.toString()}>
-                                          {option.trim()}
-                                        </MenuItem>
-                                      ))}
+                                      <MenuItem value="0" disabled>
+                                        {t("Evaluación")}
+                                      </MenuItem>
+                                      {pregunta.select_option
+                                        .split(",")
+                                        .map((option, index) => (
+                                          <MenuItem
+                                            key={index + 1}
+                                            value={index + 1}
+                                          >
+                                            {option.trim()}
+                                          </MenuItem>
+                                        ))}
                                     </TextField>
                                   )}
 
                                   {pregunta.id_type_question === 3 && (
                                     <Box>
                                       <TextField
-                                        placeholder={t("Ingrese sus indicaciones")}
+                                        placeholder={t(
+                                          "Ingrese sus indicaciones"
+                                        )}
                                         multiline
                                         fullWidth
                                         value={pregunta.textoRespuesta || ""}
@@ -361,6 +421,43 @@ const ModalAdmin = ({
                                       />
                                     </Box>
                                   )}
+
+                                  <FormControl fullWidth margin="normal">
+                                    <InputLabel>{t("Evaluación")}</InputLabel>
+                                    <Select
+                                      value={pregunta.evaluacion || ""}
+                                      label={t("Evaluación")}
+                                      onChange={(e) =>
+                                        handleUpdatePregunta(
+                                          pregunta.id,
+                                          "evaluacion",
+                                          e.target.value
+                                        )
+                                      }
+                                    >
+                                      <MenuItem value="">
+                                        {t("Seleccionar")}
+                                      </MenuItem>
+                                      <MenuItem value="1">
+                                        ✅ {t("Buena")}
+                                      </MenuItem>
+                                      <MenuItem value="0">
+                                        ❌ {t("Mala")}
+                                      </MenuItem>
+                                    </Select>
+
+                                    <Box>
+                                      <Typography
+                                        variant="body2"
+                                        color="textSecondary"
+                                        sx={{ marginTop: 1, textAlign: "end" }}
+                                      >
+                                        {errorLabels[pregunta.type_error] ||
+                                          "No seleccionado"}
+                                        {"."}
+                                      </Typography>
+                                    </Box>
+                                  </FormControl>
                                 </AccordionDetails>
                               </Accordion>
                             ))
