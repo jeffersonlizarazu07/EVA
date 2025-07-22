@@ -58,6 +58,8 @@ const ModalAdmin = ({
   setFormError,
   dateError,
   setDateError,
+  feedbackError,
+  erroresPorPregunta,
   selectedBlockId,
   setSelectedBlockId,
   handleNextStep,
@@ -94,12 +96,12 @@ const ModalAdmin = ({
                   <ArrowBackIcon />
                 </IconButton>
                 <Typography variant="h6" fontWeight="bold">
-                  {userName || "Nuevo Agente"}
+                  {userName}
                 </Typography>
               </Box>
             ) : (
               <Typography variant="h6" fontWeight="bold">
-                {userName || "Nuevo Agente"}
+                {userName}
               </Typography>
             )}
 
@@ -113,14 +115,14 @@ const ModalAdmin = ({
             {monitoringStep === 1 && (
               <>
                 <Typography variant="subtitle1" sx={{ mb: 3 }} gutterBottom>
-                  Crear una monitorización
+                  {t("monitoringModal.NewMonitoring")}
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <TextField
                       select
                       fullWidth
-                      label={t("Monitor Client")}
+                      label={t("monitoringModal.AgentClient")}
                       value={selectedClientId || ""}
                       onChange={(e) => {
                         handleClientChange(e);
@@ -131,7 +133,7 @@ const ModalAdmin = ({
                       sx={{ mb: 2 }}
                       className="readOnlyField"
                     >
-                      <MenuItem value="">{t("Seleccione un cliente")}</MenuItem>
+                      <MenuItem value="">{t("vistaEncuestas.seleccionar_opcion")}</MenuItem>
                       {userClients.map((client) => (
                         <MenuItem key={client.id} value={client.id}>
                           {client.name}
@@ -142,7 +144,7 @@ const ModalAdmin = ({
                     {loading && (
                       <Box mt={1} display="flex" alignItems="center">
                         <CircularProgress size={16} sx={{ mr: 1 }} />
-                        <Typography variant="body2">Cargando...</Typography>
+                        <Typography variant="body2">{t("monitoringModal.Loading")}</Typography>
                       </Box>
                     )}
                   </Grid>
@@ -151,7 +153,7 @@ const ModalAdmin = ({
                     <TextField
                       select
                       fullWidth
-                      label={t("Monitorizaciones")}
+                      label={t("monitoringModal.formMonitoring")}
                       value={selectedFormId || ""}
                       onChange={(e) => {
                         handleFormSelect(e);
@@ -163,12 +165,12 @@ const ModalAdmin = ({
                     >
                       <MenuItem value="">
                         {!selectedClientId
-                          ? t("Primero seleccione un cliente")
+                          ? t("monitoringModal.SelectClient")
                           : loading
-                          ? t("Cargando formularios...")
+                          ? t("monitoringModal.Loading")
                           : formOptions.length === 0
-                          ? t("No hay formularios disponibles")
-                          : t("Seleccionar formulario")}
+                          ? t("monitoringModal.ErrorForms")
+                          : t("vistaEncuestas.seleccionar_opcion")}
                       </MenuItem>
                       {formOptions.map((form) => (
                         <MenuItem key={form.id} value={form.id}>
@@ -182,7 +184,7 @@ const ModalAdmin = ({
                     <TextField
                       fullWidth
                       type="datetime-local"
-                      label={t("Fecha y hora de monitorización")}
+                      label={t("monitoringModal.DatetimeMonitoring")}
                       InputLabelProps={{ shrink: true }}
                       value={monitoringDate}
                       onChange={(e) => {
@@ -199,13 +201,11 @@ const ModalAdmin = ({
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label={t("Evaluador")}
+                      label={t("monitoringModal.AdminMonitoring")}
                       value={
                         userInfo
-                          ? `${userInfo.firstname || ""} ${
-                              userInfo.lastname || ""
-                            }`
-                          : t("Cargando...")
+                          ? `${userInfo.firstname || ""} ${userInfo.lastname || ""}`
+                          : t("monitoringModal.Loading")
                       }
                       InputProps={{ readOnly: true }}
                       sx={{ mb: 2 }}
@@ -219,45 +219,25 @@ const ModalAdmin = ({
             {monitoringStep === 2 && (
               <Box maxHeight="65vh" overflow="auto">
                 <Typography variant="subtitle1" sx={{ mb: 3 }} gutterBottom>
-                  {t("Configuración de Monitorizaciones")}
+                  {t("monitoringModal.ConfigMonitoring")}
                 </Typography>
 
-                <Box
-                  mb={2}
-                  p={2}
-                  border={1}
-                  borderColor="#e0e0e0"
-                  borderRadius={2}
-                >
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 3 }}
-                    fontWeight="bold"
-                    align="center"
-                    gutterBottom
-                  >
-                    {t("Información del Formulario")}
+                <Box mb={2} p={2} border={1} borderColor="#e0e0e0" borderRadius={2} >
+                  <Typography variant="subtitle1" sx={{ mb: 3 }} fontWeight="bold" align="center" gutterBottom>
+                    {t("monitoringModal.InfoForm")}
                   </Typography>
                   <Box display="flex" gap={1}>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {t("Nombre del formulario")}:
-                    </Typography>
+                    <Typography variant="subtitle1" fontWeight="bold">{t("monitoringModal.NameForm")}:</Typography>
                     <Typography>
-                      {callSelectedForm?.title ||
-                        t("Formulario no seleccionado")}
-                      .
+                      {callSelectedForm?.title}.
                     </Typography>
                   </Box>
                   <Box display="flex" gap={1}>
-                    <Typography fontWeight="bold">
-                      {t("Form Score")}:
-                    </Typography>
+                    <Typography fontWeight="bold">{t("monitoringModal.FormScore")}:</Typography>
                     <Typography>{calFormScore()}%.</Typography>
                   </Box>
                   <Box display="flex" gap={1}>
-                    <Typography fontWeight="bold">
-                      {t("Posible puntuación")}:
-                    </Typography>
+                    <Typography fontWeight="bold">{t("monitoringModal.Punctuation")}:</Typography>
                     <Typography>100%.</Typography>
                   </Box>
                 </Box>
@@ -271,9 +251,7 @@ const ModalAdmin = ({
                 >
                   {blocksForForm.length === 0 ? (
                     <Typography color="text.secondary">
-                      {t(
-                        "No se ha cargado o existe error al llamar los bloques."
-                      )}
+                      {t("monitoringModal.ErrorBlocks")}
                     </Typography>
                   ) : (
                     blocksWithPer.map((block) => (
@@ -303,7 +281,7 @@ const ModalAdmin = ({
                         <AccordionDetails>
                           {block.preguntas.length === 0 ? (
                             <Typography color="text.secondary">
-                              {t("Este bloque no tiene preguntas registradas.")}
+                              {t("monitoringModal.ErrorBlocks")}
                             </Typography>
                           ) : (
                             block.preguntas.map((pregunta) => (
@@ -360,7 +338,11 @@ const ModalAdmin = ({
                                         </li>
                                       )}
                                       renderInput={(params) => (
-                                        <TextField {...params} label={t("Evaluación")} placeholder="Seleccionar:" />
+                                        <TextField {...params} 
+                                          label={t("monitoringModal.Evaluation")}
+                                          placeholder={t("vistaEncuestas.seleccionar_opcion")}
+                                          error={!!erroresPorPregunta[pregunta.id]}
+                                        />
                                       )}
                                       sx={{ mb: 2 }}
                                       className="readOnlyField"
@@ -371,7 +353,8 @@ const ModalAdmin = ({
                                     <TextField
                                       select
                                       fullWidth
-                                      label={t("Evaluación")}
+                                      error={!!erroresPorPregunta[pregunta.id]}
+                                      label={t("monitoringModal.Evaluation")}
                                       value={pregunta.respuestaSeleccionada || ""}
                                       onChange={(e) => {
                                         const seleccion = e.target.value;
@@ -380,30 +363,23 @@ const ModalAdmin = ({
                                       sx={{ mb: 2 }}
                                       className="readOnlyField"
                                     >
-                                      <MenuItem value="0" disabled>
-                                        {t("Evaluación")}
-                                      </MenuItem>
-                                      {pregunta.select_option
-                                        .split(",")
-                                        .map((option, index) => (
-                                          <MenuItem
-                                            key={index + 1}
-                                            value={index + 1}
-                                          >
-                                            {option.trim()}
-                                          </MenuItem>
-                                        ))}
+                                      
+                                      <MenuItem value="">{t("vistaEncuestas.seleccionar_opcion")}</MenuItem>
+                                      {pregunta.select_option.split(",").map((option, index) => (
+                                        <MenuItem key={index} value={index.toString()}>
+                                          {option.trim()}
+                                        </MenuItem>
+                                      ))}
                                     </TextField>
                                   )}
 
                                   {pregunta.id_type_question === 3 && (
                                     <Box>
                                       <TextField
-                                        placeholder={t(
-                                          "Ingrese sus indicaciones"
-                                        )}
+                                        placeholder={t("monitoringModal.EnterTextArea")}
                                         multiline
                                         fullWidth
+                                        error={!!erroresPorPregunta[pregunta.id]}
                                         value={pregunta.textoRespuesta || ""}
                                         onChange={(e) => handleUpdatePregunta(pregunta.id, "textoRespuesta", e.target.value)}
                                         className="readOnlyField"
@@ -476,11 +452,13 @@ const ModalAdmin = ({
                   {t("Feedback")}
                 </Typography>
                 <TextField
-                  placeholder={t("Ingrese su feedback aquí")}
+                  placeholder={t("monitoringModal.EnterFeedback")}
                   multiline
                   fullWidth
                   className="readOnlyField"
                   value={feedback}
+                  error={feedbackError}
+                  helperText={feedbackError}
                   onChange={(e) => setFeedback(e.target.value)}
                   sx={{
                     "& .MuiInputBase-root": {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAgent";
-import Swal from "sweetalert2";
 import HeaderLT1 from "../../components/header/headerLT1";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
@@ -21,6 +20,7 @@ import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
 import { Box, Typography } from "@mui/material";
 
+
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
@@ -36,9 +36,7 @@ const AdminList = () => {
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
   const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, languageUser, clients, userInfo } =
-    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
-  const [loadingClients, setLoadingClients] = useState(false); // Estado para manejar la carga de clientes
+  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
@@ -46,15 +44,18 @@ const AdminList = () => {
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
   const [feedback, setFeedback] = React.useState("");
+  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
 
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
+
 
   // Validaciones de la primer vista del modal
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
   const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
   const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
-  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
+  const [feedbackError, setFeedbackError] = useState(false);
+  const [erroresPorPregunta, setErroresPorPregunta] = useState({});
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -90,7 +91,7 @@ const AdminList = () => {
     defaultValue: "",
     validate: (value) =>
       value === "" ||
-      /^(?=.[A-Z])(?=.[a-z])(?=.\d)(?=.[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/.test(
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/.test(
         value
       ),
   });
@@ -122,7 +123,7 @@ const AdminList = () => {
       console.error("Error al cargar los administradores:", error);
       Toast.fire({
         icon: "error",
-        title: "Error al cargar administradores",
+        title: t("monitoringModal.ErrorAdmins"),
       });
     } finally {
       setLoading(false);
@@ -172,11 +173,9 @@ const AdminList = () => {
 
     if (isNaN(numericId) || numericId <= 0) {
       console.error("ID de cliente inválido:", selectedId);
-      Swal.fire({
-        title: "Error",
-        text: "ID de cliente inválido",
+      Toast.fire({
         icon: "error",
-        confirmButtonText: "Ok",
+        title: t("monitoringModal.ErrorClients"),
       });
       return;
     }
@@ -197,162 +196,9 @@ const AdminList = () => {
         // Sin formularios disponibles
         Toast.fire({
           icon: "info",
-          title: "No hay formularios disponibles para este cliente",
+          title: t("monitoringModal.ErrorForms"),
         });
       }
-    }
-  };
-
-  // Validar los campos de la primer vista (Cliente, formulario y fecha de monitorización)
-  // const handleNextStep = async () => {
-  //   if (monitoringStep === 1) {
-  //     const isClientValid = selectedClientId !== "";
-  //     const isFormValid = selectedFormId !== "";
-  //     const isDateValid = monitoringDate !== "";
-
-  //     setClientError(!isClientValid);
-  //     setFormError(!isFormValid);
-  //     setDateError(!isDateValid);
-
-  //     if (!isClientValid || !isFormValid || !isDateValid) {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Faltan campos obligatorios",
-  //         html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-  //         customClass: "swal-content-center",
-  //       });
-  //       return;
-  //     }
-
-  //     setMonitoringStep(2);
-  //   } else if (monitoringStep === 2) {
-  //     try {
-  //       const result = await handleSaveMonitoring(score, check);
-  //       if (result && result.success) {
-  //         setMonitoringStep(3);
-  //       } else {
-  //         Swal.fire({
-  //           icon: "error",
-  //           title: "No se pudo guardar",
-  //           text:
-  //             result?.message || "Ocurrió un error al guardar la evaluación.",
-  //         });
-  //       }
-  //     } catch (error) {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Error inesperado",
-  //         text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
-  //       });
-  //     }
-  //   } else if (monitoringStep === 3) {
-  //     try {
-  //       const result = await saveFeedback(feedback);
-
-  //       if (result && result.success) {
-  //         setSaveFeedback(true);
-  //         Swal.fire({
-  //           icon: "success",
-  //           title: "Feedback guardado",
-  //           text: "La información adicional fue almacenada correctamente.",
-  //         });
-  //       } else {
-  //         Swal.fire({
-  //           icon: "error",
-  //           title: "No se pudo guardar el feedback",
-  //           text: result?.message || "Ocurrió un error al guardar el feedback.",
-  //         });
-  //       }
-  //     } catch (error) {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Error inesperado",
-  //         text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
-  //       });
-  //     }
-  //   }
-  // };
-
-  const handleNextStep = async () => {
-    if (monitoringStep === 1) {
-      const isClientValid = selectedClientId !== "";
-      const isFormValid = selectedFormId !== "";
-      const isDateValid = monitoringDate !== "";
-
-      setClientError(!isClientValid);
-      setFormError(!isFormValid);
-      setDateError(!isDateValid);
-
-      if (!isClientValid || !isFormValid || !isDateValid) {
-        Swal.fire({
-          icon: "error",
-          title: "Faltan campos obligatorios",
-          html: '<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-          customClass: "swal-content-center",
-        });
-        return;
-      }
-
-      setMonitoringStep(2); // pasar a paso 2 sin guardar aún
-    } else if (monitoringStep === 2) {
-      // 🔒 COMENTADO: guardar evaluación en backend
-      /*
-    try {
-      const result = await handleSaveMonitoring(score, check);
-      if (result && result.success) {
-        setMonitoringStep(3);
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "No se pudo guardar",
-          text: result?.message || "Ocurrió un error al guardar la evaluación.",
-        });
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error inesperado",
-        text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
-      });
-    }
-    */
-
-      // Por ahora, solo pasar a la vista 3 directamente
-      setMonitoringStep(3);
-    } else if (monitoringStep === 3) {
-      // 🔒 COMENTADO: guardar feedback en backend
-      /*
-    try {
-      const result = await saveFeedback(feedback);
-      if (result && result.success) {
-        setSaveFeedback(true);
-        Swal.fire({
-          icon: "success",
-          title: "Feedback guardado",
-          text: "La información adicional fue almacenada correctamente.",
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "No se pudo guardar el feedback",
-          text: result?.message || "Ocurrió un error al guardar el feedback.",
-        });
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error inesperado",
-        text: "No se pudo guardar la evaluación. Inténtalo de nuevo.",
-      });
-    }
-    */
-
-      // Por ahora, solo dar confirmación visual
-      Swal.fire({
-        icon: "success",
-        title: "¡Proceso completado!",
-        text: "Has completado todos los pasos.",
-      });
     }
   };
 
@@ -368,7 +214,7 @@ const AdminList = () => {
     } else {
       Toast.fire({
         icon: "info",
-        title: "No existen bloques creados para este formulario",
+        title: t("monitoringModal.ErrorBlocks"),
       });
       setBlocksForForm([]); // Limpiar bloques si no existen
     }
@@ -380,43 +226,6 @@ const AdminList = () => {
     setSelectedFormId(selectedId); // actualizar ID del formulario
 
     await handleLoadBlocks(e); // también carga los bloques asociados al formulario seleccionado
-  };
-
-  // Guarda una nueva monitorización en el sistema
-  const handleSaveMonitoring = async () => {
-    try {
-      const score = calFormScore();
-
-      const payload = {
-        date: monitoringDate,
-        feedback,
-        idUserAgent: selectedClientId, // o userId
-        idUserMonitor: userInfo?.id, // quien evalúa
-        idForm: selectedFormId,
-        score,
-      };
-
-      const response = await fetch(
-        "http://localhost:3000/api/answersform/monitoring",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error guardando monitoreo");
-      }
-
-      alert("Monitoreo guardado con éxito");
-      // Aquí puedes resetear estados o avanzar de paso
-    } catch (error) {
-      console.error(error);
-      alert("Error al guardar monitoreo: " + error.message);
-    }
   };
 
   // MODALS //
@@ -517,8 +326,6 @@ const AdminList = () => {
 
     const agentData = await getAgentById(admin.id);
 
-    setTitle("Información");
-
     firstName.handleChange(agentData?.firstname || "");
     lastName.handleChange(agentData?.lastname || "");
     middleName.handleChange(agentData?.middlename || "");
@@ -544,13 +351,7 @@ const AdminList = () => {
     // Abrimos el modal de vista
     setOpenViewModal(true);
   };
-
-  // Modal de visualización de monitoreos
-  const openModalView = async (op, admin) => {
-    
-  }
-
-  //Cerrar modal
+  //para cerrar el modal
   const handleCloseViewModal = () => {
     setOpenViewModal(false);
     setViewAdminData(null);
@@ -597,94 +398,200 @@ const AdminList = () => {
     return Math.round(total * 10) / 10;
   };
 
-  //Guarda las respuestas del formulario
-  const handleSaveAnswers = async () => {
-    if (!monitoringDate) {
-      setDateError(true);
-      Toast.fire({
-        icon: "warning",
-        title: "📅 Por favor selecciona una fecha para la monitorización.",
-      });
-      return;
+  const validarRespuesta = (pregunta) => {
+    if (pregunta.id_type_question === 1) {
+      const respuestasCorrectas = pregunta.selected_answer
+      ? pregunta.selected_answer.split(",").map((r) => parseInt(r.trim()))
+      : [];
+
+      const seleccionUsuario = pregunta.seleccionMultiple || [];
+
+      const opciones = pregunta.select_option
+        ? pregunta.select_option.split(",").map((opt) => opt.trim())
+        : [];
+
+      const indicesSeleccion = seleccionUsuario.map((opt) => opciones.indexOf(opt)).sort();// Convertimos selección del usuario a índices
+      respuestasCorrectas.sort();// Ordenamos también las respuestas correctas
+
+      return (
+        indicesSeleccion.length === respuestasCorrectas.length &&
+        indicesSeleccion.every((val, idx) => val === respuestasCorrectas[idx])
+      );
     }
 
-    const respuestasAEnviar = {
-      monitoringDate,
-      userId: userInfo.id,
-      answers: [],
-    };
+    if (pregunta.id_type_question === 2) {
+      const respuestasCorrectas = pregunta.selected_answer
+        ? pregunta.selected_answer.split(",").map((r) => r.trim())
+        : [];
+      const seleccionUsuario = pregunta.respuestaSeleccionada || "";
+      return respuestasCorrectas.length === 1 && seleccionUsuario === respuestasCorrectas[0];
+    }
 
-    for (const bloque of blocksWithPer) {
-      for (const pregunta of bloque.preguntas) {
-        if (pregunta.evaluacion === "") {
-          console.warn(`⚠️ Pregunta sin evaluación (ID: ${pregunta.id}`);
-          continue;
+    if (pregunta.id_type_question === 3) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleUpdatePregunta = (idPregunta, campo, valor) => {
+    const updatedBlocks = blocksForForm.map((block) => {
+      const updatedPreguntas = block.preguntas.map((preg) => {
+        if (preg.id === idPregunta) {
+          const preguntaActualizada = { ...preg, [campo]: valor };
+
+          const esCorrecta = validarRespuesta(preguntaActualizada);
+
+          // 🔍 ver si respondió bien o no
+          /*console.log(`Pregunta ID: ${preg.id}`);
+          console.log(`Campo actualizado: ${campo}`);
+          console.log(`Valor ingresado:`, valor);
+          console.log(`¿Respuesta correcta?:`, esCorrecta ? "✅ SÍ" : "❌ NO");
+          console.log(`Respuesta esperada:`, preguntaActualizada.selected_answer);
+          console.log(`Respuesta del usuario:`, preguntaActualizada);*/
+
+          return {
+            ...preguntaActualizada, evaluacion: esCorrecta ? "0" : "1",
+          };
         }
+        return preg;
+      });
 
-        const answer_text =
-          pregunta.evaluacion === "1" ? "correcto" : "incorrecto";
+      return { ...block, preguntas: updatedPreguntas };
+    });
 
-        respuestasAEnviar.answers.push({
-          question_id: pregunta.id,
-          answer_question: answer_text,
+    setBlocksForForm(updatedBlocks);
+
+    const updatedBlocksWithPer = calBlocksPercentage(updatedBlocks);
+    setBlocksWithPer(updatedBlocksWithPer);
+  };
+
+  //Guarda monitoreo, respuestas y maneja el paso del modal
+  const handleNextStep = async () => {
+    if (monitoringStep === 1) {
+      const isClientValid = selectedClientId !== "";
+      const isFormValid = selectedFormId !== "";
+      const isDateValid = monitoringDate !== "";
+
+      setClientError(!isClientValid);
+      setFormError(!isFormValid);
+      setDateError(!isDateValid);
+
+      if (!isClientValid || !isFormValid || !isDateValid) {
+        Toast.fire({
+          icon: "error",
+          title: t("monitoringModal.AlertData"),
+          //'<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
+        });
+        return;
+      }
+
+      setMonitoringStep(2);
+    } else if (monitoringStep === 2) {
+      // Verifica si todas las preguntas están respondidas
+      const preguntasNoRespondidas = [];
+      const nuevosErrores = {};
+
+      for (const bloque of blocksWithPer) {
+        for (const pregunta of bloque.preguntas) {
+          const tipo = pregunta.id_type_question;
+
+          const respondida =
+            (tipo === 1 && pregunta.seleccionMultiple && pregunta.seleccionMultiple.length > 0) ||
+            (tipo === 2 && pregunta.respuestaSeleccionada !== undefined && pregunta.respuestaSeleccionada !== "") ||
+            (tipo === 3 && pregunta.textoRespuesta && pregunta.textoRespuesta.trim() !== "");
+
+          if (!respondida) {
+            preguntasNoRespondidas.push(pregunta.id);
+            nuevosErrores[pregunta.id] = true;
+          } else {
+            nuevosErrores[pregunta.id] = false;
+          }
+        }
+      }
+
+      setErroresPorPregunta(nuevosErrores);
+      if (preguntasNoRespondidas.length > 0) {
+        Toast.fire({
+          icon: "error",
+          title: t("monitoringModal.AlertQuestion"),
+        });
+        return;
+      }
+      setMonitoringStep(3);
+    } else if (monitoringStep === 3) {
+      if (!feedback || feedback.trim() === "") {
+        setFeedbackError(true); // activa el borde rojo
+        Toast.fire({
+          icon: "error",
+          title: t("monitoringModal.AlertFeedback"),
+        });
+        return;
+      } else {
+        setFeedbackError(false); // limpia el error si todo está bien
+      }
+
+      const payload = {
+        monitoringDate,
+        id_user_monitor: userInfo.id,
+        id_user_agent: idToEdit, // correcto: id del agente monitoreado
+        id_form: selectedFormId,
+        score: calFormScore(),
+        feedback,
+        answers: [],
+      };
+
+      for (const bloque of blocksWithPer) {
+        for (const pregunta of bloque.preguntas) {
+          let answer_value = null;
+
+          if (pregunta.id_type_question === 1) {
+            if (pregunta.seleccionMultiple && pregunta.seleccionMultiple.length > 0) {
+              const opciones = pregunta.select_option.split(",").map((o) => o.trim());
+              const indicesSeleccionados = pregunta.seleccionMultiple
+                .map((opcionSeleccionada) => opciones.indexOf(opcionSeleccionada))
+                .filter(index => index !== -1);
+              answer_value = indicesSeleccionados.join(",");
+            }
+          } else if (pregunta.id_type_question === 2) {
+            if (pregunta.respuestaSeleccionada !== undefined && pregunta.respuestaSeleccionada !== "") {
+              answer_value = pregunta.respuestaSeleccionada;
+            }
+          } else if (pregunta.id_type_question === 3) {
+            if (pregunta.textoRespuesta && pregunta.textoRespuesta.trim() !== "") {
+              answer_value = pregunta.textoRespuesta.trim();
+            }
+          }
+
+          if (answer_value === null || answer_value === "") continue;
+
+          payload.answers.push({
+            question_id: pregunta.id,
+            answer_question: answer_value,
+          });
+        }
+      }
+
+      try {
+        const response = await saveMonitoringAndAnswers(payload);
+
+        Toast.fire({
+          icon: "success",
+          title: t("alertCreateEdit.SuccessAlert"),
+        });
+
+        formClientReset();
+      } catch (error) {
+        let errorMessage = `${t("alertCreateEdit.ErrorAlert")}`;
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+        Toast.fire({
+          icon: "error",
+          title: errorMessage,
         });
       }
     }
-
-    if (respuestasAEnviar.answers.length === 0) {
-      Toast.fire({
-        icon: "warning",
-        title: "❗ Completa al menos una evaluación antes de guardar.",
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:3000/api/answersform", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(respuestasAEnviar),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error al guardar respuestas");
-      }
-
-      Toast.fire({
-        icon: "success",
-        title: "✅ Todas las respuestas fueron guardadas correctamente.",
-      });
-
-      // Opcionalmente pasar al siguiente paso
-      // setMonitoringStep(3);
-    } catch (error) {
-      console.error("❌ Error al guardar el formulario completo:", error);
-      Toast.fire({
-        icon: "error",
-        title: "❌ Ocurrió un error al guardar las respuestas.",
-      });
-    }
-  };
-
-  // Clacula el % del bloque en tiempo real
-  const handleUpdatePregunta = (idPregunta, campo, valor) => {
-    const updated = blocksForForm.map((block) => ({
-      ...block,
-      preguntas: block.preguntas.map((p) =>
-        p.id === idPregunta ? { ...p, [campo]: valor } : p
-      ),
-    }));
-    setBlocksForForm(updated); // Vuelve a calcular el valor en % del bloque
-  };
-
-  // Mapeo de tipo de errores
-  const errorLabels = {
-    ecc_opt: "ECC - Error crítico de cumplimiento",
-    ecuf_opt: "ECUF - Error crítico de usuario final",
-    ecn_opt: "ECN - Error crítico de negocio",
   };
 
   // Props que se pasan al modal principal para crear o editar monitorizaciones
@@ -723,45 +630,44 @@ const AdminList = () => {
     setFormError,
     dateError,
     setDateError,
+    feedbackError,
+    setFeedbackError,
+    erroresPorPregunta,
+    setErroresPorPregunta,
     selectedBlockId,
     setSelectedBlockId,
     handleNextStep,
     open: isModalOpen,
-    errorLabels,
+    feedback,
+    setFeedback,
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
-  const modalViewAdminProps = {
-    open: openViewModal,
-    onClose: handleCloseViewModal,
-    formatDateTimeShort,
-    registration_date: { input: viewAdminData?.registration_date || "" },
-    type: { input: viewAdminData?.type || "" },
-    last_visit_date: { input: viewAdminData?.last_visit_date || "" },
-    selectedClients: viewAdminData?.clients || [],
-    firstName: { input: viewAdminData?.firstname || "" },
-    middleName: { input: viewAdminData?.middlename || "" },
-    lastName: { input: viewAdminData?.lastname || "" },
-    state: { input: viewAdminData?.state || 0 },
-    language: { input: viewAdminData?.language || "en" },
-    email: { input: viewAdminData?.email || "" },
-    listClients,
-    t,
-  };
+const modalViewAdminProps = {
+  open: openViewModal,
+  onClose: handleCloseViewModal,
+  formatDateTimeShort,
+  registration_date: { input: viewAdminData?.registration_date || "" },
+  type: { input: viewAdminData?.type || "" },
+  last_visit_date: { input: viewAdminData?.last_visit_date || "" },
+  selectedClients: viewAdminData?.clients || [],
+  firstName: { input: viewAdminData?.firstname || "" },
+  middleName: { input: viewAdminData?.middlename || "" },
+  lastName: { input: viewAdminData?.lastname || "" },
+  state: { input: viewAdminData?.state || 0 },
+  language: { input: viewAdminData?.language || "en" },
+  email: { input: viewAdminData?.email || "" },
+  listClients,
+  t,
+};
+
 
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
-        <Box
-          sx={{
-            lignItems: "stretch",
-            flexWrap: "nowrap",
-            padding: 0,
-            display: "flex",
-          }}
-        >
+        <Box sx={{lignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex"}}>
           {/* <SidebarLT1 /> */}
 
           <Box className="container" mt={0}>
@@ -769,16 +675,12 @@ const AdminList = () => {
               <TableAdmin
                 header={selectedKeys}
                 data={admins}
-                modalId={"modalAdmin"}
-                modalId2={"modalViewAdmin"}
                 onUpdate={(payload) => openModal(2, payload)}
                 onView={(payload) => openModalCont(payload)}
               />
             ) : (
               <Box sx={{ textAlign: "center", py: 5 }}>
-                <Typography variant="h6">
-                  No existen agentes registrados
-                </Typography>
+                <Typography variant="h6">No existen agentes registrados</Typography>
               </Box>
             )}
           </Box>

@@ -65,7 +65,10 @@ const TableFormReport = ({ header, data, onUpdate, onView, modalId, modalId2 }) 
     page * rowsPerPage + rowsPerPage
   );
 
+    
+
   const indexOffset = header.findIndex(h => h.key.startsWith("Pregunta"));
+  
   
   return (
     <Box className="table-container">
@@ -112,7 +115,7 @@ const TableFormReport = ({ header, data, onUpdate, onView, modalId, modalId2 }) 
                 <TableCell key={i} align="center" sx={{
                   fontWeight: "bold",
                   whiteSpace: "normal",
-                  minWidth: item.key === "feedback" ? 250 : 200,
+                  minWidth: item.key === "feedback" ? 250 : 300,
                   maxWidth: item.key === "feedback" ? "none" : 300,
                   wordWrap: "break-word",
                 }}>
