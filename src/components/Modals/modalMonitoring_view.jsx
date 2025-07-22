@@ -3,11 +3,15 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
   Typography,
   Button,
   Grid,
   Box,
+  Divider,
+  Chip,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const ModalMonitoringView = ({ open, closeModal, data }) => {
   console.log("Data recibida en el modal:", data);
@@ -65,6 +69,10 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
       fullWidth
       disableAutoFocus
     >
+      {/* <IconButton size="large">
+        <CloseIcon />
+      </IconButton> */}
+
       <DialogTitle>Resumen de Monitorización</DialogTitle>
       <Grid item xs={2}>
         <DialogContent dividers>
@@ -94,9 +102,114 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
           </Grid>
         </DialogContent>
       </Grid>
-      <Box>
+      
+      <Box sx={{ width: "100%" }}>
         <DialogTitle>Datos del monitoreo</DialogTitle>
-        <DialogContent></DialogContent>
+        <DialogContent dividers>
+          {/* Tipología */}
+          <Box
+            mb={2}
+            sx={{
+              fullWidth: "100%",
+              borderBottom: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Typography variant="h6">Tipología</Typography>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                Puntuación: 0.00 | Media ponderada: N/A
+              </Typography>
+            </Grid>
+            <Divider sx={{ my: 1 }} />
+          </Box>
+
+          {/* FCR */}
+          <Box
+            mb={2}
+            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+          >
+            <Typography variant="h6">FCR</Typography>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                Puntuación: 0.00 | Media ponderada: N/A
+              </Typography>
+            </Grid>
+            <Divider sx={{ my: 1 }} />
+          </Box>
+
+          {/* Relacionamiento 1 */}
+          <Box
+            mb={2}
+            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+          >
+            <Typography variant="h6">Relacionamiento 1</Typography>
+            <Typography variant="body2" sx={{ ml: 2 }}>
+              1. Asistir de forma oportuna dentro del tiempo establecido. (INC)
+            </Typography>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                Puntuación: 5.00 | Media ponderada: 100.00
+              </Typography>
+              <Chip label="Correcto" color="success" />
+            </Grid>
+            <Divider sx={{ my: 1 }} />
+          </Box>
+
+          {/* Relacionamiento 2 */}
+          <Box
+            mb={2}
+            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+          >
+            <Typography variant="h6">Relacionamiento 2</Typography>
+            <Typography variant="body2" sx={{ ml: 2 }}>
+              1. Bienvenida y presentación clara. (INC)
+            </Typography>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                Puntuación: 5.00 | Media ponderada: 100.00
+              </Typography>
+              <Chip label="Correcto" color="success" />
+            </Grid>
+            <Divider sx={{ my: 1 }} />
+          </Box>
+
+          {/* Validación Información */}
+          <Box
+            mb={2}
+            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+          >
+            <Typography variant="h6">Validación Información</Typography>
+            <Typography variant="body2" sx={{ ml: 2 }}>
+              1. Todas las preguntas correctamente. (INC)
+            </Typography>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                Puntuación: 0.00 | Media ponderada: 0.00
+              </Typography>
+              <Chip label="Incorrecto" color="error" />
+            </Grid>
+            <Divider sx={{ my: 1 }} />
+          </Box>
+
+          {/* Habilidades blandas */}
+          <Box
+            mb={2}
+            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+          >
+            <Typography variant="h6">Habilidades blandas 1</Typography>
+            <Typography variant="body2" sx={{ ml: 2 }}>
+              1. Manejar información clara y lenguaje adecuado. (INC)
+            </Typography>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Typography variant="body2" color="text.secondary">
+                Puntuación: 5.00 | Media ponderada: 100.00
+              </Typography>
+              <Chip label="Correcto" color="success" />
+            </Grid>
+            <Divider sx={{ my: 1 }} />
+          </Box>
+        </DialogContent>
       </Box>
       <DialogActions>
         <Button onClick={closeModal} color="secondary">

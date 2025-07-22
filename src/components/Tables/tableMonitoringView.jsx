@@ -199,13 +199,13 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
         </Grid>
       </Grid>
 
-      {/* Traer el nombre del agente al que se estan revisando las monitorizaciones */}
+      {/* Traer el nombre del agente al que pertenecen las monitorizaciones */}
       {data.length > 0 && (
         <Box sx={{ mb: 1 }}>
           <Typography
             variant="body1"
             textAlign="center"
-            sx={{ fontWeight: "bold", fontSize: "20px", paddingTop: "6px" }}
+            sx={{ fontWeight: "bold", fontSize: "20px", paddingTop: "6px", paddingBottom: "6px"}}
           >
             {data[0].agent_name}
           </Typography>
