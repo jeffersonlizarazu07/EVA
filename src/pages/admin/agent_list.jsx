@@ -45,7 +45,7 @@ const AdminList = () => {
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
   const [feedback, setFeedback] = React.useState("");
-
+  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
 
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
@@ -55,7 +55,8 @@ const AdminList = () => {
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
   const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
   const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
-  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
+  const [feedbackError, setFeedbackError] = useState(false);
+  const [erroresPorPregunta, setErroresPorPregunta] = useState({});
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -123,7 +124,7 @@ const AdminList = () => {
       console.error("Error al cargar los administradores:", error);
       Toast.fire({
         icon: "error",
-        title: "Error al cargar administradores",
+        title: t("monitoringModal.ErrorAdmins"),
       });
     } finally {
       setLoading(false);
@@ -173,11 +174,9 @@ const AdminList = () => {
 
     if (isNaN(numericId) || numericId <= 0) {
       console.error("ID de cliente inválido:", selectedId);
-      Swal.fire({
-        title: "Error",
-        text: "ID de cliente inválido",
+      Toast.fire({
         icon: "error",
-        confirmButtonText: "Ok",
+        title: t("monitoringModal.ErrorClients"),
       });
       return;
     }
@@ -198,7 +197,7 @@ const AdminList = () => {
         // Sin formularios disponibles
         Toast.fire({
           icon: "info",
-          title: "No hay formularios disponibles para este cliente",
+          title: t("monitoringModal.ErrorForms"),
         });
       }
     }
@@ -216,7 +215,7 @@ const AdminList = () => {
     } else {
       Toast.fire({
         icon: "info",
-        title: "No existen bloques creados para este formulario",
+        title: t("monitoringModal.ErrorBlocks"),
       });
       setBlocksForForm([]); // Limpiar bloques si no existen
     }
@@ -327,8 +326,6 @@ const AdminList = () => {
     await loadUserClients(admin.id);
 
     const agentData = await getAgentById(admin.id);
-
-    setTitle("Información");
 
     firstName.handleChange(agentData?.firstname || "");
     lastName.handleChange(agentData?.lastname || "");
@@ -484,7 +481,7 @@ const AdminList = () => {
       if (!isClientValid || !isFormValid || !isDateValid) {
         Toast.fire({
           icon: "error",
-          title: "Faltan campos obligatorios",
+          title: t("monitoringModal.AlertData"),
           //'<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
         });
         return;
@@ -494,6 +491,7 @@ const AdminList = () => {
     } else if (monitoringStep === 2) {
       // Verifica si todas las preguntas están respondidas
       const preguntasNoRespondidas = [];
+      const nuevosErrores = {};
 
       for (const bloque of blocksWithPer) {
         for (const pregunta of bloque.preguntas) {
@@ -506,26 +504,34 @@ const AdminList = () => {
 
           if (!respondida) {
             preguntasNoRespondidas.push(pregunta.id);
+            nuevosErrores[pregunta.id] = true;
+          } else {
+            nuevosErrores[pregunta.id] = false;
           }
         }
       }
 
+      setErroresPorPregunta(nuevosErrores);
       if (preguntasNoRespondidas.length > 0) {
         Toast.fire({
           icon: "error",
-          title: "Debes responder todas las preguntas.",
+          title: t("monitoringModal.AlertQuestion"),
         });
         return;
       }
       setMonitoringStep(3);
     } else if (monitoringStep === 3) {
       if (!feedback || feedback.trim() === "") {
+        setFeedbackError(true); // activa el borde rojo
         Toast.fire({
           icon: "error",
-          title: "El campo de feedback es obligatorio.",
+          title: t("monitoringModal.AlertFeedback"),
         });
         return;
+      } else {
+        setFeedbackError(false); // limpia el error si todo está bien
       }
+
       const payload = {
         monitoringDate,
         id_user_monitor: userInfo.id,
@@ -565,14 +571,6 @@ const AdminList = () => {
             answer_question: answer_value,
           });
         }
-      }
-
-      if (payload.answers.length === 0) {
-        Swal.fire({
-          icon: "warning",
-          title: "Completa al menos una evaluación antes de guardar.",
-        });
-        return;
       }
 
       try {
@@ -633,6 +631,10 @@ const AdminList = () => {
     setFormError,
     dateError,
     setDateError,
+    feedbackError,
+    setFeedbackError,
+    erroresPorPregunta,
+    setErroresPorPregunta,
     selectedBlockId,
     setSelectedBlockId,
     handleNextStep,
@@ -674,8 +676,6 @@ const modalViewAdminProps = {
               <TableAdmin
                 header={selectedKeys}
                 data={admins}
-                modalId={"modalAdmin"}
-                modalId2={"modalViewAdmin"}
                 onUpdate={(payload) => openModal(2, payload)}
                 onView={(payload) => openModalCont(payload)}
               />
