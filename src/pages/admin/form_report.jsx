@@ -11,6 +11,7 @@ import {
     MenuItem,
     FormControl,
     Select,
+    Alert ,
     
 } from "@mui/material";
 import axios from "axios";
@@ -37,6 +38,7 @@ import {
   
   getMonitoring,
   getClientsAndForms,
+  getResponseMult
 } from "../../services/agent_listService";
 
 
@@ -56,16 +58,37 @@ const FormReport= () => {
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     
+    
     //  formulario 
-    const [fullMonitoring, setFullMonitoring] = useState([]); // Guarda todos los monitoreos
+    const [fullMonitoring, setFullMonitoring] = useState([]); 
+    // estado para respuestas multiples 
+    const [responseMulti, setResponseMulti]= useState([]);
+    // 
 
     // formulario headers dinamicos
+    /*
     const preguntaHeaders = fullMonitoring.length > 0
       ? fullMonitoring[0].preguntas.map((p, index) => ({
           key: `Pregunta ${index + 1}`,
           label: p.texto,
         }))
-      : [];
+      : [];*/
+    const preguntaSet = new Map();
+
+    fullMonitoring.forEach(monitoreo => {
+      monitoreo.preguntas.forEach(p => {
+        if (!preguntaSet.has(p.texto)) {
+          preguntaSet.set(p.texto, p);
+        }
+      });
+    });
+
+    // Ahora construimos los headers únicos y ordenados
+    const preguntaHeaders = Array.from(preguntaSet.keys()).map((texto, index) => ({
+      key: `Pregunta ${index + 1}`,
+      label: texto
+    }));
+
 
     const selectedKeys = [
       
@@ -79,6 +102,7 @@ const FormReport= () => {
       
       { key: "feedback", label: "Feedback" },
     ];
+   
     
     // clientes corregidos
     const [clientsAndFroms, setClientsAndForms] = useState([]);
@@ -92,6 +116,7 @@ const FormReport= () => {
     // formato para exel
     const [formatExel, setFormatExel]= useState([]);
 
+    
     // Manejar cambio de fechas
     const handleStartDateChange = (date) => setStartDate(date);
     const handleEndDateChange = (date) => setEndDate(date);
@@ -103,10 +128,15 @@ const FormReport= () => {
     
     // para inicializar la informacion de la tabla y clientes en el filtro 
     useEffect(() => {
+      
+      getResponseMultFuncion();
       getClientsAndFormsFuncion();
       if (!reportesFiltrados || reportesFiltrados.length === 0) {
         dataMonitoring();
+        
+
       }
+      //console.log("Pruebas heder dinamicos:", fullMonitoring)
     }, []);
 
     // cambio de informacion en la tabla por filtros
@@ -114,6 +144,7 @@ const FormReport= () => {
       if (reportesFiltrados.length > 0) {
         dataMonitoring();
       }
+      //console.log('Formato exel ...', formatExel)
     }, [reportesFiltrados]);
 
     // cambio de lenguaje y clientes en el filtro 
@@ -122,6 +153,59 @@ const FormReport= () => {
       getClientsAndFormsFuncion();
       
     }, [languageUser, i18n]);
+
+    // logica para hacer comparacion con answer 
+    const getRespuestaTransformada = (pregunta) => {
+      // Se extrae la respuesta original y el id de la pregunta
+      const respuestaOriginal = pregunta.respuesta;
+      const idPregunta = pregunta.id_questions;
+
+      // Se busca en la lista de respuestas múltiples la que corresponde a esta pregunta
+      const respuestaMulti = responseMulti.find(r => r.question_id === idPregunta);
+
+      // Si no hay configuración de respuesta múltiple o no hay respuesta, se retorna tal cual
+      if (!respuestaMulti || !respuestaOriginal) return respuestaOriginal;
+
+      // Si la respuesta es un texto vacío o null, se retorna tal cual
+      if (respuestaOriginal === "" || respuestaOriginal === null) {
+        return respuestaOriginal;
+      }
+
+      // Si la respuesta es "0", se interpreta como "No seleccionó"
+      //if (respuestaOriginal === "0") return "No seleccionó";
+      
+      // Separamos los índices seleccionados si vienen separados por coma 
+      const indicesSeleccionados = respuestaOriginal.split(",");
+
+      // Obtenemos las opciones posibles separadas por coma, si existen
+      const opciones = respuestaMulti.select_option?.split(",") || [];
+
+      // Mapeamos los índices a sus respectivas opciones de texto
+      const opcionesSeleccionadas = indicesSeleccionados.map((indice) => {
+        const idx = parseInt(indice.trim(), 10); // Convertimos el índice a número
+        // si es un string que de ese string
+        if (isNaN(idx)) {
+          return respuestaOriginal;
+        }
+        // Retornamos la opción correspondiente si existe, si no, un texto genérico
+        return opciones[idx] ? opciones[idx].trim() : `Opción ${idx}`;
+      });
+
+      // Retornamos todas las opciones seleccionadas unidas por " | "
+      return opcionesSeleccionadas.join(" | ");
+    };
+
+    // obtener respuestas multiple 
+    const getResponseMultFuncion = async ()=>{
+      try {
+        const response = await getResponseMult();
+        //console.log("Respuestas multiple .........", response)
+        setResponseMulti(response);
+      } catch (error) {
+        console.error("Error obtener respuestas multiple :", error);
+      }
+
+    }
 
     // obtener clientes y formularios
     const getClientsAndFormsFuncion = async () => {
@@ -174,7 +258,13 @@ const FormReport= () => {
 
         agrupado[key].preguntas.push({
           texto: item.question_name,
-          respuesta: item.answer,
+          //respuesta: item.answer,
+          
+          respuesta: getRespuestaTransformada({
+            respuesta: item.answer,
+            id_questions : item.id
+          }),
+          id_questions : item.id
         });
       });
 
@@ -187,6 +277,7 @@ const FormReport= () => {
     const getFilterReports = async ()=>{
 
       try {
+        // formateo de fecha sin horas
         const formattedStartDate = startDate ? dayjs(startDate).format("YYYY-MM-DD") : "";
         const formattedEndDate = endDate ? dayjs(endDate).format("YYYY-MM-DD") : "";
         ///answersform/filter/:fromId/:starDate/:endDate
@@ -194,7 +285,7 @@ const FormReport= () => {
           `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}`,
             config
         )
-        console.log("Reportes Filtradossssssssssssssssssss",filtro.data)
+        //console.log("Reportes Filtradossssssssssssssssssss",filtro.data)
         if (!filtro.data|| filtro.data.length === 0) {
           Swal.fire({
             title: t("reports.sin_datos"),
@@ -231,38 +322,48 @@ const FormReport= () => {
 
 
       const data = Object.values(formatExel).map((item) => {
-        const preguntasPlanas = item.preguntas?.reduce((acc, p, i) => {
-          acc[`Pregunta ${i + 1}`] = p.respuesta;
-          return acc;
-        }, {});
+         // Se convierten las preguntas (que son un array de objetos) en un solo objeto plano
+          // donde cada clave es el texto de la pregunta y el valor es la respuesta
+          const preguntasPlanas = item.preguntas?.reduce((acc, p, i) => {
+            acc[` ${p.texto}`] = p.respuesta;
+            return acc;
+          }, {});
 
-        return {
-          Fecha: item.fecha_monitoreo,
-          Puntaje: item.score,
-          Agente: item.nombre_agente,
-          Monitor: item.nombre_monitor,
-          Encuesta: item.nombre_form,
-          ...preguntasPlanas,
-          Comentario: item.feedback,
-        };
+          // Se devuelve un objeto que representa una fila del Excel,
+          // incluyendo campos generales + preguntas planas + feedback
+          return {
+            Agente: item.nombre_agente,
+            Evaluador: item.nombre_monitor,
+            Fecha_de_Monitoreo: item.fecha_monitoreo,
+            Score: item.score,
+            Formulario: item.nombre_form,
+            ...preguntasPlanas,     // Se agregan dinámicamente todas las preguntas y respuestas
+            Feedback: item.feedback,
+          };
       });
       
 
+      // Se convierte el array de objetos en una hoja de cálculo de Excel
       const worksheet = XLSX.utils.json_to_sheet(data);
+
+      // Se crea un nuevo libro de Excel
       const workbook = XLSX.utils.book_new();
 
+      // Se agrega la hoja al libro con el nombre "Reportes"
       XLSX.utils.book_append_sheet(workbook, worksheet, "Reportes");
 
+      // Se genera el archivo Excel en un formato binario (array buffer)
       const exelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
 
+      // Se crea un objeto Blob con el contenido del archivo Excel
       const blob = new Blob([exelBuffer], {
-        type:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
       });
 
+      // Se dispara la descarga del archivo Excel en el navegador con nombre "reportes_filtrados.xlsx"
       saveAs(blob, "reportes_filtrados.xlsx");
     };
 
@@ -270,18 +371,23 @@ const FormReport= () => {
     // obtener todos los monitoreos desde el backend
     const dataMonitoring = async () => {
       try {
-        //const data = await getMonitoring();
+        const data = reportesFiltrados;
+        /*
         const data =  reportesFiltrados && reportesFiltrados.length>0 
           ? reportesFiltrados
           : await getMonitoring();
-        ;
+        ;*/
+        
+        
         const datosAgrupados = agruparPorMonitoreo(data);
         setFullMonitoring(datosAgrupados);
+        //console.log("monitoreo", datosAgrupados)
       } catch (error) {
         console.error("error al obtener los monitoreos:", error);
       }
     };
  
+
     return(
         <Box className="App" sx={{ overflow: "hidden" }}>
             <Box id="body">
@@ -349,7 +455,7 @@ const FormReport= () => {
                                 label={t("survey.selecciona_cliente")}
                                 onChange={(e)=>{
                                   setIdClienteFiltro(e.target.value);
-                                  console.log("ID Cliente seleccionado:", e.target.value);
+                                  
                                 }}
                               >
                                 <MenuItem value={''}>None</MenuItem>
@@ -368,7 +474,7 @@ const FormReport= () => {
 
                             {/* vista formularios */}
                             <FormControl required sx={{ minWidth: "20%" }} className="readOnlyField">
-                              <InputLabel>{t("reports.encuesta")}</InputLabel>
+                              <InputLabel>{("Formulario")}</InputLabel>
                               <Select
                                 labelId="survey-select-label"
                                 id="survey-select"
@@ -378,7 +484,7 @@ const FormReport= () => {
                                   const response = parseInt(e.target.value);
                                   const infoCapturado = formsInfo.find(i=> i.id === response)
                                   setFiltroSeleccionado(Number(infoCapturado.id));
-                                  console.log("Formulario:", filtroSeleccionado);
+                                  
                                 }}
                                 input={<OutlinedInput label="Formulario" />}
                               >
@@ -430,6 +536,13 @@ const FormReport= () => {
                               </IconButton>
                             </ButtonGroup>
                           </Box>
+                          {fullMonitoring.length === 0 && (
+                                                <Box mt={3}>
+                                                  <Alert severity="info" sx={{ textAlign: "center" }}>
+                                                    {("Llena los datos de la consulta para generar los Formularios.")}
+                                                  </Alert>
+                                                </Box>
+                          )}
                           
                         </CardContent>
                       </Card>
