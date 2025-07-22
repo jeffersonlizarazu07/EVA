@@ -41,7 +41,7 @@ const TableAdmin = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
-  const navigate = useNavigate();
+  const nav = useNavigate();
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -244,7 +244,7 @@ const TableAdmin = ({
 
                       <IconButton
                         onClick={() => {
-                          navigate(`/monitoring_view/${item.id}`);
+                          nav(`/monitoring_view/${item.id}`);
                         }}
                         size="small"
                         title="Ver monitoreos"
