@@ -20,6 +20,7 @@ import Agent_Monitoring from "./pages/admin/agent_monitoring";
 import Forms from "./pages/admin/form_list";
 import SurveyBlocks from "./pages/quality/surveyBlocks";
 import FormReport from "./pages/admin/form_report";
+import AgentMonitoringView from "./pages/admin/monitoring_View";
 /* ---------------------------------------------------------*/
 
 /* Admin Imports */
@@ -70,8 +71,18 @@ export const App = () => {
           <Route path="/gratitude" element={<Gratitude/>}/>
           <Route path="/agent_monitoring" element={<Agent_Monitoring />} />
           <Route path="/forms" element={<Forms />} />
-          <Route path="/forms_report" element={<FormReport/>}/>
+
+          <Route
+              element={
+                <ProtectedRoute redirectPath="/" allowedUserTypes={[1,2,3,4]}/>
+              }
+            >
+            
+            <Route path="/forms_report" element={<FormReport/>}/>
+          </Route>
+          
           <Route path="/survey_blocks/:id_form" element={<SurveyBlocks />} />
+          <Route path="/monitoring_view/:agentId" element={<AgentMonitoringView />} />
           {/* Pruebas de barras */}
           {/*error views*/}
           <Route path="/auth/inactive" element={<Inactive />} />

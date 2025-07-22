@@ -7,6 +7,18 @@ const config = {
   withCredentials: true,
 };
 
+
+//obtener respuestas multiple
+export const getResponseMult = async ()=>{
+  try {
+    const response = await axios.get(`${API_BASE_URL}/answersform/getResponseMult`, config)
+    return response.data;
+  } catch (error) {
+    console.error("Error obtener respuestas multiple:", error);
+    throw error;
+  }
+}
+
 //obtener Clientes y informacion de los forms_set
 
 export const getClientsAndForms = async () => {
@@ -190,3 +202,22 @@ export const saveMonitoringAndAnswers = async (payload) => {
     throw error;
   }
 }; 
+
+// Traer monitorizaciones por agente
+export const getMonitoringByUser = async (id) => {
+  if (!id) {
+    console.error("getMonitoringByUser fue llamado sin userId");
+    throw new Error("userId no proporcionado");
+  }
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/monitoring/user/${id}`,
+      config
+    );
+    console.log("📡 Respuesta de la API:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener monitoreos del agente:", error);
+    throw error; 
+  }
+};
