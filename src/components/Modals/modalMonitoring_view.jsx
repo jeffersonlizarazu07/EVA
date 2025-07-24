@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -14,8 +15,31 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import shadows from "@mui/material/styles/shadows";
+import { getMonitorinStructure } from "../../services/agent_listService";
 
 const ModalMonitoringView = ({ open, closeModal, data }) => {
+  const [monitoringDetails, setMonitoringDetails] = useState([]);
+
+  useEffect(() => {
+    if (!data?.id) return; //Evitar errores si no hay data al cargar
+
+    async function fetchMonitoringDetails() {
+      try {
+        console.log("ID de monitoreo:", data.id);
+
+        const result = await getMonitorinStructure(data.id); // Usa el ID de la fila seleccionada en la tabla
+        console.log("Estructura recibida:", result);
+        setMonitoringDetails(result.details);
+      } catch (error) {
+        console.error("Error al traer los detalles:", error);
+      }
+    }
+
+    fetchMonitoringDetails();
+  }, [data?.id]); // Trae la data cada vez que cambie el ID
+
+  if (!open) return null; //No renderiza nada si el modal no está abierto
+
   console.log("Data recibida en el modal:", data);
   const header = [
     "id",
@@ -71,32 +95,53 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
       fullWidth
       disableAutoFocus
     >
-      {/* <IconButton size="large">
-        <CloseIcon />
-      </IconButton> */}
+      <Box container justifyContent="space-between" alignItems="center">
+        <DialogTitle>Resumen de Monitorización</DialogTitle>
+        <IconButton size="large">
+          <CloseIcon />
+        </IconButton>
+      </Box>
 
-      <DialogTitle>Resumen de Monitorización</DialogTitle>
-      <Grid item xs={2}>
-        <DialogContent dividers>
-          <Grid container spacing={1}>
+      <Grid item xs={12}>
+        <DialogContent
+          dividers
+          sx={{
+            backgroundColor: "#f5f7fa",
+            borderRadius: 2,
+            padding: 2,
+          }}
+        >
+          <Grid container spacing={1} sx={{ width: "100%" }}>
             {header.map((key, i) => (
-              <Grid container key={i} spacing={1}>
-                {/* Columna 1: Etiqueta */}
-                <Grid item xs={6} sm={4}>
+              <Grid
+                container
+                key={i}
+                spacing={1}
+                sx={{
+                  backgroundColor: i % 2 === 0 ? "#ffffff" : "#eef3fb",
+                  paddingY: 1,
+                  borderBottom: "1px solid #d6d6d6ff",
+                }}
+              >
+                <Grid item xs={6} sm={6}>
                   <Typography
                     variant="body2"
                     fontWeight="bold"
-                    sx={{ paddingTop: "5px", paddingLeft: "10px" }}
+                    sx={{
+                      paddingLeft: "10px",
+                      fontSize: 18,
+                      color: "#2c3e50",
+                    }}
                   >
                     {getHeaderLabel(key)}
                   </Typography>
                 </Grid>
-
-                {/* Columna 2: Valor */}
-                <Grid item xs={6} sm={8}>
-                  <Typography variant="body2" sx={{ paddingTop: "5px" }}>
-                    {" "}
-                    {data[key] ?? "Campo no disponible"}{" "}
+                <Grid item xs={6} sm={6}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: 16, color: "#555" }}
+                  >
+                    {data[key] ?? "Campo no disponible"}
                   </Typography>
                 </Grid>
               </Grid>
@@ -109,213 +154,128 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
         <DialogTitle>Datos del monitoreo</DialogTitle>
         <DialogContent dividers>
           {/* Feedback */}
-          <Box>
+          <Box
+            sx={{
+              border: "1px solid #ccc",
+              borderRadius: 2,
+              padding: 2,
+              backgroundColor: "#fafafa",
+              marginBottom: "2.1rem",
+            }}
+          >
+            {/* Título principal */}
             <Typography
               variant="h6"
-              sx={{ borderBottom: "2px solid", borderColor: "divider" }}
+              fontWeight="bold"
+              sx={{ paddingBottom: "10px" }}
             >
-              Form Feedback Summary
+              Comentario
             </Typography>
-            <Typography fontSize={14} sx={{marginBottom: "10px"}}>Feedback Summary Comment</Typography>
-            <Typography sx={{ boxShadow: 2, marginBottom: "10px", minHeight: "90px", paddingLeft: "5px"}}>
-              Aquí se mostrará el comentario.
-            </Typography>
-          </Box>
 
-          {/* Tipología */}
-          <Box
-            mb={2}
-            sx={{
-              fullWidth: "100%",
-              borderBottom: "1px solid",
-              borderColor: "divider",
-            }}
-          >
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Typography variant="h6">Tipología</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Puntuación: 0.00 | Media ponderada: N/A
+            {/* Comentario principal */}
+            <Typography
+              variant="body2"
+              sx={{
+                color: "green",
+                whiteSpace: "pre-line",
+                marginBottom: 2,
+                borderRadius: "2px",
+                border: "ButtonText",
+              }}
+            >
+              {data.feedback}
+            </Typography>
+
+            {/* Pie de página */}
+            <Grid container justifyContent="space-between">
+              <Typography
+                variant="caption"
+                sx={{ display: "block", lineHeight: 1.2 }}
+              >
+                Creado por:
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ display: "block", lineHeight: 1.2 }}
+              >
+                Creado: {data.monitoring_date}
               </Typography>
             </Grid>
-            <Divider sx={{ my: 1 }} />
-          </Box>
-
-          {/* FCR */}
-          <Box
-            mb={2}
-            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
-          >
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Typography variant="h6">FCR</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Puntuación: 0.00 | Media ponderada: N/A
-              </Typography>
-            </Grid>
-            <Divider sx={{ my: 1 }} />
-          </Box>
-
-          {/* Relacionamiento 1 */}
-          <Box
-            mb={2}
-            sx={{
-              borderBottom: "1px solid",
-              borderColor: "divider",
-              paddingBottom: "1.25rem",
-            }}
-          >
-            <Grid
-              container
-              justifyContent="space-between"
-              alignItems="flex-start"
-              spacing={2}
-              wrap="wrap"
+            <Typography
+              variant="caption"
+              sx={{ display: "block", lineHeight: 1.2 }}
             >
-              {/* Título */}
-              <Grid item xs={12} sm="auto">
-                <Typography variant="h6">Relacionamiento 1</Typography>
-              </Grid>
-
-              {/* Puntuación y ponderación */}
-              <Grid item xs={12} sm="auto">
-                <Typography variant="body2" color="text.secondary">
-                  Puntuación: 5.00 | Media ponderada: 100.00
-                </Typography>
-              </Grid>
-
-              {/* Descripción */}
-              <Grid item xs={12} sm={8}>
-                <Typography variant="body2" sx={{ ml: 2 }}>
-                  1. Asistir de forma oportuna dentro del tiempo establecido.
-                  (INC)
-                </Typography>
-              </Grid>
-
-              {/* Chip alineado derecha */}
-              <Grid
-                item
-                xs={12}
-                sm="auto"
-                sx={{
-                  display: "flex",
-                  justifyContent: { xs: "flex-start", sm: "flex-end" },
-                  width: "100%",
-                }}
-              >
-                <Chip label="Correcto" color="success" />
-              </Grid>
-            </Grid>
+              Enviado acuse de recibo:
+            </Typography>
           </Box>
 
-          {/* Relacionamiento 2 */}
-          <Box
-            mb={2}
-            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
-          >
-            <Grid
-              container
-              justifyContent="space-between"
-              alignItems="flex-start"
-              spacing={2}
-              wrap="wrap"
+          {/* Bloques de los formularios con su estructura */}
+          {monitoringDetails?.map((block) => (
+            <Box
+              key={block.block_id}
+              mb={2}
+              sx={{
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                paddingBottom: "1.25rem",
+              }}
             >
-              <Grid item xs={12} sm="auto">
-                <Typography variant="h6">Relacionamiento 2</Typography>
-              </Grid>
-              <Grid item xs={12} sm="auto">
-                <Typography variant="body2" color="text.secondary">
-                  Puntuación: 5.00 | Media ponderada: 100.00
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm="8">
-                <Typography variant="body2" sx={{ ml: 2 }}>
-                  1. Bienvenida y presentación clara. (INC)
-                </Typography>
-              </Grid>
+              {/* Fila superior con título y puntuación + chip */}
               <Grid
-                item
-                xs={12}
-                sm="auto"
-                sx={{
-                  display: "flex",
-                  justifyContent: { xs: "flex-start", sm: "flex-end" },
-                  width: "100%",
-                }}
+                container
+                justifyContent="space-between"
+                alignItems="flex-start"
+                spacing={2}
               >
-                <Chip label="Correcto" color="success" />
-              </Grid>
-            </Grid>
-            <Divider sx={{ my: 1 }} />
-          </Box>
+                {/* Título */}
+                <Grid item xs={12} sm={8}>
+                  <Typography variant="h6">{block.block_name}</Typography>
+                </Grid>
 
-          {/* Validación Información */}
-          <Box
-            mb={2}
-            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
-          >
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item xs={12} sm="auto">
-                <Typography variant="h6">Validación Información</Typography>
+                {/* Columna derecha: puntuación + chip */}
+                <Grid
+                  item
+                  xs={12}
+                  sm={4}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: { xs: "flex-start", sm: "flex-end" },
+                    gap: 1, // espacio entre puntuación y chip
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    Puntuación: 5.00 | Media ponderada: 100.00
+                  </Typography>
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm="auto" sx={{ paddingBottom: "30px" }}>
-                <Typography variant="body2" color="text.secondary">
-                  Puntuación: 0.00 | Media ponderada: 0.00
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={8}>
-                <Typography variant="body2" sx={{ ml: 2 }}>
-                  1. Todas las preguntas correctamente. (INC)
-                </Typography>
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sm="auto"
-                sx={{
-                  display: "flex",
-                  justifyContent: { xs: "flex-start", sm: "flex-end" },
-                  width: "100%",
-                }}
-              >
-                <Chip label="Incorrecto" color="error" />
-              </Grid>
-            </Grid>
-            <Divider sx={{ my: 1 }} />
-          </Box>
 
-          {/* Habilidades blandas */}
-          <Box
-            mb={2}
-            sx={{ borderBottom: "1px solid", borderColor: "divider" }}
-          >
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item xs={12} sm="auto">
-                <Typography variant="h6">Habilidades blandas 1</Typography>
-              </Grid>
-              <Grid item xs={12} sm="auto" sx={{ paddingBottom: "40px" }}>
-                <Typography variant="body2" sx={{ ml: 2 }}>
-                  1. Manejar información clara y lenguaje adecuado. (INC)
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={8}>
-                <Typography variant="body2" color="text.secondary">
-                  Puntuación: 5.00 | Media ponderada: 100.00
-                </Typography>
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sm="auto"
-                sx={{
-                  display: "flex",
-                  justifyContent: { xs: "flex-start", sm: "flex-end" },
-                  width: "100%",
-                }}
-              >
-                <Chip label="Correcto" color="success" />
-              </Grid>
-            </Grid>
-            <Divider sx={{ my: 1 }} />
-          </Box>
+              {/* Preguntas */}
+              <Box mt={1}>
+                {block.questions?.map((question) => (
+                  <Box key={question.question_id} sx={{ ml: 2, mb: 2 }}>
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Typography variant="body2">
+                        {question.question_name}
+                      </Typography>
+                      <Chip label="Correcto" color="success" />
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mt: 0.5 }}
+                    >
+                      {question.select_option || question.answer}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          ))}
         </DialogContent>
       </Box>
       <DialogActions>
