@@ -67,6 +67,74 @@ const MonitoringModel = {
       .where("monitoring.id_user_agent", userId);
   },
 
+  // Obtener monitorización estructurada por agente
+  getMonitoringDetails: async (monitoringId) => {
+    // Consulta plana para traer bloques, preguntas y respuestas
+    const rows = await knex("monitoring as m")
+      .join("form_set as f", "m.id_form", "f.id")
+      .join("blocks as b", "f.id", "b.form_id")
+      .join("questions_form as q", "b.id", "q.block_id")
+      .join("answers_form as af", function () {
+        this.on("af.question_id", "=", "q.id").andOn(
+          "af.idUser",
+          "=",
+          "m.id_user_agent"
+        );
+      })
+      .select(
+        "b.id as block_id",
+        "b.block_name",
+        "q.id as question_id",
+        "q.question_name",
+        "q.select_option",
+        "af.answer"
+        // "af.is_correct" // Suponiendo que este campo existe
+      )
+      .where("m.id", monitoringId)
+      .andWhere("m.date", knex.ref("af.date"))
+      .orderBy("b.id")
+      .orderBy("q.id");
+
+    // Procesa los datos para agruparlos por bloque
+    const groupedData = [];
+
+    rows.forEach((row) => {
+      // Busca si el bloque ya existe en groupedData
+      let block = groupedData.find((b) => b.block_id === row.block_id);
+
+      if (!block) {
+        // Si no existe, crear el bloque
+        block = {
+          block_id: row.block_id,
+          block_name: row.block_name,
+          questions: [],
+        };
+        groupedData.push(block);
+      }
+
+      // Convertir la posicion de la respuesta en el array a su equivalente en string
+      const options = row.select_option ? row.select_option.split(",") : [];
+      const selectedIndexes = row.answer ? row.answer.split(",") : [];
+
+      const selectedAnswers = selectedIndexes
+        .map((i) => options[parseInt(i)])
+        .filter((opt) => opt !== undefined)
+        .join(", ");
+
+      // Agrega la pregunta al bloque
+      block.questions.push({
+        question_id: row.question_id,
+        question_name: row.question_name,
+        select_option: selectedAnswers,
+        answer: row.answer,
+        is_correct: row.is_correct,
+      });
+    });
+
+    console.log("Data agrupada", groupedData);
+    return groupedData;
+  },
+
   // Actualizar
   update(id, data) {
     return knex("monitoring").where({ id }).update({

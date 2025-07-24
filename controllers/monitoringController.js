@@ -79,6 +79,22 @@ exports.getByUserId = async (req, res) => {
   }
 };
 
+exports.getMonitoringDetails = async (req, res) => {
+  const { monitoringId } = req.params;
+
+  try {
+    const details = await Monitoring.getMonitoringDetails(monitoringId);
+    console.log("Detalles de los monitoreos", details);
+    res.json({
+      monitoringId,
+      details,
+    });
+  } catch (error) {
+    console.error("Error al obtener la monitorización detallada:", error);
+    res.status(500).json({ message: "Error interno del servidor." });
+  }
+};
+
 exports.update = async (req, res) => {
   try {
     const updated = await Monitoring.update(req.params.id, req.body);
