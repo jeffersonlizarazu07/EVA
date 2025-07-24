@@ -16,6 +16,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import shadows from "@mui/material/styles/shadows";
 import { getMonitorinStructure } from "../../services/agent_listService";
+import { AcceptButton } from "../buttons/buttons";
 
 const ModalMonitoringView = ({ open, closeModal, data }) => {
   const [monitoringDetails, setMonitoringDetails] = useState([]);
@@ -95,14 +96,15 @@ const ModalMonitoringView = ({ open, closeModal, data }) => {
       fullWidth
       disableAutoFocus
     >
-      <Box container justifyContent="space-between" alignItems="center">
-        <DialogTitle>Resumen de Monitorización</DialogTitle>
-        <IconButton size="large">
-          <CloseIcon />
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <DialogTitle sx={{ m: 0, p: 2 }}>Resumen de Monitorización</DialogTitle>
+        <AcceptButton>Feedback</AcceptButton>
+        <IconButton onClick={closeModal} size="large" sx={{ mr: 0 }}>
+          <CloseIcon sx={{ fontSize: 30 }} />
         </IconButton>
       </Box>
 
-      <Grid item xs={12}>
+      <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
         <DialogContent
           dividers
           sx={{
