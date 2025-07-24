@@ -393,7 +393,7 @@ const FormReport= () => {
             <Box id="body">
                  <HeaderLT1 />
             </Box>
-            <Box sx={{m:0, p:0, display: "flex", justifyContent: "center",}} >
+            <Box sx={{m:0, p:0, display: "flex", justifyContent: "center"}} >
                 <Box
                   sx={{
                     width: "100%",

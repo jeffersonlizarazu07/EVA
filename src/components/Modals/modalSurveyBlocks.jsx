@@ -55,7 +55,6 @@ const ModalSurveyBlocks = ({
   setPositionType,
   selectError,
   handleErrorOpt,
-  errorLabels
 }) => {
   return (
     <div

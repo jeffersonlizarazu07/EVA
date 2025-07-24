@@ -2,6 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import {
   Box,
   Grid,
@@ -23,7 +25,7 @@ import {
   Typography,
   InputAdornment,
 } from "@mui/material";
-import { TurnLeft, Search, Today } from "@mui/icons-material";
+import { TurnLeft, Search, Today, MarginOutlined } from "@mui/icons-material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SearchIcon from "@mui/icons-material/Search";
 import TablePagination from "@mui/material/TablePagination";
@@ -145,13 +147,13 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
     <Box className="table-container">
       {/* Buscador */}
       <Grid container spacing={2} mb={2}>
-        <Grid item xs={12} sm={6} md={6} lg={6}>
+        <Grid item xs={12} sm={6} md={6} lg={12}>
           <Box display="flex" alignItems="center" gap={1}>
             <Button
               variant="outlined"
               size="small"
               sx={{
-                minWidth: 0,
+                minWidth: 30,
                 width: 30,
                 height: 30,
                 padding: 0,
@@ -176,7 +178,7 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
               className="inp-search"
               variant="outlined"
               sx={{
-                width: "100%",
+                width: "60%",
                 "& .MuiOutlinedInput-root": {
                   height: "4vh",
                   "&.Mui-focused fieldset": {
@@ -195,6 +197,21 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
                 ),
               }}
             />
+         {/* Input: Filtro de fechas 
+          <LocalizationProvider dateAdapter={AdapterDayjs} sx={{ marginLeft: "30px"}}>
+            <DatePicker
+              className="readOnlyField"
+              label={t("reports.fecha_inicio")}
+              format="DD/MM/YYYY"
+              sx={{ width: "30%" }}
+            />
+            <DatePicker
+              className="readOnlyField"
+              label={t("reports.fecha_fin")}
+              format="DD/MM/YYYY"
+              sx={{ width: "30%" }}
+            />
+          </LocalizationProvider>*/}
           </Box>
         </Grid>
       </Grid>
