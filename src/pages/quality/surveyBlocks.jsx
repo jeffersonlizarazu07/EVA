@@ -8,17 +8,25 @@ import { useParams } from "react-router-dom";
 import {
   Modal,
   Box,
-  Typography,
-  Grid,
-  TextField,
-  Button,
   Paper,
+  Typography,
   IconButton,
-  Divider,
+  Grid,
+  Select,
   MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  FormControlLabel,
   Checkbox,
+  CircularProgress,
+  Divider,
+  Button,
   Autocomplete
-} from '@mui/material';
+} from "@mui/material";
 import {
   smallAlertDelete,
   loadingAlert,
@@ -134,24 +142,14 @@ export default function SurveyBlocks({}) {
     options: [],
     selectedOption: null,
   });
-  const [questions, setQuestions] = useState([]);
-  const [editingQuestion, setEditingQuestion] = useState(null);
-  const [options, setOptions] = useState([]);
-  const [correctAnswers, setCorrectAnswers] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   // State para manejo de preguntas validas
   const [hasValidQuestions, setHasValidQuestions] = useState(false);
   const [textFieldAnswer, setTextFieldAnswer] = useState("");
 
-  //Id bloque creado
-  const [bloques, setBloques] = useState([]);
-
   // Paginador
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage] = useState(3); // Número de bloques por página
   const [searchTerm, setSearchTerm] = useState(""); // Para filtrado
   const [staticData, setStaticData] = useState([]); // Copia de los datos para filtrado
-  const blockRefs = useRef([]);
+
 
   // Estados para manejo de posicionamiento relativo de bloques
   const [positionType, setPositionType] = useState(""); // 'Antes o despues de'
@@ -162,11 +160,9 @@ export default function SurveyBlocks({}) {
   const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
   //formulario
-  // Estado para los bloques de la encuesta
-  const [surveyBlocks, setSurveyBlocks] = useState([]);
 
   const [collapsedQuestions, setCollapsedQuestions] = useState({}); // Estado para manejar el colapso de preguntas
-
+  const [selectError, setSelectError] = useState(""); // Select errores
   /* ***********************************************************************************************************/
   /* Component Logic*/
   /* ***********************************************************************************************************/
@@ -307,6 +303,7 @@ export default function SurveyBlocks({}) {
 
           const preguntaBase = {
             text: p.text || p.question_name || "",
+            error: p.type_error,
             type: tipo,
             conditional: p.conditional || "NO",
           };
@@ -482,6 +479,7 @@ export default function SurveyBlocks({}) {
 
         return {
           question_name: q.text || q.question || "Sin texto",
+          type_error: q.error,
           id_type_question: q.type || typeMap[q.type] || null,
           select_option,
           selected_answer,
@@ -803,6 +801,7 @@ export default function SurveyBlocks({}) {
 
     const newQuestions = Array.from({ length: count }, () => ({
       text: "",
+      error: "",
       type: "",
       options: [],
       correctAnswers: [],
@@ -956,6 +955,7 @@ export default function SurveyBlocks({}) {
     setIsChecked(false);
     setValueConditional(false);
     setHasValidQuestions(false);
+    setSelectError("");
   };
 
   // Id único para cada bloque
@@ -1048,17 +1048,6 @@ export default function SurveyBlocks({}) {
     });
   }, [staticData, searchTerm]);
 
-  // Calcular el total de páginas
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
-
-  // Datos paginados para mostrar en la vista actual
-  const paginatedData = useMemo(() => {
-    return filteredData.slice(
-      (currentPage - 1) * recordsPerPage,
-      currentPage * recordsPerPage
-    );
-  }, [filteredData, currentPage, recordsPerPage]);
-
   // Posición de bloques
 
   const calBlockPosition = () => {
@@ -1137,6 +1126,7 @@ export default function SurveyBlocks({}) {
               return {
                 id: preg.id,
                 text: preg.text || preg.question_name || "Sin texto",
+                error: preg.type_error,
                 type: tipo,
                 options: optionObjects,
                 select_option: preg.select_option || "",
@@ -1296,6 +1286,23 @@ export default function SurveyBlocks({}) {
     setData(reorderedData);
     setStaticData(reorderedData);
   };
+
+  // Select errores
+  const handleErrorOpt = (index, field, value) => {
+    const updatedQuestions = [...questionsList];
+    updatedQuestions[index] = {
+      ...updatedQuestions[index],
+      [field]: value, // Actualiza el campo dinámicamente
+    };
+    setQuestionsList(updatedQuestions);
+  };
+  // Errores mapeados para mostrar en el render
+  const errorLabels = {
+    ecc_opt: "ECC - Error crítico de cumplimiento",
+    ecuf_opt: "ECUF - Error crítico de usuario final",
+    ecn_opt: "ECN - Error crítico de negocio",
+  };
+
   return (
     <Box className="App">
       <Box id="body">
@@ -1308,7 +1315,7 @@ export default function SurveyBlocks({}) {
             <div className="row">
               {/* Sección de Información del Formulario */}
               <div className="col-md-12">
-                <div className="card p-4 borderEVA bg-light">
+                <div className="card p-4 borderEVA">
                   <div className="text-center">
                     <h3>Información</h3>
                   </div>
@@ -1358,7 +1365,7 @@ export default function SurveyBlocks({}) {
 
               {/* Sección de Preguntas y Bloques */}
               <div className="col-md-12 mt-3">
-                <div className="card p-4 card-outline card-success borderEVA bg-light">
+                <div className="card p-4 card-outline card-success borderEVA">
                   {/* Header de la sección de preguntas */}
                   <div>
                     <h3 className="text-center">Preguntas</h3>
@@ -1395,7 +1402,7 @@ export default function SurveyBlocks({}) {
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
-                                  className="shadowbox5 p-3 m-3"
+                                  className="border-top p-3 m-3"
                                 >
                                   {/* Header del bloque con título y ponderación */}
                                   <div className="d-flex justify-content-between mb-2 w-100">
@@ -1425,7 +1432,7 @@ export default function SurveyBlocks({}) {
                                             return (
                                               <div
                                                 key={idx}
-                                                className="shadowbox5 p-3 mb-3"
+                                                className="border border-secondary-subtle p-3 mb-5 rounded"
                                                 style={{ width: "100%" }}
                                               >
                                                 {/* Header de la pregunta con botón de colapso */}
@@ -1451,112 +1458,57 @@ export default function SurveyBlocks({}) {
                                                 </div>
 
                                                 {/* Contenido expandible de la pregunta */}
-                                                {!isCollapsed && (
-                                                  <>
-                                                    {preg.type ===
-                                                      "check_opt" && (
-                                                      <div className="mb-2">
-                                                        <strong>
-                                                          Selecciona una opción:
-                                                        </strong>
-                                                        {(
-                                                          preg.options || []
-                                                        ).map((opt, i) => {
-                                                          const optionText =
-                                                            typeof opt ===
-                                                              "object" &&
-                                                            opt !== null
-                                                              ? opt.text
-                                                              : String(opt);
+                                                <div className="m-2">
+                                                  {!isCollapsed && (<>
+                                                    {/* Pregunta tipo selección múltiple */}
+                                                    {preg.type === "check_opt" && (
+                                                      <Autocomplete
+                                                        multiple
+                                                        options={(preg.options || []).map((opt) =>
+                                                          typeof opt === "object" && opt !== null ? opt.text : String(opt)
+                                                        )}
+                                                        renderOption={(props, option, { selected }) => (
+                                                          <li {...props} key={option}>
+                                                            <Checkbox checked={selected} style={{ marginRight: 8 }} />
+                                                            {option}
+                                                          </li>
+                                                        )}
+                                                        renderInput={(params) => (
+                                                          <TextField
+                                                            {...params}
+                                                            label="Selecciona una opción:"
+                                                            placeholder="Selecciona una o varias opciones"
+                                                            className="readOnlyField"
+                                                          />
+                                                        )}
+                                                        sx={{ mb: 2 }}
+                                                      />
+                                                    )}
 
+                                                    {/* Pregunta tipo selección única */}
+                                                    {preg.type === "selector_opt" && (
+                                                      <TextField
+                                                        select
+                                                        fullWidth
+                                                        label="Selecciona una opción:"
+                                                        sx={{ mb: 2 }}
+                                                        className="readOnlyField"
+                                                      >
+                                                        <MenuItem value="">Selecciona una opción</MenuItem>
+                                                        {(preg.options || []).map((opt, index) => {
+                                                          const optionText =
+                                                            typeof opt === "string" ? opt : opt.text || "";
                                                           return (
-                                                            <div
-                                                              key={i}
-                                                              className="form-check"
-                                                            >
-                                                              <input
-                                                                className="form-check-input"
-                                                                type="checkbox"
-                                                                name={`check-${bloque.id}-${idx}`}
-                                                                checked={(
-                                                                  preg.selected_answer ||
-                                                                  ""
-                                                                )
-                                                                  .split(",")
-                                                                  .map((v) =>
-                                                                    v.trim()
-                                                                  )
-                                                                  .includes(
-                                                                    optionText
-                                                                  )}
-                                                                onChange={() =>
-                                                                  handleAnswerChange(
-                                                                    bloque.id,
-                                                                    idx,
-                                                                    optionText
-                                                                  )
-                                                                }
-                                                              />
-                                                              <label className="form-check-label">
-                                                                {optionText}
-                                                              </label>
-                                                            </div>
+                                                            <MenuItem key={index} value={optionText}>
+                                                              {optionText}
+                                                            </MenuItem>
                                                           );
                                                         })}
-                                                      </div>
+                                                      </TextField>
                                                     )}
-
-                                                    {/* Pregunta tipo Selector/Dropdown */}
-                                                    {preg.type ===
-                                                      "selector_opt" && (
-                                                      <div className="mb-1">
-                                                        <label className="form-label">
-                                                          <strong>
-                                                            Selecciona una
-                                                            opción:
-                                                          </strong>
-                                                        </label>
-                                                        <select
-                                                          className="form-select"
-                                                          value={
-                                                            preg.selected_answer ||
-                                                            ""
-                                                          }
-                                                          onChange={(e) =>
-                                                            handleAnswerChange(
-                                                              bloque.id,
-                                                              idx,
-                                                              e.target.value
-                                                            )
-                                                          }
-                                                        >
-                                                          {(
-                                                            preg.options || []
-                                                          ).map((opt, i) => {
-                                                            const optionText =
-                                                              typeof opt ===
-                                                              "string"
-                                                                ? opt
-                                                                : opt.text ||
-                                                                  "";
-                                                            return (
-                                                              <option
-                                                                key={i}
-                                                                value={
-                                                                  optionText
-                                                                }
-                                                              >
-                                                                {optionText}
-                                                              </option>
-                                                            );
-                                                          })}
-                                                        </select>
-                                                      </div>
-                                                    )}
-
+                                    
                                                     {/* Pregunta tipo Campo de texto corto */}
-                                                    {preg.type ===
-                                                      "textfield_s" && (
+                                                    {preg.type === "textfield_s" && (
                                                       <Textfield_s
                                                         value={
                                                           preg.selected_answer ||
@@ -1578,48 +1530,19 @@ export default function SurveyBlocks({}) {
                                                     )}
                                                   </>
                                                 )}
+                                                </div>
+
+                                                <div>
+                                                  <p className="mb-3 ms-1 text-end">
+                                                    {errorLabels[preg.error] ||
+                                                      "No seleccionado"}
+                                                    {"."}
+                                                  </p>
+                                                </div>
                                               </div>
                                             );
                                           })}
 
-                                        {/* Paginación */}
-                                        <div className="d-flex">
-                                          <div
-                                            className="page-selector btn-group"
-                                            role="group"
-                                          >
-                                            <button
-                                              type="button"
-                                              className="btn btn-outline-secondary"
-                                              onClick={() =>
-                                                setCurrentPage((prev) =>
-                                                  Math.max(prev - 1, 1)
-                                                )
-                                              }
-                                              disabled={currentPage === 1}
-                                            >
-                                              &lt;
-                                            </button>
-                                            <span className="btn btn-outline-secondary">
-                                              {currentPage || 1}
-                                            </span>
-                                            <button
-                                              type="button"
-                                              className="btn btn-outline-secondary"
-                                              onClick={() =>
-                                                setCurrentPage((prev) =>
-                                                  Math.min(prev + 1, totalPages)
-                                                )
-                                              }
-                                              disabled={
-                                                currentPage === totalPages ||
-                                                totalPages === 0
-                                              }
-                                            >
-                                              &gt;
-                                            </button>
-                                          </div>
-                                        </div>
                                       </div>
                                     </div>
 
@@ -1721,6 +1644,8 @@ export default function SurveyBlocks({}) {
         correctAnswers={multipleChoiceData.correctAnswers}
         onChange={handleMultipleChoiceChange}
         migrateQuestionData={migrateQuestionData}
+        selectError={selectError}
+        handleErrorOpt={handleErrorOpt}
       />
     </Box>
   );

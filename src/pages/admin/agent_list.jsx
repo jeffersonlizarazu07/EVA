@@ -520,16 +520,16 @@ const AdminList = () => {
       }
       setMonitoringStep(3);
     } else if (monitoringStep === 3) {
-      if (!feedback || feedback.trim() === "") {
+      /*if (!feedback || feedback.trim() === "") {
         setFeedbackError(true); // activa el borde rojo
         Toast.fire({
           icon: "error",
-          title: t("monitoringModal.AlertFeedback"),
+          title: t("monitoringModal.AlertFeedback") //"El campo de feedback es obligatorio.",
         });
         return;
       } else {
         setFeedbackError(false); // limpia el error si todo está bien
-      }
+      }*/
 
       const payload = {
         monitoringDate,

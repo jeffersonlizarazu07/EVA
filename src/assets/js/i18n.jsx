@@ -282,7 +282,6 @@ import { initReactI18next } from "react-i18next";
               "Punctuation":"Puntuación deseada",
               "EnterFeedback":"Ingrese su feedback aquí",
               "EnterTextArea":"Ingrese sus indicaciones",
-              "AlertFeedback":"El campo de feedback es obligatorio.",
               "AlertData":"Faltan campos obligatorios",
               "SelectClient":"Primero seleccione un cliente",
               "Loading":"Cargando...",
