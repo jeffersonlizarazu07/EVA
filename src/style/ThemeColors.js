@@ -1,6 +1,3 @@
-import { Box } from "@mui/material";
-
-
 export const themeColors = {
   light: {
     // Botón aceptar

@@ -27,7 +27,7 @@ export const AcceptButton = ({ onClick, label, ...props }) => {
   );
 };
 
-export const saveButton = ({ onClick, label, ...props }) => {
+export const SaveButton = ({ onClick, label, ...props }) => {
   const { t } = useTranslation();
   return (
     <Button
@@ -64,6 +64,29 @@ export const CancelButton = ({ onClick, label, ...props }) => {
       {...props}
     >
       {label || t("buttons.cancelar")}
+    </Button>
+  );
+};
+
+export const FeedbackButton = ({ onClick, label, ...props }) => {
+  const { t } = useTranslation();
+  return (
+    <Button
+      variant="contained"
+      onClick={onClick}
+      sx={{
+        width: "9rem",
+        backgroundColor: bgColor,
+        color: textColor,
+        fontSize: 13,
+        "&:hover": {
+          backgroundColor: bgColor,
+          opacity: 0.9,
+        },
+      }}
+      {...props}
+    >
+      {`+ ${label || t("buttons.feedback")}`}
     </Button>
   );
 };

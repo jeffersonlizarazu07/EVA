@@ -280,7 +280,7 @@ import { initReactI18next } from "react-i18next";
               "NameForm":"Nombre del formulario",
               "FormScore":"Score de formulario",
               "Punctuation":"Puntuación deseada",
-              "EnterFeedback":"Ingrese su feedback aquí",
+              "EnterFeedback":"Ingrese su comentario aquí",
               "EnterTextArea":"Ingrese sus indicaciones",
               "AlertData":"Faltan campos obligatorios",
               "SelectClient":"Primero seleccione un cliente",
@@ -363,6 +363,7 @@ import { initReactI18next } from "react-i18next";
               "cerrar":"Cerrar",
               "enviar":"Enviar",
               "aceptar":"Aceptar",
+              "feedback": "comentario",
             },
             tooltips:{
 
@@ -792,6 +793,7 @@ import { initReactI18next } from "react-i18next";
             "cerrar": "Close",
             "enviar": "Send",
             "aceptar": "Accept",
+            "feedback": "feedback"
           },
           envioMasivo:{
             "enviar_encuesta": "Send survey",
