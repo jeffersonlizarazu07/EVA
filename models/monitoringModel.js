@@ -87,6 +87,7 @@ const MonitoringModel = {
         "q.id as question_id",
         "q.question_name",
         "q.select_option",
+        "q.selected_answer",
         "af.answer"
         // "af.is_correct" // Suponiendo que este campo existe
       )
@@ -114,7 +115,14 @@ const MonitoringModel = {
 
       // Convertir la posicion de la respuesta en el array a su equivalente en string
       const options = row.select_option ? row.select_option.split(",") : [];
+      
       const selectedIndexes = row.answer ? row.answer.split(",") : [];
+      const correctIndexes = row.selected_answer
+        ? row.selected_answer.split(",")
+        : [];
+      const isCorrect =
+        JSON.stringify(selectedIndexes.sort()) ===
+        JSON.stringify(correctIndexes.sort());
 
       const selectedAnswers = selectedIndexes
         .map((i) => options[parseInt(i)])
@@ -127,7 +135,7 @@ const MonitoringModel = {
         question_name: row.question_name,
         select_option: selectedAnswers,
         answer: row.answer,
-        is_correct: row.is_correct,
+        correct_answer: isCorrect
       });
     });
 
