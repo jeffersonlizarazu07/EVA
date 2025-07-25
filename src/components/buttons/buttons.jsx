@@ -75,9 +75,10 @@ export const FeedbackButton = ({ onClick, label, ...props }) => {
       variant="contained"
       onClick={onClick}
       sx={{
-        width: "8rem",
+        width: "9rem",
         backgroundColor: bgColor,
         color: textColor,
+        fontSize: 13,
         "&:hover": {
           backgroundColor: bgColor,
           opacity: 0.9,

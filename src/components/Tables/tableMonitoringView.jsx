@@ -19,19 +19,12 @@ import {
   TextField,
   MenuItem,
   Select,
-  FormControl,
-  InputLabel,
-  Pagination,
   Typography,
   InputAdornment,
 } from "@mui/material";
 import { TurnLeft, Search, Today, MarginOutlined } from "@mui/icons-material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import SearchIcon from "@mui/icons-material/Search";
-import TablePagination from "@mui/material/TablePagination";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ModalMonitoringView from "../../components/Modals/modalMonitoring_view";
 
 const TableMonitoringView = ({
@@ -42,6 +35,8 @@ const TableMonitoringView = ({
   endDate,
   setStartDate,
   setEndDate,
+  getUserType,
+  getHeaderLabel
 }) => {
   const nav = useNavigate();
   // Traducción
@@ -94,42 +89,6 @@ const TableMonitoringView = ({
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
-
-  const getHeaderLabel = (item) => {
-    switch (item) {
-      case "id":
-        return "Identificador";
-      case "form_title":
-        return "Formulario";
-      case "client_name":
-        return "Cliente";
-      case "monitoring_date":
-        return "Fecha";
-      case "monitoring_dateWithHour":
-        return "Enviada";
-      case "score":
-        return "Score";
-      case "evaluator_name":
-        return "Evaluador";
-      case "feedback":
-        return "Comentarios";
-      default:
-        return item;
-    }
-  };
-
-  const getUserType = (type) => {
-    switch (type) {
-      case 1:
-        return t("userTable.SuperAdmin");
-      case 2:
-        return t("userTable.Admin");
-      case 3:
-        return t("userTable.Editor");
-      default:
-        return t("userTable.Viwer");
-    }
-  };
 
   // Manejo del modal
   const openModal = (rowData) => {

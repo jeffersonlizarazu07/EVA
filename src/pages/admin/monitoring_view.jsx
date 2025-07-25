@@ -6,33 +6,7 @@ import dayjs from "dayjs";
 import HeaderLT1 from "../../components/header/headerLT1";
 import TableMonitoringView from "../../components/Tables/tableMonitoringView";
 import { getMonitoringByUser } from "../../services/agent_listService";
-import {
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  OutlinedInput,
-  ButtonGroup,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  IconButton,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  Pagination,
-  Typography,
-} from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from "@mui/icons-material/Search";
+import { Box } from "@mui/material";
 
 const AgentMonitoringView = () => {
   // Estados
@@ -41,9 +15,6 @@ const AgentMonitoringView = () => {
   const [filterMonitoring, setFilterMonitoring] = useState([]); // Trae los monitores del agente filtrados por fecha
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  // Manejo de cambio de fechas
-  const handleStartDateChange = (date) => setStartDate(date);
-  const handleEndDateChange = (date) => setEndDate(date);
 
   const selectedKeys = [
     "id",
@@ -55,6 +26,42 @@ const AgentMonitoringView = () => {
     "evaluator_name",
     "feedback",
   ];
+
+  const getHeaderLabel = (item) => {
+    switch (item) {
+      case "id":
+        return "Identificador";
+      case "form_title":
+        return "Formulario";
+      case "client_name":
+        return "Cliente";
+      case "monitoring_date":
+        return "Fecha de Monitorización";
+      case "monitoring_dateWithHour":
+        return "Enviada";
+      case "score":
+        return "Score";
+      case "evaluator_name":
+        return "Evaluador";
+      case "feedback":
+        return "Comentarios";
+      default:
+        return item;
+    }
+  };
+
+  const getUserType = (type) => {
+    switch (type) {
+      case 1:
+        return t("userTable.SuperAdmin");
+      case 2:
+        return t("userTable.Admin");
+      case 3:
+        return t("userTable.Editor");
+      default:
+        return t("userTable.Viwer");
+    }
+  };
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
 
@@ -123,6 +130,8 @@ const AgentMonitoringView = () => {
     endDate,
     setStartDate,
     setEndDate,
+    getUserType,
+    getHeaderLabel,
   };
 
   return (

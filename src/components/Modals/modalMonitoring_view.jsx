@@ -104,6 +104,7 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
         maxWidth="xl"
         fullWidth
         disableAutoFocus
+        scroll="paper"
       >
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <DialogTitle sx={{ m: 0, p: 2 }}>
@@ -112,7 +113,7 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
           <Box display="flex" alignItems="center" gap={1}>
             <FeedbackButton
               onClick={openModalFeedback}
-              disabled={!feedbackValidate()}
+              // disabled={!feedbackValidate()}
             />
             <IconButton onClick={closeModal} size="large" sx={{ mr: 0 }}>
               <CloseIcon sx={{ fontSize: 30 }} />
@@ -120,51 +121,80 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
           </Box>
         </Box>
 
-        <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
+        <Grid
+          item
+          xs={12}
+          sx={{ display: "flex", justifyContent: "center", width: "100%" }}
+        >
           <DialogContent
             dividers
             sx={{
               backgroundColor: "#f5f7fa",
               borderRadius: 2,
               padding: 2,
+              maxWidth: 1320,
+              width: "100%",
+              margin: "0 auto",
             }}
           >
-            <Grid container spacing={1} sx={{ width: "100%" }}>
-              {header.map((key, i) => (
-                <Grid
-                  container
-                  key={i}
-                  spacing={1}
-                  sx={{
-                    backgroundColor: i % 2 === 0 ? "#ffffff" : "#eef3fb",
-                    paddingY: 1,
-                    borderBottom: "1px solid #d6d6d6ff",
-                  }}
-                >
-                  <Grid item xs={6} sm={6}>
-                    <Typography
-                      variant="body2"
-                      fontWeight="bold"
-                      sx={{
-                        paddingLeft: "10px",
-                        fontSize: 18,
-                        color: "#2c3e50",
-                      }}
-                    >
-                      {getHeaderLabel(key)}
-                    </Typography>
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                paddingTop: 1,
+                paddingLeft: 1
+              }}
+            >
+              <Grid
+                container
+                
+                sx={{
+                  width: "100%",
+                  maxWidth: 1250,
+                }}
+              >
+                {header.map((key, i) => (
+                  <Grid
+                    container
+                    key={i}
+                    spacing={1}
+                    sx={{
+                      backgroundColor: i % 2 === 0 ? "#ffffff" : "#eef3fb",
+                      paddingY: 1,
+                      borderBottom: "1px solid #d6d6d6ff",
+                    }}
+                  >
+                    <Grid item xs={6} sm={6}>
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        sx={{
+                          paddingLeft: "10px",
+                          fontSize: 18,
+                          color: "#2c3e50",
+                        }}
+                      >
+                        {getHeaderLabel(key)}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6} sm={6}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontSize: 16,
+                          color: "#555",
+                          wordBreak: "break-word", // Evita desbordes
+                          whiteSpace: "normal",
+                        }}
+                      >
+                        {data[key] ?? "Campo no disponible"}
+                      </Typography>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={6} sm={6}>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontSize: 16, color: "#555" }}
-                    >
-                      {data[key] ?? "Campo no disponible"}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              ))}
-            </Grid>
+                ))}
+              </Grid>
+            </Box>
           </DialogContent>
         </Grid>
 
@@ -259,7 +289,7 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
                       display: "flex",
                       flexDirection: "column",
                       alignItems: { xs: "flex-start", sm: "flex-end" },
-                      gap: 1, // espacio entre puntuación y chip
+                      gap: 1,
                     }}
                   >
                     <Typography variant="body2" color="text.secondary">
@@ -286,11 +316,12 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
                         <Typography variant="body2">
                           {question.question_name}
                         </Typography>
-                        {!question.select_option || question.correct_answer ? (
-                          <Chip label="Correcto" color="success" />
-                        ) : (
-                          <Chip label="Incorrecto" color="error" />
-                        )}
+                        {question.select_option &&
+                          (question.correct_answer ? (
+                            <Chip label="Correcto" color="success" />
+                          ) : (
+                            <Chip label="Incorrecto" color="error" />
+                          ))}
                       </Box>
                       <Typography
                         variant="body2"
@@ -317,9 +348,9 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
         open={openModalFeed}
         onClose={closeModalFeedback}
         fullWidth
-        maxWidth="xs"
+        maxWidth="sm"
       >
-        <Box sx={{ pt: 2, px: 2, pb: 1, position: "relative" }}>
+        <Box sx={{ pt: 2, px: 3, pb: 1, position: "relative" }}>
           {/* Botón cerrar */}
           <IconButton
             onClick={closeModalFeedback}
@@ -360,7 +391,13 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
             }}
           />
           {/* Botón guardar */}
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "8px",
+            }}
+          >
             <SaveButton />
           </Box>
         </Box>
