@@ -364,6 +364,7 @@ import { initReactI18next } from "react-i18next";
               "cerrar":"Cerrar",
               "enviar":"Enviar",
               "aceptar":"Aceptar",
+              "feedback": "feedback",
             },
             tooltips:{
 
@@ -793,6 +794,7 @@ import { initReactI18next } from "react-i18next";
             "cerrar": "Close",
             "enviar": "Send",
             "aceptar": "Accept",
+            "feedback": "feedback"
           },
           envioMasivo:{
             "enviar_encuesta": "Send survey",

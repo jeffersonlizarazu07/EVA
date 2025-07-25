@@ -187,7 +187,7 @@ const TableAdmin = ({
       </Grid>
 
       <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 450, overflowY: "auto" }}>
-        <Table size="small">
+        <Table className="" size="small">
           <TableHead>
             <TableRow>
               {header.map((item, i) => (

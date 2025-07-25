@@ -2,6 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { useTranslation } from "react-i18next";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import {
   Box,
   Grid,
@@ -23,7 +25,7 @@ import {
   Typography,
   InputAdornment,
 } from "@mui/material";
-import { TurnLeft, Search, Today } from "@mui/icons-material";
+import { TurnLeft, Search, Today, MarginOutlined } from "@mui/icons-material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SearchIcon from "@mui/icons-material/Search";
 import TablePagination from "@mui/material/TablePagination";
@@ -32,7 +34,15 @@ import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ModalMonitoringView from "../../components/Modals/modalMonitoring_view";
 
-const TableMonitoringView = ({ data, resetPageSignal, header }) => {
+const TableMonitoringView = ({
+  data,
+  resetPageSignal,
+  header,
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
+}) => {
   const nav = useNavigate();
   // Traducción
   const { languageUser } = useContext(UserContext);
@@ -136,6 +146,7 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
     open,
     closeModal,
     data: selectedRow,
+    t,
   };
 
   console.log("Esta es la data que envía la tabla", data);
@@ -144,56 +155,119 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
     <Box className="table-container">
       {/* Buscador */}
       <Grid container spacing={2} mb={2}>
-        <Grid item xs={12} sm={6} md={6} lg={6}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{
-                minWidth: 0,
-                width: 30,
-                height: 30,
-                padding: 0,
-                borderRadius: "50%",
-                color: "#b62a8b",
-                borderColor: "#b62a8b",
-                "&:hover": {
-                  borderColor: "#b62a8b",
-                  backgroundColor: "#b62a8b",
-                  color: "white",
-                },
-              }}
-              onClick={() => nav("/agent_list")}
+        <Grid item xs={12} sm={6} md={6} lg={12}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            width="100%"
+            flexWrap="wrap"
+            gap={2}
+          >
+            {/* Izquierda: botón y búsqueda */}
+            <Box
+              display="flex"
+              alignItems="center"
+              gap={1}
+              sx={{ marginLeft: "12px" }}
             >
-              <TurnLeft />
-            </Button>
-            <TextField
-              size="small"
-              placeholder={t("userTable.Search")}
-              value={searchTerm}
-              onChange={handleSearch}
-              className="inp-search"
-              variant="outlined"
-              sx={{
-                width: "100%",
-                "& .MuiOutlinedInput-root": {
-                  height: "4vh",
-                  "&.Mui-focused fieldset": {
-                    borderColor: "transparent",
+              <Button
+                variant="outlined"
+                size="large"
+                sx={{
+                  minWidth: 30,
+                  width: 30,
+                  height: 30,
+                  padding: 0,
+                  borderRadius: "50%",
+                  color: "#b62a8b",
+                  borderColor: "#b62a8b",
+                  "&:hover": {
+                    borderColor: "#b62a8b",
+                    backgroundColor: "#b62a8b",
+                    color: "white",
                   },
-                  "&.Mui-focused": {
-                    boxShadow: "none",
+                }}
+                onClick={() => nav("/agent_list")}
+              >
+                <TurnLeft />
+              </Button>
+
+              <TextField
+                size="small"
+                placeholder={t("userTable.Search")}
+                value={searchTerm}
+                onChange={handleSearch}
+                className="inp-search"
+                variant="outlined"
+                sx={{
+                  width: "450px",
+                  "& .MuiOutlinedInput-root": {
+                    height: "4vh",
+                    "&.Mui-focused fieldset": {
+                      borderColor: "transparent",
+                    },
+                    "&.Mui-focused": {
+                      boxShadow: "none",
+                    },
                   },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search sx={{ color: "#888" }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: "#888" }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+
+            {/* Derecha: filtros de fecha */}
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={2}
+                sx={{ marginRight: "12px" }}
+              >
+                <DatePicker
+                  className="readOnlyField"
+                  label={t("reports.fecha_inicio")}
+                  format="DD/MM/YYYY"
+                  value={startDate}
+                  onChange={setStartDate}
+                  sx={{ width: "20rem" }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                      sx: {
+                        "& .MuiInputBase-root": {
+                          height: "40px",
+                        },
+                      },
+                    },
+                  }}
+                />
+                <DatePicker
+                  className="readOnlyField"
+                  label={t("reports.fecha_fin")}
+                  format="DD/MM/YYYY"
+                  value={endDate}
+                  onChange={setEndDate}
+                  sx={{ width: "20rem" }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                      sx: {
+                        "& .MuiInputBase-root": {
+                          height: "40px",
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            </LocalizationProvider>
           </Box>
         </Grid>
       </Grid>
@@ -204,7 +278,12 @@ const TableMonitoringView = ({ data, resetPageSignal, header }) => {
           <Typography
             variant="body1"
             textAlign="center"
-            sx={{ fontWeight: "bold", fontSize: "20px", paddingTop: "6px", paddingBottom: "6px"}}
+            sx={{
+              fontWeight: "bold",
+              fontSize: "20px",
+              paddingTop: "6px",
+              paddingBottom: "6px",
+            }}
           >
             {data[0].agent_name}
           </Typography>

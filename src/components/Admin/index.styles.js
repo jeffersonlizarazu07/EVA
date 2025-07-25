@@ -13,7 +13,7 @@ import { createTheme } from '@mui/material/styles';
 
 
 
-const commonDarkBackground = '#383636';
+const commonDarkBackground = '#383637';
 const commonTextWhite = '#ffffff';
 
 export const lightTheme = createTheme({
@@ -70,14 +70,14 @@ export const darkTheme = createTheme({
           color: commonTextWhite,
         },
         '.css-1ndauje-MuiPaper-root, .css-mjxahb-MuiTypography-root':{
-          backgroundColor: `#000000 !important`,
+          backgroundColor: `#383637 !important`,
           color: '#ffffff !important',
         },
         '.modal-content': {
           backgroundColor: commonDarkBackground,
         },
         '.btn-light': {
-          backgroundColor: '#353a3f',
+          backgroundColor: commonDarkBackground,
         },
         '#nav-Claro': {
           backgroundColor: commonDarkBackground,
@@ -197,7 +197,7 @@ export const darkTheme = createTheme({
           color: commonTextWhite
         },
         '.css-q7p9v4-MuiFormControl-root-MuiTextField-root, .css-veukw9-MuiInputBase-root-MuiOutlinedInput-root':{
-          backgroundColor: '#383637 !important',
+          backgroundColor: `${commonDarkBackground} !important`,
           
         },
         
@@ -240,7 +240,7 @@ export const darkTheme = createTheme({
 
 
         '.swal2-popup.swal2-toast': {
-          backgroundColor: '#797676',
+          backgroundColor: '#444444ff',
           color: commonTextWhite,
         },
         '.text-secondary': {
