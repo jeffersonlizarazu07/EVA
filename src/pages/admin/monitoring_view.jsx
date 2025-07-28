@@ -69,23 +69,18 @@ const AgentMonitoringView = () => {
     i18n.changeLanguage(languageUser);
   }, [languageUser, i18n]);
 
+  const fetchMonitoring = async () => {
+    try {
+      const monitoringData = await getMonitoringByUser(agentId);
+      setGetMonitoring(monitoringData);
+      setFilterMonitoring(monitoringData);
+    } catch (error) {
+      console.error("Error al cargar monitoreos:", error);
+    }
+  };
+
   useEffect(() => {
     if (!agentId) return;
-
-    const fetchMonitoring = async () => {
-      try {
-        const monitoringData = await getMonitoringByUser(agentId);
-
-        // Guarda la lista original en cache
-        setGetMonitoring(monitoringData);
-
-        // Guarda monitorizaciones filtradas por fecha
-        setFilterMonitoring(monitoringData);
-      } catch (error) {
-        console.error("Error al cargar monitoreos:", error);
-      }
-    };
-
     fetchMonitoring();
   }, [agentId]);
 
@@ -132,6 +127,7 @@ const AgentMonitoringView = () => {
     setEndDate,
     getUserType,
     getHeaderLabel,
+    fetchMonitoring,
   };
 
   return (
