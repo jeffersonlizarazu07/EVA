@@ -90,6 +90,7 @@ const TableMonitoringView = ({
     page * rowsPerPage + rowsPerPage
   );
 
+
   // Manejo del modal
   const openModal = (rowData) => {
     setSelectedRow(rowData);

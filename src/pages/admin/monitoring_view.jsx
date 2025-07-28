@@ -136,9 +136,7 @@ const AgentMonitoringView = () => {
 
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
-      <Box id="body">
-        <HeaderLT1 />
-      </Box>
+      <Box id="body">{/* <HeaderLT1 /> */}</Box>
 
       <Box className="container" mt={0}>
         <TableMonitoringView {...monitoringViewProps} />

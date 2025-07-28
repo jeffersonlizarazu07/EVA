@@ -1,3 +1,4 @@
+import { Feedback } from "@mui/icons-material";
 import axios from "axios";
 import Swal from "sweetalert2";
 
@@ -238,6 +239,21 @@ export const getMonitorinStructure = async (id) => {
     return response.data;
   } catch (error) {
     console.error("No se obtuvo la estructura para este monitoreo", error);
+    throw error;
+  }
+};
+
+// Guardar el feedback desde la vista general de monitorizaciones
+export const saveFeedback = async (id, feedback) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/monitoring/${id}`,
+      { feedback },
+      config
+    );
+    return response.data;
+  } catch (error) {
+    console.error("No fue posible actualizar el comentario"), error;
     throw error;
   }
 };

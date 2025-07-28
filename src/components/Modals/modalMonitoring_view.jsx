@@ -15,10 +15,12 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { getMonitorinStructure } from "../../services/agent_listService";
 import { FeedbackButton, SaveButton } from "../../components/buttons/buttons";
+import { saveFeedback } from "../../services/agent_listService";
 
 const ModalMonitoringView = ({ open, closeModal, data, t }) => {
   const [monitoringDetails, setMonitoringDetails] = useState([]); // Trae la data detallada del monitoreo
   const [openModalFeed, setOpenModalFeed] = useState(false); // Manejo del modal de feedback
+  const [feedback, setFeedback] = useState(""); // Captura el input del comentario a guardar
 
   useEffect(() => {
     if (!data?.id) return; //Evitar errores si no hay data al cargar
@@ -48,6 +50,22 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
 
   const feedbackValidate = () => {
     return !data.feedback || data.feedback.trim() === ""; // Si el feedback viene vació se habilita el botón para realizar feedback
+  };
+
+  // Guardar feedback en el modal de visualizaciones de los monitoreos
+  const handleSaveFeedback = async () => {
+    try {
+      if (feedback.trim() === "") {
+        alert("No es posible guardar el comentario vacío");
+        return;
+      }
+      await saveFeedback(data.id, feedback);
+      alert("Comentario guardado correctamente");
+      closeModalFeedback();
+    } catch (err) {
+      console.error("Error al guardar comentario");
+      throw err;
+    }
   };
 
   const header = [
@@ -113,7 +131,7 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
           <Box display="flex" alignItems="center" gap={1}>
             <FeedbackButton
               onClick={openModalFeedback}
-              // disabled={!feedbackValidate()}
+              disabled={!feedbackValidate()}
             />
             <IconButton onClick={closeModal} size="large" sx={{ mr: 0 }}>
               <CloseIcon sx={{ fontSize: 30 }} />
@@ -143,12 +161,11 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
                 display: "flex",
                 justifyContent: "center",
                 paddingTop: 1,
-                paddingLeft: 1
+                paddingLeft: 1,
               }}
             >
               <Grid
                 container
-                
                 sx={{
                   width: "100%",
                   maxWidth: 1250,
@@ -373,6 +390,8 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
           {/* Campo de texto */}
           <TextField
             placeholder={t("monitoringModal.EnterFeedback")}
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
             multiline
             fullWidth
             className="readOnlyField"
@@ -398,7 +417,7 @@ const ModalMonitoringView = ({ open, closeModal, data, t }) => {
               marginBottom: "8px",
             }}
           >
-            <SaveButton />
+            <SaveButton onClick={handleSaveFeedback} />
           </Box>
         </Box>
       </Dialog>
