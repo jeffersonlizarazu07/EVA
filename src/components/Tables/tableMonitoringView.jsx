@@ -101,15 +101,6 @@ const TableMonitoringView = ({
     setSelectedRow(null);
   };
 
-  //Render en tabla al actualizar feedback
-  const updateFeedbackInTable = (id, newFeedback) => {
-    ((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, feedback: newFeedback } : row
-      )
-    );
-  };
-
   const ModalMonitoringViewProps = {
     open,
     closeModal,

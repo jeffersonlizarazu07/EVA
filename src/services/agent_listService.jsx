@@ -257,3 +257,16 @@ export const saveFeedback = async (id, feedback) => {
     throw error;
   }
 };
+
+// Actualizar check
+export const updateCheck = async (id, checkValue) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/check/${id}`, {
+      check: checkValue,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al actualizar el check:", error);
+    throw error;
+  }
+};

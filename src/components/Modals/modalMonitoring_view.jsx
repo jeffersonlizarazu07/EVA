@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { UserContext } from "../../context/UserContext";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogTitle,
@@ -9,25 +11,28 @@ import {
   Button,
   Grid,
   Box,
-  Chip,
   TextField,
+  Checkbox,
+  Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { getMonitorinStructure } from "../../services/agent_listService";
 import { FeedbackButton, SaveButton } from "../../components/buttons/buttons";
 import { saveFeedback } from "../../services/agent_listService";
 
-const ModalMonitoringView = ({
-  open,
-  closeModal,
-  data,
-  t,
-  fetchMonitoring,
-}) => {
+const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
+  const { userId, userInfo, accessToken, languageUser } =
+    useContext(UserContext); // Contexto del usuario logeado para aplicar en el check
   const [monitoringDetails, setMonitoringDetails] = useState([]); // Trae la data detallada del monitoreo
   const [openModalFeed, setOpenModalFeed] = useState(false); // Manejo del modal de feedback
   const [feedback, setFeedback] = useState(""); // Captura el input del comentario a guardar
   const [feedbackDisabled, setFeedbackDisabled] = useState(false); // Manejo del botón de comentario
+  const { t, i18n } = useTranslation(); // Traducción
+  const [checked, setChecked] = useState(data.check === 1);
+
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, [languageUser, i18n]);
 
   useEffect(() => {
     if (!data?.id) return; //Evitar errores si no hay data al cargar
@@ -77,6 +82,16 @@ const ModalMonitoringView = ({
     }
   };
 
+  // Manejo de check para agente
+  const handleCheck = async () => {
+    try {
+      await axios.put(`/api/monitoring/${data.id}/review`, { check: 1 });
+      setCheck(true);
+    } catch (error) {
+      console.error("Error al marcar como revisado:", error);
+    }
+  };
+
   const header = [
     "id",
     "form_title",
@@ -84,7 +99,6 @@ const ModalMonitoringView = ({
     "monitoring_date",
     "score",
     "evaluator_name",
-    // "feedback",
   ];
 
   const getHeaderLabel = (item) => {
@@ -128,7 +142,7 @@ const ModalMonitoringView = ({
       <Dialog
         open={open}
         onClose={closeModal}
-        maxWidth="xl"
+        maxWidth="lg"
         fullWidth
         disableAutoFocus
         scroll="paper"
@@ -151,17 +165,22 @@ const ModalMonitoringView = ({
         <Grid
           item
           xs={12}
-          sx={{ display: "flex", justifyContent: "center", width: "100%" }}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+          }}
         >
           <DialogContent
-            dividers
+            dividers={false}
             sx={{
-              backgroundColor: "#f5f7fa",
-              borderRadius: 2,
-              padding: 2,
-              maxWidth: 1320,
-              width: "100%",
-              margin: "0 auto",
+              backgroundColor: "#ffffff",
+              borderRadius: "12px",
+              border: "2px solid #b62a8b",
+              padding: 3,
+              maxWidth: 1100,
+              width: "80%",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
             }}
           >
             <Box
@@ -170,7 +189,6 @@ const ModalMonitoringView = ({
                 display: "flex",
                 justifyContent: "center",
                 paddingTop: 1,
-                paddingLeft: 1,
               }}
             >
               <Grid
@@ -185,33 +203,29 @@ const ModalMonitoringView = ({
                     container
                     key={i}
                     spacing={1}
+                    alignItems="center"
                     sx={{
-                      backgroundColor: i % 2 === 0 ? "#ffffff" : "#eef3fb",
-                      paddingY: 1,
-                      borderBottom: "1px solid #d6d6d6ff",
+                      backgroundColor: i % 2 === 0 ? "#f8f7f7ff" : "#ffffff",
+                      borderBottom: "1px solid #e0e0e0",
+                      paddingY: 1.5,
+                      paddingX: 2,
                     }}
                   >
-                    <Grid item xs={6} sm={6}>
+                    <Grid item xs={12} sm={6}>
                       <Typography
-                        variant="body2"
+                        variant="body1"
                         fontWeight="bold"
-                        sx={{
-                          paddingLeft: "10px",
-                          fontSize: 18,
-                          color: "#2c3e50",
-                        }}
+                        sx={{ color: "#b62a8b" }}
                       >
                         {getHeaderLabel(key)}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6} sm={6}>
+                    <Grid item xs={12} sm={6}>
                       <Typography
                         variant="body2"
                         sx={{
-                          fontSize: 16,
-                          color: "#555",
-                          wordBreak: "break-word", // Evita desbordes
-                          whiteSpace: "normal",
+                          color: "#080808ff",
+                          wordBreak: "break-word",
                         }}
                       >
                         {data[key] ?? "Campo no disponible"}
@@ -224,89 +238,107 @@ const ModalMonitoringView = ({
           </DialogContent>
         </Grid>
 
+        {/* Feedback */}
+        <Box
+          sx={{
+            border: "2px solid #b62a8b",
+            borderRadius: 2,
+            padding: 2,
+            backgroundColor: "#fafafa",
+            m: [1, 5, 1, 5],
+          }}
+        >
+          {/* Título principal */}
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ paddingBottom: "10px" }}
+          >
+            Comentario
+          </Typography>
+
+          {/* Comentario principal */}
+          <Typography
+            variant="body2"
+            sx={{
+              color: "green",
+              whiteSpace: "pre-line",
+              marginBottom: 2,
+              borderRadius: "2px",
+              border: "ButtonText",
+            }}
+          >
+            {data.feedback}
+          </Typography>
+
+          {/* Pie de página */}
+          <Grid container justifyContent="space-between">
+            <Typography
+              variant="caption"
+              sx={{ display: "block", lineHeight: 1.2 }}
+            >
+              Creado por: {userInfo.firstname} {userInfo.lastname}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{ display: "block", lineHeight: 1.2 }}
+            >
+              Creado: {data.monitoring_date}
+            </Typography>
+          </Grid>
+          <Typography
+            variant="caption"
+            sx={{ display: "block", lineHeight: 1.2 }}
+          >
+            Enviado acuse de recibo:
+          </Typography>
+        </Box>
+
+        <Button
+          // onClick={handleCheckClick}
+          size="small"
+          variant={checked ? "contained" : "outlined"}
+          sx={{
+            borderRadius: 4,
+            border: "2px solid #b62a8b",
+            color: "#b62a8b",
+            textTransform: "none",
+            fontWeight: "bold",
+            width: "20%",
+            "&:hover": { backgroundColor: "#f3e0f1" },
+          }}
+        >
+          {checked ? "Revisado" : "Marcar como revisado"}
+        </Button>
+
         <Box>
           <DialogTitle>Datos del monitoreo</DialogTitle>
           <DialogContent dividers>
-            {/* Feedback */}
-            <Box
-              sx={{
-                border: "1px solid #ccc",
-                borderRadius: 2,
-                padding: 2,
-                backgroundColor: "#fafafa",
-                marginBottom: "2.1rem",
-              }}
-            >
-              {/* Título principal */}
-              <Typography
-                variant="h6"
-                fontWeight="bold"
-                sx={{ paddingBottom: "10px" }}
-              >
-                Comentario
-              </Typography>
-
-              {/* Comentario principal */}
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "green",
-                  whiteSpace: "pre-line",
-                  marginBottom: 2,
-                  borderRadius: "2px",
-                  border: "ButtonText",
-                }}
-              >
-                {data.feedback}
-              </Typography>
-
-              {/* Pie de página */}
-              <Grid container justifyContent="space-between">
-                <Typography
-                  variant="caption"
-                  sx={{ display: "block", lineHeight: 1.2 }}
-                >
-                  Creado por:
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ display: "block", lineHeight: 1.2 }}
-                >
-                  Creado: {data.monitoring_date}
-                </Typography>
-              </Grid>
-              <Typography
-                variant="caption"
-                sx={{ display: "block", lineHeight: 1.2 }}
-              >
-                Enviado acuse de recibo:
-              </Typography>
-            </Box>
-
             {/* Bloques de los formularios con su estructura */}
             {monitoringDetails?.map((block) => (
               <Box
                 key={block.block_id}
                 mb={2}
                 sx={{
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  paddingBottom: "1.25rem",
+                  backgroundColor: "#fafafa",
+                  border: "2px solid #b62a8b",
+                  borderRadius: 2,
+                  padding: 2,
+                  boxShadow: "0 1px 5px rgba(0,0,0,0.06)",
+                  alignItems: "center",
                 }}
               >
-                {/* Fila superior con título y puntuación + chip */}
                 <Grid
                   container
                   justifyContent="space-between"
                   alignItems="flex-start"
                   spacing={2}
                 >
-                  {/* Título */}
                   <Grid item xs={12} sm={8}>
-                    <Typography variant="h6">{block.block_name}</Typography>
+                    <Typography variant="h6" fontWeight="bold" color="#b62a8b">
+                      {block.block_name}
+                    </Typography>
                   </Grid>
-
-                  {/* Columna derecha: puntuación + chip */}
                   <Grid
                     item
                     xs={12}
@@ -318,13 +350,16 @@ const ModalMonitoringView = ({
                       gap: 1,
                     }}
                   >
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mr: 1 }}
+                    >
                       Puntuación: 5.00 | Media ponderada: 100.00
                     </Typography>
                   </Grid>
                 </Grid>
 
-                {/* Preguntas */}
                 <Box mt={1}>
                   {block.questions?.map((question) => (
                     <Box
@@ -332,30 +367,80 @@ const ModalMonitoringView = ({
                       sx={{
                         ml: 2,
                         mb: 2,
+                        padding: 1,
+                        backgroundColor: "rgb(229, 246, 253)",
+                        borderRadius: 2,
+                        border: "1px solid #b62a8b",
+                        boxShadow: "inset 0 0 0 1px #eee",
                       }}
                     >
                       <Box
-                        display="flex"
-                        justifyContent="space-between"
-                        alignItems="center"
+                        sx={{
+                          position: "relative",
+                          marginBottom: 2,
+                          paddingRight: "22%",
+                        }}
                       >
-                        <Typography variant="body2">
+                        {/* Pregunta */}
+                        <Typography
+                          variant="body2"
+                          fontWeight="500"
+                          sx={{ paddingLeft: "5px", paddingTop: "5px" }}
+                        >
                           {question.question_name}
                         </Typography>
-                        {question.select_option &&
-                          (question.correct_answer ? (
-                            <Chip label="Correcto" color="success" />
-                          ) : (
-                            <Chip label="Incorrecto" color="error" />
-                          ))}
+
+                        {/* Respuesta */}
+                        <Box
+                          sx={{
+                            padding: 1,
+                            borderRadius: "0 0 8px 8px",
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            {question.select_option || question.answer}
+                          </Typography>
+                        </Box>
+
+                        {/* Alerta */}
+                        {question.select_option && (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              right: 0,
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              width: "20%",
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Alert
+                              severity={
+                                question.correct_answer ? "success" : "error"
+                              }
+                              variant="outlined"
+                              sx={{
+                                py: 0,
+                                px: 1.2,
+                                borderRadius: 2,
+                                fontSize: "0.75rem",
+                                height: "28px",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                textAlign: "center",
+                                "& .MuiAlert-icon": {
+                                  marginRight: "4px",
+                                },
+                              }}
+                            >
+                              {question.correct_answer
+                                ? "Correcto"
+                                : "Incorrecto"}
+                            </Alert>
+                          </Box>
+                        )}
                       </Box>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mt: 0.5 }}
-                      >
-                        {question.select_option || question.answer}
-                      </Typography>
                     </Box>
                   ))}
                 </Box>

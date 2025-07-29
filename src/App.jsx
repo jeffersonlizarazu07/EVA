@@ -20,7 +20,7 @@ import Agent_Monitoring from "./pages/admin/agent_monitoring";
 import Forms from "./pages/admin/form_list";
 import SurveyBlocks from "./pages/quality/surveyBlocks";
 import FormReport from "./pages/admin/form_report";
-import AgentMonitoringView from "./pages/admin/monitoring_View";
+import AgentMonitoringView from "./pages/admin/monitoring_view";
 /* ---------------------------------------------------------*/
 
 /* Admin Imports */
