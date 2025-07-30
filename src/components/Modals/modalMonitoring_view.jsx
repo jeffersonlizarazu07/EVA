@@ -12,27 +12,34 @@ import {
   Grid,
   Box,
   TextField,
-  Checkbox,
   Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { getMonitorinStructure } from "../../services/agent_listService";
 import { FeedbackButton, SaveButton } from "../../components/buttons/buttons";
-import { saveFeedback } from "../../services/agent_listService";
+import { saveFeedback, updateCheck } from "../../services/agent_listService";
 
-const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
-  const { userId, userInfo, accessToken, languageUser } =
-    useContext(UserContext); // Contexto del usuario logeado para aplicar en el check
+const ModalMonitoringView = ({
+  open,
+  closeModal,
+  data,
+  fetchMonitoring,
+  updateSelectedRow,
+}) => {
+  const { userInfo, accessToken, languageUser } = useContext(UserContext); // Contexto del usuario logeado para aplicar en el check
   const [monitoringDetails, setMonitoringDetails] = useState([]); // Trae la data detallada del monitoreo
   const [openModalFeed, setOpenModalFeed] = useState(false); // Manejo del modal de feedback
   const [feedback, setFeedback] = useState(""); // Captura el input del comentario a guardar
   const [feedbackDisabled, setFeedbackDisabled] = useState(false); // Manejo del botón de comentario
   const { t, i18n } = useTranslation(); // Traducción
-  const [checked, setChecked] = useState(data.check === 1);
+  const [checked, setChecked] = useState(data.check === 1); //Cuando se aplica el check actualiza el backend 1 = check existente
+  const [checkDisabled, setCheckDisabled] = useState(true); //Manejo del botón cuándo check cambia
 
   useEffect(() => {
     i18n.changeLanguage(languageUser);
   }, [languageUser, i18n]);
+
+  // Validar feedback y check al abrir el modal
 
   useEffect(() => {
     if (!data?.id) return; //Evitar errores si no hay data al cargar
@@ -41,7 +48,7 @@ const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
       try {
         console.log("ID de monitoreo:", data.id);
 
-        const result = await getMonitorinStructure(data.id); // Usa el ID de la fila seleccionada en la tabla
+        const result = await getMonitorinStructure(data.id); // ID de la fila seleccionada en la tabla
         console.log("Estructura recibida:", result);
         setMonitoringDetails(result.details);
       } catch (error) {
@@ -57,9 +64,7 @@ const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
   console.log("Data recibida en el modal:", data);
 
   const openModalFeedback = () => setOpenModalFeed(true); // Abre el modal del feedback
-
   const closeModalFeedback = () => setOpenModalFeed(false); // Cierra el mddal del feedback
-
   const feedbackValidate = () => {
     return !data.feedback || data.feedback.trim() === ""; // Si el feedback viene vació se habilita el botón para realizar feedback
   };
@@ -68,27 +73,60 @@ const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
   const handleSaveFeedback = async () => {
     try {
       if (feedback.trim() === "") {
-        alert("No es posible guardar el comentario vacío");
+        alert("No es posible guardar el comentario vacío"); // Validación del feedback al guardar vacío
         return;
       }
       await saveFeedback(data.id, feedback);
-      await fetchMonitoring();
+      await fetchMonitoring(); // Actualiza la tabla
       alert("Comentario guardado correctamente");
+      updateSelectedRow(data.id, feedback); // Actualiza el feedback en el modal
       closeModalFeedback();
-      setFeedbackDisabled(true);
+      buttonsValidationState(feedback);
+      // setFeedbackDisabled(true); // Desactiva botón en modal principal al guardar feedback
+      // setCheckDisabled(false); // Activa el botón de check una vez se guarda el feedback
     } catch (err) {
       console.error("Error al guardar comentario");
       throw err;
     }
   };
 
+  // Validación de botones dependiendo del estado del feedback
+  const buttonsValidationState = (feedbackVal, checkVal) => {
+    if (feedbackVal.trim() === "") {
+      setFeedbackDisabled(false);
+      setCheckDisabled(true);
+    } else if (feedbackVal.trim() !== "" && checkVal === 0) {
+      setFeedbackDisabled(true);
+      setCheckDisabled(false);
+    } else if (feedbackVal.trim() !== "" && checkVal === 1) {
+      setFeedbackDisabled(true);
+      setCheckDisabled(true);
+    }
+  };
+
+  useEffect(() => {
+    if (data?.feedback !== undefined) {
+      setFeedback(data.feedback || ""); // Sincroniza cuando llega nueva data
+    }
+  }, [data?.feedback]);
+
+  useEffect(() => {
+    if (data?.id) {
+      buttonsValidationState(feedback, data.check);
+    }
+  }, [data, feedback]);
+
   // Manejo de check para agente
   const handleCheck = async () => {
+    const checkStatus = !checked;
+
     try {
-      await axios.put(`/api/monitoring/${data.id}/review`, { check: 1 });
-      setCheck(true);
+      await updateCheck(data.id, checkStatus ? 1 : 0);
+      setChecked(true);
+    setCheckDisabled(true);
+      alert("El check se actualizó");
     } catch (error) {
-      console.error("Error al marcar como revisado:", error);
+      console.error("Error al actualizar el check:", error);
     }
   };
 
@@ -148,7 +186,7 @@ const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
         scroll="paper"
       >
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <DialogTitle sx={{ m: 0, p: 2 }}>
+          <DialogTitle sx={{ m: 0, p: 2, marginLeft: "1.8rem" }}>
             Resumen de Monitorización
           </DialogTitle>
           <Box display="flex" alignItems="center" gap={1}>
@@ -245,7 +283,12 @@ const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
             borderRadius: 2,
             padding: 2,
             backgroundColor: "#fafafa",
-            m: [1, 5, 1, 5],
+            marginTop: "10px",
+            marginLeft: "45px",
+            marginRight: "41px",
+            marginBottom: "5px",
+            width: "100%",
+            maxWidth: 1100,
           }}
         >
           {/* Título principal */}
@@ -294,25 +337,33 @@ const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
           </Typography>
         </Box>
 
-        <Button
-          // onClick={handleCheckClick}
-          size="small"
-          variant={checked ? "contained" : "outlined"}
-          sx={{
-            borderRadius: 4,
-            border: "2px solid #b62a8b",
-            color: "#b62a8b",
-            textTransform: "none",
-            fontWeight: "bold",
-            width: "20%",
-            "&:hover": { backgroundColor: "#f3e0f1" },
-          }}
+        <Box
+          sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}
         >
-          {checked ? "Revisado" : "Marcar como revisado"}
-        </Button>
+          <Button
+            onClick={handleCheck}
+            size="small"
+            // variant={checked ? "contained" : "outlined"}
+            disabled={checkDisabled}
+            sx={{
+              borderRadius: 2,
+              border: "2px solid #b62a8b",
+              color: "#b62a8b",
+              textTransform: "none",
+              fontWeight: "bold",
+              width: "15%",
+              marginRight: "41px",
+              paddingBottom: "5px",
+            }}
+          >
+            {checked ? "Revisado" : "Marcar como revisado"}
+          </Button>
+        </Box>
 
         <Box>
-          <DialogTitle>Datos del monitoreo</DialogTitle>
+          <DialogTitle sx={{ marginLeft: "1.5rem" }}>
+            Datos del monitoreo
+          </DialogTitle>
           <DialogContent dividers>
             {/* Bloques de los formularios con su estructura */}
             {monitoringDetails?.map((block) => (
@@ -326,6 +377,12 @@ const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
                   padding: 2,
                   boxShadow: "0 1px 5px rgba(0,0,0,0.06)",
                   alignItems: "center",
+                  marginTop: "10px",
+                  marginLeft: "20px",
+                  marginRight: "41px",
+                  marginBottom: "5px",
+                  width: "100%",
+                  maxWidth: 1100,
                 }}
               >
                 <Grid
@@ -412,7 +469,8 @@ const ModalMonitoringView = ({ open, closeModal, data, fetchMonitoring }) => {
                               transform: "translateY(-50%)",
                               width: "20%",
                               display: "flex",
-                              justifyContent: "center",
+                              justifyContent: "flex-end",
+                              marginRight: "5px",
                             }}
                           >
                             <Alert

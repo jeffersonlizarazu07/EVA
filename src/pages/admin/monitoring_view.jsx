@@ -128,6 +128,7 @@ const AgentMonitoringView = () => {
     getUserType,
     getHeaderLabel,
     fetchMonitoring,
+    viewType: getUserType,
   };
 
   return (

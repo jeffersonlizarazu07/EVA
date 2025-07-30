@@ -37,7 +37,8 @@ const TableMonitoringView = ({
   setEndDate,
   getUserType,
   getHeaderLabel,
-  fetchMonitoring
+  fetchMonitoring,
+  viewType
 }) => {
   const nav = useNavigate();
   // Traducción
@@ -101,12 +102,22 @@ const TableMonitoringView = ({
     setSelectedRow(null);
   };
 
+  // Función para actualizar feedback desde el modal del id de monitorización seleccionado en la tabla
+  const updateSelectedRow = (id, newFeedback) => {
+  setSelectedRow((prev) => {
+    if (prev?.id !== id) return prev;
+    return { ...prev, feedback: newFeedback };
+  });
+};
+
   const ModalMonitoringViewProps = {
     open,
     closeModal,
     data: selectedRow,
     t,
     fetchMonitoring,
+    viewType,
+    updateSelectedRow
   };
 
   console.log("Esta es la data que envía la tabla", data);

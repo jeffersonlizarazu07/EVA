@@ -261,9 +261,13 @@ export const saveFeedback = async (id, feedback) => {
 // Actualizar check
 export const updateCheck = async (id, checkValue) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/check/${id}`, {
-      check: checkValue,
-    });
+    const response = await axios.put(
+      `${API_BASE_URL}/monitoring/${id}/check`,
+      {
+        check: checkValue,
+      },
+      config
+    );
     return response.data;
   } catch (error) {
     console.error("Error al actualizar el check:", error);
