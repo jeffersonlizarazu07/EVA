@@ -124,6 +124,23 @@ exports.updateFeedback = async (req, res) => {
   }
 };
 
+exports.updateCheck = async (req, res) => {
+  const { id } = req.params;
+  const { check } = req.body;
+
+  try {
+    if (typeof check !== "boolean" && typeof check !== "number") {
+      return res.status(400).json({ error: "El valor 'check' no es válido." });
+    }
+
+    await Monitoring.updateCheck(id, check);
+    res.status(200).json({ message: "Check actualizado correctamente." });
+  } catch (error) {
+    console.error("Error al actualizar el check:", error);
+    res.status(500).json({ error: "Error interno al actualizar el check." });
+  }
+};
+
 exports.delete = async (req, res) => {
   try {
     const deleted = await Monitoring.remove(req.params.id);

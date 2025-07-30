@@ -34,7 +34,7 @@ const MonitoringModel = {
 
   // Obtener por ID
   getById: (id) => {
-    return db("users as u")
+    return knex("users as u")
       .leftJoin("monitoring as m", "m.id_user", "u.id")
       .select(
         "u.*",
@@ -115,7 +115,7 @@ const MonitoringModel = {
 
       // Convertir la posicion de la respuesta en el array a su equivalente en string
       const options = row.select_option ? row.select_option.split(",") : [];
-      
+
       const selectedIndexes = row.answer ? row.answer.split(",") : [];
       const correctIndexes = row.selected_answer
         ? row.selected_answer.split(",")
@@ -135,7 +135,7 @@ const MonitoringModel = {
         question_name: row.question_name,
         select_option: selectedAnswers,
         answer: row.answer,
-        correct_answer: isCorrect
+        correct_answer: isCorrect,
       });
     });
 
@@ -160,6 +160,10 @@ const MonitoringModel = {
   // Eliminar
   remove(id) {
     return knex("monitoring").where({ id }).del();
+  },
+
+  updateCheck(id, checkValue) {
+    return knex("monitoring").where({ id }).update({ check: checkValue });
   },
 };
 
