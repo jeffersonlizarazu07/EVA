@@ -84,6 +84,7 @@ const MonitoringModel = {
       .select(
         "b.id as block_id",
         "b.block_name",
+        "b.percentage",
         "q.id as question_id",
         "q.question_name",
         "q.select_option",
@@ -108,6 +109,8 @@ const MonitoringModel = {
         block = {
           block_id: row.block_id,
           block_name: row.block_name,
+          percentage: row.percentage,
+
           questions: [],
         };
         groupedData.push(block);
