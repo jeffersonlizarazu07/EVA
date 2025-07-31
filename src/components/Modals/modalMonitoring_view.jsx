@@ -128,6 +128,10 @@ const ModalMonitoringView = ({
     }
   };
 
+  const ponderacionValidate = () => {
+    
+  }
+
   const header = [
     "id",
     "form_title",
@@ -316,7 +320,7 @@ const ModalMonitoringView = ({
           <Typography
             variant="body2"
             sx={{
-              color: "green",
+              color: "inherit",
               whiteSpace: "pre-line",
               marginBottom: 2,
               borderRadius: "2px",
@@ -345,7 +349,7 @@ const ModalMonitoringView = ({
             variant="caption"
             sx={{ display: "block", lineHeight: 1.2 }}
           >
-            Enviado acuse de recibo:
+            Enviado acuse de recibo {data.check_date_formatted}
           </Typography>
         </Box>
 
@@ -419,7 +423,7 @@ const ModalMonitoringView = ({
                       color="text.secondary"
                       sx={{ mr: 1 }}
                     >
-                      Puntuación: 5.00 | Media ponderada: 100.00
+                      {block.percentage}{"%"} | Media ponderada: 100.00
                     </Typography>
                   </Grid>
                 </Grid>
