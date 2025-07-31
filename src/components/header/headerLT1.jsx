@@ -4,6 +4,7 @@ import { useContext, useState, useEffect } from "react";
 import { toggleBlackMode } from "../../assets/js/toggleBlackMode";
 import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
+import { useAuth } from "../../context/AuthContext";
 import { Modal, ModalBody, ModalHeader, Button, ModalFooter } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
@@ -20,6 +21,7 @@ import Swal from "sweetalert2";
 import HomeIcon from "@mui/icons-material/Home";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import PersonIcon from "@mui/icons-material/Person";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { ThemeContext } from '../../assets/js/ThemeContext';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -50,6 +52,7 @@ import { themeColors } from '../../style/ThemeColors.js'
 const HeaderLT1 = () => {
   const { accessToken, userId, languageUser, setLanguageUser } =
     useContext(UserContext);
+  const { logout: authLogout } = useAuth();
   const { t, i18n } = useTranslation();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -103,18 +106,54 @@ const HeaderLT1 = () => {
 
   const logout = async () => {
     try {
-      await axios.post('http://localhost:3000/api/logout', {}, {
-        withCredentials: true,
-      });
+      console.log('[HeaderLT1] Iniciando logout...');
+      
+      // Usar el logout del AuthContext que maneja MSAL y tokenService
+      await authLogout();
+      
+      // Limpieza adicional de cookies específicas
       Cookies.remove("userId");
       Cookies.remove("userType");
       Cookies.remove("accessToken");
       Cookies.remove("clients");
+      Cookies.remove("token");
+      Cookies.remove("refreshToken");
+      Cookies.remove("sessionId");
+      Cookies.remove("authToken");
+      Cookies.remove("userToken");
+      Cookies.remove("loginToken");
+      
+      // Limpiamos todas las cookies del dominio como respaldo
+      const allCookies = document.cookie.split(";");
+      allCookies.forEach(cookie => {
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        if (name) {
+          Cookies.remove(name);
+        }
+      });
 
-      localStorage.removeItem("languageUser");
+      // Limpieza adicional de localStorage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      console.log('[HeaderLT1] Logout completado, redirigiendo...');
+      
+      // Redirigimos al usuario a la página de login
       nav("/");
+      
     } catch (error) {
-      console.error("Error al cerrar sesión:", error);
+      console.error('[HeaderLT1] Error al cerrar sesión:', error);
+      
+      // Limpieza de emergencia en caso de error
+      localStorage.clear();
+      sessionStorage.clear();
+      Cookies.remove("userId");
+      Cookies.remove("userType");
+      Cookies.remove("accessToken");
+      
+      // Redirigimos al usuario de todas formas
+      nav("/");
     }
   };
 
@@ -122,7 +161,7 @@ const HeaderLT1 = () => {
     withCredentials: true,
   };
 
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme } = useContext(ThemeContext) || { theme: 'light', toggleTheme: () => {} };
 
   const checkinfo = async () => {
     try {
@@ -332,11 +371,12 @@ const HeaderLT1 = () => {
       <Box
         sx={{
           position: "fixed",           // ✅ fijo en pantalla
-          top: 8,
+          top: 0,
           left: 0,
           right: 0,
-          zIndex: 9999,                // ✅ sobre todo lo demás
-          backgroundColor: "#fff",
+          zIndex: 1000,                // ✅ z-index más bajo para evitar sobreposición
+          backgroundColor: "transparent",
+          padding: "8px",
         }}
       >
 
@@ -349,6 +389,8 @@ const HeaderLT1 = () => {
             borderRadius: "25px",
             border: "2px solid rgb(199, 14, 143)",
             backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "#fff",
+            position: "relative",
+            zIndex: 1001,
           }}
         >
 
@@ -538,13 +580,40 @@ const HeaderLT1 = () => {
                   MenuListProps={{
                     "aria-labelledby": "basic-button",
                   }}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1,
+                      minWidth: 150,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                      borderRadius: '8px',
+                    }
+                  }}
                 >
                   <MenuItem
                     onClick={() => {
                       handleClose();
                       logout();
                     }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      color: 'error.main',
+                      '&:hover': {
+                        backgroundColor: 'error.light',
+                        color: 'error.contrastText',
+                      }
+                    }}
                   >
+                    <LogoutIcon sx={{ fontSize: '1.2rem' }} />
                     {t("headerlt.Logout")}
                   </MenuItem>
                 </Menu>
