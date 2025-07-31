@@ -25,6 +25,7 @@ const ModalMonitoringView = ({
   data,
   fetchMonitoring,
   updateSelectedRow,
+  viewType
 }) => {
   const { userInfo, accessToken, languageUser } = useContext(UserContext); // Contexto del usuario logeado para aplicar en el check
   const [monitoringDetails, setMonitoringDetails] = useState([]); // Trae la data detallada del monitoreo
@@ -82,8 +83,6 @@ const ModalMonitoringView = ({
       updateSelectedRow(data.id, feedback); // Actualiza el feedback en el modal
       closeModalFeedback();
       buttonsValidationState(feedback);
-      // setFeedbackDisabled(true); // Desactiva botón en modal principal al guardar feedback
-      // setCheckDisabled(false); // Activa el botón de check una vez se guarda el feedback
     } catch (err) {
       console.error("Error al guardar comentario");
       throw err;
@@ -123,7 +122,7 @@ const ModalMonitoringView = ({
     try {
       await updateCheck(data.id, checkStatus ? 1 : 0);
       setChecked(true);
-    setCheckDisabled(true);
+      setCheckDisabled(true);
       alert("El check se actualizó");
     } catch (error) {
       console.error("Error al actualizar el check:", error);
@@ -161,19 +160,7 @@ const ModalMonitoringView = ({
         return item;
     }
   };
-
-  const getUserType = (type) => {
-    switch (type) {
-      case 1:
-        return t("userTable.SuperAdmin");
-      case 2:
-        return t("userTable.Admin");
-      case 3:
-        return t("userTable.Editor");
-      default:
-        return t("userTable.Viwer");
-    }
-  };
+  viewType;
 
   return (
     <>
@@ -185,8 +172,29 @@ const ModalMonitoringView = ({
         disableAutoFocus
         scroll="paper"
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <DialogTitle sx={{ m: 0, p: 2, marginLeft: "1.8rem" }}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{
+            width: "100%",
+            backgroundColor: "#b62a8b",
+            borderRadius: "2px",
+            marginBottom: "1rem",
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+          }}
+        >
+          <DialogTitle
+            sx={{
+              m: 0,
+              p: 2,
+              marginLeft: "1.8rem",
+              color: "#ffffff",
+              fontWeight: "bold",
+            }}
+          >
             Resumen de Monitorización
           </DialogTitle>
           <Box display="flex" alignItems="center" gap={1}>
@@ -206,7 +214,8 @@ const ModalMonitoringView = ({
           sx={{
             display: "flex",
             justifyContent: "center",
-            width: "100%",
+            width: "96%",
+            margin: "10px auto 5px auto",
           }}
         >
           <DialogContent
@@ -216,11 +225,22 @@ const ModalMonitoringView = ({
               borderRadius: "12px",
               border: "2px solid #b62a8b",
               padding: 3,
-              maxWidth: 1100,
               width: "80%",
               boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+              overflowX: "hidden",
             }}
           >
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#b62a8b",
+                fontWeight: "bold",
+                fontSize: "20px",
+                textAlign: "center",
+              }}
+            >
+              Detalle de monitorización
+            </Typography>
             <Box
               sx={{
                 width: "100%",
@@ -229,27 +249,19 @@ const ModalMonitoringView = ({
                 paddingTop: 1,
               }}
             >
-              <Grid
-                container
-                sx={{
-                  width: "100%",
-                  maxWidth: 1250,
-                }}
-              >
+              <Box sx={{ width: "100%" }}>
                 {header.map((key, i) => (
-                  <Grid
-                    container
+                  <Box
                     key={i}
-                    spacing={1}
-                    alignItems="center"
                     sx={{
-                      backgroundColor: i % 2 === 0 ? "#f8f7f7ff" : "#ffffff",
-                      borderBottom: "1px solid #e0e0e0",
-                      paddingY: 1.5,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      paddingY: 2,
                       paddingX: 2,
+                      borderBottom: "1px solid #e0e0e0", // Aquí se garantiza el borde
                     }}
                   >
-                    <Grid item xs={12} sm={6}>
+                    <Box sx={{ width: { xs: "100%", sm: "50%" } }}>
                       <Typography
                         variant="body1"
                         fontWeight="bold"
@@ -257,8 +269,8 @@ const ModalMonitoringView = ({
                       >
                         {getHeaderLabel(key)}
                       </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
+                    </Box>
+                    <Box sx={{ width: { xs: "100%", sm: "50%" } }}>
                       <Typography
                         variant="body2"
                         sx={{
@@ -268,10 +280,10 @@ const ModalMonitoringView = ({
                       >
                         {data[key] ?? "Campo no disponible"}
                       </Typography>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                 ))}
-              </Grid>
+              </Box>
             </Box>
           </DialogContent>
         </Grid>
@@ -282,20 +294,21 @@ const ModalMonitoringView = ({
             border: "2px solid #b62a8b",
             borderRadius: 2,
             padding: 2,
-            backgroundColor: "#fafafa",
             marginTop: "10px",
-            marginLeft: "45px",
-            marginRight: "41px",
             marginBottom: "5px",
-            width: "100%",
-            maxWidth: 1100,
+            width: "96%",
+            margin: "10px auto 5px auto",
           }}
         >
           {/* Título principal */}
           <Typography
             variant="h6"
             fontWeight="bold"
-            sx={{ paddingBottom: "10px" }}
+            sx={{
+              paddingBottom: "10px",
+              textAlign: "center",
+              color: "#b62a8b",
+            }}
           >
             Comentario
           </Typography>
@@ -337,9 +350,7 @@ const ModalMonitoringView = ({
           </Typography>
         </Box>
 
-        <Box
-          sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "flex-end", width: "98%" }}>
           <Button
             onClick={handleCheck}
             size="small"
@@ -352,7 +363,6 @@ const ModalMonitoringView = ({
               textTransform: "none",
               fontWeight: "bold",
               width: "15%",
-              marginRight: "41px",
               paddingBottom: "5px",
             }}
           >
@@ -361,7 +371,9 @@ const ModalMonitoringView = ({
         </Box>
 
         <Box>
-          <DialogTitle sx={{ marginLeft: "1.5rem" }}>
+          <DialogTitle
+            sx={{ marginLeft: "0.4rem", color: "#b62a8b", fontWeight: "bold" }}
+          >
             Datos del monitoreo
           </DialogTitle>
           <DialogContent dividers>
@@ -371,18 +383,14 @@ const ModalMonitoringView = ({
                 key={block.block_id}
                 mb={2}
                 sx={{
-                  backgroundColor: "#fafafa",
                   border: "2px solid #b62a8b",
                   borderRadius: 2,
                   padding: 2,
                   boxShadow: "0 1px 5px rgba(0,0,0,0.06)",
                   alignItems: "center",
                   marginTop: "10px",
-                  marginLeft: "20px",
-                  marginRight: "41px",
                   marginBottom: "5px",
                   width: "100%",
-                  maxWidth: 1100,
                 }}
               >
                 <Grid
@@ -425,7 +433,7 @@ const ModalMonitoringView = ({
                         ml: 2,
                         mb: 2,
                         padding: 1,
-                        backgroundColor: "rgb(229, 246, 253)",
+                        backgroundColor: "#ffffff",
                         borderRadius: 2,
                         border: "1px solid #b62a8b",
                         boxShadow: "inset 0 0 0 1px #eee",
@@ -435,7 +443,7 @@ const ModalMonitoringView = ({
                         sx={{
                           position: "relative",
                           marginBottom: 2,
-                          paddingRight: "22%",
+                          paddingRight: "2rem",
                         }}
                       >
                         {/* Pregunta */}
@@ -467,10 +475,9 @@ const ModalMonitoringView = ({
                               right: 0,
                               top: "50%",
                               transform: "translateY(-50%)",
-                              width: "20%",
+                              width: "fit-content",
                               display: "flex",
                               justifyContent: "flex-end",
-                              marginRight: "5px",
                             }}
                           >
                             <Alert

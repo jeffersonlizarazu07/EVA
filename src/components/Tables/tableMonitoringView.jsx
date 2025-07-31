@@ -38,7 +38,7 @@ const TableMonitoringView = ({
   getUserType,
   getHeaderLabel,
   fetchMonitoring,
-  viewType
+  viewType,
 }) => {
   const nav = useNavigate();
   // Traducción
@@ -104,11 +104,11 @@ const TableMonitoringView = ({
 
   // Función para actualizar feedback desde el modal del id de monitorización seleccionado en la tabla
   const updateSelectedRow = (id, newFeedback) => {
-  setSelectedRow((prev) => {
-    if (prev?.id !== id) return prev;
-    return { ...prev, feedback: newFeedback };
-  });
-};
+    setSelectedRow((prev) => {
+      if (prev?.id !== id) return prev;
+      return { ...prev, feedback: newFeedback };
+    });
+  };
 
   const ModalMonitoringViewProps = {
     open,
@@ -117,7 +117,7 @@ const TableMonitoringView = ({
     t,
     fetchMonitoring,
     viewType,
-    updateSelectedRow
+    updateSelectedRow,
   };
 
   console.log("Esta es la data que envía la tabla", data);
@@ -301,8 +301,8 @@ const TableMonitoringView = ({
                     ) : key === "id" ? (
                       <Button
                         variant="text"
-                        color="primary"
                         onClick={() => openModal(item)}
+                        sx={{ color: "#b62a8b" }}
                       >
                         {item[key]}
                       </Button>
