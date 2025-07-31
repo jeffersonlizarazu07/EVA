@@ -25,7 +25,7 @@ const ModalMonitoringView = ({
   data,
   fetchMonitoring,
   updateSelectedRow,
-  viewType
+  viewType,
 }) => {
   const { userInfo, accessToken, languageUser } = useContext(UserContext); // Contexto del usuario logeado para aplicar en el check
   const [monitoringDetails, setMonitoringDetails] = useState([]); // Trae la data detallada del monitoreo
@@ -59,8 +59,7 @@ const ModalMonitoringView = ({
 
     fetchMonitoringDetails();
   }, [data?.id]); // Trae la data cada vez que cambie el ID
-
-  if (!open) return null; //No renderiza nada si el modal no está abierto
+  if (!open) return null; //No renderiza si el modal no está abierto
 
   console.log("Data recibida en el modal:", data);
 

@@ -21,7 +21,7 @@ const AgentMonitoringView = () => {
     "form_title",
     "client_name",
     "monitoring_date",
-    "monitoring_dateWithHour",
+    "check_date_formatted",
     "score",
     "evaluator_name",
     "feedback",
@@ -37,7 +37,7 @@ const AgentMonitoringView = () => {
         return "Cliente";
       case "monitoring_date":
         return "Fecha de Monitorización";
-      case "monitoring_dateWithHour":
+      case "check_date_formatted":
         return "Enviada";
       case "score":
         return "Score";

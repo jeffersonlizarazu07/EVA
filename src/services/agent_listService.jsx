@@ -259,7 +259,8 @@ export const saveFeedback = async (id, feedback) => {
 };
 
 // Actualizar check
-export const updateCheck = async (id, checkValue) => {
+export const updateCheck = async (id, checkValue, check_date) => {
+  console.log("Enviando data:", { id, checkValue, check_date });
   try {
     const response = await axios.put(
       `${API_BASE_URL}/monitoring/${id}/check`,
