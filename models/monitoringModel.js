@@ -52,9 +52,9 @@ const MonitoringModel = {
       .join("users", "monitoring.id_user_monitor", "users.id")
       .join("users as agent", "monitoring.id_user_agent", "agent.id")
       .select(
-        knex.raw("DATE_FORMAT(monitoring.date, '%d/%m/%Y') as monitoring_date"),
+        knex.raw("DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_date"),
         knex.raw(
-          "DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_dateWithHour"
+          "DATE_FORMAT(monitoring.check_date, '%d/%m/%Y %H:%i:%s') as check_date_formatted"
         ),
         "monitoring.*",
         "form_set.title as form_title",
@@ -162,8 +162,10 @@ const MonitoringModel = {
     return knex("monitoring").where({ id }).del();
   },
 
-  updateCheck(id, checkValue) {
-    return knex("monitoring").where({ id }).update({ check: checkValue });
+  updateCheck(id, checkValue, check_date) {
+    return knex("monitoring")
+      .where({ id })
+      .update({ check: checkValue, check_date: getDateTimeForSQL() });
   },
 };
 

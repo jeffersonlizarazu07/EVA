@@ -126,14 +126,14 @@ exports.updateFeedback = async (req, res) => {
 
 exports.updateCheck = async (req, res) => {
   const { id } = req.params;
-  const { check } = req.body;
+  const { check, check_date } = req.body;
 
   try {
     if (typeof check !== "boolean" && typeof check !== "number") {
       return res.status(400).json({ error: "El valor 'check' no es válido." });
     }
 
-    await Monitoring.updateCheck(id, check);
+    await Monitoring.updateCheck(id, check, check_date);
     res.status(200).json({ message: "Check actualizado correctamente." });
   } catch (error) {
     console.error("Error al actualizar el check:", error);
