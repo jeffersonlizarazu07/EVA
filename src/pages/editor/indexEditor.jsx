@@ -3,6 +3,7 @@ import SidebarLT2 from "../../components/aside/sidebarLT2";
 import HeaderLT2 from "../../components/header/headerLT2";
 import { UserContext } from "../../context/UserContext";
 import { useEffect,useContext } from "react";
+import { useTranslation } from "react-i18next";
 
 const IndexEditor = () => {
   const { t,i18n } = useTranslation();

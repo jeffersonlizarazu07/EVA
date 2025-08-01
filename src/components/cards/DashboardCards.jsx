@@ -1,47 +1,43 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import "../../assets/css/index.css";
-import SidebarLT1 from "../aside/sidebarLT1";
-import HeaderLT1 from "../header/headerLT1";
-import i18n from "../../assets/js/i18n.jsx";
 import { useEffect, useContext, useState } from "react";
 import { UserContext } from "../../context/UserContext";
+import { useTranslation } from "react-i18next";
 import {
-  Container,
-  Grid,
   Card,
   CardContent,
   Typography,
+  Grid,
   Link,
   Box,
+  Container,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AddchartIcon from "@mui/icons-material/Addchart";
+import "../../assets/css/index.css";
+// import HeaderLT1 from "../header/headerLT1";
 
-const Index = () => {
+export const QualityCard = () => {
   const { t, i18n } = useTranslation();
   const { userType, languageUser } = useContext(UserContext);
   useEffect(() => {
     i18n.changeLanguage(languageUser);
   }, []);
-
   return (
     <Box>
-      <HeaderLT1 />
+      {/* <HeaderLT1 /> */}
       {/* id="body" */}
       <Box>
-        <Box sx={{ marginTop: 12 }}>
-          <Grid size={12}>
+        {/* <Box sx={{ marginTop: 12 }}>
+          <Grid size={12}> */}
             {/* marginLeft: 27 */}
-            <Container
+            {/* <Container
               sx={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
               }}
-            >
-              <Grid container spacing={1}>
-                <Grid item xs={12} md={6}>
+            > */}
+              {/* <Grid container spacing={1}>
+                <Grid item xs={12} md={6}> */}
                   <Link href="/quality" underline="none">
                     <Card
                       id="card1"
@@ -66,9 +62,41 @@ const Index = () => {
                       </CardContent>
                     </Card>
                   </Link>
-                </Grid>
+                {/* </Grid> */}
+              {/* </Grid>
+            </Container>
+          </Grid> */}
+          {/* <SidebarLT1 /> */}
+        </Box>
+      </Box>
+    // </Box>
+  );
+};
 
-                <Grid item xs={12} md={6}>
+export const SatisfationCard = () => {
+  const { t, i18n } = useTranslation();
+  const { userType, languageUser } = useContext(UserContext);
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, []);
+
+  return (
+    <Box>
+      {/* <HeaderLT1 /> */}
+      {/* id="body" */}
+      <Box>
+        {/* <Box sx={{ marginTop: 12 }}> */}
+          {/* <Grid size={12}> */}
+            {/* marginLeft: 27 */}
+            {/* <Container
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            > */}
+              {/* <Grid container spacing={1}>
+                <Grid item xs={12} md={6}> */}
                   <Link href="/satisfaction" underline="none">
                     <Card
                       id="card2"
@@ -96,15 +124,13 @@ const Index = () => {
                       </CardContent>
                     </Card>
                   </Link>
-                </Grid>
-              </Grid>
-            </Container>
-          </Grid>
+                {/* </Grid>
+              </Grid> */}
+            {/* </Container> */}
+          {/* </Grid> */}
           {/* <SidebarLT1 /> */}
-        </Box>
+        {/* </Box> */}
       </Box>
     </Box>
   );
 };
-
-export default Index;
