@@ -296,18 +296,20 @@ const TableSurvey = ({
                         open={Boolean(anchorEl) && selectedItem === item}
                         onClose={handleMenuClose}
                       >
-                        <MenuItem
-                          onClick={() => handleMenuAction(onCheck, item)}
-                          sx={{
-                            display: "flex",
-                            gap: 1,
-                            color: " #b62a8b",
-                            "&:hover": { backgroundColor: "#f8f9fa" },
-                          }}
-                        >
-                          <HelpOutline sx={{ fontSize: 18 }} />
-                          {t("survey.ver_preguntas")}
-                        </MenuItem>
+                        {userInfo?.type !== 4 && (
+                          <MenuItem
+                            onClick={() => handleMenuAction(onCheck, item)}
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              color: " #b62a8b",
+                              "&:hover": { backgroundColor: "#f8f9fa" },
+                            }}
+                          >
+                            <HelpOutline sx={{ fontSize: 18 }} />
+                            {t("survey.ver_preguntas")}
+                          </MenuItem>
+                        )}
 
                         <MenuItem
                           onClick={() => handleMenuAction(onCopyLink, item)}
