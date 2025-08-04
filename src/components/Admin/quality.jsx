@@ -1,6 +1,9 @@
-import { useEffect,useContext,useState } from "react";
+import { useEffect, useContext, useState } from "react";
 import "../../assets/css/calidad.css";
-import { toggleGridMode,toggleListMode} from "../../assets/js/toggleListGridMode";
+import {
+  toggleGridMode,
+  toggleListMode,
+} from "../../assets/js/toggleListGridMode";
 import SidebarLT1 from "../aside/sidebarLT1";
 import HeaderLT1 from "../header/headerLT1";
 import SidebarLT2 from "../aside/sidebarLT2";
@@ -12,20 +15,16 @@ import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 
 const Quality = () => {
-  const {userType,languageUser} = useContext(UserContext)
+  const { userType, languageUser } = useContext(UserContext);
   const [isInitialized, setIsInitialized] = useState(false);
-  const { t,i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
-
-  
   useEffect(() => {
-    i18n.changeLanguage(languageUser)
+    i18n.changeLanguage(languageUser);
   }, []);
 
- 
-
-    const formatDate = (date) => {
+  const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0"); // Los meses empiezan desde 0
     const year = String(date.getFullYear()); // Últimos dos dígitos del año
@@ -35,7 +34,7 @@ const Quality = () => {
 
   return (
     <div className="App">
-      <div id="body" >
+      <div id="body">
         {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
         <section>
           {/* {userType === "1" || userType === "2" ? (
@@ -99,17 +98,19 @@ const Quality = () => {
                     </div>
                   </div>
                 </div>
-                <div className="row text-center">
-                  <div className="col-lg">
-                    <div className="card card1">
-                      <div className="card-body d-grid">
-                        <div className="row">
-                          <div className="col-12 card-title">
-                            <span className="">
-                              {t("qualitySite.Company_agents")}
-                            </span>
-                          </div>
-                          {/* <div className="col-2">
+
+                {userType === "4" ? (
+                  <div className="row justify-content-center">
+                    <div className="col-md-4">
+                      <div className="card card1">
+                        <div className="card-body d-grid">
+                          <div className="row">
+                            <div className="col-12 card-title">
+                              <span className="">
+                                {t("qualitySite.Company_agents")}
+                              </span>
+                            </div>
+                            {/* <div className="col-2">
                             <div className="dropdown">
                               <button className="dropbtn">
                                 <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -121,43 +122,44 @@ const Quality = () => {
                               </div>
                             </div>
                           </div> */}
-                        </div>
-                        <div className="row ">
-                          <div className="col-12">
-                            <h3 className="card-text">
-                              Agentes
-                            </h3>
                           </div>
-                        </div>
-                        <div className="row d-flex align-items-start justify-content-start mb-2">
-                          <div className="col card-second-text  ">
-                            <span className="">
-                              {t("qualitySite.Company_agents")}
-                            </span>
+                          <div className="row ">
+                            <div className="col-12">
+                              <h3 className="card-text">Agentes</h3>
+                            </div>
                           </div>
-                        </div>
-                        <div className="row ">
-                          <div className="col-12 ">
-                            <a href="./agent_list">
-                              <button className="card-btn" id="card-btn-1">
-                                {t("qualitySite.Agents_list")}
-                              </button>
-                            </a>
+                          <div className="row d-flex align-items-start justify-content-start mb-2">
+                            <div className="col card-second-text  ">
+                              <span className="">
+                                {t("qualitySite.Company_agents")}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="row ">
+                            <div className="col-12 ">
+                              <a href="./agent_list">
+                                <button className="card-btn" id="card-btn-1">
+                                  {t("qualitySite.Agents_list")}
+                                </button>
+                              </a>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="col-lg  ">
-                    <div className="card card2">
-                      <div className="card-body d-grid">
-                        <div className="row">
-                          <div className="col-12 card-title">
-                            <span className="">
-                              {t("qualitySite.Monitoring_forms_to_the_agent")}
-                            </span>
-                          </div>
-                          {/* <div className="col-2">
+                ) : (
+                  <div className="row">
+                    <div className="col-lg">
+                      <div className="card card1">
+                        <div className="card-body d-grid">
+                          <div className="row">
+                            <div className="col-12 card-title">
+                              <span className="">
+                                {t("qualitySite.Company_agents")}
+                              </span>
+                            </div>
+                            {/* <div className="col-2">
                             <div className="dropdown">
                               <button className="dropbtn">
                                 <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -169,48 +171,99 @@ const Quality = () => {
                               </div>
                             </div>
                           </div> */}
-                        </div>
-                        <div className="row">
-                          <div className="col-12">
-                            <h3 className="card-text">
-                              {t("qualitySite.Monitoring_forms")}
-                            </h3>
+                          </div>
+                          <div className="row ">
+                            <div className="col-12">
+                              <h3 className="card-text">Agentes</h3>
+                            </div>
+                          </div>
+                          <div className="row d-flex align-items-start justify-content-start mb-2">
+                            <div className="col card-second-text  ">
+                              <span className="">
+                                {t("qualitySite.Company_agents")}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="row ">
+                            <div className="col-12 ">
+                              <a href="./agent_list">
+                                <button className="card-btn" id="card-btn-1">
+                                  {t("qualitySite.Agents_list")}
+                                </button>
+                              </a>
+                            </div>
                           </div>
                         </div>
-                        <div className="row d-flex align-items-start justify-content-start mb-2">
-                          <div className="col card-second-text  ">
-                            <span className="">
-                              {t("qualitySite.Create_and_or_edit_form")}
-                            </span>
+                      </div>
+                    </div>
+
+                    <div className="col-lg  ">
+                      <div className="card card2">
+                        <div className="card-body d-grid">
+                          <div className="row">
+                            <div className="col-12 card-title">
+                              <span className="">
+                                {t("qualitySite.Monitoring_forms_to_the_agent")}
+                              </span>
+                            </div>
+                            {/* <div className="col-2">
+                            <div className="dropdown">
+                              <button className="dropbtn">
+                                <i className="fa-solid fa-ellipsis-vertical"></i>
+                              </button>
+                              <div className="dropdown-content">
+                                <a href="#">Link 1</a>
+                                <a href="#">Link 2</a>
+                                <a href="#">Link 3</a>
+                              </div>
+                            </div>
+                          </div> */}
                           </div>
-                        </div>
-                        <div className="row button-container">
-                          <div className="col-12">
-                            <button className="card-btn check" onClick={() => navigate("/forms")}>
-                              {t("qualitySite.Create_form")}
-                            </button>
+                          <div className="row">
+                            <div className="col-12">
+                              <h3 className="card-text">
+                                {t("qualitySite.Monitoring_forms")}
+                              </h3>
+                            </div>
                           </div>
-                          {/* <div className="col-2">
+                          <div className="row d-flex align-items-start justify-content-start mb-2">
+                            <div className="col card-second-text  ">
+                              <span className="">
+                                {t("qualitySite.Create_and_or_edit_form")}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="row button-container">
+                            <div className="col-12">
+                              <button
+                                className="card-btn check"
+                                onClick={() => navigate("/forms")}
+                              >
+                                {t("qualitySite.Create_form")}
+                              </button>
+                            </div>
+                            {/* <div className="col-2">
                             <button className="btn-plus">
                               <i className="fa-solid fa-plus"></i>
                             </button>
                           </div> */}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="col-lg  ">
-                    <div className="card card3">
-                      <div className="card-body d-grid">
-                        <div className="row">
-                          <div className="col-12 card-title">
-                            <span className="">
-                              {t(
-                                "qualitySite.Monitoring_forms_report_to_the_agent"
-                              )}
-                            </span>
-                          </div>
-                          {/* <div className="col-2">
+
+                    <div className="col-lg  ">
+                      <div className="card card3">
+                        <div className="card-body d-grid">
+                          <div className="row">
+                            <div className="col-12 card-title">
+                              <span className="">
+                                {t(
+                                  "qualitySite.Monitoring_forms_report_to_the_agent"
+                                )}
+                              </span>
+                            </div>
+                            {/* <div className="col-2">
                             <div className="dropdown">
                               <button className="dropbtn">
                                 <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -222,38 +275,42 @@ const Quality = () => {
                               </div>
                             </div>
                           </div> */}
-                        </div>
-                        <div className="row">
-                          <div className="col-12">
-                            <h3 className="card-text">
-                              {" "}
-                              {t("qualitySite.Form_report")}{" "}
-                            </h3>
                           </div>
-                        </div>
-                        <div className="row d-flex align-items-start justify-content-start mb-2">
-                          <div className="col card-second-text  ">
-                            <span className="">
-                              {t("qualitySite.Generate_report")}{" "}
-                            </span>
+                          <div className="row">
+                            <div className="col-12">
+                              <h3 className="card-text">
+                                {" "}
+                                {t("qualitySite.Form_report")}{" "}
+                              </h3>
+                            </div>
                           </div>
-                        </div>
-                        <div className="row button-container">
-                          <div className="col-12 ">
-                            <button className="card-btn check "onClick={() => navigate("/forms_report")}>
-                              {t("qualitySite.View_reports")}
-                            </button>
+                          <div className="row d-flex align-items-start justify-content-start mb-2">
+                            <div className="col card-second-text  ">
+                              <span className="">
+                                {t("qualitySite.Generate_report")}{" "}
+                              </span>
+                            </div>
                           </div>
-                          {/* <div className="col-2">
+                          <div className="row button-container">
+                            <div className="col-12 ">
+                              <button
+                                className="card-btn check "
+                                onClick={() => navigate("/forms_report")}
+                              >
+                                {t("qualitySite.View_reports")}
+                              </button>
+                            </div>
+                            {/* <div className="col-2">
                             <button className="btn-plus">
                               <i className="fa-solid fa-plus"></i>
                             </button>
                           </div> */}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
               {/* <!-- OPCION  MODO GRID  --> */}
 
