@@ -58,17 +58,6 @@ class AnswersFormService {
     }
   }
 
-  // Crear una nueva respuesta
-  async createAnswer(answerData) {
-    try {
-      const response = await axios.post(`${API_URL}`, answerData);
-      return response.data;
-    } catch (error) {
-      console.error('Error al crear la respuesta:', error);
-      throw error;
-    }
-  }
-
   // Actualizar una respuesta existente
   async updateAnswer(id, answerData) {
     try {

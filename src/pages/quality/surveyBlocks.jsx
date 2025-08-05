@@ -73,7 +73,13 @@ export default function SurveyBlocks({}) {
   const { userId } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const [data, setData] = useState([]);
-  const [operation, setOperation] = useState(1);
+  
+ // Estado para controlar si el modal está abierto
+  const [modalOpen, setModalOpen] = useState(false);
+  // Estado para guardar la operación y datos que pasas al modal
+  const [operation, setOperation] = useState(null);
+  const [modalData, setModalData] = useState(null);
+
   const [title, setTitle] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
   const [surveyData, setSurveyData] = useState([]);
@@ -128,6 +134,7 @@ export default function SurveyBlocks({}) {
     {
       text: "",
       type: "",
+      error: "",
       options: [],
       correctAnswers: [],
     },
@@ -223,7 +230,7 @@ export default function SurveyBlocks({}) {
     setSingleChoiceData({ options: [], correctAnswer: null });
     setMultipleChoiceData({ options: [], correctAnswers: [] });
     setidToEdit(null);
-    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+    setQuestionsList([{ text: "", error:"", type: "", options: [], correctAnswers: [] }]);
     setHasValidQuestions(false);
   };
 
@@ -233,6 +240,7 @@ export default function SurveyBlocks({}) {
     setValueConditional(conditional);
   };
 
+  //para abrir el modal
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
 
@@ -254,9 +262,10 @@ export default function SurveyBlocks({}) {
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
       setQuestionsList([
-        { text: "", type: "", options: [], correctAnswers: [] },
+        { text: "", error:"", type: "", options: [], correctAnswers: [] },
       ]);
       setHasValidQuestions(false);
+
     } else if (op === 2) {
       setTitle("Editar bloque");
 
@@ -390,14 +399,27 @@ export default function SurveyBlocks({}) {
         updateQuestionStatesForEdit(preguntasFormateadas);
       } else {
         setQuestionsList([
-          { text: "", type: "", options: [], correctAnswers: [] },
+          { text: "", error:"", type: "", options: [], correctAnswers: [] },
         ]);
         setQuestionCountInput("1");
       }
 
       setidToEdit(questionDetails.id);
     }
+     // Setear los datos para el modal
+    setModalData(questionDetails);
+    setModalOpen(true); // abrir el modal
   };
+
+  // Limpiar el modal al cerrar
+  const handleModalClose = () => {
+    handleCancel();
+    resetFormFields();
+    setError("");
+    setLoading(false);
+    setModalOpen(false);
+  };
+
   const validar = async (idToEdit, id_form) => {
     try {
       setError("");
@@ -502,111 +524,50 @@ export default function SurveyBlocks({}) {
         };
 
         try {
-          const response = await axios.post(
-            "http://localhost:3000/api/blocks",
-            parametros,
-            config
-          );
+          const response = await axios.post("http://localhost:3000/api/blocks", parametros, config);
 
           if (response.status === 201 || response.status === 200) {
             const newBlock = response.data;
 
+            // Crear preguntas si hay
             if (refillQuestions.length > 0) {
-              const responseQuestions = await createQuestions(
-                newBlock.id,
-                refillQuestions
-              );
+              // Nos aseguramos de tener la respuesta seleccionada sincronizada
+              const preguntasConRespuestas = refillQuestions.map((q) => ({
+                ...q,
+                selected_answer:
+                  q.selected_answer ||
+                  q.selectorSelectedOption ||
+                  q.textfieldValue ||
+                  "",
+              }));
+
+              // Crear preguntas
+              const responseQuestions = await createQuestions(newBlock.id, preguntasConRespuestas);
               const questionIds = responseQuestions;
-
-              if (!questionIds || !Array.isArray(questionIds)) {
-                // Enviar respuestas vinculadas a cada pregunta
-                for (let i = 0; i < refillQuestions.length; i++) {
-                  const question = refillQuestions[i];
-                  const questionId = questionIds[i];
-
-                  if (!questionId) {
-                    continue;
-                  }
-
-                  for (let i = 0; i < preguntas.length; i++) {
-                    const pregunta = preguntas[i];
-                    const question_id = questionIds[i]; // IDs que devuelve createQuestionsForBlock
-
-                    const respuesta =
-                      pregunta.selected_answer ||
-                      pregunta.selectorSelectedOption ||
-                      pregunta.textfieldValue ||
-                      ""; // Para tipo texto o seleccionador
-
-                    if (respuesta.trim() !== "") {
-                      await AnswersFormService.createAnswer({
-                        question_id,
-                        answer_question: respuesta,
-                      });
-                    }
-                  }
-
-                  // Acceder a la respuesta correcta según el tipo de pregunta
-                  let answer = "";
-
-                  if (
-                    question.type === "check_opt" ||
-                    question.type === "selector_opt"
-                  ) {
-                    answer = question.selected_answer || "";
-                  } else if (question.type === "textfield_s") {
-                    // Decidir si se quiere guardar o no.
-                    answer = question.selected_answer || "";
-                  }
-
-                  if (answer.trim() !== "") {
-                    try {
-                      await AnswersFormService.createAnswer({
-                        question_id: questionId,
-                        answer_question: answer,
-                      });
-                    } catch (err) {
-                      console.error(
-                        `Error al guardar respuesta "${answer}":`,
-                        err
-                      );
-                    }
-                  }
-                }
-
-                // Actualizar el bloque con las preguntas vinculadas
-                const updatedBlocks = await getBlocksByFormId(id_form);
-                setData(updatedBlocks.data.data);
-              }
             }
 
-            await loadBlocks(); // Cargar bloques después de crear uno nuevo
+            // Cargar bloques y actualizar vista
+            await loadBlocks();
 
             Toast.fire({
               icon: "success",
               title: "Bloque creado exitosamente",
             });
 
-            document.getElementById("btnClose").click();
-            handleCancel();
+            handleModalClose();
           }
         } catch (apiError) {
           console.error("Error al crear el bloque:", apiError);
           setError(
-            apiError.response?.data?.message ||
-              apiError.message ||
-              "Error al crear el bloque"
+            apiError.response?.data?.message || "Error al crear el bloque"
           );
           Toast.fire({
             icon: "error",
             title:
-              apiError.response?.data?.message ||
-              apiError.message ||
-              "Error al crear el bloque",
+              apiError.response?.data?.message || "Error al crear el bloque",
           });
         }
       }
-
       // Editar bloque
       else if (operation === 2) {
         const parametros = {
@@ -616,11 +577,7 @@ export default function SurveyBlocks({}) {
         };
 
         try {
-          const response = await axios.put(
-            `http://localhost:3000/api/blocks/${idToEdit}`,
-            parametros,
-            config
-          );
+          const response = await axios.put(`http://localhost:3000/api/blocks/${idToEdit}`, parametros, config);
 
           if (response.status === 200) {
             // Actualizar preguntas si existen
@@ -641,8 +598,7 @@ export default function SurveyBlocks({}) {
               icon: "success",
               title: "Bloque actualizado correctamente",
             });
-            document.getElementById("btnClose").click();
-            handleCancel();
+            handleModalClose();
           }
         } catch (apiError) {
           console.error("Error al actualizar el bloque:", apiError);
@@ -652,8 +608,7 @@ export default function SurveyBlocks({}) {
           Toast.fire({
             icon: "error",
             title:
-              apiError.response?.data?.message ||
-              "Error al actualizar el bloque",
+              apiError.response?.data?.message || "Error al actualizar el bloque",
           });
         }
       }
@@ -820,6 +775,7 @@ export default function SurveyBlocks({}) {
       };
       return newList;
     });
+    
   };
 
   // Validar el input de preguntas del modal
@@ -874,6 +830,11 @@ export default function SurveyBlocks({}) {
     });
   };
 
+  useEffect(() => {
+    console.log("¿Están todos los campos completos?", areAllFieldsCompleted());
+  }, [nombreInput.input, ponderacionInput.input, questionsList, operation]);
+
+
   const areAllFieldsCompleted = () => {
     return operation === 2 ? validateEditMode() : validateCreateMode();
   };
@@ -906,7 +867,9 @@ export default function SurveyBlocks({}) {
   const validateCreateMode = () => {
     const basicBlocksInputs =
       nombreInput.input.trim() !== "" &&
-      ponderacionInput.input.trim() !== ""
+      ponderacionInput.input.trim() !== "";
+
+    console.log('nombreInput:', nombreInput.input, 'ponderacionInput:', ponderacionInput.input);
 
     if (questionsList.length === 0) return false;
 
@@ -927,6 +890,25 @@ export default function SurveyBlocks({}) {
 
     return basicBlocksInputs && allQuestionsValid;
   };
+
+  const obtenerPorcentajeTotalBloques = async (formId) => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/blocks/form/${formId}`);
+      const bloques = response.data?.data || [];
+
+      const total = bloques.reduce((suma, bloque) => {
+        return suma + (Number(bloque.percentage) || 0);
+      }, 0);
+
+      console.log('porcentaje de bloques',total);
+      return total;
+      
+    } catch (error) {
+      console.error("Error al obtener bloques del formulario:", error);
+      return 0;
+    }
+  };
+
 
   const resetFormFields = () => {
     nombreInput.handleChange("");
@@ -957,29 +939,6 @@ export default function SurveyBlocks({}) {
     setHasValidQuestions(false);
     setSelectError("");
   };
-
-  // Id único para cada bloque
-
-  // const handleAgregarBloque = () => {
-  //   if (!nombreInput.value || !ponderacionInput.value) return;
-
-  //   const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
-
-  //   const nuevoBloque = {
-  //     blockId: generateId(),
-  //     nombre: nombreInput.value,
-  //     posicion: nuevaPosicion,
-  //     ponderacion: parseInt(ponderacionInput.value),
-  //     preguntas: [],
-  //   };
-
-  //   setBloques((prev) => [...prev, nuevoBloque]);
-
-  //   // Reset inputs
-  //   nombreInput.reset();
-  //   posicionInput.reset();
-  //   ponderacionInput.reset();
-  // };
 
   // Obtener preguntas por ID de bloque (si no existe)
   const getQuestionsByBlockId = async (blockId) => {
@@ -1130,8 +1089,7 @@ export default function SurveyBlocks({}) {
                 type: tipo,
                 options: optionObjects,
                 select_option: preg.select_option || "",
-                selected_answer:
-                  preg.conditional_answer || preg.selected_answer || "",
+                selected_answer: preg.conditional_answer || preg.selected_answer || "",
                 conditional: preg.conditional || "NO",
                 question_name: preg.question_name || preg.text || "Sin texto",
               };
@@ -1243,14 +1201,6 @@ export default function SurveyBlocks({}) {
       fetchFormData();
     }
   }, [id_form, formData]);
-
-  // Limpiar el modal al cerrar
-  const handleModalClose = () => {
-    handleCancel();
-    resetFormFields();
-    setError("");
-    setLoading(false);
-  };
 
   const toggleCollapse = (blockId, questionIndex) => {
     const key = `${blockId}-${questionIndex}`;
@@ -1372,9 +1322,7 @@ export default function SurveyBlocks({}) {
                     <div className="card-tools d-flex justify-content-end me-4">
                       <button
                         className="btn fw-bold btn-sm acces-tabla"
-                        onClick={() => openModal(1)}
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalManageQuestion"
+                        onClick={() => openModal(1, id_form)}
                       >
                         + Crear Bloque
                       </button>
@@ -1563,8 +1511,6 @@ export default function SurveyBlocks({}) {
                                           <button
                                             className="btn text-start"
                                             style={{ width: "100%" }}
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#modalManageQuestion"
                                             onClick={() => onUpdate(bloque)}
                                           >
                                             <i className="fa-solid fa-edit"></i>{" "}
@@ -1608,6 +1554,8 @@ export default function SurveyBlocks({}) {
 
       {/* Modal para gestión de bloques de encuesta */}
       <ModalSurveyBlocks
+        open={modalOpen}
+        handleModalClose={handleModalClose}
         operation={operation}
         title={title}
         descriptionText={descriptionText}
@@ -1628,6 +1576,7 @@ export default function SurveyBlocks({}) {
         idToEdit={idToEdit}
         id_form={id_form}
         areAllFieldsCompleted={areAllFieldsCompleted}
+        obtenerPorcentajeTotalBloques ={obtenerPorcentajeTotalBloques}
         handleCancel={handleCancel}
         addNewQuestion={addNewQuestion}
         questionCountInput={questionCountInput}
