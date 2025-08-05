@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAgent";
-import Swal from "sweetalert2";
 import HeaderLT1 from "../../components/header/headerLT1";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
@@ -14,7 +13,7 @@ import {
   getAgentById,
   getFormsByClient,
   getBlocksForIdForm,
-  saveMonitoringAndAnswers
+  saveMonitoringAndAnswers,
 } from "../../services/agent_listService";
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
@@ -26,7 +25,7 @@ import { Box, Typography } from "@mui/material";
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
-  const [listClients, setListClients] = useState([]); // Clientes disponibles en el sistema
+  const [listClientes, setListClients] = useState([]); // Clientes disponibles en el sistema
   const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
   const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
   const [title, setTitle] = useState(); // Estado para el título del formulario/modal
@@ -38,7 +37,8 @@ const AdminList = () => {
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
   const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
+  const { accessToken, languageUser, clients, userInfo } =
+    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
@@ -46,17 +46,17 @@ const AdminList = () => {
   const [blocksWithPer, setBlocksWithPer] = useState([]); // Guarda el porcentaje del bloque actualizado
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
   const [feedback, setFeedback] = React.useState("");
-
+  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
 
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
-
 
   // Validaciones de la primer vista del modal
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
   const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
   const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
-  const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
+  const [feedbackError, setFeedbackError] = useState(false);
+  const [erroresPorPregunta, setErroresPorPregunta] = useState({});
 
   const [conteoDeAgentes, setConteoDeAgentes] = useState("0"); 
   useEffect(() => {
@@ -140,7 +140,7 @@ const AdminList = () => {
       console.error("Error al cargar los administradores:", error);
       Toast.fire({
         icon: "error",
-        title: "Error al cargar administradores",
+        title: t("monitoringModal.ErrorAdmins"),
       });
     } finally {
       setLoading(false);
@@ -191,11 +191,9 @@ const AdminList = () => {
 
     if (isNaN(numericId) || numericId <= 0) {
       console.error("ID de cliente inválido:", selectedId);
-      Swal.fire({
-        title: "Error",
-        text: "ID de cliente inválido",
+      Toast.fire({
         icon: "error",
-        confirmButtonText: "Ok",
+        title: t("monitoringModal.ErrorClients"),
       });
       return;
     }
@@ -216,7 +214,7 @@ const AdminList = () => {
         // Sin formularios disponibles
         Toast.fire({
           icon: "info",
-          title: "No hay formularios disponibles para este cliente",
+          title: t("monitoringModal.ErrorForms"),
         });
       }
     }
@@ -234,7 +232,7 @@ const AdminList = () => {
     } else {
       Toast.fire({
         icon: "info",
-        title: "No existen bloques creados para este formulario",
+        title: t("monitoringModal.ErrorBlocks"),
       });
       setBlocksForForm([]); // Limpiar bloques si no existen
     }
@@ -346,8 +344,6 @@ const AdminList = () => {
 
     const agentData = await getAgentById(admin.id);
 
-    setTitle("Información");
-
     firstName.handleChange(agentData?.firstname || "");
     lastName.handleChange(agentData?.lastname || "");
     middleName.handleChange(agentData?.middlename || "");
@@ -386,7 +382,7 @@ const AdminList = () => {
     setSelectedFormId("");
     setFormOptions([]);
     setFeedback("");
-    setMonitoringDate(""); 
+    setMonitoringDate("");
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
 
@@ -394,7 +390,9 @@ const AdminList = () => {
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
       const initBlockPer = block.percentage;
-      const allCorrect = block.preguntas.every((pregunta) => pregunta.evaluacion !== "1");
+      const allCorrect = block.preguntas.every(
+        (pregunta) => pregunta.evaluacion !== "1"
+      );
       const finalBlockPer = allCorrect ? initBlockPer : 0;
 
       return {
@@ -423,8 +421,8 @@ const AdminList = () => {
   const validarRespuesta = (pregunta) => {
     if (pregunta.id_type_question === 1) {
       const respuestasCorrectas = pregunta.selected_answer
-      ? pregunta.selected_answer.split(",").map((r) => parseInt(r.trim()))
-      : [];
+        ? pregunta.selected_answer.split(",").map((r) => parseInt(r.trim()))
+        : [];
 
       const seleccionUsuario = pregunta.seleccionMultiple || [];
 
@@ -432,8 +430,10 @@ const AdminList = () => {
         ? pregunta.select_option.split(",").map((opt) => opt.trim())
         : [];
 
-      const indicesSeleccion = seleccionUsuario.map((opt) => opciones.indexOf(opt)).sort();// Convertimos selección del usuario a índices
-      respuestasCorrectas.sort();// Ordenamos también las respuestas correctas
+      const indicesSeleccion = seleccionUsuario
+        .map((opt) => opciones.indexOf(opt))
+        .sort(); // Convertimos selección del usuario a índices
+      respuestasCorrectas.sort(); // Ordenamos también las respuestas correctas
 
       return (
         indicesSeleccion.length === respuestasCorrectas.length &&
@@ -446,7 +446,10 @@ const AdminList = () => {
         ? pregunta.selected_answer.split(",").map((r) => r.trim())
         : [];
       const seleccionUsuario = pregunta.respuestaSeleccionada || "";
-      return respuestasCorrectas.length === 1 && seleccionUsuario === respuestasCorrectas[0];
+      return (
+        respuestasCorrectas.length === 1 &&
+        seleccionUsuario === respuestasCorrectas[0]
+      );
     }
 
     if (pregunta.id_type_question === 3) {
@@ -473,7 +476,8 @@ const AdminList = () => {
           console.log(`Respuesta del usuario:`, preguntaActualizada);*/
 
           return {
-            ...preguntaActualizada, evaluacion: esCorrecta ? "0" : "1",
+            ...preguntaActualizada,
+            evaluacion: esCorrecta ? "0" : "1",
           };
         }
         return preg;
@@ -502,7 +506,7 @@ const AdminList = () => {
       if (!isClientValid || !isFormValid || !isDateValid) {
         Toast.fire({
           icon: "error",
-          title: "Faltan campos obligatorios",
+          title: t("monitoringModal.AlertData"),
           //'<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
         });
         return;
@@ -512,38 +516,53 @@ const AdminList = () => {
     } else if (monitoringStep === 2) {
       // Verifica si todas las preguntas están respondidas
       const preguntasNoRespondidas = [];
+      const nuevosErrores = {};
 
       for (const bloque of blocksWithPer) {
         for (const pregunta of bloque.preguntas) {
           const tipo = pregunta.id_type_question;
 
           const respondida =
-            (tipo === 1 && pregunta.seleccionMultiple && pregunta.seleccionMultiple.length > 0) ||
-            (tipo === 2 && pregunta.respuestaSeleccionada !== undefined && pregunta.respuestaSeleccionada !== "") ||
-            (tipo === 3 && pregunta.textoRespuesta && pregunta.textoRespuesta.trim() !== "");
+            (tipo === 1 &&
+              pregunta.seleccionMultiple &&
+              pregunta.seleccionMultiple.length > 0) ||
+            (tipo === 2 &&
+              pregunta.respuestaSeleccionada !== undefined &&
+              pregunta.respuestaSeleccionada !== "") ||
+            (tipo === 3 &&
+              pregunta.textoRespuesta &&
+              pregunta.textoRespuesta.trim() !== "");
 
           if (!respondida) {
             preguntasNoRespondidas.push(pregunta.id);
+            nuevosErrores[pregunta.id] = true;
+          } else {
+            nuevosErrores[pregunta.id] = false;
           }
         }
       }
 
+      setErroresPorPregunta(nuevosErrores);
       if (preguntasNoRespondidas.length > 0) {
         Toast.fire({
           icon: "error",
-          title: "Debes responder todas las preguntas.",
+          title: t("monitoringModal.AlertQuestion"),
         });
         return;
       }
       setMonitoringStep(3);
     } else if (monitoringStep === 3) {
-      if (!feedback || feedback.trim() === "") {
+      /*if (!feedback || feedback.trim() === "") {
+        setFeedbackError(true); // activa el borde rojo
         Toast.fire({
           icon: "error",
-          title: "El campo de feedback es obligatorio.",
+          title: t("monitoringModal.AlertFeedback") //"El campo de feedback es obligatorio.",
         });
         return;
-      }
+      } else {
+        setFeedbackError(false); // limpia el error si todo está bien
+      }*/
+
       const payload = {
         monitoringDate,
         id_user_monitor: userInfo.id,
@@ -559,19 +578,32 @@ const AdminList = () => {
           let answer_value = null;
 
           if (pregunta.id_type_question === 1) {
-            if (pregunta.seleccionMultiple && pregunta.seleccionMultiple.length > 0) {
-              const opciones = pregunta.select_option.split(",").map((o) => o.trim());
+            if (
+              pregunta.seleccionMultiple &&
+              pregunta.seleccionMultiple.length > 0
+            ) {
+              const opciones = pregunta.select_option
+                .split(",")
+                .map((o) => o.trim());
               const indicesSeleccionados = pregunta.seleccionMultiple
-                .map((opcionSeleccionada) => opciones.indexOf(opcionSeleccionada))
-                .filter(index => index !== -1);
+                .map((opcionSeleccionada) =>
+                  opciones.indexOf(opcionSeleccionada)
+                )
+                .filter((index) => index !== -1);
               answer_value = indicesSeleccionados.join(",");
             }
           } else if (pregunta.id_type_question === 2) {
-            if (pregunta.respuestaSeleccionada !== undefined && pregunta.respuestaSeleccionada !== "") {
+            if (
+              pregunta.respuestaSeleccionada !== undefined &&
+              pregunta.respuestaSeleccionada !== ""
+            ) {
               answer_value = pregunta.respuestaSeleccionada;
             }
           } else if (pregunta.id_type_question === 3) {
-            if (pregunta.textoRespuesta && pregunta.textoRespuesta.trim() !== "") {
+            if (
+              pregunta.textoRespuesta &&
+              pregunta.textoRespuesta.trim() !== ""
+            ) {
               answer_value = pregunta.textoRespuesta.trim();
             }
           }
@@ -583,14 +615,6 @@ const AdminList = () => {
             answer_question: answer_value,
           });
         }
-      }
-
-      if (payload.answers.length === 0) {
-        Swal.fire({
-          icon: "warning",
-          title: "Completa al menos una evaluación antes de guardar.",
-        });
-        return;
       }
 
       try {
@@ -651,6 +675,10 @@ const AdminList = () => {
     setFormError,
     dateError,
     setDateError,
+    feedbackError,
+    setFeedbackError,
+    erroresPorPregunta,
+    setErroresPorPregunta,
     selectedBlockId,
     setSelectedBlockId,
     handleNextStep,
@@ -660,31 +688,37 @@ const AdminList = () => {
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
-const modalViewAdminProps = {
-  open: openViewModal,
-  onClose: handleCloseViewModal,
-  formatDateTimeShort,
-  registration_date: { input: viewAdminData?.registration_date || "" },
-  type: { input: viewAdminData?.type || "" },
-  last_visit_date: { input: viewAdminData?.last_visit_date || "" },
-  selectedClients: viewAdminData?.clients || [],
-  firstName: { input: viewAdminData?.firstname || "" },
-  middleName: { input: viewAdminData?.middlename || "" },
-  lastName: { input: viewAdminData?.lastname || "" },
-  state: { input: viewAdminData?.state || 0 },
-  language: { input: viewAdminData?.language || "en" },
-  email: { input: viewAdminData?.email || "" },
-  listClients,
-  t,
-};
-
+  const modalViewAdminProps = {
+    open: openViewModal,
+    onClose: handleCloseViewModal,
+    formatDateTimeShort,
+    registration_date: { input: viewAdminData?.registration_date || "" },
+    type: { input: viewAdminData?.type || "" },
+    last_visit_date: { input: viewAdminData?.last_visit_date || "" },
+    selectedClients: viewAdminData?.clients || [],
+    firstName: { input: viewAdminData?.firstname || "" },
+    middleName: { input: viewAdminData?.middlename || "" },
+    lastName: { input: viewAdminData?.lastname || "" },
+    state: { input: viewAdminData?.state || 0 },
+    language: { input: viewAdminData?.language || "en" },
+    email: { input: viewAdminData?.email || "" },
+    userClients,
+    t,
+  };
 
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
-        <Box sx={{lignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex"}}>
+        <Box
+          sx={{
+            lignItems: "stretch",
+            flexWrap: "nowrap",
+            padding: 0,
+            display: "flex",
+          }}
+        >
           {/* <SidebarLT1 /> */}
 
           <Box className="container" mt={0}>
@@ -692,14 +726,14 @@ const modalViewAdminProps = {
               <TableAdmin
                 header={selectedKeys}
                 data={admins}
-                modalId={"modalAdmin"}
-                modalId2={"modalViewAdmin"}
                 onUpdate={(payload) => openModal(2, payload)}
                 onView={(payload) => openModalCont(payload)}
               />
             ) : (
               <Box sx={{ textAlign: "center", py: 5 }}>
-                <Typography variant="h6">No existen agentes registrados</Typography>
+                <Typography variant="h6">
+                  No existen agentes registrados
+                </Typography>
               </Box>
             )}
           </Box>

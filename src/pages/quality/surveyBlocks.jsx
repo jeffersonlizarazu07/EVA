@@ -6,6 +6,28 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useParams } from "react-router-dom";
 import {
+  Modal,
+  Box,
+  Paper,
+  Typography,
+  IconButton,
+  Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  FormControlLabel,
+  Checkbox,
+  CircularProgress,
+  Divider,
+  Button,
+  Autocomplete
+} from "@mui/material";
+import {
   smallAlertDelete,
   loadingAlert,
   Toast2,
@@ -45,44 +67,19 @@ import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 import Cookies from "js-cookie";
 import { updateFormMetadata } from "../../services/form_listService";
 import { formatDateTimeShort } from "../../utils/dateUtils";
-import {
-  Box,
-  Card,
-  CardHeader,
-  CardContent,
-  Typography,
-  IconButton,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  Button,
-  Menu,
-  TextField,
-  Grid,
-} from "@mui/material";
 
-import {
-  ExpandMore,
-  Edit,
-  Delete,
-  Add,
-  MoreVert,
-} from "@mui/icons-material";
-
-
-export default function SurveyBlocks({ }) {
+export default function SurveyBlocks({}) {
   const { id_form } = useParams();
   const { userId } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const [data, setData] = useState([]);
-  const [operation, setOperation] = useState(1);
+  
+ // Estado para controlar si el modal está abierto
+  const [modalOpen, setModalOpen] = useState(false);
+  // Estado para guardar la operación y datos que pasas al modal
+  const [operation, setOperation] = useState(null);
+  const [modalData, setModalData] = useState(null);
+
   const [title, setTitle] = useState("");
   const [descriptionText, setDescriptionText] = useState("");
   const [surveyData, setSurveyData] = useState([]);
@@ -104,22 +101,6 @@ export default function SurveyBlocks({ }) {
     questionTypeRange: "",
     answersRange: "",
   });
-
-  const [menuAnchor, setMenuAnchor] = useState({});
-
-  const handleMenuOpen = (event, blockId) => {
-    setMenuAnchor((prev) => ({
-      ...prev,
-      [blockId]: event.currentTarget,
-    }));
-  };
-
-  const handleMenuClose = (blockId) => {
-    setMenuAnchor((prev) => ({
-      ...prev,
-      [blockId]: null,
-    }));
-  };
 
   const question = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -153,6 +134,7 @@ export default function SurveyBlocks({ }) {
     {
       text: "",
       type: "",
+      error: "",
       options: [],
       correctAnswers: [],
     },
@@ -167,24 +149,14 @@ export default function SurveyBlocks({ }) {
     options: [],
     selectedOption: null,
   });
-  const [questions, setQuestions] = useState([]);
-  const [editingQuestion, setEditingQuestion] = useState(null);
-  const [options, setOptions] = useState([]);
-  const [correctAnswers, setCorrectAnswers] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   // State para manejo de preguntas validas
   const [hasValidQuestions, setHasValidQuestions] = useState(false);
   const [textFieldAnswer, setTextFieldAnswer] = useState("");
 
-  //Id bloque creado
-  const [bloques, setBloques] = useState([]);
-
   // Paginador
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage] = useState(3); // Número de bloques por página
   const [searchTerm, setSearchTerm] = useState(""); // Para filtrado
   const [staticData, setStaticData] = useState([]); // Copia de los datos para filtrado
-  const blockRefs = useRef([]);
+
 
   // Estados para manejo de posicionamiento relativo de bloques
   const [positionType, setPositionType] = useState(""); // 'Antes o despues de'
@@ -195,11 +167,9 @@ export default function SurveyBlocks({ }) {
   const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
   //formulario
-  // Estado para los bloques de la encuesta
-  const [surveyBlocks, setSurveyBlocks] = useState([]);
 
   const [collapsedQuestions, setCollapsedQuestions] = useState({}); // Estado para manejar el colapso de preguntas
-
+  const [selectError, setSelectError] = useState(""); // Select errores
   /* ***********************************************************************************************************/
   /* Component Logic*/
   /* ***********************************************************************************************************/
@@ -254,17 +224,14 @@ export default function SurveyBlocks({ }) {
       });
   };
 
-
   const handleCancel = () => {
     setValueConditional(false);
     setIsChecked(false);
     setSingleChoiceData({ options: [], correctAnswer: null });
     setMultipleChoiceData({ options: [], correctAnswers: [] });
     setidToEdit(null);
-    setQuestionsList([{ text: "", type: "", options: [], correctAnswers: [] }]);
+    setQuestionsList([{ text: "", error:"", type: "", options: [], correctAnswers: [] }]);
     setHasValidQuestions(false);
-
-    setIsModalOpen(false);
   };
 
   const conditionalHandleChange = (e) => {
@@ -273,6 +240,7 @@ export default function SurveyBlocks({ }) {
     setValueConditional(conditional);
   };
 
+  //para abrir el modal
   const openModal = (op, idsurvey, questionDetails) => {
     setOperation(op);
 
@@ -294,13 +262,12 @@ export default function SurveyBlocks({ }) {
       setSingleChoiceData({ options: [], correctAnswer: null });
       setMultipleChoiceData({ options: [], correctAnswers: [] });
       setQuestionsList([
-        { text: "", type: "", options: [], correctAnswers: [] },
+        { text: "", error:"", type: "", options: [], correctAnswers: [] },
       ]);
       setHasValidQuestions(false);
-      setIsModalOpen(true);
+
     } else if (op === 2) {
       setTitle("Editar bloque");
-      setIsModalOpen(true);
 
       // Cargar datos básicos del bloque
       nombreInput.handleChange(
@@ -345,6 +312,7 @@ export default function SurveyBlocks({ }) {
 
           const preguntaBase = {
             text: p.text || p.question_name || "",
+            error: p.type_error,
             type: tipo,
             conditional: p.conditional || "NO",
           };
@@ -371,8 +339,8 @@ export default function SurveyBlocks({ }) {
             case "check_opt":
               const checkboxOptions = p.select_option
                 ? p.select_option
-                  .split(",")
-                  .map((o) => ({ text: o.trim(), checked: false }))
+                    .split(",")
+                    .map((o) => ({ text: o.trim(), checked: false }))
                 : [];
 
               const selectedAnswers = (p.selected_answer || "")
@@ -431,14 +399,27 @@ export default function SurveyBlocks({ }) {
         updateQuestionStatesForEdit(preguntasFormateadas);
       } else {
         setQuestionsList([
-          { text: "", type: "", options: [], correctAnswers: [] },
+          { text: "", error:"", type: "", options: [], correctAnswers: [] },
         ]);
         setQuestionCountInput("1");
       }
 
       setidToEdit(questionDetails.id);
     }
+     // Setear los datos para el modal
+    setModalData(questionDetails);
+    setModalOpen(true); // abrir el modal
   };
+
+  // Limpiar el modal al cerrar
+  const handleModalClose = () => {
+    handleCancel();
+    resetFormFields();
+    setError("");
+    setLoading(false);
+    setModalOpen(false);
+  };
+
   const validar = async (idToEdit, id_form) => {
     try {
       setError("");
@@ -520,6 +501,7 @@ export default function SurveyBlocks({ }) {
 
         return {
           question_name: q.text || q.question || "Sin texto",
+          type_error: q.error,
           id_type_question: q.type || typeMap[q.type] || null,
           select_option,
           selected_answer,
@@ -542,111 +524,50 @@ export default function SurveyBlocks({ }) {
         };
 
         try {
-          const response = await axios.post(
-            "http://localhost:3000/api/blocks",
-            parametros,
-            config
-          );
+          const response = await axios.post("http://localhost:3000/api/blocks", parametros, config);
 
           if (response.status === 201 || response.status === 200) {
             const newBlock = response.data;
 
+            // Crear preguntas si hay
             if (refillQuestions.length > 0) {
-              const responseQuestions = await createQuestions(
-                newBlock.id,
-                refillQuestions
-              );
+              // Nos aseguramos de tener la respuesta seleccionada sincronizada
+              const preguntasConRespuestas = refillQuestions.map((q) => ({
+                ...q,
+                selected_answer:
+                  q.selected_answer ||
+                  q.selectorSelectedOption ||
+                  q.textfieldValue ||
+                  "",
+              }));
+
+              // Crear preguntas
+              const responseQuestions = await createQuestions(newBlock.id, preguntasConRespuestas);
               const questionIds = responseQuestions;
-
-              if (!questionIds || !Array.isArray(questionIds)) {
-                // Enviar respuestas vinculadas a cada pregunta
-                for (let i = 0; i < refillQuestions.length; i++) {
-                  const question = refillQuestions[i];
-                  const questionId = questionIds[i];
-
-                  if (!questionId) {
-                    continue;
-                  }
-
-                  for (let i = 0; i < preguntas.length; i++) {
-                    const pregunta = preguntas[i];
-                    const question_id = questionIds[i]; // IDs que devuelve createQuestionsForBlock
-
-                    const respuesta =
-                      pregunta.selected_answer ||
-                      pregunta.selectorSelectedOption ||
-                      pregunta.textfieldValue ||
-                      ""; // Para tipo texto o seleccionador
-
-                    if (respuesta.trim() !== "") {
-                      await AnswersFormService.createAnswer({
-                        question_id,
-                        answer_question: respuesta,
-                      });
-                    }
-                  }
-
-                  // Acceder a la respuesta correcta según el tipo de pregunta
-                  let answer = "";
-
-                  if (
-                    question.type === "check_opt" ||
-                    question.type === "selector_opt"
-                  ) {
-                    answer = question.selected_answer || "";
-                  } else if (question.type === "textfield_s") {
-                    // Decidir si se quiere guardar o no.
-                    answer = question.selected_answer || "";
-                  }
-
-                  if (answer.trim() !== "") {
-                    try {
-                      await AnswersFormService.createAnswer({
-                        question_id: questionId,
-                        answer_question: answer,
-                      });
-                    } catch (err) {
-                      console.error(
-                        `Error al guardar respuesta "${answer}":`,
-                        err
-                      );
-                    }
-                  }
-                }
-
-                // Actualizar el bloque con las preguntas vinculadas
-                const updatedBlocks = await getBlocksByFormId(id_form);
-                setData(updatedBlocks.data.data);
-              }
             }
 
-            await loadBlocks(); // Cargar bloques después de crear uno nuevo
+            // Cargar bloques y actualizar vista
+            await loadBlocks();
 
             Toast.fire({
               icon: "success",
               title: "Bloque creado exitosamente",
             });
 
-            document.getElementById("btnClose").click();
-            handleCancel();
+            handleModalClose();
           }
         } catch (apiError) {
           console.error("Error al crear el bloque:", apiError);
           setError(
-            apiError.response?.data?.message ||
-            apiError.message ||
-            "Error al crear el bloque"
+            apiError.response?.data?.message || "Error al crear el bloque"
           );
           Toast.fire({
             icon: "error",
             title:
-              apiError.response?.data?.message ||
-              apiError.message ||
-              "Error al crear el bloque",
+              apiError.response?.data?.message || "Error al crear el bloque",
           });
         }
       }
-
       // Editar bloque
       else if (operation === 2) {
         const parametros = {
@@ -656,11 +577,7 @@ export default function SurveyBlocks({ }) {
         };
 
         try {
-          const response = await axios.put(
-            `http://localhost:3000/api/blocks/${idToEdit}`,
-            parametros,
-            config
-          );
+          const response = await axios.put(`http://localhost:3000/api/blocks/${idToEdit}`, parametros, config);
 
           if (response.status === 200) {
             // Actualizar preguntas si existen
@@ -681,8 +598,7 @@ export default function SurveyBlocks({ }) {
               icon: "success",
               title: "Bloque actualizado correctamente",
             });
-            document.getElementById("btnClose").click();
-            handleCancel();
+            handleModalClose();
           }
         } catch (apiError) {
           console.error("Error al actualizar el bloque:", apiError);
@@ -692,8 +608,7 @@ export default function SurveyBlocks({ }) {
           Toast.fire({
             icon: "error",
             title:
-              apiError.response?.data?.message ||
-              "Error al actualizar el bloque",
+              apiError.response?.data?.message || "Error al actualizar el bloque",
           });
         }
       }
@@ -841,6 +756,7 @@ export default function SurveyBlocks({ }) {
 
     const newQuestions = Array.from({ length: count }, () => ({
       text: "",
+      error: "",
       type: "",
       options: [],
       correctAnswers: [],
@@ -859,6 +775,7 @@ export default function SurveyBlocks({ }) {
       };
       return newList;
     });
+    
   };
 
   // Validar el input de preguntas del modal
@@ -913,6 +830,11 @@ export default function SurveyBlocks({ }) {
     });
   };
 
+  useEffect(() => {
+    console.log("¿Están todos los campos completos?", areAllFieldsCompleted());
+  }, [nombreInput.input, ponderacionInput.input, questionsList, operation]);
+
+
   const areAllFieldsCompleted = () => {
     return operation === 2 ? validateEditMode() : validateCreateMode();
   };
@@ -945,7 +867,9 @@ export default function SurveyBlocks({ }) {
   const validateCreateMode = () => {
     const basicBlocksInputs =
       nombreInput.input.trim() !== "" &&
-      ponderacionInput.input.trim() !== ""
+      ponderacionInput.input.trim() !== "";
+
+    console.log('nombreInput:', nombreInput.input, 'ponderacionInput:', ponderacionInput.input);
 
     if (questionsList.length === 0) return false;
 
@@ -966,6 +890,25 @@ export default function SurveyBlocks({ }) {
 
     return basicBlocksInputs && allQuestionsValid;
   };
+
+  const obtenerPorcentajeTotalBloques = async (formId) => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/blocks/form/${formId}`);
+      const bloques = response.data?.data || [];
+
+      const total = bloques.reduce((suma, bloque) => {
+        return suma + (Number(bloque.percentage) || 0);
+      }, 0);
+
+      console.log('porcentaje de bloques',total);
+      return total;
+      
+    } catch (error) {
+      console.error("Error al obtener bloques del formulario:", error);
+      return 0;
+    }
+  };
+
 
   const resetFormFields = () => {
     nombreInput.handleChange("");
@@ -994,30 +937,8 @@ export default function SurveyBlocks({ }) {
     setIsChecked(false);
     setValueConditional(false);
     setHasValidQuestions(false);
+    setSelectError("");
   };
-
-  // Id único para cada bloque
-
-  // const handleAgregarBloque = () => {
-  //   if (!nombreInput.value || !ponderacionInput.value) return;
-
-  //   const nuevaPosicion = calBlockPosition(); // Calcula la posición basada en los selects
-
-  //   const nuevoBloque = {
-  //     blockId: generateId(),
-  //     nombre: nombreInput.value,
-  //     posicion: nuevaPosicion,
-  //     ponderacion: parseInt(ponderacionInput.value),
-  //     preguntas: [],
-  //   };
-
-  //   setBloques((prev) => [...prev, nuevoBloque]);
-
-  //   // Reset inputs
-  //   nombreInput.reset();
-  //   posicionInput.reset();
-  //   ponderacionInput.reset();
-  // };
 
   // Obtener preguntas por ID de bloque (si no existe)
   const getQuestionsByBlockId = async (blockId) => {
@@ -1086,17 +1007,6 @@ export default function SurveyBlocks({ }) {
     });
   }, [staticData, searchTerm]);
 
-  // Calcular el total de páginas
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
-
-  // Datos paginados para mostrar en la vista actual
-  const paginatedData = useMemo(() => {
-    return filteredData.slice(
-      (currentPage - 1) * recordsPerPage,
-      currentPage * recordsPerPage
-    );
-  }, [filteredData, currentPage, recordsPerPage]);
-
   // Posición de bloques
 
   const calBlockPosition = () => {
@@ -1156,34 +1066,34 @@ export default function SurveyBlocks({ }) {
         // Mapear preguntas si existen
         const preguntasMapeadas = Array.isArray(bloque.preguntas)
           ? bloque.preguntas.map((preg) => {
-            const opciones = preg.select_option
-              ? preg.select_option.split(",").map((o) => o.trim())
-              : [];
+              const opciones = preg.select_option
+                ? preg.select_option.split(",").map((o) => o.trim())
+                : [];
 
-            const optionObjects = opciones.map((opt) => ({ text: opt }));
+              const optionObjects = opciones.map((opt) => ({ text: opt }));
 
-            let tipo = preg.type || "";
-            if (!tipo && preg.id_type_question) {
-              const typeMap = {
-                1: "check_opt",
-                2: "selector_opt",
-                3: "textfield_s",
+              let tipo = preg.type || "";
+              if (!tipo && preg.id_type_question) {
+                const typeMap = {
+                  1: "check_opt",
+                  2: "selector_opt",
+                  3: "textfield_s",
+                };
+                tipo = typeMap[preg.id_type_question] || "unknown";
+              }
+
+              return {
+                id: preg.id,
+                text: preg.text || preg.question_name || "Sin texto",
+                error: preg.type_error,
+                type: tipo,
+                options: optionObjects,
+                select_option: preg.select_option || "",
+                selected_answer: preg.conditional_answer || preg.selected_answer || "",
+                conditional: preg.conditional || "NO",
+                question_name: preg.question_name || preg.text || "Sin texto",
               };
-              tipo = typeMap[preg.id_type_question] || "unknown";
-            }
-
-            return {
-              id: preg.id,
-              text: preg.text || preg.question_name || "Sin texto",
-              type: tipo,
-              options: optionObjects,
-              select_option: preg.select_option || "",
-              selected_answer:
-                preg.conditional_answer || preg.selected_answer || "",
-              conditional: preg.conditional || "NO",
-              question_name: preg.question_name || preg.text || "Sin texto",
-            };
-          })
+            })
           : [];
 
         return {
@@ -1292,16 +1202,6 @@ export default function SurveyBlocks({ }) {
     }
   }, [id_form, formData]);
 
-  // Limpiar el modal al cerrar
-  const handleModalClose = () => {
-    handleCancel();
-    resetFormFields();
-    setError("");
-    setLoading(false);
-  };
-
-
-
   const toggleCollapse = (blockId, questionIndex) => {
     const key = `${blockId}-${questionIndex}`;
     setCollapsedQuestions((prev) => ({
@@ -1337,197 +1237,325 @@ export default function SurveyBlocks({ }) {
     setStaticData(reorderedData);
   };
 
+  // Select errores
+  const handleErrorOpt = (index, field, value) => {
+    const updatedQuestions = [...questionsList];
+    updatedQuestions[index] = {
+      ...updatedQuestions[index],
+      [field]: value, // Actualiza el campo dinámicamente
+    };
+    setQuestionsList(updatedQuestions);
+  };
+  // Errores mapeados para mostrar en el render
+  const errorLabels = {
+    ecc_opt: "ECC - Error crítico de cumplimiento",
+    ecuf_opt: "ECUF - Error crítico de usuario final",
+    ecn_opt: "ECN - Error crítico de negocio",
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
-      <HeaderLT1 />
+    <Box className="App">
+      <Box id="body">
+        <HeaderLT1 />
 
-      {/* Información del formulario */}
-      <Card sx={{ mb: 4, p: 2, border: '2px solid #b62a8b' }}>
-        <CardHeader title="Información del Formulario" />
-        <CardContent>
-          {formData ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <Typography><strong>Nombre:</strong> {formData.title}</Typography>
-                <Typography><strong>Descripción:</strong> {formData.description}</Typography>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography><strong>Creado:</strong> {formatDateTimeShort(formData.creation_date)}</Typography>
-                <Typography><strong>Actualizado:</strong> {formatDateTimeShort(formData.updated_date) || "Sin actualizar"}</Typography>
-              </Grid>
-            </Grid>
-          ) : (
-            <Typography align="center" sx={{ mt: 2 }}>
-              Sesión caducada, por favor inicie sesión nuevamente.
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
+        <section
+          style={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0 }}
+        >
+          <div className="container mt-0">
+            <div className="row">
+              {/* Sección de Información del Formulario */}
+              <div className="col-md-12">
+                <div className="card p-4 borderEVA">
+                  <div className="text-center">
+                    <h3>Información</h3>
+                  </div>
 
-      {/* Sección de bloques de preguntas */}
-      <Card sx={{ border: '2px solid #b62a8b', p: 2 }}>
-        <Box sx={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: '#fff', pb: 2 }}>
-          <Grid container justifyContent="space-between" alignItems="center">
-            <Grid item>
-              <Typography variant="h6" fontWeight="bold">Preguntas</Typography>
-            </Grid>
-            <Grid item>
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => setIsModalOpen(true)}
-                sx={{ backgroundColor: 'black', textTransform: 'none' }}
-              >
-                Crear Bloque
-              </Button>
+                  <div className="card-body p-0 py-2">
+                    <div className="container-fluid">
+                      {formData ? (
+                        <div className="row d-flex align-items-center">
+                          <div className="col-6">
+                            <p>
+                              <b>Nombre del formulario: </b>
+                              {formData.title}
+                            </p>
+                            <p className="fs-6">
+                              <b>Descripción:</b> {formData.description}
+                            </p>
+                          </div>
+                          <div className="col-6 text-end">
+                            <p>
+                              <b>Fecha de Creación:</b>{" "}
+                              {formatDateTimeShort(formData.creation_date)}
+                            </p>
+                            <p className="fs-6">
+                              <b>Última Actualización:</b>{" "}
+                              {formatDateTimeShort(formData.updated_date) ||
+                                "Sin actualizar"}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-3">
+                          <div
+                            className="spinner-border text-secondary"
+                            role="status"
+                          >
+                            <span className="visually-hidden">Cargando...</span>
+                          </div>
+                          <p className="mt-2">
+                            Sesión caducada, por favor incie sesion nuevamente.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* Drag and Drop */}
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="blocksDroppable">
-            {(provided) => (
-              <Box ref={provided.innerRef} {...provided.droppableProps}>
-                {data.map((bloque, index) => (
-                  <Draggable key={bloque.id} draggableId={String(bloque.id)} index={index}>
-                    {(provided) => (
-                      <Card
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        sx={{ mb: 3, boxShadow: 4, borderRadius: 2 }}
+              {/* Sección de Preguntas y Bloques */}
+              <div className="col-md-12 mt-3">
+                <div className="card p-4 card-outline card-success borderEVA">
+                  {/* Header de la sección de preguntas */}
+                  <div>
+                    <h3 className="text-center">Preguntas</h3>
+                    <div className="card-tools d-flex justify-content-end me-4">
+                      <button
+                        className="btn fw-bold btn-sm acces-tabla"
+                        onClick={() => openModal(1, id_form)}
                       >
-                        <CardHeader
-                          title={bloque.block_name || bloque.nombre || "Sin nombre"}
-                          subheader={`Ponderación: ${bloque.percentage}%`}
-                          action={
-                            <>
+                        + Crear Bloque
+                      </button>
+                    </div>
+                  </div>
 
-                              <IconButton onClick={(e) => handleMenuOpen(e, bloque.id)}>
-                                <MoreVert sx={{ color: "#b62a8b" }} />
-                              </IconButton>
+                  {/* Drag and Drop Context para los bloques */}
+                  <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="blocksDroppable">
+                      {(provided) => (
+                        <div
+                          className="card-body ui-sorteable"
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {/* Mapeo de bloques arrastrables */}
+                          {data.map((bloque, index) => (
+                            <Draggable
+                              key={bloque.id}
+                              draggableId={String(bloque.id)}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className="border-top p-3 m-3"
+                                >
+                                  {/* Header del bloque con título y ponderación */}
+                                  <div className="d-flex justify-content-between mb-2 w-100">
+                                    <div className="w-100 ps-2">
+                                      <div className="d-flex justify-content-between align-items-start">
+                                        <h3 className="mb-3 ms-2">
+                                          {bloque.block_name ||
+                                            bloque.nombre ||
+                                            "Sin nombre"}
+                                        </h3>
+                                        <span className="text-muted block-weighting me-3">
+                                          {`${bloque.percentage}%` ||
+                                            ("0" && bloque.ponderacion > 0)}
+                                        </span>
+                                      </div>
 
-                              <Menu
-                                anchorEl={menuAnchor[bloque.id]}
-                                open={Boolean(menuAnchor[bloque.id])}
-                                onClose={() => handleMenuClose(bloque.id)}
-                              >
-                                <MenuItem onClick={() => onUpdate(bloque)}>
-                                  <Edit sx={{ mr: 1 }} fontSize="small" />
-                                  Editar
-                                </MenuItem>
-                                <MenuItem onClick={() => handleDeleteBlock(bloque.id, bloque.block_name)}>
-                                  <Delete sx={{ mr: 1 }} fontSize="small" />
-                                  Eliminar
-                                </MenuItem>
-                              </Menu>
+                                      {/* Contenedor de preguntas del bloque */}
+                                      <div className="mt-2 d-flex flex-column align-items-center">
+                                        {/* Mapeo de preguntas dentro del bloque */}
+                                        {Array.isArray(bloque.preguntas) &&
+                                          bloque.preguntas.map((preg, idx) => {
+                                            const isCollapsed =
+                                              collapsedQuestions[
+                                                `${bloque.id}-${idx}`
+                                              ];
 
-                            </>
-                          }
-                        />
-                        <CardContent>
-                          {bloque.preguntas?.map((preg, idx) => {
-                            const isCollapsed = collapsedQuestions[`${bloque.id}-${idx}`];
-                            return (
-                              <Accordion
-                                key={idx}
-                                expanded={!isCollapsed}
-                                onChange={() => toggleCollapse(bloque.id, idx)}
-                                sx={{ mb: 2 }}
-                              >
-                                <AccordionSummary expandIcon={<ExpandMore />}>
-                                  <Typography fontWeight="bold">
-                                    {preg.text || preg.question_name || "Sin texto"}
-                                  </Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                  {preg.type === "check_opt" && (
-                                    <FormGroup>
-                                      {preg.options?.map((opt, i) => {
-                                        const optionText = typeof opt === "object" ? opt.text : String(opt);
-                                        const isChecked = preg.selected_answer?.split(",").includes(optionText);
-                                        return (
-                                          <FormControlLabel
-                                            key={i}
-                                            control={
-                                              <Checkbox
-                                                checked={isChecked}
-                                                onChange={() =>
-                                                  handleAnswerChange(bloque.id, idx, optionText)
-                                                }
-                                              />
-                                            }
-                                            label={optionText}
-                                          />
-                                        );
-                                      })}
-                                    </FormGroup>
-                                  )}
+                                            return (
+                                              <div
+                                                key={idx}
+                                                className="border border-secondary-subtle p-3 mb-5 rounded"
+                                                style={{ width: "100%" }}
+                                              >
+                                                {/* Header de la pregunta con botón de colapso */}
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                  <p className="mb-3 fs-5">
+                                                    <strong>
+                                                      {preg.text ||
+                                                        preg.question_name ||
+                                                        "Sin texto"}
+                                                    </strong>
+                                                  </p>
+                                                  <button
+                                                    className="btn btn-sm btn-outline-secondary"
+                                                    onClick={() =>
+                                                      toggleCollapse(
+                                                        bloque.id,
+                                                        idx
+                                                      )
+                                                    }
+                                                  >
+                                                    {isCollapsed ? "+" : "-"}
+                                                  </button>
+                                                </div>
 
-                                  {preg.type === "selector_opt" && (
-                                    <FormControl fullWidth sx={{ mt: 2 }}>
-                                      <InputLabel>Selecciona una opción</InputLabel>
-                                      <Select
-                                        value={preg.selected_answer || ""}
-                                        onChange={(e) =>
-                                          handleAnswerChange(bloque.id, idx, e.target.value)
-                                        }
-                                        label="Selecciona una opción"
+                                                {/* Contenido expandible de la pregunta */}
+                                                <div className="m-2">
+                                                  {!isCollapsed && (<>
+                                                    {/* Pregunta tipo selección múltiple */}
+                                                    {preg.type === "check_opt" && (
+                                                      <Autocomplete
+                                                        multiple
+                                                        options={(preg.options || []).map((opt) =>
+                                                          typeof opt === "object" && opt !== null ? opt.text : String(opt)
+                                                        )}
+                                                        renderOption={(props, option, { selected }) => (
+                                                          <li {...props} key={option}>
+                                                            <Checkbox checked={selected} style={{ marginRight: 8 }} />
+                                                            {option}
+                                                          </li>
+                                                        )}
+                                                        renderInput={(params) => (
+                                                          <TextField
+                                                            {...params}
+                                                            label="Selecciona una opción:"
+                                                            placeholder="Selecciona una o varias opciones"
+                                                            className="readOnlyField"
+                                                          />
+                                                        )}
+                                                        sx={{ mb: 2 }}
+                                                      />
+                                                    )}
+
+                                                    {/* Pregunta tipo selección única */}
+                                                    {preg.type === "selector_opt" && (
+                                                      <TextField
+                                                        select
+                                                        fullWidth
+                                                        label="Selecciona una opción:"
+                                                        sx={{ mb: 2 }}
+                                                        className="readOnlyField"
+                                                      >
+                                                        <MenuItem value="">Selecciona una opción</MenuItem>
+                                                        {(preg.options || []).map((opt, index) => {
+                                                          const optionText =
+                                                            typeof opt === "string" ? opt : opt.text || "";
+                                                          return (
+                                                            <MenuItem key={index} value={optionText}>
+                                                              {optionText}
+                                                            </MenuItem>
+                                                          );
+                                                        })}
+                                                      </TextField>
+                                                    )}
+                                    
+                                                    {/* Pregunta tipo Campo de texto corto */}
+                                                    {preg.type === "textfield_s" && (
+                                                      <Textfield_s
+                                                        value={
+                                                          preg.selected_answer ||
+                                                          ""
+                                                        }
+                                                        readOnly
+                                                      />
+                                                    )}
+
+                                                    {/* Pregunta tipo Sí/No */}
+                                                    {preg.type === "yes_no" && (
+                                                      <Yes_no
+                                                        value={
+                                                          preg.selected_answer ||
+                                                          ""
+                                                        }
+                                                        readOnly
+                                                      />
+                                                    )}
+                                                  </>
+                                                )}
+                                                </div>
+
+                                                <div>
+                                                  <p className="mb-3 ms-1 text-end">
+                                                    {errorLabels[preg.error] ||
+                                                      "No seleccionado"}
+                                                    {"."}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+
+                                      </div>
+                                    </div>
+
+                                    {/* Menú desplegable de acciones (editar/eliminar) */}
+                                    <div className="dropdown">
+                                      <button
+                                        className="btn-rect btn-dropdown"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
                                       >
-                                        {preg.options?.map((opt, i) => {
-                                          const optionText = typeof opt === "string" ? opt : opt.text || "";
-                                          return (
-                                            <MenuItem key={i} value={optionText}>
-                                              {optionText}
-                                            </MenuItem>
-                                          );
-                                        })}
-                                      </Select>
-                                    </FormControl>
-                                  )}
+                                        <div className="dropdown-toggle">
+                                          <i className="fa-solid fa-ellipsis-vertical"></i>
+                                        </div>
+                                      </button>
+                                      <ul className="dropdown-menu dropdown-menu-end p-0">
+                                        <li className="text-start btn-rect">
+                                          <button
+                                            className="btn text-start"
+                                            style={{ width: "100%" }}
+                                            onClick={() => onUpdate(bloque)}
+                                          >
+                                            <i className="fa-solid fa-edit"></i>{" "}
+                                            Editar
+                                          </button>
+                                        </li>
+                                        <li className="text-start btn-rect">
+                                          <button
+                                            className="btn text-start"
+                                            style={{ width: "100%" }}
+                                            onClick={() =>
+                                              handleDeleteBlock(
+                                                bloque.id,
+                                                bloque.block_name
+                                              )
+                                            }
+                                          >
+                                            <i className="fa-solid fa-trash"></i>{" "}
+                                            {t("delete_block")}
+                                          </button>
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
 
-                                  {preg.type === "textfield_s" && (
-                                    <TextField
-                                      label="Respuesta"
-                                      value={preg.selected_answer || ""}
-                                      fullWidth
-                                      variant="outlined"
-                                      InputProps={{ readOnly: true }}
-                                      sx={{ mt: 2 }}
-                                    />
-                                  )}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Box>
 
-                                  {preg.type === "yes_no" && (
-                                    <TextField
-                                      label="Respuesta"
-                                      value={preg.selected_answer || ""}
-                                      fullWidth
-                                      variant="outlined"
-                                      InputProps={{ readOnly: true }}
-                                      sx={{ mt: 2 }}
-                                    />
-                                  )}
-                                </AccordionDetails>
-                              </Accordion>
-                            );
-                          })}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </Box>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </Card>
-
+      {/* Modal para gestión de bloques de encuesta */}
       <ModalSurveyBlocks
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
+        open={modalOpen}
+        handleModalClose={handleModalClose}
         operation={operation}
         title={title}
         descriptionText={descriptionText}
@@ -1548,6 +1576,7 @@ export default function SurveyBlocks({ }) {
         idToEdit={idToEdit}
         id_form={id_form}
         areAllFieldsCompleted={areAllFieldsCompleted}
+        obtenerPorcentajeTotalBloques ={obtenerPorcentajeTotalBloques}
         handleCancel={handleCancel}
         addNewQuestion={addNewQuestion}
         questionCountInput={questionCountInput}
@@ -1564,8 +1593,9 @@ export default function SurveyBlocks({ }) {
         correctAnswers={multipleChoiceData.correctAnswers}
         onChange={handleMultipleChoiceChange}
         migrateQuestionData={migrateQuestionData}
-
+        selectError={selectError}
+        handleErrorOpt={handleErrorOpt}
       />
     </Box>
   );
-};
+}

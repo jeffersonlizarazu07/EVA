@@ -18,13 +18,19 @@ import {
   InputAdornment,
   TablePagination,
 } from "@mui/material";
-import {
-  TurnLeft,
-  Search
-} from "@mui/icons-material";
-import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
+import { TurnLeft, Search } from "@mui/icons-material";
+import FactCheckRoundedIcon from "@mui/icons-material/FactCheckRounded";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
-const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
+const TableAdmin = ({
+  header,
+  data,
+  onUpdate,
+  onView,
+  modalId,
+  modalId2,
+  userId,
+}) => {
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
 
@@ -35,6 +41,7 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  const nav = useNavigate();
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -48,6 +55,12 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  // Traer los monitoreos del agente seleccionado en la tabla
+  const agentSelect = (agentId) => {
+    console.log("Agente seleccionado:", agentId);
+    getMonitoringByUser(agentId);
   };
 
   const filteredData = Array.isArray(data)
@@ -148,19 +161,33 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
         </Grid>
       </Grid>
 
-      <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 450, overflowY: "auto" }}>
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{ maxHeight: 450, overflowY: "auto" }}
+      >
         <Table size="small">
           <TableHead>
             <TableRow>
               {header.map((item, i) => (
                 <TableCell
                   key={i}
-                  sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}
+                  sx={{
+                    fontSize: "1rem",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                  }}
                 >
                   {getHeaderLabel(item)}
                 </TableCell>
               ))}
-              <TableCell sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}>
+              <TableCell
+                sx={{
+                  fontSize: "1rem",
+                  textAlign: "center",
+                  fontWeight: "bold",
+                }}
+              >
                 {t("userTable.Actions")}
               </TableCell>
             </TableRow>
@@ -179,13 +206,17 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
                       : item[key]}
                   </TableCell>
                 ))}
-                
+
                 {item.state === 1 ? (
                   <TableCell align="center">
-                    <Box sx={{ display: "flex", justifyContent: "center" }} gap={1}>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center" }}
+                      gap={1}
+                    >
                       <IconButton
                         onClick={() => onUpdate(item)}
                         size="small"
+                        title="Crear monitorización"
                         sx={{
                           color: "#b62a8b",
                           "&:hover": {
@@ -199,6 +230,7 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
                       <IconButton
                         onClick={() => onView(item)}
                         size="small"
+                        title="Información del agente"
                         sx={{
                           color: "#b62a8b",
                           "&:hover": {
@@ -209,25 +241,51 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
                       >
                         <Search />
                       </IconButton>
+
+                      <IconButton
+                        onClick={() => {
+                          nav(`/monitoring_view/${item.id}`);
+                        }}
+                        size="small"
+                        title="Ver monitoreos"
+                        sx={{
+                          color: "#b62a8b",
+                          "&:hover": {
+                            backgroundColor: "#b62a8b",
+                            color: "#fff",
+                          },
+                        }}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
                     </Box>
                   </TableCell>
                 ) : (
                   <TableCell align="center">
-                    <Box sx={{ display: "flex", justifyContent: "center" }} gap={1}>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center" }}
+                      gap={1}
+                    >
                       <IconButton onClick={() => onView(item)} size="small">
                         <Search />
                       </IconButton>
                     </Box>
                   </TableCell>
                 )}
-                
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
 
-      <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-start",
+          mt: 2,
+          alignItems: "center",
+        }}
+      >
         <TablePagination
           rowsPerPageOptions={[10, 25, 50]}
           component="div"
@@ -238,7 +296,9 @@ const TableAdmin = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage={t("userTable.Show")}
           labelDisplayedRows={({ from, to, count }) =>
-            `${from}-${to} ${t("userTable.Registered")} ${count !== -1 ? count : `more than ${to}`}`
+            `${from}-${to} ${t("userTable.Registered")} ${
+              count !== -1 ? count : `more than ${to}`
+            }`
           }
           sx={{
             display: "flex",

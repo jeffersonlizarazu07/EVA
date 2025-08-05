@@ -1,3 +1,4 @@
+import { Feedback } from "@mui/icons-material";
 import axios from "axios";
 import Swal from "sweetalert2";
 
@@ -7,44 +8,49 @@ const config = {
   withCredentials: true,
 };
 
-
 //obtener respuestas multiple
-export const getResponseMult = async ()=>{
+export const getResponseMult = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/answersform/getResponseMult`, config)
+    const response = await axios.get(
+      `${API_BASE_URL}/answersform/getResponseMult`,
+      config
+    );
     return response.data;
   } catch (error) {
     console.error("Error obtener respuestas multiple:", error);
     throw error;
   }
-}
+};
 
 //obtener Clientes y informacion de los forms_set
 
 export const getClientsAndForms = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/answersform/clients-forms`, config);
+    const response = await axios.get(
+      `${API_BASE_URL}/answersform/clients-forms`,
+      config
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching clients and forms:", error);
     throw error;
   }
-}
+};
 
+// obtener todos los monitoreos
 
-// obtener todos los monitoreos 
-
-export const getMonitoring = async ()=>{
-  try{
-    const response = await axios.get(`${API_BASE_URL}/answersform/report-monitoring`, config);
+export const getMonitoring = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/answersform/report-monitoring`,
+      config
+    );
     return response.data;
-  }catch(error){
+  } catch (error) {
     console.error("Error fetching monitoring data:", error);
     throw error;
   }
-}
-
-
+};
 
 // Obtener todos los administradores (agentes) desde el backend
 export const getAdmins = async (clients) => {
@@ -201,4 +207,71 @@ export const saveMonitoringAndAnswers = async (payload) => {
     console.error("Error al guardar la monitorización y respuestas:", error);
     throw error;
   }
-}; 
+};
+
+// Traer monitorizaciones por agente
+export const getMonitoringByUser = async (id) => {
+  if (!id) {
+    console.error("getMonitoringByUser fue llamado sin userId");
+    throw new Error("userId no proporcionado");
+  }
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/monitoring/user/${id}`,
+      config
+    );
+    console.log("Respuesta de la API:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener monitoreos del agente:", error);
+    throw error;
+  }
+};
+
+// Traer las monitorizaciones estructuradas
+export const getMonitorinStructure = async (id) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/monitoring/${id}/details`,
+      config
+    );
+    console.log("Estructura del monitoreo actual", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("No se obtuvo la estructura para este monitoreo", error);
+    throw error;
+  }
+};
+
+// Guardar el feedback desde la vista general de monitorizaciones
+export const saveFeedback = async (id, feedback) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/monitoring/${id}`,
+      { feedback },
+      config
+    );
+    return response.data;
+  } catch (error) {
+    console.error("No fue posible actualizar el comentario"), error;
+    throw error;
+  }
+};
+
+// Actualizar check
+export const updateCheck = async (id, checkValue, check_date) => {
+  console.log("Enviando data:", { id, checkValue, check_date });
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/monitoring/${id}/check`,
+      {
+        check: checkValue,
+      },
+      config
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error al actualizar el check:", error);
+    throw error;
+  }
+};
