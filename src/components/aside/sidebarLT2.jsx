@@ -51,8 +51,7 @@ const SidebarLT2 = () => {
     localStorage.removeItem("accessToken");
     nav("/");
   };
-  const url = "http://localhost/tpco_transversal_EvaBe/userController/userbyId/";
-  const urlp = "http://localhost/tpco_transversal_EvaBe/userController/putUser/";
+  const url = "http://localhost:3000/api/users/"; // get y put
 
   const config = {
     withCredentials: true,

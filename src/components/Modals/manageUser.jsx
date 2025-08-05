@@ -1,36 +1,36 @@
-import { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
-import { UserContext } from '../../context/UserContext';
-import '../../assets/css/ManageUser.css';
-
+import { useEffect, useState, useContext } from "react";
+import axios from "axios";
+import { UserContext } from "../../context/UserContext";
+import "../../assets/css/ManageUser.css";
 
 const ManageUser = ({ closeModal }) => {
-  const { accessToken, userId,languageUser } = useContext(UserContext);
-  const { t,i18n } = useTranslation();
+  const { accessToken, userId, languageUser } = useContext(UserContext);
+  const { t, i18n } = useTranslation();
 
   const [userInfo, setUserInfo] = useState({
-    id: '',
-    firstname: '',
-    middlename: '',
-    lastname: '',
-    email: '',
-    password: '',
-    language: 'es' // valor predeterminado, puedes cambiarlo según tus necesidades
+    id: "",
+    firstname: "",
+    middlename: "",
+    lastname: "",
+    email: "",
+    password: "",
+    language: "es", // valor predeterminado, puedes cambiarlo según tus necesidades
   });
 
   useEffect(() => {
     getInfo();
-    i18n.changeLanguage(languageUser)
+    i18n.changeLanguage(languageUser);
   }, []);
 
-  const config = {
-    
-  };
+  const config = {};
 
   const getInfo = async () => {
     try {
       console.log(userId);
-      const response = await axios.get(`http://localhost/tpco_transversal_EvaBe/userController/userbyId/${userId}`, config);
+      const response = await axios.get(
+        `http://localhost:3000/api/users/${userId}`,
+        config
+      );
       setUserInfo(response.data);
       console.log(response.data);
     } catch (error) {
@@ -42,12 +42,12 @@ const ManageUser = ({ closeModal }) => {
     const { name, value } = e.target;
     setUserInfo((prevUserInfo) => ({
       ...prevUserInfo,
-      [name]: value
+      [name]: value,
     }));
   };
 
   return (
-    <div className="modal " tabIndex="-1"  aria-hidden="false">
+    <div className="modal " tabIndex="-1" aria-hidden="false">
       <div className="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
         <div className="modal-content">
           <div className="modal-body">
@@ -56,7 +56,9 @@ const ManageUser = ({ closeModal }) => {
               <div id="msg"></div>
 
               <div className="form-group m-2">
-                <label htmlFor="firstname" className="form-label">{t("sidebar.First_name")}</label>
+                <label htmlFor="firstname" className="form-label">
+                  {t("sidebar.First_name")}
+                </label>
                 <input
                   type="text"
                   name="firstname"
@@ -70,7 +72,9 @@ const ManageUser = ({ closeModal }) => {
               </div>
 
               <div className="form-group m-2">
-                <label htmlFor="middlename" className="form-label">{t(sidebar.Middle_name)}</label>
+                <label htmlFor="middlename" className="form-label">
+                  {t(sidebar.Middle_name)}
+                </label>
                 <input
                   type="text"
                   name="middlename"
@@ -83,7 +87,9 @@ const ManageUser = ({ closeModal }) => {
               </div>
 
               <div className="form-group m-2">
-                <label htmlFor="lastname" className="form-label">{t(sidebar.Last_name)}</label>
+                <label htmlFor="lastname" className="form-label">
+                  {t(sidebar.Last_name)}
+                </label>
                 <input
                   type="text"
                   name="lastname"
@@ -97,7 +103,9 @@ const ManageUser = ({ closeModal }) => {
               </div>
 
               <div className="form-group m-2">
-                <label htmlFor="email" className="form-label">{t(sidebar.Email)}</label>
+                <label htmlFor="email" className="form-label">
+                  {t(sidebar.Email)}
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -112,7 +120,9 @@ const ManageUser = ({ closeModal }) => {
               </div>
 
               <div className="form-group m-2">
-                <label htmlFor="password" className="form-label">{t(sidebar.Password)}</label>
+                <label htmlFor="password" className="form-label">
+                  {t(sidebar.Password)}
+                </label>
                 <input
                   type="password"
                   name="password"
@@ -122,12 +132,18 @@ const ManageUser = ({ closeModal }) => {
                   onChange={handleChange}
                 />
                 <small>
-                  <i>{t(sidebar.Leave_this_blank_if_you_dont_want_to_change_the_password)}</i>
+                  <i>
+                    {t(
+                      sidebar.Leave_this_blank_if_you_dont_want_to_change_the_password
+                    )}
+                  </i>
                 </small>
               </div>
 
               <div className="form-group m-2">
-                <label htmlFor="cpass" className="form-label">{t(sidebar.Confirm_Password)}</label>
+                <label htmlFor="cpass" className="form-label">
+                  {t(sidebar.Confirm_Password)}
+                </label>
                 <input
                   type="password"
                   name="cpass"
@@ -138,8 +154,14 @@ const ManageUser = ({ closeModal }) => {
                 <small id="pass_match" data-status=""></small>
               </div>
 
-              <p className="lang m-2" key="titulo26">{t(sidebar.Language)}</p>
-              <div className="btn-group flex-wrap m-2" role="group" aria-label="Basic radio toggle button group">
+              <p className="lang m-2" key="titulo26">
+                {t(sidebar.Language)}
+              </p>
+              <div
+                className="btn-group flex-wrap m-2"
+                role="group"
+                aria-label="Basic radio toggle button group"
+              >
                 <input
                   type="radio"
                   className="btn-check translate"
@@ -150,7 +172,13 @@ const ManageUser = ({ closeModal }) => {
                   checked={userInfo.language === "es"}
                   onChange={handleChange}
                 />
-                <label className="btn btn-outline-dark lang" htmlFor="es" key="titulo27">{t(sidebar.Spanish)}</label>
+                <label
+                  className="btn btn-outline-dark lang"
+                  htmlFor="es"
+                  key="titulo27"
+                >
+                  {t(sidebar.Spanish)}
+                </label>
 
                 <input
                   type="radio"
@@ -162,7 +190,13 @@ const ManageUser = ({ closeModal }) => {
                   checked={userInfo.language === "en"}
                   onChange={handleChange}
                 />
-                <label className="btn btn-outline-dark lang" htmlFor="en" key="titulo28">{t(sidebar.English)}</label>
+                <label
+                  className="btn btn-outline-dark lang"
+                  htmlFor="en"
+                  key="titulo28"
+                >
+                  {t(sidebar.English)}
+                </label>
 
                 <input
                   type="radio"
@@ -174,7 +208,13 @@ const ManageUser = ({ closeModal }) => {
                   checked={userInfo.language === "it"}
                   onChange={handleChange}
                 />
-                <label className="btn btn-outline-dark lang" htmlFor="it" key="titulo29">{t(sidebar.Italian)}</label>
+                <label
+                  className="btn btn-outline-dark lang"
+                  htmlFor="it"
+                  key="titulo29"
+                >
+                  {t(sidebar.Italian)}
+                </label>
 
                 <input
                   type="radio"
@@ -186,15 +226,29 @@ const ManageUser = ({ closeModal }) => {
                   checked={userInfo.language === "pt"}
                   onChange={handleChange}
                 />
-                <label className="btn btn-outline-dark lang" htmlFor="pt" key="titulo30">{t(sidebar.Portuguese)}</label>
+                <label
+                  className="btn btn-outline-dark lang"
+                  htmlFor="pt"
+                  key="titulo30"
+                >
+                  {t(sidebar.Portuguese)}
+                </label>
               </div>
 
               <div className="modal-footer">
-                <button className="btn bg-gradient-guardar mr-2" id="btn-send-survey" type="submit">
-                {t(sidebar.Save)}
+                <button
+                  className="btn bg-gradient-guardar mr-2"
+                  id="btn-send-survey"
+                  type="submit"
+                >
+                  {t(sidebar.Save)}
                 </button>
-                <button className="btn btn-secondary" type="button" onClick={closeModal}>
-                {t(sidebar.Cancel)}
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={closeModal}
+                >
+                  {t(sidebar.Cancel)}
                 </button>
               </div>
             </form>
