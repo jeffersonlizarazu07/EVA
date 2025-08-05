@@ -76,12 +76,17 @@ export const FeedbackButton = ({ onClick, label, ...props }) => {
       onClick={onClick}
       sx={{
         width: "9rem",
-        backgroundColor: bgColor,
-        color: textColor,
+        backgroundColor: "#ffffff",
+        color: bgColor,
         fontSize: 13,
         "&:hover": {
           backgroundColor: bgColor,
           opacity: 0.9,
+        },
+        "&:disabled": {
+          backgroundColor: "#f2f2f2",
+          color: bgColor,
+          borderColor: "#ccc",
         },
       }}
       {...props}

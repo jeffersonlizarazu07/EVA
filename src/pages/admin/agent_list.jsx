@@ -13,18 +13,17 @@ import {
   getAgentById,
   getFormsByClient,
   getBlocksForIdForm,
-  saveMonitoringAndAnswers
+  saveMonitoringAndAnswers,
 } from "../../services/agent_listService";
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
 import { Box, Typography } from "@mui/material";
 
-
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
-  const [setListClients] = useState([]); // Clientes disponibles en el sistema
+  const [listClientes, setListClients] = useState([]); // Clientes disponibles en el sistema
   const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
   const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
   const [title, setTitle] = useState(); // Estado para el título del formulario/modal
@@ -36,7 +35,8 @@ const AdminList = () => {
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
   const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, languageUser, clients, userInfo } = useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
+  const { accessToken, languageUser, clients, userInfo } =
+    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
@@ -48,7 +48,6 @@ const AdminList = () => {
 
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
-
 
   // Validaciones de la primer vista del modal
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
@@ -364,7 +363,7 @@ const AdminList = () => {
     setSelectedFormId("");
     setFormOptions([]);
     setFeedback("");
-    setMonitoringDate(""); 
+    setMonitoringDate("");
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
 
@@ -372,7 +371,9 @@ const AdminList = () => {
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
       const initBlockPer = block.percentage;
-      const allCorrect = block.preguntas.every((pregunta) => pregunta.evaluacion !== "1");
+      const allCorrect = block.preguntas.every(
+        (pregunta) => pregunta.evaluacion !== "1"
+      );
       const finalBlockPer = allCorrect ? initBlockPer : 0;
 
       return {
@@ -401,8 +402,8 @@ const AdminList = () => {
   const validarRespuesta = (pregunta) => {
     if (pregunta.id_type_question === 1) {
       const respuestasCorrectas = pregunta.selected_answer
-      ? pregunta.selected_answer.split(",").map((r) => parseInt(r.trim()))
-      : [];
+        ? pregunta.selected_answer.split(",").map((r) => parseInt(r.trim()))
+        : [];
 
       const seleccionUsuario = pregunta.seleccionMultiple || [];
 
@@ -410,8 +411,10 @@ const AdminList = () => {
         ? pregunta.select_option.split(",").map((opt) => opt.trim())
         : [];
 
-      const indicesSeleccion = seleccionUsuario.map((opt) => opciones.indexOf(opt)).sort();// Convertimos selección del usuario a índices
-      respuestasCorrectas.sort();// Ordenamos también las respuestas correctas
+      const indicesSeleccion = seleccionUsuario
+        .map((opt) => opciones.indexOf(opt))
+        .sort(); // Convertimos selección del usuario a índices
+      respuestasCorrectas.sort(); // Ordenamos también las respuestas correctas
 
       return (
         indicesSeleccion.length === respuestasCorrectas.length &&
@@ -424,7 +427,10 @@ const AdminList = () => {
         ? pregunta.selected_answer.split(",").map((r) => r.trim())
         : [];
       const seleccionUsuario = pregunta.respuestaSeleccionada || "";
-      return respuestasCorrectas.length === 1 && seleccionUsuario === respuestasCorrectas[0];
+      return (
+        respuestasCorrectas.length === 1 &&
+        seleccionUsuario === respuestasCorrectas[0]
+      );
     }
 
     if (pregunta.id_type_question === 3) {
@@ -451,7 +457,8 @@ const AdminList = () => {
           console.log(`Respuesta del usuario:`, preguntaActualizada);*/
 
           return {
-            ...preguntaActualizada, evaluacion: esCorrecta ? "0" : "1",
+            ...preguntaActualizada,
+            evaluacion: esCorrecta ? "0" : "1",
           };
         }
         return preg;
@@ -497,9 +504,15 @@ const AdminList = () => {
           const tipo = pregunta.id_type_question;
 
           const respondida =
-            (tipo === 1 && pregunta.seleccionMultiple && pregunta.seleccionMultiple.length > 0) ||
-            (tipo === 2 && pregunta.respuestaSeleccionada !== undefined && pregunta.respuestaSeleccionada !== "") ||
-            (tipo === 3 && pregunta.textoRespuesta && pregunta.textoRespuesta.trim() !== "");
+            (tipo === 1 &&
+              pregunta.seleccionMultiple &&
+              pregunta.seleccionMultiple.length > 0) ||
+            (tipo === 2 &&
+              pregunta.respuestaSeleccionada !== undefined &&
+              pregunta.respuestaSeleccionada !== "") ||
+            (tipo === 3 &&
+              pregunta.textoRespuesta &&
+              pregunta.textoRespuesta.trim() !== "");
 
           if (!respondida) {
             preguntasNoRespondidas.push(pregunta.id);
@@ -546,19 +559,32 @@ const AdminList = () => {
           let answer_value = null;
 
           if (pregunta.id_type_question === 1) {
-            if (pregunta.seleccionMultiple && pregunta.seleccionMultiple.length > 0) {
-              const opciones = pregunta.select_option.split(",").map((o) => o.trim());
+            if (
+              pregunta.seleccionMultiple &&
+              pregunta.seleccionMultiple.length > 0
+            ) {
+              const opciones = pregunta.select_option
+                .split(",")
+                .map((o) => o.trim());
               const indicesSeleccionados = pregunta.seleccionMultiple
-                .map((opcionSeleccionada) => opciones.indexOf(opcionSeleccionada))
-                .filter(index => index !== -1);
+                .map((opcionSeleccionada) =>
+                  opciones.indexOf(opcionSeleccionada)
+                )
+                .filter((index) => index !== -1);
               answer_value = indicesSeleccionados.join(",");
             }
           } else if (pregunta.id_type_question === 2) {
-            if (pregunta.respuestaSeleccionada !== undefined && pregunta.respuestaSeleccionada !== "") {
+            if (
+              pregunta.respuestaSeleccionada !== undefined &&
+              pregunta.respuestaSeleccionada !== ""
+            ) {
               answer_value = pregunta.respuestaSeleccionada;
             }
           } else if (pregunta.id_type_question === 3) {
-            if (pregunta.textoRespuesta && pregunta.textoRespuesta.trim() !== "") {
+            if (
+              pregunta.textoRespuesta &&
+              pregunta.textoRespuesta.trim() !== ""
+            ) {
               answer_value = pregunta.textoRespuesta.trim();
             }
           }
@@ -643,31 +669,37 @@ const AdminList = () => {
   };
 
   // Props que se pasan al modal de solo visualización (consulta de datos del usuario)
-const modalViewAdminProps = {
-  open: openViewModal,
-  onClose: handleCloseViewModal,
-  formatDateTimeShort,
-  registration_date: { input: viewAdminData?.registration_date || "" },
-  type: { input: viewAdminData?.type || "" },
-  last_visit_date: { input: viewAdminData?.last_visit_date || "" },
-  selectedClients: viewAdminData?.clients || [],
-  firstName: { input: viewAdminData?.firstname || "" },
-  middleName: { input: viewAdminData?.middlename || "" },
-  lastName: { input: viewAdminData?.lastname || "" },
-  state: { input: viewAdminData?.state || 0 },
-  language: { input: viewAdminData?.language || "en" },
-  email: { input: viewAdminData?.email || "" },
-  userClients,
-  t,
-};
-
+  const modalViewAdminProps = {
+    open: openViewModal,
+    onClose: handleCloseViewModal,
+    formatDateTimeShort,
+    registration_date: { input: viewAdminData?.registration_date || "" },
+    type: { input: viewAdminData?.type || "" },
+    last_visit_date: { input: viewAdminData?.last_visit_date || "" },
+    selectedClients: viewAdminData?.clients || [],
+    firstName: { input: viewAdminData?.firstname || "" },
+    middleName: { input: viewAdminData?.middlename || "" },
+    lastName: { input: viewAdminData?.lastname || "" },
+    state: { input: viewAdminData?.state || 0 },
+    language: { input: viewAdminData?.language || "en" },
+    email: { input: viewAdminData?.email || "" },
+    userClients,
+    t,
+  };
 
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
-        <Box sx={{lignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex"}}>
+        <Box
+          sx={{
+            lignItems: "stretch",
+            flexWrap: "nowrap",
+            padding: 0,
+            display: "flex",
+          }}
+        >
           {/* <SidebarLT1 /> */}
 
           <Box className="container" mt={0}>
@@ -680,7 +712,9 @@ const modalViewAdminProps = {
               />
             ) : (
               <Box sx={{ textAlign: "center", py: 5 }}>
-                <Typography variant="h6">No existen agentes registrados</Typography>
+                <Typography variant="h6">
+                  No existen agentes registrados
+                </Typography>
               </Box>
             )}
           </Box>
