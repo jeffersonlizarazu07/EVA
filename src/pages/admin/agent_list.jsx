@@ -20,6 +20,8 @@ import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
 import { Box, Typography } from "@mui/material";
 
+
+
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
@@ -55,6 +57,11 @@ const AdminList = () => {
   const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
   const [feedbackError, setFeedbackError] = useState(false);
   const [erroresPorPregunta, setErroresPorPregunta] = useState({});
+
+  const [conteoDeAgentes, setConteoDeAgentes] = useState("0"); 
+  useEffect(() => {
+    console.log("Nuevo conteo desde useEffect:", conteoDeAgentes);
+  }, [conteoDeAgentes]);
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -117,6 +124,17 @@ const AdminList = () => {
     try {
       setLoading(true);
       const data = await getAdmins(clients);
+
+      if (!data && data.length === 0) {
+        setConteoDeAgentes(0)
+        
+      }else{
+        const conteo = data.length;
+        setConteoDeAgentes(conteo);
+        console.log("Administradores cargados:", conteoDeAgentes);
+      }
+      
+      
       setAdmins(data);
     } catch (error) {
       console.error("Error al cargar los administradores:", error);
@@ -128,6 +146,7 @@ const AdminList = () => {
       setLoading(false);
     }
   };
+  
 
   // Función para obtener la lista de clientes registrados
   const loadClients = async () => {

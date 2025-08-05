@@ -23,8 +23,29 @@ import {
   Search
 } from "@mui/icons-material";
 import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-const TableFormReport = ({ header, data, onUpdate, onView, modalId, modalId2 }) => {
+
+const TableFormReport = ({ header, data, onSelectionChange }) => {
+ 
+  const [selectedRows, setSelectedRows] = useState([]);
+
+  useEffect(() => {
+    onSelectionChange(selectedRows);
+  }, [selectedRows]);
+
+  const handleCheckboxChange = (item) => {
+    setSelectedRows((prev) => {
+      const alreadySelected = prev.find((i) => i.id_monitoreo === item.id_monitoreo);
+      if (alreadySelected) {
+        return prev.filter((i) => i.id_monitoreo !== item.id_monitoreo);
+      } else {
+        return [...prev, item];
+      }
+    });
+  };
+
   const { languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
 
@@ -108,82 +129,95 @@ const TableFormReport = ({ header, data, onUpdate, onView, modalId, modalId2 }) 
       </Grid>
 
       <TableContainer component={Paper} elevation={0} sx={{ width:"100%", overflowY: "auto" }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              {header.map((item, i) => (
-                <TableCell key={i} align="center" sx={{
-                  fontWeight: "bold",
-                  whiteSpace: "normal",
-                  minWidth: item.key === "feedback" ? 250 : 300,
-                  maxWidth: item.key === "feedback" ? "none" : 300,
-                  wordWrap: "break-word",
-                }}>
-                  {item.label}
-                </TableCell>
-              ))}
-              
-              {/*
-              <TableCell sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}>
-                {t("userTable.Actions")}
+  <Table size="small">
+    <TableHead>
+      <TableRow>
+        <TableCell sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}>
+          {t("clientTable.seleccionar_para_descargar")}
+        </TableCell>
+        {header.map((item, i) => (
+          <TableCell key={i} align="center" sx={{
+            fontWeight: "bold",
+            whiteSpace: "normal",
+            minWidth: item.key === "feedback" ? 250 : 300,
+            maxWidth: item.key === "feedback" ? "none" : 300,
+            wordWrap: "break-word",
+          }}>
+            {item.label}
+          </TableCell>
+        ))}
+        
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {currentRecords.map((row, idx) => {
+        const selected = selectedRows.some(r => r.id_monitoreo === row.id_monitoreo);
+        return (
+          <TableRow key={idx}>
+            <TableCell align="center">
+              <IconButton
+                onClick={() => handleCheckboxChange(row)}
+                sx={{
+                  color: selected ? "#b62a8b" : "#ccc",
+                  "&:hover": { color: "#b62a8b" },
+                }}
+              >
+                {selected ? <CheckCircleIcon /> : <CheckCircleOutlineIcon />}
+              </IconButton>
+            </TableCell>
+            {header.map((col, i) => (
+              <TableCell key={i} align="center">
+                {col.key.startsWith("Pregunta")
+                  ? row.preguntas?.[i - indexOffset]?.respuesta || ""
+                  : row[col.key]}
               </TableCell>
-               */}
-              
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {currentRecords.map((row, idx) => (
-              <TableRow key={idx}>
-                {header.map((col, i) => (
-                  <TableCell key={i} align="center">
-                    {col.key.startsWith("Pregunta")
-                    ? row.preguntas?.[i - indexOffset]?.respuesta || ""
-                    : row[col.key]}
-                  </TableCell>
-                ))}
-              </TableRow>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            
+          </TableRow>
+        );
+      })}
+    </TableBody>
+  </Table>
+</TableContainer>
 
-      <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 50]}
-          component="div"
-          count={filteredData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage={t("userTable.Show")}
-          labelDisplayedRows={({ from, to, count }) =>
-            `${from}-${to} ${t("userTable.Registered")} ${count !== -1 ? count : `more than ${to}`}`
-          }
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            ".MuiTablePagination-toolbar": {
-              alignItems: "center",
-            },
-            ".MuiTablePagination-selectLabel": {
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 0,
-            },
-            ".MuiTablePagination-displayedRows": {
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 0,
-            },
-            ".MuiInputBase-root": {
-              backgroundColor: "#b62a8b",
-              color: "white",
-              borderRadius: "4px",
-            },
-          }}
-        />
-      </Box>
+
+<Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+  <TablePagination
+    rowsPerPageOptions={[10, 25, 50]}
+    component="div"
+    count={filteredData.length}
+    rowsPerPage={rowsPerPage}
+    page={page}
+    onPageChange={handleChangePage}
+    onRowsPerPageChange={handleChangeRowsPerPage}
+    labelRowsPerPage={t("userTable.Show")}
+    labelDisplayedRows={({ from, to, count }) =>
+      `${from}-${to} ${t("userTable.Registered")} ${count !== -1 ? count : `more than ${to}`}`
+    }
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      ".MuiTablePagination-toolbar": {
+        alignItems: "center",
+      },
+      ".MuiTablePagination-selectLabel": {
+        display: "flex",
+        alignItems: "center",
+        marginBottom: 0,
+      },
+      ".MuiTablePagination-displayedRows": {
+        display: "flex",
+        alignItems: "center",
+        marginBottom: 0,
+      },
+      ".MuiInputBase-root": {
+        backgroundColor: "#b62a8b",
+        color: "white",
+        borderRadius: "4px",
+      },
+    }}
+  />
+</Box>
     </Box>
   );
 };

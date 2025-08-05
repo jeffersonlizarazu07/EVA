@@ -82,6 +82,7 @@ const FormList = () => {
     setLoading(true);
     try {
       const response = await axios.get("http://localhost:3000/api/forms", config);
+      console.log("Response data:", response.data.data.length);
       setForms(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error al obtener formularios:", error);
