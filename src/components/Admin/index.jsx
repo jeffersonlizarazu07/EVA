@@ -1,4 +1,3 @@
-import React from "react";
 import { useTranslation } from "react-i18next";
 import "../../assets/css/index.css";
 import SidebarLT1 from "../aside/sidebarLT1";

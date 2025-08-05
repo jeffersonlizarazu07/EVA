@@ -4,10 +4,6 @@ import HeaderLT2 from "../../components/header/headerLT2";
 import {
   Container,
   Grid,
-  Card,
-  CardContent,
-  Typography,
-  Link,
   Box,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";

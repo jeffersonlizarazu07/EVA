@@ -402,29 +402,30 @@ const Quality = () => {
                           </div>
                         </div> */}
                       </ul>
-                      <ul className="list-item item-2 d-flex justify-content-between">
-                        <div className="col col-lg-5">
-                          <h5 className="text-white fw-bolder">
-                            {t("qualitySite.Monitoring_forms_to_the_agent")}
-                          </h5>
-                        </div>
-                        <div className="col-lg-2 ms-3 col-1 d-none d-lg-block">
-                          <span className="text-white d-none d-lg-block">
-                            {t("qualitySite.Create_and_or_edit_form")}
-                          </span>
-                        </div>
-                        <div
-                          className="col-lg-4 col-7 d-flex justify-content-center"
-                          id="content-new-form"
-                        >
-                          <button className="card-btn ">
-                            {t("qualitySite.Create_form")}
-                          </button>
-                          {/* <button className="btn-plus ms-2">
+                      {userType !== "4" && (
+                        <ul className="list-item item-2 d-flex justify-content-between">
+                          <div className="col col-lg-5">
+                            <h5 className="text-white fw-bolder">
+                              {t("qualitySite.Monitoring_forms_to_the_agent")}
+                            </h5>
+                          </div>
+                          <div className="col-lg-2 ms-3 col-1 d-none d-lg-block">
+                            <span className="text-white d-none d-lg-block">
+                              {t("qualitySite.Create_and_or_edit_form")}
+                            </span>
+                          </div>
+                          <div
+                            className="col-lg-4 col-7 d-flex justify-content-center"
+                            id="content-new-form"
+                          >
+                            <button className="card-btn ">
+                              {t("qualitySite.Create_form")}
+                            </button>
+                            {/* <button className="btn-plus ms-2">
                             <i className="fa-solid fa-plus"></i>
                           </button> */}
-                        </div>
-                        {/* <div className="col-lg-1 d-none d-lg-block">
+                          </div>
+                          {/* <div className="col-lg-1 d-none d-lg-block">
                           <div className="dropdown">
                             <button className="dropbtn">
                               <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -436,30 +437,32 @@ const Quality = () => {
                             </div>
                           </div>
                         </div> */}
-                      </ul>
-                      <ul className="list-item item-2 d-flex justify-content-between">
-                        <div className="col-6 col-lg-5">
-                          <h5 className="text-white fw-bolder">
-                            {t(
-                              "qualitySite.Monitoring_forms_report_to_the_agent"
-                            )}
-                          </h5>
-                        </div>
-                        <div className="col-lg-3 ms-3 d-none d-lg-block">
-                          <span className="text-white text-start">
-                            {t("qualitySite.Generate_report")}
-                          </span>
-                        </div>
-                        <div className="col-lg-3  justify-content-center  col ">
-                          <button className="card-btn ">
-                            {t("qualitySite.View_reports")}
-                          </button>
+                        </ul>
+                      )}
+                      {userType !== "4" && (
+                          <ul className="list-item item-2 d-flex justify-content-between">
+                            <div className="col-6 col-lg-5">
+                              <h5 className="text-white fw-bolder">
+                                {t(
+                                  "qualitySite.Monitoring_forms_report_to_the_agent"
+                                )}
+                              </h5>
+                            </div>
+                            <div className="col-lg-3 ms-3 d-none d-lg-block">
+                              <span className="text-white text-start">
+                                {t("qualitySite.Generate_report")}
+                              </span>
+                            </div>
+                            <div className="col-lg-3  justify-content-center  col ">
+                              <button className="card-btn ">
+                                {t("qualitySite.View_reports")}
+                              </button>
 
-                          {/* <button className="btn-plus ms-2">
+                              {/* <button className="btn-plus ms-2">
                             <i className="fa-solid fa-plus"></i>
                           </button> */}
-                        </div>
-                        {/* <div className="col-1 d-none d-lg-block">
+                            </div>
+                            {/* <div className="col-1 d-none d-lg-block">
                           <div className="dropdown">
                             <button className="dropbtn">
                               <i className="fa-solid fa-ellipsis-vertical"></i>
@@ -471,7 +474,8 @@ const Quality = () => {
                             </div>
                           </div>
                         </div> */}
-                      </ul>
+                          </ul>
+                        )}
                     </li>
                   </div>
                 </div>
