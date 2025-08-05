@@ -19,8 +19,12 @@ import {
     Stack,
     Divider,
     Tooltip,
+    Fade,
     
 } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { keyframes } from "@emotion/react";
+
 import axios from "axios";
 import Swal from "sweetalert2";
 import dayjs from "dayjs";
@@ -53,8 +57,11 @@ import {
 /* transformar a exel  */
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { Key } from "@mui/icons-material";
 
 const FormReport= () => {
+    //importacion del exel seleccionado 
+    const [seleccionados, setSeleccionados] = useState([]);
 
     const nav = useNavigate();
     // estados para el lenguaje 
@@ -70,48 +77,7 @@ const FormReport= () => {
     const [fullMonitoring, setFullMonitoring] = useState([]); 
     // estado para respuestas multiples 
     const [responseMulti, setResponseMulti]= useState([]);
-    // 
-
-    // formulario headers dinamicos
-    /*
-    const preguntaHeaders = fullMonitoring.length > 0
-      ? fullMonitoring[0].preguntas.map((p, index) => ({
-          key: `Pregunta ${index + 1}`,
-          label: p.texto,
-        }))
-      : [];*/
-    const preguntaSet = new Map();
-
-    fullMonitoring.forEach(monitoreo => {
-      monitoreo.preguntas.forEach(p => {
-        if (!preguntaSet.has(p.texto)) {
-          preguntaSet.set(p.texto, p);
-        }
-      });
-    });
-
-    // Ahora construimos los headers únicos y ordenados
-    const preguntaHeaders = Array.from(preguntaSet.keys()).map((texto, index) => ({
-      key: `Pregunta ${index + 1}`,
-      label: texto
-    }));
-
-
-    const selectedKeys = [
-      
-      
-      { key: "nombre_agente", label: "Agente" },
-      { key: "nombre_monitor", label: "Evaluador" },
-      { key: "fecha_monitoreo", label: "Fecha de Monitoreo" },
-      { key: "score", label: "Score" },
-      { key: "nombre_form", label: "Formulario" },
-      ...preguntaHeaders,
-      
-      { key: "feedback", label: "Feedback" },
-    ];
-   
-    
-    // clientes corregidos
+     // clientes corregidos
     const [clientsAndFroms, setClientsAndForms] = useState([]);
     const [formsInfo, setFormsInfo] = useState([]);
 
@@ -124,6 +90,8 @@ const FormReport= () => {
     const [formatExel, setFormatExel]= useState([]);
 
     
+
+    
     // Manejar cambio de fechas
     const handleStartDateChange = (date) => setStartDate(date);
     const handleEndDateChange = (date) => setEndDate(date);
@@ -132,6 +100,49 @@ const FormReport= () => {
     const config = {
         withCredentials: true,
     };
+    
+
+    // Crear un Set para almacenar preguntas únicas
+    // y evitar duplicados en los headers de la tabla
+    const preguntaSet = new Map();
+
+    fullMonitoring.forEach(monitoreo => {
+      monitoreo.preguntas.forEach(p => {
+        if (!preguntaSet.has(p.texto)) {
+          preguntaSet.set(p.texto, p);
+        }
+      });
+    });
+
+    
+
+    // Ahora construimos los headers únicos y ordenados
+    const preguntaHeaders = Array.from(preguntaSet.keys()).map((texto, index) => ({
+      key: `Pregunta ${index + 1}`,
+      label: texto
+    }));
+
+    // los heders de la tabla
+    const selectedKeys = [
+      
+      
+      { key: "nombre_agente", label: t("clientTable.agente") },
+      { key: "nombre_monitor", label: t("clientTable.evaluador") },
+      { key: "fecha_monitoreo", label:  t("clientTable.fecha_monitoreo") },
+      { key: "score", label: t("clientTable.score")},
+      { key: "nombre_form", label:  t("clientTable.Formulario") },
+      ...preguntaHeaders,
+      
+      { key: "feedback", label:   t("clientTable.feedback")},
+    ];
+   
+    
+   // cambio de lenguaje y clientes en el filtro 
+    useEffect(() => {
+      i18n.changeLanguage(languageUser);
+      getClientsAndFormsFuncion();
+      
+    }, [languageUser, i18n]);
     
     // para inicializar la informacion de la tabla y clientes en el filtro 
     useEffect(() => {
@@ -143,7 +154,7 @@ const FormReport= () => {
         
 
       }
-      //console.log("Pruebas heder dinamicos:", fullMonitoring)
+      
     }, []);
 
     // cambio de informacion en la tabla por filtros
@@ -151,15 +162,10 @@ const FormReport= () => {
       if (reportesFiltrados.length > 0) {
         dataMonitoring();
       }
-      //console.log('Formato exel ...', formatExel)
+     
     }, [reportesFiltrados]);
 
-    // cambio de lenguaje y clientes en el filtro 
-    useEffect(() => {
-      i18n.changeLanguage(languageUser);
-      getClientsAndFormsFuncion();
-      
-    }, [languageUser, i18n]);
+    
 
     // logica para hacer comparacion con answer 
     const getRespuestaTransformada = (pregunta) => {
@@ -206,7 +212,6 @@ const FormReport= () => {
     const getResponseMultFuncion = async ()=>{
       try {
         const response = await getResponseMult();
-        //console.log("Respuestas multiple .........", response)
         setResponseMulti(response);
       } catch (error) {
         console.error("Error obtener respuestas multiple :", error);
@@ -237,7 +242,7 @@ const FormReport= () => {
         }));
         setFormsInfo(infoForms);
         setClientsAndForms(uniqueClients);
-        //console.log("informacion formularios obtenidos ...!:", infoForms);
+        
       } catch (error) {
         console.error("Error al obtener clientes y formularios:", error);
         
@@ -249,10 +254,11 @@ const FormReport= () => {
       const agrupado = {};
 
       data.forEach((item) => {
-        const key = `${item.nombre_agente}|${item.nombre_monitor}|${item.nombre_form}|${item.fecha_monitoreo}|${item.score}|${item.feedback}`;
+        const key = `${item.nombre_agente}|${item.nombre_monitor}|${item.nombre_form}|${item.fecha_monitoreo}|${item.score}|${item.feedback}|${item.id_monitoreo}`;
 
         if (!agrupado[key]) {
           agrupado[key] = {
+            id_monitoreo: item.id_monitoreo,
             nombre_agente: item.nombre_agente,
             nombre_monitor: item.nombre_monitor,
             nombre_form: item.nombre_form,
@@ -287,12 +293,12 @@ const FormReport= () => {
         // formateo de fecha sin horas
         const formattedStartDate = startDate ? dayjs(startDate).format("YYYY-MM-DD") : "";
         const formattedEndDate = endDate ? dayjs(endDate).format("YYYY-MM-DD") : "";
-        ///answersform/filter/:fromId/:starDate/:endDate
+        
         const filtro = await axios.get(
           `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}`,
             config
         )
-        //console.log("Reportes Filtradossssssssssssssssssss",filtro.data)
+        
         if (!filtro.data|| filtro.data.length === 0) {
           Swal.fire({
             title: t("reports.sin_datos"),
@@ -314,7 +320,10 @@ const FormReport= () => {
     // descargar lo filtrado en exel 
 
     const exportExel = () => {
-      if (!reportesFiltrados || reportesFiltrados.length === 0) {
+      // filtro entre exportacion total y seleccionados
+      const dataCargada = seleccionados.length  ? seleccionados : formatExel;
+      
+      if (!dataCargada || dataCargada.length === 0 || Object.keys(dataCargada).length === 0) {
         Swal.fire({
             title: t("reports.sin_datos"),
             text: t("reports.texto_sin_datos"),
@@ -327,8 +336,9 @@ const FormReport= () => {
         return;
       }
 
-
-      const data = Object.values(formatExel).map((item) => {
+      // para todos con formatExel
+      
+      const data = Object.values(dataCargada).map((item) => {
          // Se convierten las preguntas (que son un array de objetos) en un solo objeto plano
           // donde cada clave es el texto de la pregunta y el valor es la respuesta
           const preguntasPlanas = item.preguntas?.reduce((acc, p, i) => {
@@ -385,14 +395,25 @@ const FormReport= () => {
           : await getMonitoring();
         ;*/
         
-        
+        const data2 =  await getMonitoring();
         const datosAgrupados = agruparPorMonitoreo(data);
+        console.log("datos sin nada", data2);
         setFullMonitoring(datosAgrupados);
         //console.log("monitoreo", datosAgrupados)
       } catch (error) {
         console.error("error al obtener los monitoreos:", error);
       }
     };
+
+    // animacion alerta
+    const shake = keyframes`
+                0% { transform: translateX(0); }
+                20% { transform: translateX(-6px); }
+                40% { transform: translateX(6px); }
+                60% { transform: translateX(-4px); }
+                80% { transform: translateX(4px); }
+                100% { transform: translateX(0); }
+              `;
     
 
     return(
@@ -481,7 +502,7 @@ const FormReport= () => {
 
                             {/* vista formularios */}
                             <FormControl required sx={{ minWidth: "20%" }} className="readOnlyField">
-                              <InputLabel>{("Formulario")}</InputLabel>
+                              <InputLabel>{t("survey.form")}</InputLabel>
                               <Select
                                 labelId="survey-select-label"
                                 id="survey-select"
@@ -543,13 +564,7 @@ const FormReport= () => {
                               </IconButton>
                             </ButtonGroup>
                           </Box>
-                          {fullMonitoring.length === 0 && (
-                            <Box mt={3}>
-                              <Alert severity="info" sx={{ textAlign: "center" }}>
-                                {("Llena los datos de la consulta para generar los Formularios.")}
-                              </Alert>
-                            </Box>
-                          )}
+                          
                           
                         </CardContent>
                       </Card>
@@ -564,140 +579,63 @@ const FormReport= () => {
                             <TableFormReport
                               header={selectedKeys}
                               data={fullMonitoring}
+                              onSelectionChange={(rows) => setSeleccionados(rows)} 
                               
                             />
                           )}
                       </Box>
               </Box>
 
+              
+              {reportesFiltrados.length === 0 && (
+                <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  m: 10,
+                  mt: 2,
+                  borderRadius: "12px",
+                  
+                  border: "1px dashed #b0bec5",
+                  minHeight: "150px",
+                  position: "relative",
+                }}
+              >
+                {reportesFiltrados.length === 0 && (
+                  <Fade in={true} timeout={500}>
+                    <Box
+                      sx={{
+                        animation: `${shake} 0.5s`,
+                        minWidth: "60%",
+                      }}
+                    >
+                      <Alert
+                        icon={<InfoOutlinedIcon fontSize="large" />}
+                        severity="info"
+                         color= "#c70e8f"
+                        sx={{
+                          textAlign: "center",
+                          fontSize: "1.5rem",
+                          backgroundColor: "transparent",
+                          border: "1px solid #c70e8f",
+                          color: "#c70e8f",
+                          borderRadius: "8px",
+                        }}
+                      >
+                        {t("reports.mensaje_reporte_formulario")}
+                      </Alert>
+                    </Box>
+                  </Fade>
+                )}
+              </Box>
+              )
 
-              {
-                fullMonitoring.length === 0 &&(
-                   <Box sx={{ m: 10, mt: 4 }}>
-                    <Grid container spacing={4}>
-                      {/* Clientes burbujeantes */}
-                      <Grid item xs={12} md={6} >
-                        <Typography
-                          variant="h6"
-                          sx={{ mb: 2, fontWeight: "bold", color: "#cc0e8f" }}
-                        >
-                          👥 Clientes
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 2,
-                            justifyContent: "center",
-                            alignItems: "center",
-                            minHeight: 300,
-                            
-                            p: 3,
-                            borderRadius: 4,
-                            border:"1px solid #c4c4c4"
-                          }}
-                        >
-                          {clientsAndFroms.length > 0 ? (
-                            clientsAndFroms.map((client, i) => (
-                              <Tooltip title={client.client} key={client.idClient}>
-                                <Box
-                                  sx={{
-                                    width: 80,
-                                    height: 80,
-                                    bgcolor: "#e00085",
-                                    borderRadius: "50%",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    color: "#fff",
-                                    fontWeight: "bold",
-                                    fontSize: 12,
-                                    textAlign: "center",
-                                    p: 1,
-                                    boxShadow: "0 4px 10px rgba(224, 0, 133, 0.3)",
-                                    transition: "transform 0.3s",
-                                    cursor: "pointer",
-                                    "&:hover": {
-                                      transform: "scale(1.1)",
-                                      bgcolor: "#4b006e",
-                                    },
-                                  }}
-                                >
-                                  {client.client.length > 10
-                                    ? client.client.slice(0, 8) + "…"
-                                    : client.client}
-                                </Box>
-                              </Tooltip>
-                            ))
-                          ) : (
-                            <Typography variant="body2">Cargando Clientes...</Typography>
-                          )}
-                        </Box>
-                      </Grid>
-
-                      {/* Formularios burbujeantes */}
-                      <Grid item xs={12} md={6}>
-                        <Typography
-                          variant="h6"
-                          sx={{ mb: 2, fontWeight: "bold", color: "#cc0e8f" }}
-                        >
-                          📝 Formularios
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 2,
-                            justifyContent: "center",
-                            alignItems: "center",
-                            minHeight: 300,
-                            
-                            p: 3,
-                            borderRadius: 4,
-                            border:"1px solid #c4c4c4"
-                          }}
-                        >
-                          {formsInfo.length > 0 ? (
-                            formsInfo.map((form, i) => (
-                              <Tooltip title={form.title} key={form.id}>
-                                <Box
-                                  sx={{
-                                    width: 80,
-                                    height: 80,
-                                    bgcolor: "#e00085",
-                                    borderRadius: "50%",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    color: "#fff",
-                                    fontWeight: "bold",
-                                    fontSize: 12,
-                                    textAlign: "center",
-                                    p: 1,
-                                    boxShadow: "0 4px 10px rgba(224, 0, 133, 0.3)",
-                                    transition: "transform 0.3s",
-                                    cursor: "pointer",
-                                    "&:hover": {
-                                      transform: "scale(1.1)",
-                                      bgcolor: "#4b006e",
-                                    },
-                                  }}
-                                >
-                                  {form.title.length > 10
-                                    ? form.title.slice(0, 8) + "…"
-                                    : form.title}
-                                </Box>
-                              </Tooltip>
-                            ))
-                          ) : (
-                            <Typography variant="body2">Cargando Formularios...</Typography>
-                          )}
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                )
               }
+              
+
+               
+              
             
         </Box>
         

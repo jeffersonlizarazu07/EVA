@@ -32,7 +32,7 @@ const LogIn = () => {
         console.log('Estado de respuesta:', responseData.status);
 
         if (responseData.user.state == 1) {
-          console.log(responseData);
+          console.log(responseData.user.clients_id);
 
           // Establecer las cookies del token 
           Cookies.set("accessToken", responseData.token, { expires: 1 / 24, path: '/' });

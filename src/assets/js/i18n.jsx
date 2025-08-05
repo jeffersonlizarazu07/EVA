@@ -54,6 +54,14 @@ import { initReactI18next } from "react-i18next";
               "Viwer" : "Agente",
               "fila_pagina":"Filas por página",
               "de" : "de",
+              "agente":"Agente",
+              "evaluador": "Evaluador",
+              "fecha_monitoreo": "Fecha de Monitoreo",
+              "score": "Puntaje",
+              "Formulario": "Formulario",
+              "comentario": "Comentario",
+              "feedback": "feedback",
+              "seleccionar_para_descargar":"Seleccionar para descargar",
             },
             formTable: {
               "id": "ID",
@@ -320,6 +328,7 @@ import { initReactI18next } from "react-i18next";
               "informacion_encuesta":"Información de la encuesta",
               "activar" : "Activar",
               "ver_detalle" : "Ver detalle",
+              "form":"formulario"
             },
             buttons:{
               "WatchQuestions":"Ver preguntas",
@@ -434,6 +443,11 @@ import { initReactI18next } from "react-i18next";
               "texto_sin_datos" : "No se encontraron datos para las fechas proporcionadas.",
               "preparando_graficas": "Preparando gráficas...",
               "descargar_reporte": "El  reporte se ha descargado correctamente.",
+              "mensaje_reporte_formulario":"Llena los datos de la consulta para generar los Formularios.",
+
+              "mensaje_reporte_fechas":"Selecciona el rango de fechas para buscar los formularios disponibles.",
+              "mensaje_reporte_seleccionarCliente":"Selecciona un cliente para ver los formularios disponibles.",
+              "mensaje_reporte_cliente":"Debes seleccionar un cliente",
             }        
           },
         },
@@ -486,6 +500,14 @@ import { initReactI18next } from "react-i18next";
               "Viwer" : "Agent",
               "fila_pagina":"Rows per page",
               "de" : "of",
+              "agente": "Agent",
+              "evaluador": "Evaluator",
+              "fecha_monitoreo": "Monitoring Date",
+              "score": "Score",
+              "Formulario": "Form",
+              "comentario": "Comment",
+              "feedback": "Feedback",
+              "seleccionar_para_descargar": "Select to download",
             },
             formTable: {
               "id": "ID",
@@ -666,6 +688,7 @@ import { initReactI18next } from "react-i18next";
               "informacion_encuesta": "Survey information",
               "activar" : "Activate",
               "ver_detalle" : "View details",
+              "form":"form",
             },
             clientModal:{
               "NewClient": "Add client",
@@ -837,6 +860,11 @@ import { initReactI18next } from "react-i18next";
             "texto_sin_datos" : "No data found for the provided dates.",
             "preparando_graficas": "Preparing charts...",
             "descargar_reporte": "The report has been downloaded successfully.",
+            "mensaje_reporte_formulario": "Fill in the query data to generate the forms.", 
+
+            "mensaje_reporte_fechas": "Select the date range to search for available forms.",
+            "mensaje_reporte_seleccionarCliente": "Select a client to view the available forms.",
+            "mensaje_reporte_cliente": "You must select a client."
           }      
           },
         },
@@ -889,6 +917,14 @@ import { initReactI18next } from "react-i18next";
               "selectedColor": "Colori selezionati",
               "colorSelect": "Seleziona due colori rappresentativi del cliente",
               "Viwer" : "Agente",
+              "agente": "Agente",
+              "evaluador": "Valutatore",
+              "fecha_monitoreo": "Data di Monitoraggio",
+              "score": "Punteggio",
+              "Formulario": "Modulo",
+              "comentario": "Commento",
+              "feedback": "Feedback",
+              "seleccionar_para_descargar": "Seleziona per scaricare",
             },
             formTable: {
               "id": "ID",
@@ -1070,6 +1106,7 @@ import { initReactI18next } from "react-i18next";
               "informacion_encuesta": "Informazioni sondaggio",
               "activar" : "Attiva",
               "ver_detalle" : "Visualizza dettagli",
+              "form":"Modulo",
             },
             clientModal:{
               "NewClient": "Aggiungi cliente",
@@ -1237,6 +1274,11 @@ import { initReactI18next } from "react-i18next";
               "texto_sin_datos" : "Nessun dato trovato per le date fornite.",
               "preparando_graficas": "Preparando grafici...",
               "descargar_reporte": "Il report è stato scaricato con successo.",
+              "mensaje_reporte_formulario": "Compila i dati della richiesta per generare i moduli.",
+              "mensaje_reporte_fechas": "Seleziona l'intervallo di date per cercare i moduli disponibili.",
+              "mensaje_reporte_seleccionarCliente": "Seleziona un cliente per visualizzare i moduli disponibili.",
+              "mensaje_reporte_cliente": "Devi selezionare un cliente."
+
             }
             
           },
@@ -1273,6 +1315,14 @@ import { initReactI18next } from "react-i18next";
               "Viwer" : "Agente",
               "fila_pagina":"Linhas por página",
               "de" : "de",
+              "agente": "Agente",
+              "evaluador": "Avaliador",
+              "fecha_monitoreo": "Data de Monitoramento",
+              "score": "Pontuação",
+              "Formulario": "Formulário",
+              "comentario": "Comentário",
+              "feedback": "Feedback",
+              "seleccionar_para_descargar": "Selecionar para baixar",
             },
             formTable: {
               "id": "ID",
@@ -1531,6 +1581,7 @@ import { initReactI18next } from "react-i18next";
             "informacion_encuesta": "Informação da pesquisa",
             "activar" : "Ativar",
             "ver_detalle" : "Ver detalhes",
+            "form":"Formulário",
           },
           buttons: {
             "WatchQuestions": "Ver Perguntas",
@@ -1640,6 +1691,11 @@ import { initReactI18next } from "react-i18next";
             "texto_sin_datos" : "Nenhum dado encontrado para as datas fornecidas.",
             "preparando_graficas": "Preparando gráficos...",
             "descargar_reporte": "O relatório foi baixado com sucesso.",
+            "mensaje_reporte_formulario": "Preencha os dados da consulta para gerar os formulários.",
+            "mensaje_reporte_fechas": "Selecione o intervalo de datas para buscar os formulários disponíveis.",
+            "mensaje_reporte_seleccionarCliente": "Selecione um cliente para ver os formulários disponíveis.",
+            "mensaje_reporte_cliente": "Você deve selecionar um cliente."
+
           }
           },
         },

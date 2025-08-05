@@ -265,6 +265,9 @@ export const darkTheme = createTheme({
           border: 0,
           borderRadius: '0.375rem',
         },
+        '.css-sj96rs-MuiTableCell-root, .css-1ul8he3-MuiTableCell-root':{
+          color: ` #000000 !important`,
+        },
       },
     },
   },
