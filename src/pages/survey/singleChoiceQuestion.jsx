@@ -1,18 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import React, { useContext, useState, useEffect } from "react";
 import {
-  Box,
   FormControlLabel,
   Radio,
-  TextField,
-  Button,
-  Typography,
   Checkbox,
-  IconButton,
   Grid
 } from '@mui/material';
+import {
+  Box,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Typography,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import BackspaceIcon from '@mui/icons-material/Backspace';
-
+import { useTranslation } from "react-i18next";
+import { UserContext } from "../../context/UserContext";
 
 
 //Funcion para recorrer options y marcarlas como seleccionadas o no seleccionadas al editar
@@ -255,7 +266,23 @@ function SingleChoiceQuestionEdit({
                 variant="outlined"
                 size="small"
                 label={t("vistaEncuestas.opcion_respuesta")}
-                sx={{ mb: 0.5 }}
+                  sx={{
+    mb: 2,
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#c70e8f',
+      },
+      '&:hover fieldset': {
+        borderColor: '#c70e8f',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#c70e8f',
+      },
+    },
+    '& .MuiInputLabel-root, & label.Mui-focused': {
+      color: '#c70e8f',
+    },
+  }}
               />            
             </Box>
           </Grid>
@@ -398,7 +425,23 @@ function MultipleChoiceQuestionEdit({
                 fullWidth
                 variant="outlined"
                 size="small"
-                sx={{ mb: 0.5 }}
+                  sx={{
+    mb: 2,
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#c70e8f',
+      },
+      '&:hover fieldset': {
+        borderColor: '#c70e8f',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#c70e8f',
+      },
+    },
+    '& .MuiInputLabel-root, & label.Mui-focused': {
+      color: '#c70e8f',
+    },
+  }}
               />
               
             </Box>
@@ -423,11 +466,10 @@ function MultipleChoiceQuestionEdit({
         variant="contained" 
         color="primary"
         sx={{
-          color: 'white',
           backgroundColor: '#b62a8b',
           '&:hover': {
-            backgroundColor: '#581244',
-          },
+            backgroundColor: '#581244'
+          }
         }}
       >
         + {t("vistaEncuestas.opcion")}
@@ -439,131 +481,6 @@ function MultipleChoiceQuestionEdit({
         </Typography>
       </Box>
     </Box>
-  );
-}
-
-function MultipleChoiceQuestionEditWrapper({
-  options,
-  correctAnswers,
-  idToEdit,
-  onChange,
-}) {
-    console.log('=== WRAPPER PROPS ===');
-  console.log('options:', options);
-  console.log('correctAnswers:', correctAnswers);
-  const [localOptions, setLocalOptions] = useState([]);
-  const [localCorrectAnswers, setLocalCorrectAnswers] = useState([]);
-
-  // Inicializar una sola vez con los datos correctos
-  useEffect(() => {
-      console.log('=== PROCESSING OPTIONS ===');
-    console.log('options recibidas:', options);
-    if (options && options.length > 0) {
-      // Si las opciones ya vienen con estructura {text, checked}
-      if (typeof options[0] === 'object' && options[0].hasOwnProperty('text')) {
-        console.log('Opciones son objetos:', options);
-        setLocalOptions(options);
-        const correctIndexes = options
-          .map((opt, idx) => opt.checked ? idx : -1)
-          .filter(idx => idx !== -1);
-        setLocalCorrectAnswers(correctIndexes);
-      } else {
-        console.log('Opciones son strings:', options);
-        // Si las opciones son strings simples, convertir
-        const processedOptions = options.map((opt, idx) => ({
-          text: typeof opt === 'string' ? opt : opt.text || '',
-          checked: correctAnswers.includes(idx)
-        }));
-        console.log('Opciones procesadas:', processedOptions);
-        setLocalOptions(processedOptions);
-        setLocalCorrectAnswers(correctAnswers || []);
-      }
-    }
-  }, [options, correctAnswers]); // Solo cuando cambien las props iniciales
-
-  const addOption = () => {
-    const newOptions = [...localOptions, { text: "", checked: false }];
-    setLocalOptions(newOptions);
-    onChange({ options: newOptions, correctAnswers: localCorrectAnswers });
-  };
-
-  const handleOptionChange = (index, value) => {
-    const newOptions = [...localOptions];
-    newOptions[index].text = value;
-    setLocalOptions(newOptions);
-    onChange({ options: newOptions, correctAnswers: localCorrectAnswers });
-  };
-
-  const handleCheckboxChange = (index) => {
-    const newOptions = [...localOptions];
-    newOptions[index].checked = !newOptions[index].checked;
-    setLocalOptions(newOptions);
-
-    const newCorrectAnswers = newOptions
-      .map((option, i) => (option.checked ? i : -1))
-      .filter((index) => index !== -1);
-
-    setLocalCorrectAnswers(newCorrectAnswers);
-    onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
-  };
-
-  const removeOption = (index) => {
-    const newOptions = localOptions.filter((_, i) => i !== index);
-    setLocalOptions(newOptions);
-
-    const newCorrectAnswers = newOptions
-      .map((option, i) => (option.checked ? i : -1))
-      .filter((index) => index !== -1);
-
-    setLocalCorrectAnswers(newCorrectAnswers);
-    onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
-  };
-   console.log('=== RENDER ===');
-  console.log('localOptions:', localOptions);
-
-  return (
-    <div>
-      {localOptions.map((option, index) => (
-        <div
-          key={index}
-          className="row mx-2 form-group align-items-stretch d-flex"
-        >
-          <div className="col-1 p-1 mb-7">
-            <input
-              type="checkbox"
-              checked={option.checked || false}
-              onChange={() => handleCheckboxChange(index)}
-              className="form-check-input"
-              style={{ width: "100%", height: "50%" }}
-            />
-          </div>
-          <div className="col mt-2">
-            <label id="labelAnimation">
-              <input
-                type="text"
-                value={option.text || ''}
-                onChange={(e) => handleOptionChange(index, e.target.value)}
-                placeholder=" "
-                className="input-new"
-              />
-              <span className="labelName">Opción de respuesta</span>
-            </label>
-          </div>
-          <div className="col-1 me-2">
-            <button
-              onClick={() => removeOption(index)}
-              className="btn btn-rect"
-            >
-              <i className="fa-solid fa-delete-left"></i>
-            </button>
-          </div>
-        </div>
-      ))}
-      <button onClick={addOption} className="btn btn-primary m-2">
-        + opción
-      </button>
-      <div>Respuestas correctas: {localCorrectAnswers.join(", ")}</div>
-    </div>
   );
 }
 
@@ -833,6 +750,13 @@ const SelectorQuestionEdit = ({
   selectedOption = "",
   onChange,
 }) => {
+  const { t, i18n } = useTranslation();
+  const { languageUser } = useContext(UserContext);
+
+  useEffect(() => {
+    i18n.changeLanguage(languageUser);
+  }, [languageUser, i18n]);
+
   const [responses, setResponses] = useState(
     options.map((opt) => (typeof opt === "string" ? opt : opt.text || ""))
   );
@@ -886,92 +810,237 @@ const SelectorQuestionEdit = ({
   };
 
   return (
-    <div
-      className="p-4 border rounded shadow-sm"
-      style={{ width: "94%", margin: "auto" }}
-    >
+ <Box sx={{ p: 3, borderRadius: 2, boxShadow: 1, width: "94%", mx: "auto", }}>
       {/* Lista de respuestas existentes */}
-      <ul className="list-group">
+      <List>
         {responses.map((res, index) => (
-          <li
+          <ListItem
             key={index}
-            className="list-group-item d-flex justify-content-between align-items-center"
+            secondaryAction={
+              <IconButton
+                edge="end"
+                aria-label="delete"
+                onClick={() => handleRemoveResponse(index)}
+                color="error"
+                size="small"
+              >
+                <DeleteIcon />
+              </IconButton>
+            }
+            divider
           >
-            {res}
-            <button
-              className="btn btn-sm btn-danger"
-              onClick={() => handleRemoveResponse(index)}
-            >
-              Eliminar
-            </button>
-          </li>
+            <ListItemText primary={res} />
+          </ListItem>
         ))}
-      </ul>
+      </List>
 
       {/* Botón para agregar nueva opción */}
       {!showForm ? (
-        <button
-          className="btn btn-link text-decoration-none p-0 mt-3"
+        <Button
+          variant="text"
+          sx={{  p: 0, textTransform: "none" }}
           onClick={() => setShowForm(true)}
         >
           + Agregar opción personalizada
-        </button>
+        </Button>
       ) : (
-        <div className="d-flex flex-column gap-2 mt-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Escribe la nueva respuesta"
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2}}>
+          <TextField
+            fullWidth
+            label="Escribe la nueva respuesta"
             value={newAnswer}
             onChange={(e) => setNewAnswer(e.target.value)}
+            size="small"
+            className="readOnlyField"
           />
-          <div className="d-flex justify-content-center gap-2 mb-4">
-            <button
-              className="btn btn-success"
-              style={{
-                backgroundColor: "rgba(175, 14, 110, 0.717)",
-                color: "white",
-              }}
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 2}}>
+            <Button
+              variant="contained"
               onClick={handleAddResponse}
-            >
-              Guardar
-            </button>
-            <button
-              className="btn btn-secondary"
+              sx={{
+                  backgroundColor: '#b62a8b',
+                  '&:hover': {
+                    backgroundColor: '#581244'
+                  }
+                }}
+              >
+                {t("UserModal.Save")}
+            </Button>
+            <Button
+              variant="outlined"
               onClick={() => {
                 setShowForm(false);
                 setNewAnswer("");
               }}
+              sx={{            
+                color: '#b62a8b',       // Texto morado
+                borderColor: '#b62a8b',  // Borde morado
+                '&:hover': {
+                  borderColor: '#b62a8b', // Borde morado oscuro al hover
+                  backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
+                }
+              }}
             >
-              Cancelar
-            </button>
-          </div>
-        </div>
+              {t("clientModal.Close")}
+            </Button>
+          </Box>
+        </Box>
       )}
 
       {/* Select con respuestas creadas */}
       {responses.length > 0 && (
-        <div className="mt-4">
-          <label className="form-label">
+        <Box sx={{ mt: 4 }}>
+          <Typography component="label" variant="body1" sx={{ mb: 1, display: "block" }}>
             Selecciona una respuesta guardada:
-          </label>
-          <select
-            className="form-select"
+          </Typography>
+          <TextField
+            select
+            fullWidth
+            label="Respuesta guardada"
             value={currentSelection}
             onChange={handleSelectChange}
+            size="small"
+            sx={{ mb: 2 }}
+            className="readOnlyField"
           >
-            <option value="">Seleccione una opción</option>
             {responses.map((res, idx) => (
-              <option key={idx} value={res}>
+              <MenuItem key={idx} value={res}>
                 {res}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </div>
+          </TextField>
+
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
+
+function MultipleChoiceQuestionEditWrapper({
+  options,
+  correctAnswers,
+  idToEdit,
+  onChange,
+}) {
+  console.log('=== WRAPPER PROPS ===');
+  console.log('options:', options);
+  console.log('correctAnswers:', correctAnswers);
+  const [localOptions, setLocalOptions] = useState([]);
+  const [localCorrectAnswers, setLocalCorrectAnswers] = useState([]);
+
+  // Inicializar una sola vez con los datos correctos
+  useEffect(() => {
+    console.log('=== PROCESSING OPTIONS ===');
+    console.log('options recibidas:', options);
+    if (options && options.length > 0) {
+      // Si las opciones ya vienen con estructura {text, checked}
+      if (typeof options[0] === 'object' && options[0].hasOwnProperty('text')) {
+        console.log('Opciones son objetos:', options);
+        setLocalOptions(options);
+        const correctIndexes = options
+          .map((opt, idx) => opt.checked ? idx : -1)
+          .filter(idx => idx !== -1);
+        setLocalCorrectAnswers(correctIndexes);
+      } else {
+        console.log('Opciones son strings:', options);
+        // Si las opciones son strings simples, convertir
+        const processedOptions = options.map((opt, idx) => ({
+          text: typeof opt === 'string' ? opt : opt.text || '',
+          checked: correctAnswers.includes(idx)
+        }));
+        console.log('Opciones procesadas:', processedOptions);
+        setLocalOptions(processedOptions);
+        setLocalCorrectAnswers(correctAnswers || []);
+      }
+    }
+  }, [options, correctAnswers]); // Solo cuando cambien las props iniciales
+
+  const addOption = () => {
+    const newOptions = [...localOptions, { text: "", checked: false }];
+    setLocalOptions(newOptions);
+    onChange({ options: newOptions, correctAnswers: localCorrectAnswers });
+  };
+
+  const handleOptionChange = (index, value) => {
+    const newOptions = [...localOptions];
+    newOptions[index].text = value;
+    setLocalOptions(newOptions);
+    onChange({ options: newOptions, correctAnswers: localCorrectAnswers });
+  };
+
+  const handleCheckboxChange = (index) => {
+    const newOptions = [...localOptions];
+    newOptions[index].checked = !newOptions[index].checked;
+    setLocalOptions(newOptions);
+
+    const newCorrectAnswers = newOptions
+      .map((option, i) => (option.checked ? i : -1))
+      .filter((index) => index !== -1);
+
+    setLocalCorrectAnswers(newCorrectAnswers);
+    onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
+  };
+
+  const removeOption = (index) => {
+    const newOptions = localOptions.filter((_, i) => i !== index);
+    setLocalOptions(newOptions);
+
+    const newCorrectAnswers = newOptions
+      .map((option, i) => (option.checked ? i : -1))
+      .filter((index) => index !== -1);
+
+    setLocalCorrectAnswers(newCorrectAnswers);
+    onChange({ options: newOptions, correctAnswers: newCorrectAnswers });
+  };
+   console.log('=== RENDER ===');
+  console.log('localOptions:', localOptions);
+
+  return (
+    <Box sx={{ p: 3, borderRadius: 2, boxShadow: 1, width: "94%", mx: "auto", }}>
+      {localOptions.map((option, index) => (
+        <Box key={index} display="flex" alignItems="stretch" gap={1} mb={2}>
+          {/* Checkbox */}
+          <Box display="flex" alignItems="center">
+            <Checkbox
+              checked={option.checked || false}
+              onChange={() => handleCheckboxChange(index)}
+              sx={{ p: 0 }}
+            />
+          </Box>
+
+          {/* Input de texto */}
+          <TextField
+            fullWidth
+            label="Opción de respuesta"
+            value={option.text || ''}
+            onChange={(e) => handleOptionChange(index, e.target.value)}
+            variant="outlined"
+            size="small"
+            className="readOnlyField"
+          />
+
+          {/* Botón eliminar */}
+          <IconButton
+            onClick={() => removeOption(index)}
+            color="error"
+            sx={{ alignSelf: "center" }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ))}
+
+      {/* Botón agregar opción */}
+      <Button
+        variant="text"
+        sx={{  p: 0, textTransform: "none" }}
+        onClick={addOption}
+      >
+        + Agregar opción personalizada
+      </Button>
+    </Box>
+  );
+}
 
 export default SelectorQuestionEdit;
 export {

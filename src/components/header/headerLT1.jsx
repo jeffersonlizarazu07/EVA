@@ -44,7 +44,7 @@ import {
 
 // importaciones de temas
 
-import { themeColors } from '../../style/ThemeColors.js'
+import {themeColors} from '../../style/ThemeColors.js'
 
 const HeaderLT1 = () => {
   const { accessToken, userId, languageUser, setLanguageUser } =
@@ -58,7 +58,7 @@ const HeaderLT1 = () => {
     checkinfo();
     i18n.changeLanguage(languageUser);
   }, [languageUser]);
-
+  
   const [userLanguage, setUserLanguaje] = useState({ language: "" });
   const [userInfo, setUserInfo] = useState({
     firstname: "",
@@ -99,7 +99,7 @@ const HeaderLT1 = () => {
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
-
+  
   const logout = async () => {
     try {
       await axios.post('http://localhost:3000/api/logout', {}, {
@@ -109,7 +109,7 @@ const HeaderLT1 = () => {
       Cookies.remove("userType");
       Cookies.remove("accessToken");
       Cookies.remove("clients");
-
+  
       localStorage.removeItem("languageUser");
       nav("/");
     } catch (error) {
@@ -120,7 +120,7 @@ const HeaderLT1 = () => {
   const config = {
     withCredentials: true,
   };
-
+  
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   const checkinfo = async () => {
@@ -135,7 +135,7 @@ const HeaderLT1 = () => {
       console.error(error);
     }
   };
-  const url = "http://localhost:3000/api/users/";
+  const url = "http://localhost:3000/api/users/"; 
 
   const getInfo = async () => {
     try {
@@ -152,7 +152,7 @@ const HeaderLT1 = () => {
       console.error(error);
     }
   };
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUserLanguaje((prevUserInfo) => ({
@@ -164,7 +164,7 @@ const HeaderLT1 = () => {
   const updateInfo = async (event) => {
     event.preventDefault();
     let parameters;
-
+  
     if (password.input.trim() !== "") {
       if (password.input !== confirmPassword) {
         setConfirmError("");
@@ -176,7 +176,7 @@ const HeaderLT1 = () => {
         return;
       }
     }
-
+  
     try {
       parameters = {
         firstname: firstName.input,
@@ -186,18 +186,18 @@ const HeaderLT1 = () => {
         language: userLanguage.language,
         last_visit_date: "",
       };
-
+  
       if (password.input.trim() !== "") {
         parameters["password"] = password.input;
       }
-
+  
       const response = await axios.put(`${url}${userId}`, parameters, config);
-
+  
       if (response.data.status) {
         Toast.fire({
           icon: "success",
           title: "Perfil actualizado correctamente",
-        }), setTimeout(() => {
+        }),setTimeout(() => {
           window.location.reload();
         }, 1000);
       }
@@ -289,7 +289,7 @@ const HeaderLT1 = () => {
   };
 
   const location = useLocation();
-
+  
   const getButtonColor = (path) => {
     return location.pathname === path ? 'rgb(199, 14, 143)' : (theme === 'dark' ? '#fff' : '#000');
   };
@@ -297,11 +297,11 @@ const HeaderLT1 = () => {
   const handleLanguageClick = (event) => {
     setLanguageAnchorEl(event.currentTarget);
   };
-
+  
   const handleLanguageClose = () => {
     setLanguageAnchorEl(null);
   };
-
+  
   const handleLanguageChange = async (lang) => {
     language.handleChange(lang);
     i18n.changeLanguage(lang);
@@ -325,231 +325,215 @@ const HeaderLT1 = () => {
   }));
 
   return (
-    <Box sx={{ mt: "100px", px: 3 }}>
-      <Box
+    <Box sx={{ position: 'sticky', top: 0}}>
+      <Paper
+        elevation={2}
         sx={{
-          position: "fixed",           // ✅ fijo en pantalla
-          top: 8,
-          left: 0,
-          right: 0,
-          zIndex: 9999,                // ✅ sobre todo lo demás
-          backgroundColor: "#fff",
+          margin: 2,
+          marginBottom: 3,
+          borderRadius: '25px',
+          border: '2px solid rgb(199, 14, 143)',
+          backgroundColor: theme === 'dark' ? 'rgb(33, 37, 41)' : 'white',
         }}
       >
-
-        <Paper
-          elevation={2}
+        <AppBar
+          position="static"
+          elevation={0}
           sx={{
-            mt: 0, // ✅ sin margen superior
-            mx: 2,
-            mb: 3,
-            borderRadius: "25px",
-            border: "2px solid rgb(199, 14, 143)",
-            backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "#fff",
+            backgroundColor: 'transparent',
+            borderRadius: '25px',
+            color: theme === 'dark' ? '#fff' : '#000',
           }}
         >
+          <Toolbar sx={{ justifyContent: 'space-between', px: 2 }}>
+            {/* Lado izquierdo - Logo y menú móvil */}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>             
+              {/* Logo */}
+              <Box
+                component="img"
+                src={Logo}
+                alt="Logo"
+                sx={{
+                  width: '63px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => nav("/admin")}
+              />
+            </Box>
 
+            {/* Navegación  */}
+            <Box sx={{ 
+              display: { xs : 'flex', lg: 'flex' }, 
+              alignItems: 'center',
+              flexGrow: 1,
+              justifyContent: 'center',
+              gap: 15
+            }}>
+              <MUIButton
+                variant="text"
+                sx={{
+                  fontSize: '95%',
+                  color: getButtonColor("/admin"),
+                  "&:hover": {
+                    color: "rgb(199, 14, 143)",
+                  },
+                  fontWeight: 'bold',
+                }}
+                onClick={() => nav("/admin")}
+                disableRipple
+                startIcon= {<HomeIcon sx={{ fontSize: '120% !important'  }} />}
+              >
+                {t("header.Home")}
+              </MUIButton>
 
-          <AppBar
-            position="static"
+              <VerticalDivider theme={theme} />
 
-            elevation={0}
-            sx={{
-              backgroundColor: 'transparent',
-              borderRadius: '25px',
-              color: theme === 'dark' ? '#fff' : '#000',
-            }}
-          >
-            <Toolbar sx={{ justifyContent: 'space-between', px: 2 }}>
-              {/* Lado izquierdo - Logo y menú móvil */}
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {/* Logo */}
-                <Box
-                  component="img"
-                  src={Logo}
-                  alt="Logo"
-                  sx={{
-                    width: '63px',
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => nav("/admin")}
-                />
-              </Box>
+              <MUIButton
+                variant="text"
+                sx={{
+                  fontSize: '95%',
+                  color: getButtonColor("/admin_list"),
+                  "&:hover": {
+                    color: "rgb(199, 14, 143)",
+                  },
+                  fontWeight: 'bold',
+                }}
+                onClick={() => nav("/admin_list")}
+                disableRipple
+                startIcon={<PersonIcon sx={{ fontSize: '120% !important'  }} />}
+              >
+                {t("header.Users")}
+              </MUIButton>
 
-              {/* Navegación  */}
-              <Box sx={{
-                display: { xs: 'flex', lg: 'flex' },
-                alignItems: 'center',
-                flexGrow: 1,
-                justifyContent: 'center',
-                gap: 15
-              }}>
-                <MUIButton
-                  variant="text"
-                  sx={{
-                    fontSize: '95%',
-                    color: getButtonColor("/admin"),
-                    "&:hover": {
-                      color: "rgb(199, 14, 143)",
-                    },
-                    fontWeight: 'bold',
-                  }}
-                  onClick={() => nav("/admin")}
-                  disableRipple
-                  startIcon={<HomeIcon sx={{ fontSize: '120% !important' }} />}
-                >
-                  {t("header.Home")}
-                </MUIButton>
+              <VerticalDivider theme={theme} />
 
-                <VerticalDivider theme={theme} />
+              <MUIButton
+                variant="text"
+                sx={{
+                  fontSize: '95%',
+                  color: getButtonColor("/client_list"),
+                  "&:hover": {
+                    color: "rgb(199, 14, 143)",
+                  },
+                  fontWeight: 'bold',
+                }}
+                onClick={() => nav("/client_list")}
+                disableRipple
+                startIcon={<AssignmentIndIcon sx={{ fontSize: '120% !important'  }} />}
+              >
+                {t("header.Clients")}
+              </MUIButton>
+            </Box>
 
-                <MUIButton
-                  variant="text"
-                  sx={{
-                    fontSize: '95%',
-                    color: getButtonColor("/admin_list"),
-                    "&:hover": {
-                      color: "rgb(199, 14, 143)",
-                    },
-                    fontWeight: 'bold',
-                  }}
-                  onClick={() => nav("/admin_list")}
-                  disableRipple
-                  startIcon={<PersonIcon sx={{ fontSize: '120% !important' }} />}
-                >
-                  {t("header.Users")}
-                </MUIButton>
-
-                <VerticalDivider theme={theme} />
-
-                <MUIButton
-                  variant="text"
-                  sx={{
-                    fontSize: '95%',
-                    color: getButtonColor("/client_list"),
-                    "&:hover": {
-                      color: "rgb(199, 14, 143)",
-                    },
-                    fontWeight: 'bold',
-                  }}
-                  onClick={() => nav("/client_list")}
-                  disableRipple
-                  startIcon={<AssignmentIndIcon sx={{ fontSize: '120% !important' }} />}
-                >
-                  {t("header.Clients")}
-                </MUIButton>
-              </Box>
-
-              {/* Lado derecho - Controles */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                {/* Selector de idioma */}
-                <Tooltip title="Cambiar idioma" placement="top">
-                  <IconButton
-                    aria-controls="language-menu"
-                    aria-haspopup="true"
-                    onClick={handleLanguageClick}
-                    disableRipple
-                    sx={{
-                      color: 'inherit',
-                      '&:hover': {
-                        background: 'transparent',
-                      }
-                    }}
-                  >
-                    <LanguageIcon sx={{
-                      fontSize: '2rem',
-                      fill: 'url(#gradient-text)',
-                    }} />
-                    <svg width="0" height="0">
-                      <defs>
-                        <linearGradient id="gradient-text" x1="0" y1="0" x2="1" y2="1">
-                          <stop offset="37%" stopColor="rgba(199,14,143,1)" />
-                          <stop offset="69%" stopColor="rgba(95,9,121,1)" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  </IconButton>
-                </Tooltip>
-
-                {/* Menú de idiomas */}
-                <Menu
-                  id="language-menu"
-                  anchorEl={languageAnchorEl}
-                  open={Boolean(languageAnchorEl)}
-                  onClose={handleLanguageClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'center',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'center',
-                  }}
-                >
-                  <MenuItem onClick={() => handleLanguageChange("es")}>
-                    <span className="flag-icon flag-icon-es me-2"></span>
-                    Español
-                  </MenuItem>
-                  <MenuItem onClick={() => handleLanguageChange("en")}>
-                    <span className="flag-icon flag-icon-us me-2"></span>
-                    Inglés
-                  </MenuItem>
-                  <MenuItem onClick={() => handleLanguageChange("it")}>
-                    <span className="flag-icon flag-icon-it me-2"></span>
-                    Italiano
-                  </MenuItem>
-                  <MenuItem onClick={() => handleLanguageChange("pt")}>
-                    <span className="flag-icon flag-icon-pt me-2"></span>
-                    Portugués
-                  </MenuItem>
-                </Menu>
-
-                {/* Switch de modo oscuro */}
-                <Tooltip title="Cambiar a modo oscuro" placement="top">
-                  <FormControlLabel
-                    control={
-                      <MaterialUISwitch
-                        checked={theme === 'dark'}
-                        onChange={toggleTheme}
-                      />
-                    }
-                    label=""
-                  />
-                </Tooltip>
-
-                {/* Avatar del usuario */}
-                <Avatar
-                  {...stringAvatar(`${userInfo.firstname} ${userInfo.lastname}`)}
-                  aria-controls={open ? "basic-menu" : undefined}
+            {/* Lado derecho - Controles */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Selector de idioma */}
+              <Tooltip title="Cambiar idioma" placement="top">
+                <IconButton
+                  aria-controls="language-menu"
                   aria-haspopup="true"
-                  aria-expanded={open ? "true" : undefined}
-                  onClick={handleClick}
-                />
-
-                {/* Menú del avatar */}
-                <Menu
-                  id="basic-menu"
-                  anchorEl={anchorEl}
-                  open={open}
-                  onClose={handleClose}
-                  MenuListProps={{
-                    "aria-labelledby": "basic-button",
+                  onClick={handleLanguageClick}
+                  disableRipple
+                  sx={{
+                    color: 'inherit',
+                    '&:hover': {
+                      background: 'transparent',
+                    }
                   }}
                 >
-                  <MenuItem
-                    onClick={() => {
-                      handleClose();
-                      logout();
-                    }}
-                  >
-                    {t("headerlt.Logout")}
-                  </MenuItem>
-                </Menu>
-              </Box>
-            </Toolbar>
-          </AppBar>
-        </Paper>
-      </Box>
+                  <LanguageIcon sx={{
+                    fontSize: '2rem',
+                    fill: 'url(#gradient-text)',
+                  }} />
+                  <svg width="0" height="0">
+                    <defs>
+                      <linearGradient id="gradient-text" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="37%" stopColor="rgba(199,14,143,1)" />
+                        <stop offset="69%" stopColor="rgba(95,9,121,1)" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </IconButton>
+              </Tooltip>
+
+              {/* Menú de idiomas */}
+              <Menu
+                id="language-menu"
+                anchorEl={languageAnchorEl}
+                open={Boolean(languageAnchorEl)}
+                onClose={handleLanguageClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'center',
+                }} 
+              >
+                <MenuItem onClick={() => handleLanguageChange("es")}>
+                  <span className="flag-icon flag-icon-es me-2"></span>
+                  Español
+                </MenuItem>
+                <MenuItem onClick={() => handleLanguageChange("en")}>
+                  <span className="flag-icon flag-icon-us me-2"></span>
+                  Inglés
+                </MenuItem>
+                <MenuItem onClick={() => handleLanguageChange("it")}>
+                  <span className="flag-icon flag-icon-it me-2"></span>
+                  Italiano
+                </MenuItem>
+                <MenuItem onClick={() => handleLanguageChange("pt")}>
+                  <span className="flag-icon flag-icon-pt me-2"></span>
+                  Portugués
+                </MenuItem>
+              </Menu>
+
+              {/* Switch de modo oscuro */}
+              <Tooltip title="Cambiar a modo oscuro" placement="top">
+                <FormControlLabel
+                  control={
+                    <MaterialUISwitch
+                      checked={theme === 'dark'}
+                      onChange={toggleTheme}
+                    />
+                  }
+                  label=""
+                />
+              </Tooltip>
+
+              {/* Avatar del usuario */}
+              <Avatar
+                {...stringAvatar(`${userInfo.firstname} ${userInfo.lastname}`)}
+                aria-controls={open ? "basic-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+                onClick={handleClick}
+              />
+
+              {/* Menú del avatar */}
+              <Menu
+                id="basic-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                  "aria-labelledby": "basic-button",
+                }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    logout();
+                  }}
+                >
+                  {t("headerlt.Logout")}
+                </MenuItem>
+              </Menu>
+            </Box>
+          </Toolbar>
+        </AppBar>
+      </Paper>
     </Box>
   );
 };
