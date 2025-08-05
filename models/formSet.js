@@ -42,7 +42,7 @@ const FormSet = {
     }
   },
 
-  getById: (id) => db("form_set").where({ id }).first(), // Obtener un formulario por ID
+  getById: (id) => db("form_set").where({ id }).first(), // Obtener formulario por ID
 
   // Obtener Id por ID del
   getByClients: (clientIdsArray) => {
