@@ -31,7 +31,7 @@ const TableAdmin = ({
   modalId2,
   userId,
 }) => {
-  const { languageUser } = useContext(UserContext);
+  const { userInfo, languageUser } = useContext(UserContext);
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
@@ -213,20 +213,22 @@ const TableAdmin = ({
                       sx={{ display: "flex", justifyContent: "center" }}
                       gap={1}
                     >
-                      <IconButton
-                        onClick={() => onUpdate(item)}
-                        size="small"
-                        title="Crear monitorización"
-                        sx={{
-                          color: "#b62a8b",
-                          "&:hover": {
-                            backgroundColor: "#b62a8b",
-                            color: "#fff",
-                          },
-                        }}
-                      >
-                        <FactCheckRoundedIcon />
-                      </IconButton>
+                      {userInfo?.type !== 4 && (
+                          <IconButton
+                            onClick={() => onUpdate(item)}
+                            size="small"
+                            title="Crear monitorización"
+                            sx={{
+                              color: "#b62a8b",
+                              "&:hover": {
+                                backgroundColor: "#b62a8b",
+                                color: "#fff",
+                              },
+                            }}
+                          >
+                            <FactCheckRoundedIcon />
+                          </IconButton>
+                        )}
                       <IconButton
                         onClick={() => onView(item)}
                         size="small"

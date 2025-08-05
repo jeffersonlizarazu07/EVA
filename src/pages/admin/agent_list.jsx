@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAgent";
 import HeaderLT1 from "../../components/header/headerLT1";
+import HeaderLT2 from "../../components/header/headerLT2";
+import SidebarLT1 from "../../components/aside/sidebarLT1";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
@@ -710,7 +712,7 @@ const AdminList = () => {
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {loading && <p>Cargando...</p>}
-        <HeaderLT1 />
+        {userInfo?.type === 4 ? <HeaderLT2 /> : <HeaderLT1 />}
         <Box
           sx={{
             lignItems: "stretch",
@@ -719,8 +721,6 @@ const AdminList = () => {
             display: "flex",
           }}
         >
-          {/* <SidebarLT1 /> */}
-
           <Box className="container" mt={0}>
             {admins.length > 0 ? (
               <TableAdmin

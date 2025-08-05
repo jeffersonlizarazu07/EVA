@@ -5,7 +5,6 @@ import { toggleBlackMode } from "../../assets/js/toggleBlackMode";
 import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import { useAuth } from "../../context/AuthContext";
-import { Modal, ModalBody, ModalHeader, Button, ModalFooter } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import Avatar from "@mui/material/Avatar";
@@ -363,8 +362,6 @@ const HeaderLT1 = () => {
     //backgroundColor: theme === 'dark' ? themeColors.light.Box.backgroundColor :  themeColors.dark.Box.backgroundColor,
     margin: '0 16px',
   }));
-
-
 
   return (
     <Box sx={{ position: 'sticky', top: 0}}>
