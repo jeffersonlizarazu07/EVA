@@ -67,7 +67,8 @@ class AnswersFormModel {
           'm.date as fecha_monitoreo',
           'm.score',
           'm.feedback',
-          'q.id'
+          'q.id',
+          'm.id as id_monitoreo'
         )
         .join(`${this.table_users} as a`, 'm.id_user_agent', 'a.id')
         .join(`${this.table_users} as mo`, 'm.id_user_monitor', 'mo.id')
@@ -124,7 +125,8 @@ class AnswersFormModel {
           'm.date as fecha_monitoreo',
           'm.score',
           'm.feedback',
-          'q.id'
+          'q.id',
+          'm.id as id_monitoreo'
         )
         .join(`${this.table_users} as a`, 'm.id_user_agent', 'a.id')
         .join(`${this.table_users} as mo`, 'm.id_user_monitor', 'mo.id')
