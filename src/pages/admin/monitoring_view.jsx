@@ -21,7 +21,7 @@ const AgentMonitoringView = () => {
     "form_title",
     "client_name",
     "monitoring_date",
-    "monitoring_dateWithHour",
+    "check_date_formatted",
     "score",
     "evaluator_name",
     "feedback",
@@ -37,7 +37,7 @@ const AgentMonitoringView = () => {
         return "Cliente";
       case "monitoring_date":
         return "Fecha de Monitorización";
-      case "monitoring_dateWithHour":
+      case "check_date_formatted":
         return "Enviada";
       case "score":
         return "Score";
@@ -69,23 +69,18 @@ const AgentMonitoringView = () => {
     i18n.changeLanguage(languageUser);
   }, [languageUser, i18n]);
 
+  const fetchMonitoring = async () => {
+    try {
+      const monitoringData = await getMonitoringByUser(agentId);
+      setGetMonitoring(monitoringData);
+      setFilterMonitoring(monitoringData);
+    } catch (error) {
+      console.error("Error al cargar monitoreos:", error);
+    }
+  };
+
   useEffect(() => {
     if (!agentId) return;
-
-    const fetchMonitoring = async () => {
-      try {
-        const monitoringData = await getMonitoringByUser(agentId);
-
-        // Guarda la lista original en cache
-        setGetMonitoring(monitoringData);
-
-        // Guarda monitorizaciones filtradas por fecha
-        setFilterMonitoring(monitoringData);
-      } catch (error) {
-        console.error("Error al cargar monitoreos:", error);
-      }
-    };
-
     fetchMonitoring();
   }, [agentId]);
 
@@ -132,13 +127,13 @@ const AgentMonitoringView = () => {
     setEndDate,
     getUserType,
     getHeaderLabel,
+    fetchMonitoring,
+    viewType: getUserType,
   };
 
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
-      <Box id="body">
-        <HeaderLT1 />
-      </Box>
+      <Box id="body">{/* <HeaderLT1 /> */}</Box>
 
       <Box className="container" mt={0}>
         <TableMonitoringView {...monitoringViewProps} />

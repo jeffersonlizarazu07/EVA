@@ -84,14 +84,42 @@ section .container {
   background-size: cover;
   background-repeat: no-repeat;
   border-radius: 35px !important;
-  margin-top: 15%;
-  margin-left: 15%;
-  width: 20vw !important;
-  height: 60vh !important;
+  
+  width: 100% !important;
+  margin-left: 0 !important;
+  height: 40vh !important;
   color: white !important;
   border: 2px solid rgb(199, 14, 143) !important;
 }
 
+.outstanding-card77,
+.outstanding-card77-black {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("/src/assets/img/imagen7 slide4.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 35px !important;
+  
+ width: 100% !important;
+  margin-left: 0 !important;
+  height: 35vh !important;
+  color: white !important;
+  border: 2px solid rgb(199, 14, 143) !important;
+}
+
+.outstanding-card77:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("/src/assets/img/imagen7 slide4.jpg");
+  border: none !important;
+  box-shadow: rgba(0, 0, 0, 0.705) 0px 5px 25px;
+}
+
+.outstanding-card77:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("/src/assets/img/imagen7 slide4.jpg");
+  border: none !important;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 5px 25px;
+}
 .outstanding-card:hover {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
     url("../img/imagen3 slide 3.jpeg");
@@ -116,7 +144,7 @@ section .container {
 }
 .div-title h5 {
   font-weight: 600;
-  margin-bottom: 15% !important;
+  
   height: 10%;
   border-bottom: 1px solid white;
 }
@@ -239,9 +267,10 @@ section .container {
   border: none;
   box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
 }
+/*
 #list-mode {
   display: none;
-}
+}*/
 #grid-mode {
   display: block;
 }
@@ -294,4 +323,14 @@ section .container {
 
 #logo {
   width: 63px;
+}
+
+@media (min-width: 992px) {
+  .outstanding-card,
+  .outstanding-card-black,
+  .outstanding-card77,
+  .outstanding-card77-black {
+    width: 20vw !important;
+    margin-left: 15% !important;
+  }
 }
