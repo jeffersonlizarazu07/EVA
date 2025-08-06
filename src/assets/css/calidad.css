@@ -216,7 +216,8 @@ section .container {
 }
 /* ------------------- Estilos de modo lista   ------------------- */
 .list-item {
-  margin-left: 2%;
+  margin: 0;
+  padding: 50px;
   display: flex;
   flex-direction: row;
   align-content: center;
@@ -274,6 +275,7 @@ section .container {
 #grid-mode {
   display: block;
 }
+
 /* ------------------- Estilos de modo lista   ------------------- */
 @media (max-width: 575.98px) {
  
