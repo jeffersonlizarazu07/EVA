@@ -122,7 +122,8 @@ const HeaderLT1 = () => {
     withCredentials: true,
   };
 
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const themeContext = useContext(ThemeContext);
+  const { theme, toggleTheme } = themeContext || { theme: 'light', toggleTheme: () => {} };
 
   const checkinfo = async () => {
     try {

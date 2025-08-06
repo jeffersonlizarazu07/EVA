@@ -3,6 +3,7 @@ import "./App.css";
 import { AuthProvider } from './context/AuthContext'; // <- AGREGAR ESTO
 /* catch data */
 import { UserProvider } from "./context/UserContext";
+import { ThemeProvider } from "./assets/js/ThemeContext";
 /* -------------------------------------------- */
 import ProtectedRoute from "./utils/ProtectedRoute";
 /* --------------------------------------------*/
@@ -63,7 +64,8 @@ const App = () => {
   return (
     <AuthProvider> {/* <- CAMBIO: Envolver con AuthProvider */}
       <UserProvider>
-        <BrowserRouter>
+        <ThemeProvider>
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<LogIn />} />
             <Route path="/survey/:link" element={<Survey />} />
@@ -128,8 +130,9 @@ const App = () => {
             {/*admin sites*/}
 
             {/*editor sites*/}
-          </Routes>
-        </BrowserRouter>
+                      </Routes>
+          </BrowserRouter>
+        </ThemeProvider>
       </UserProvider>
     </AuthProvider>
   );

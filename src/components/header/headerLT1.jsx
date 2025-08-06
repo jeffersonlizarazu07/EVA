@@ -160,7 +160,8 @@ const HeaderLT1 = () => {
     withCredentials: true,
   };
 
-  const { theme, toggleTheme } = useContext(ThemeContext) || { theme: 'light', toggleTheme: () => {} };
+  const themeContext = useContext(ThemeContext);
+  const { theme, toggleTheme } = themeContext || { theme: 'light', toggleTheme: () => {} };
 
   const checkinfo = async () => {
     try {
@@ -366,7 +367,7 @@ const HeaderLT1 = () => {
   return (
     <Box sx={{ position: 'sticky', top: 0}}>
       <Paper
-        elevation={2}
+        elevation={0}
         sx={{
           position: "fixed",           // ✅ fijo en pantalla
           top: 0,
@@ -486,22 +487,6 @@ const HeaderLT1 = () => {
                       background: 'transparent',
                     }
                   }}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  PaperProps={{
-                    sx: {
-                      mt: 1,
-                      minWidth: 150,
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                      borderRadius: '8px',
-                    }
-                  }}
                 >
                   <LanguageIcon sx={{
                     fontSize: '2rem',
@@ -526,12 +511,20 @@ const HeaderLT1 = () => {
                 onClose={handleLanguageClose}
                 anchorOrigin={{
                   vertical: 'bottom',
-                  horizontal: 'center',
+                  horizontal: 'right',
                 }}
                 transformOrigin={{
                   vertical: 'top',
-                  horizontal: 'center',
-                }} 
+                  horizontal: 'right',
+                }}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    minWidth: 150,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    borderRadius: '8px',
+                  }
+                }}
               >
                 <MenuItem onClick={() => handleLanguageChange("es")}>
                   <span className="flag-icon flag-icon-es me-2"></span>

@@ -30,7 +30,7 @@ import zIndex from '@mui/material/styles/zIndex';
 
 
 export default function Survey() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme } = useContext(ThemeContext) || { theme: 'light', toggleTheme: () => {} };
   const MaterialUISwitch = styled(Switch)(({ theme }) => ({
       width: 62,
       height: 34,

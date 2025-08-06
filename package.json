@@ -21,7 +21,6 @@
     "@mui/material": "^5.17.1",
     "@mui/styles": "^6.4.12",
     "@mui/x-date-pickers": "^7.13.0",
-    "@teleperformance/tpco_cryptojs": "^1.0.0",
     "axios": "^1.8.4",
     "boostrap": "^2.0.0",
     "bootstrap": "^5.3.6",
@@ -64,5 +63,8 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "vite": "^6.3.5"
+  },
+  "optionalDependencies": {
+    "@teleperformance/tpco_cryptojs": "^1.0.9"
   }
 }
