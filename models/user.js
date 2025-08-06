@@ -14,7 +14,8 @@ const User = {
         "email",
         "password",
         "state",
-        "type"
+        "type",
+        "user_red"
       )
       .first(); // Solo el primero que coincida
   },
@@ -40,7 +41,8 @@ const User = {
         "password",
         "state",
         "type",
-        "language"
+        "language",
+        "user_red"
       )
       .first();
   },
@@ -58,7 +60,8 @@ const User = {
       "type",
       "last_visit_date",
       "language",
-      "registration_date"
+      "registration_date",
+      "user_red"
     );
     const usersWithFormattedDate = users.map((user) => ({
       ...user,
@@ -157,7 +160,8 @@ const User = {
             "password",
             "state",
             "type",
-            "auth_provider"
+            "auth_provider",
+            "user_red"
         )
         .first();
   },
