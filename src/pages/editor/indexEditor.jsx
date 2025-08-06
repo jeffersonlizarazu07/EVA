@@ -1,57 +1,66 @@
 import "../../assets/css/index.css";
-import SidebarLT2 from "../../components/aside/sidebarLT2";
 import HeaderLT2 from "../../components/header/headerLT2";
 import { UserContext } from "../../context/UserContext";
-import { useEffect,useContext } from "react";
+import { useEffect, useContext } from "react";
 import { useTranslation } from "react-i18next";
+import { Container, Grid, Box } from "@mui/material";
+import {
+  SatisfationCard,
+  QualityCard,
+} from "../../components/cards/DashboardCards";
 
 const IndexEditor = () => {
-  const { t,i18n } = useTranslation();
-  const {languageUser} = useContext(UserContext)
+  const { t, i18n } = useTranslation();
+  const { languageUser } = useContext(UserContext);
   useEffect(() => {
-    i18n.changeLanguage(languageUser)
+    i18n.changeLanguage(languageUser);
   }, []);
 
   return (
-    <div className="App">
-     <div id="body">
-     
-      <HeaderLT2/>
-        <section>
-          <div className="col-12">
-          <div className="container mt-5 home">
-            <div id="row_card" className="row d-flex justify-content-center">
-             
-              <div className="col-12 col-sm-12 col-md-6 col-lg-6 p-2 d-flex justify-content-center align-content-center h-100">
-                <a style={{ textDecoration: "none" }} href="./satisfaction">
-                  <div
-                    id="card2"
-                    className=" d-flex card text-white text-center pb-2 align-items-center"
-                  >
-                    <div className="card-body index">
-                      <i
-                        id="iconoCard"
-                        className="fa-solid fa-chart-column"
-                        style={{ fontSize: "100px" }}
-                      ></i>
-                      <br />
-                  
-                        <h3>{t("satisfaction.title")}</h3>
-                        <p>{t("satisfaction.description")}</p>
-                    </div>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-          </div>
-          <SidebarLT2 /> 
-        </section>
-   
-      </div>
- 
-    </div>
-   
+    <Box>
+      <HeaderLT2 />
+      <Box sx={{ marginTop: 12 }}>
+        <Grid
+          container
+          direction="row"
+          alignItems="center"
+          spacing={2}
+          wrap="nowrap"
+        >
+          <Grid
+            item
+            xs={12}
+            md={2}
+            sx={{
+              alignSelf: "center",
+              display: "flex",
+              justifyContent: "flex-start",
+            }}
+          ></Grid>
+          {/* Cards*/}
+          <Grid item xs={12} md={9}>
+            <Container
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <Grid container spacing={1} alignItems="center">
+                <Grid item xs={12} md={6}>
+                  <QualityCard />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <SatisfationCard />
+                </Grid>
+              </Grid>
+            </Container>
+          </Grid>
+        </Grid>
+      </Box>
+    </Box>
   );
 };
 

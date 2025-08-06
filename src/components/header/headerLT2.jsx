@@ -41,7 +41,7 @@ import {
 import { themeColors } from "../../style/ThemeColors.js";
 
 const HeaderLT1 = () => {
-  const { accessToken, userId, languageUser, setLanguageUser } =
+  const { accessToken, userId, languageUser, setLanguageUser, userType } =
     useContext(UserContext);
   const { t, i18n } = useTranslation();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -371,32 +371,36 @@ const HeaderLT1 = () => {
             </Box>
 
             {/* Navegación  */}
-            <Box
-              sx={{
-                display: { xs: "flex", lg: "flex" },
-                alignItems: "center",
-                flexGrow: 1,
-                justifyContent: "center",
-                gap: 15,
-              }}
-            >
-              <MUIButton
-                variant="text"
+            {userType == 3 ? (
+              " "
+            ) : (
+              <Box
                 sx={{
-                  fontSize: "95%",
-                  color: getButtonColor("/admin"),
-                  "&:hover": {
-                    color: "rgb(199, 14, 143)",
-                  },
-                  fontWeight: "bold",
+                  display: { xs: "flex", lg: "flex" },
+                  alignItems: "center",
+                  flexGrow: 1,
+                  justifyContent: "center",
+                  gap: 15,
                 }}
-                onClick={() => nav("/admin")}
-                disableRipple
-                startIcon={<HomeIcon sx={{ fontSize: "120% !important" }} />}
               >
-                {t("header.Home")}
-              </MUIButton>
-            </Box>
+                <MUIButton
+                  variant="text"
+                  sx={{
+                    fontSize: "95%",
+                    color: getButtonColor("/admin"),
+                    "&:hover": {
+                      color: "rgb(199, 14, 143)",
+                    },
+                    fontWeight: "bold",
+                  }}
+                  onClick={() => nav("/admin")}
+                  disableRipple
+                  startIcon={<HomeIcon sx={{ fontSize: "120% !important" }} />}
+                >
+                  {t("header.Home")}
+                </MUIButton>
+              </Box>
+            )}
 
             {/* Lado derecho - Controles */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

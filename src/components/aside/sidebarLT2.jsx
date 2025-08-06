@@ -127,6 +127,7 @@ const SidebarLT2 = () => {
                 onClick={() =>
                   nav(userType === 3 ? "/editor" : "/index=Quality")
                 }
+                sx={{paddingRight: "1.25rem"}}
               >
                 <i id="iconoDegradado" className="fa-solid fa-house"></i>
               </IconButton>
