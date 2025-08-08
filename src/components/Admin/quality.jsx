@@ -17,6 +17,7 @@ import {
   IconButton,
   Grid,
 } from "@mui/material";
+import { TurnLeft } from "@mui/icons-material";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 const Quality = () => {
@@ -242,6 +243,28 @@ const Quality = () => {
                   className="cards-group "
                   id="grid-mode"
                 >
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      minWidth: 0,
+                      width: 30,
+                      height: 30,
+                      padding: 0,
+                      marginTop: "15px",
+                      borderRadius: "50%",
+                      color: "#b62a8b",
+                      borderColor: "#b62a8b",
+                      "&:hover": {
+                        borderColor: "#b62a8b",
+                        backgroundColor: "#b62a8b",
+                        color: "white",
+                      },
+                    }}
+                    onClick={() => nav("/admin")}
+                  >
+                    <TurnLeft />
+                  </Button>
                   <Grid spacing={2} m={3}>
                     <Grid container spacing={2} sx={{ display: "flex" }}>
                       <Grid item xs={8} md={8} lg={8} sx={{ p: 0 }}>

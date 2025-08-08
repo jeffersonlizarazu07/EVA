@@ -99,7 +99,6 @@ const Index = () => {
               </Grid>
             </Container>
           </Grid>
-          {/* <SidebarLT1 /> */}
         </Box>
       </Box>
     </Box>

@@ -1,23 +1,12 @@
-import { useEffect, useContext, useState } from "react";
-import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Link,
-  Box,
-} from "@mui/material";
+import { useTranslations } from "../hooks/useTranslations";
+import { Card, CardContent, Typography, Link, Box } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AddchartIcon from "@mui/icons-material/Addchart";
 import "../../assets/css/index.css";
 
 export const QualityCard = () => {
-  const { t, i18n } = useTranslation();
-  const { userType, languageUser } = useContext(UserContext);
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, []);
+  const { t } = useTranslations();
+
   return (
     <Box>
       <Box>
@@ -49,11 +38,7 @@ export const QualityCard = () => {
 };
 
 export const SatisfationCard = () => {
-  const { t, i18n } = useTranslation();
-  const { userType, languageUser } = useContext(UserContext);
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, []);
+  const { t } = useTranslations();
 
   return (
     <Box>
