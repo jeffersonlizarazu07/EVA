@@ -221,7 +221,7 @@ const Quality = () => {
   return (
     <Box className="App">
       <Box id="body">
-        {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
+        {userType === "1" ? <HeaderLT1 /> : <HeaderLT2 />}
         <section>
           <Grid
             container
@@ -261,7 +261,7 @@ const Quality = () => {
                         color: "white",
                       },
                     }}
-                    onClick={() => nav("/admin")}
+                    onClick={() => navigate("/editor")}
                   >
                     <TurnLeft />
                   </Button>

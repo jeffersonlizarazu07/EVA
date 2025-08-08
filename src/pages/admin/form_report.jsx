@@ -399,7 +399,11 @@ const FormReport = () => {
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
-        {userInfo?.type === 3 ? <HeaderLT2 /> : <HeaderLT1 />}
+        {userInfo?.type === 3 || userInfo?.type === 2 ? (
+          <HeaderLT2 />
+        ) : (
+          <HeaderLT1 />
+        )}
       </Box>
       <Box
         sx={{

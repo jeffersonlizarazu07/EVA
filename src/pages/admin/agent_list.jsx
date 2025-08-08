@@ -706,7 +706,7 @@ const AdminList = () => {
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {loading && <p>Cargando...</p>}
-        {userInfo?.type === 4 || 3 ? <HeaderLT2 /> : <HeaderLT1 />}
+        {userInfo?.type === 4 || userInfo === 3 ? <HeaderLT2 /> : <HeaderLT1 />}
         <Box
           sx={{
             lignItems: "stretch",

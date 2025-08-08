@@ -28,21 +28,9 @@ const Index = () => {
           spacing={2}
           wrap="nowrap"
         >
-          <Grid
-            item
-            xs={12}
-            md={2}
-            sx={{
-              alignSelf: "center",
-              display: "flex",
-              justifyContent: "flex-start",
-            }}
-          >
-            <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
-              <SidebarLT2 />
-            </Box>
-          </Grid>
-          {/* Cards*/}
+          <Grid item xs={false} md={2} />
+
+          {/* Cards */}
           <Grid item xs={12} md={9}>
             <Container
               sx={{
@@ -56,7 +44,6 @@ const Index = () => {
                 <Grid item xs={12} md={6}>
                   <QualityCard />
                 </Grid>
-
                 <Grid item xs={12} md={6}>
                   <SatisfationCard />
                 </Grid>

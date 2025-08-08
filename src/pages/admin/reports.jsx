@@ -633,7 +633,7 @@ const Reports = () => {
  return (
   <Box className="App">
     <Box id="body">
-      {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
+      {userType === "1" ? <HeaderLT1 /> : <HeaderLT2 />}
 
       <Box m={0} p={0}>
         <Grid container spacing={0} sx={{ m: 0 }}>
