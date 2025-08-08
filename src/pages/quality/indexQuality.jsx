@@ -1,11 +1,7 @@
 import "../../assets/css/index.css";
 import SidebarLT2 from "../../components/aside/sidebarLT2";
 import HeaderLT2 from "../../components/header/headerLT2";
-import {
-  Container,
-  Grid,
-  Box,
-} from "@mui/material";
+import { Container, Grid, Box } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useEffect, useContext } from "react";
 import { UserContext } from "../../context/UserContext";
@@ -24,19 +20,39 @@ const Index = () => {
   return (
     <Box>
       <HeaderLT2 />
-      {/* id="body" */}
-      <Box>
-        <Box sx={{ marginTop: 12 }}>
-          <Grid size={12}>
-            {/* marginLeft: 27 */}
+      <Box sx={{ marginTop: 12 }}>
+        <Grid
+          container
+          direction="row"
+          alignItems="center"
+          spacing={2}
+          wrap="nowrap"
+        >
+          <Grid
+            item
+            xs={12}
+            md={2}
+            sx={{
+              alignSelf: "center",
+              display: "flex",
+              justifyContent: "flex-start",
+            }}
+          >
+            <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
+              <SidebarLT2 />
+            </Box>
+          </Grid>
+          {/* Cards*/}
+          <Grid item xs={12} md={9}>
             <Container
               sx={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                width: "100%",
               }}
             >
-              <Grid container spacing={1}>
+              <Grid container spacing={1} alignItems="center">
                 <Grid item xs={12} md={6}>
                   <QualityCard />
                 </Grid>
@@ -47,8 +63,7 @@ const Index = () => {
               </Grid>
             </Container>
           </Grid>
-          {/* <SidebarLT2 /> */}
-        </Box>
+        </Grid>
       </Box>
     </Box>
   );

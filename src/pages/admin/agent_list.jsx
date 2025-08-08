@@ -3,7 +3,6 @@ import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAgent";
 import HeaderLT1 from "../../components/header/headerLT1";
 import HeaderLT2 from "../../components/header/headerLT2";
-import SidebarLT1 from "../../components/aside/sidebarLT1";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
@@ -21,8 +20,6 @@ import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Form
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
 import { Box, Typography } from "@mui/material";
-
-
 
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
@@ -60,7 +57,7 @@ const AdminList = () => {
   const [feedbackError, setFeedbackError] = useState(false);
   const [erroresPorPregunta, setErroresPorPregunta] = useState({});
 
-  const [conteoDeAgentes, setConteoDeAgentes] = useState("0"); 
+  const [conteoDeAgentes, setConteoDeAgentes] = useState("0");
   useEffect(() => {
     console.log("Nuevo conteo desde useEffect:", conteoDeAgentes);
   }, [conteoDeAgentes]);
@@ -128,15 +125,13 @@ const AdminList = () => {
       const data = await getAdmins(clients);
 
       if (!data && data.length === 0) {
-        setConteoDeAgentes(0)
-        
-      }else{
+        setConteoDeAgentes(0);
+      } else {
         const conteo = data.length;
         setConteoDeAgentes(conteo);
         console.log("Administradores cargados:", conteoDeAgentes);
       }
-      
-      
+
       setAdmins(data);
     } catch (error) {
       console.error("Error al cargar los administradores:", error);
@@ -148,7 +143,6 @@ const AdminList = () => {
       setLoading(false);
     }
   };
-  
 
   // Función para obtener la lista de clientes registrados
   const loadClients = async () => {
@@ -712,7 +706,7 @@ const AdminList = () => {
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {loading && <p>Cargando...</p>}
-        {userInfo?.type === 4 ? <HeaderLT2 /> : <HeaderLT1 />}
+        {userInfo?.type === 4 || 3 ? <HeaderLT2 /> : <HeaderLT1 />}
         <Box
           sx={{
             lignItems: "stretch",
