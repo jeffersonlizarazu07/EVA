@@ -56,6 +56,7 @@ const HeaderLT1 = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     checkinfo();
@@ -365,43 +366,49 @@ const HeaderLT1 = () => {
   }));
 
   return (
-    <Box sx={{ position: 'sticky', top: 0}}>
+    <Box sx={{ position: 'sticky', top: 0, zIndex: 1100, width: '100%', display: 'flex', justifyContent: 'center' }}>
       <Paper
         elevation={0}
         sx={{
-          position: "fixed",           // ✅ fijo en pantalla
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,                // ✅ z-index más bajo para evitar sobreposición
           backgroundColor: "transparent",
-          padding: "8px",
+          px: { xs: 1, md: 2 },
+          py: { xs: 1, md: 1 },
+          width: '100%',
+          mx: 0,
         }}
       >
         <AppBar
           position="static"
           elevation={0}
           sx={{
-            mt: 0, // ✅ sin margen superior
-            mx: 2,
-            mb: 3,
+            mt: 0,
+            mx: 0,
+            mb: 0,
             borderRadius: "25px",
             border: "2px solid rgb(199, 14, 143)",
             backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "#fff",
             position: "relative",
-            zIndex: 1001,
           }}
         >
-          <Toolbar sx={{ justifyContent: 'space-between', px: 2 }}>
+          <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1.5, md: 2 } }}>
             {/* Lado izquierdo - Logo y menú móvil */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>             
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>             
+              {/* Botón menú (solo móvil) */}
+              <IconButton
+                onClick={() => setIsDrawerOpen(true)}
+                sx={{ display: { xs: 'inline-flex', md: 'none' }, mr: 0.5 }}
+                aria-label="abrir menú"
+                disableRipple
+              >
+                <MenuIcon sx={{ color: theme === 'dark' ? '#fff' : '#000' }} />
+              </IconButton>
               {/* Logo */}
               <Box
                 component="img"
                 src={Logo}
                 alt="Logo"
                 sx={{
-                  width: '63px',
+                  width: { xs: '48px', sm: '56px', md: '63px' },
                   cursor: 'pointer',
                 }}
                 onClick={() => nav("/admin")}
@@ -410,16 +417,16 @@ const HeaderLT1 = () => {
 
             {/* Navegación  */}
             <Box sx={{ 
-              display: { xs : 'flex', lg: 'flex' }, 
+              display: { xs : 'none', md: 'flex' }, 
               alignItems: 'center',
               flexGrow: 1,
               justifyContent: 'center',
-              gap: 15
+              gap: { md: 6, lg: 10 }
             }}>
               <MUIButton
                 variant="text"
                 sx={{
-                  fontSize: '95%',
+                  fontSize: { md: '90%', lg: '95%' },
                   color: getButtonColor("/admin"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
@@ -428,7 +435,7 @@ const HeaderLT1 = () => {
                 }}
                 onClick={() => nav("/admin")}
                 disableRipple
-                startIcon= {<HomeIcon sx={{ fontSize: '120% !important'  }} />}
+                startIcon= {<HomeIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
               >
                 {t("header.Home")}
               </MUIButton>
@@ -438,7 +445,7 @@ const HeaderLT1 = () => {
               <MUIButton
                 variant="text"
                 sx={{
-                  fontSize: '95%',
+                  fontSize: { md: '90%', lg: '95%' },
                   color: getButtonColor("/admin_list"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
@@ -447,7 +454,7 @@ const HeaderLT1 = () => {
                 }}
                 onClick={() => nav("/admin_list")}
                 disableRipple
-                startIcon={<PersonIcon sx={{ fontSize: '120% !important'  }} />}
+                startIcon={<PersonIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
               >
                 {t("header.Users")}
               </MUIButton>
@@ -457,7 +464,7 @@ const HeaderLT1 = () => {
               <MUIButton
                 variant="text"
                 sx={{
-                  fontSize: '95%',
+                  fontSize: { md: '90%', lg: '95%' },
                   color: getButtonColor("/client_list"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
@@ -466,14 +473,14 @@ const HeaderLT1 = () => {
                 }}
                 onClick={() => nav("/client_list")}
                 disableRipple
-                startIcon={<AssignmentIndIcon sx={{ fontSize: '120% !important'  }} />}
+                startIcon={<AssignmentIndIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
               >
                 {t("header.Clients")}
               </MUIButton>
             </Box>
 
             {/* Lado derecho - Controles */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
               {/* Selector de idioma */}
               <Tooltip title="Cambiar idioma" placement="top">
                 <IconButton
@@ -489,7 +496,7 @@ const HeaderLT1 = () => {
                   }}
                 >
                   <LanguageIcon sx={{
-                    fontSize: '2rem',
+                    fontSize: { xs: '1.6rem', md: '2rem' },
                     fill: 'url(#gradient-text)',
                   }} />
                   <svg width="0" height="0">
@@ -599,6 +606,47 @@ const HeaderLT1 = () => {
             </Box>
           </Toolbar>
         </AppBar>
+
+        {/* Drawer de navegación para móviles */}
+        <Drawer
+          anchor="left"
+          open={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          PaperProps={{ sx: { width: 260 } }}
+        >
+          <Box role="presentation" sx={{ mt: 1 }}>
+            <List>
+              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin'); }}>
+                <ListItemIcon>
+                  <HomeIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('header.Home')} />
+              </ListItem>
+              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin_list'); }}>
+                <ListItemIcon>
+                  <PersonIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('header.Users')} />
+              </ListItem>
+              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/client_list'); }}>
+                <ListItemIcon>
+                  <AssignmentIndIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('header.Clients')} />
+              </ListItem>
+            </List>
+            <Divider />
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('headerlt.Settings') || 'Ajustes'} />
+              </ListItem>
+            </List>
+          </Box>
+        </Drawer>
       </Paper>
     </Box>
   );
