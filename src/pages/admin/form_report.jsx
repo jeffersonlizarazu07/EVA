@@ -474,7 +474,7 @@ const FormReport= () => {
                           </Button>
 
                           {/* clientes*/}
-                          <FormControl required sx={{ minWidth: "20%" }} className="readOnlyField">
+                          <FormControl required sx={{ minWidth: "20%", maxWidth: "20%" }} className="readOnlyField">
                             <InputLabel id="demo-simple-select-label">{t("survey.selecciona_cliente")}</InputLabel>
                             <Select
                               labelId="demo-simple-select-label"
@@ -501,7 +501,7 @@ const FormReport= () => {
                           </FormControl>
 
                             {/* vista formularios */}
-                            <FormControl required sx={{ minWidth: "20%" }} className="readOnlyField">
+                            <FormControl required sx={{ minWidth: "20%", maxWidth: "20%" }} className="readOnlyField">
                               <InputLabel>{t("survey.form")}</InputLabel>
                               <Select
                                 labelId="survey-select-label"
