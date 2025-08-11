@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import HeaderLT1 from "../../components/header/headerLT1";
-import axios from "axios";
+import { apiClient } from "../../utils/axiosConfig";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useParams } from "react-router-dom";
@@ -70,7 +70,7 @@ import { formatDateTimeShort } from "../../utils/dateUtils";
 
 export default function SurveyBlocks({}) {
   const { id_form } = useParams();
-  const { userId } = useContext(UserContext);
+  const { userId, languageUser } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const [data, setData] = useState([]);
   
@@ -127,7 +127,6 @@ export default function SurveyBlocks({}) {
   });
 
   const { t, i18n } = useTranslation();
-  const { accessToken, languageUser, user } = useContext(UserContext);
 
   /* Estado de listas de preguntas del botón + Pregunta */
   const [questionsList, setQuestionsList] = useState([
@@ -181,8 +180,8 @@ export default function SurveyBlocks({}) {
   const fetchFormData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/form/${id_form}`,
+      const response = await apiClient.get(
+        `/form/${id_form}`,
         config
       );
       setFormData(response.data?.data || response.data);
@@ -210,9 +209,6 @@ export default function SurveyBlocks({}) {
   }, [data]);
 
   const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
     withCredentials: true,
   };
 
@@ -524,7 +520,7 @@ export default function SurveyBlocks({}) {
         };
 
         try {
-          const response = await axios.post("http://localhost:3000/api/blocks", parametros, config);
+          const response = await apiClient.post("/blocks", parametros, config);
 
           if (response.status === 201 || response.status === 200) {
             const newBlock = response.data;
@@ -577,7 +573,7 @@ export default function SurveyBlocks({}) {
         };
 
         try {
-          const response = await axios.put(`http://localhost:3000/api/blocks/${idToEdit}`, parametros, config);
+          const response = await apiClient.put(`/blocks/${idToEdit}`, parametros, config);
 
           if (response.status === 200) {
             // Actualizar preguntas si existen
@@ -893,7 +889,7 @@ export default function SurveyBlocks({}) {
 
   const obtenerPorcentajeTotalBloques = async (formId) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/blocks/form/${formId}`);
+      const response = await apiClient.get(`/blocks/form/${formId}`);
       const bloques = response.data?.data || [];
 
       const total = bloques.reduce((suma, bloque) => {
@@ -943,8 +939,8 @@ export default function SurveyBlocks({}) {
   // Obtener preguntas por ID de bloque (si no existe)
   const getQuestionsByBlockId = async (blockId) => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/questions/block/${blockId}`,
+      const response = await apiClient.get(
+        `/questions/block/${blockId}`,
         config
       );
       return response.data?.data || response.data || [];

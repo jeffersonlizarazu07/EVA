@@ -63,5 +63,5 @@ export const setupAxiosInterceptors = (logoutCallback = null) => {
   );
 };
 
-// Configuración inicial (mantener por compatibilidad con código existente)
+// Configuración inicial
 setupAxiosInterceptors();

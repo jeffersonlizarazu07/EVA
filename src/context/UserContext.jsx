@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useAuth } from "./AuthContext";
 import { apiClient } from "../utils/axiosConfig";
+import { tokenService } from "../services/tokenService";
 
 const UserContext = createContext();
 
@@ -11,6 +12,7 @@ const UserProvider = ({ children }) => {
     () => localStorage.getItem("languageUser") || "es"
   );
   const [userInfo, setUserInfo] = useState(null);
+  const [clients, setClients] = useState([]); // Array de IDs de clientes permitidos
 
   // Derivar valores del AuthContext
   const userId = user?.backendData?.cdt || user?.backendData?.user?.id_user || "";
@@ -21,6 +23,7 @@ const UserProvider = ({ children }) => {
     const fetchUserInfo = async () => {
       if (!userId || !isAuthenticated) {
         setUserInfo(null);
+        setClients([]);
         return;
       }
 
@@ -34,6 +37,18 @@ const UserProvider = ({ children }) => {
         console.error("Error al cargar el usuario logueado", err);
         setUserInfo(null);
         // El interceptor ya maneja el 401, no necesitamos hacer nada más aquí
+      }
+
+      // Cargar clientes asignados al usuario (como array de IDs)
+      try {
+        const resClients = await apiClient.get(`/users/${userId}/clients`);
+        const ids = Array.isArray(resClients.data?.data)
+          ? resClients.data.data.map((c) => c.idClient ?? c.id ?? c)
+          : [];
+        setClients(ids);
+      } catch (err) {
+        console.warn("No fue posible cargar los clientes del usuario", err);
+        setClients([]);
       }
     };
 
@@ -57,6 +72,10 @@ const UserProvider = ({ children }) => {
         setLanguageUser,
         userInfo,
         setUserInfo,
+        // Compatibilidad con código existente
+        accessToken: tokenService.getToken(),
+        clients,
+        setClients,
       }}
     >
       {children}

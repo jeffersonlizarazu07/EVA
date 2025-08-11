@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 
 export const smallAlertDelete = Swal.mixin({
   toast: true,
+  // zIndex removido: SweetAlert2 no reconoce este parámetro en mixin; use css si es necesario
   didOpen: (toast) => {
     toast.onmouseenter = Swal.stopTimer;
     toast.onmouseleave = Swal.resumeTimer;
@@ -31,7 +32,6 @@ export const smallAlertDeactivateConfirm = Swal.mixin({
   timer: 4000,
   timerProgressBar: true,
   icon: "success", // Icono para indicar éxito
-  zIndex: 10000,
   didOpen: (toast) => {
     toast.onmouseenter = Swal.stopTimer;
     toast.onmouseleave = Swal.resumeTimer;
@@ -47,6 +47,7 @@ export const smallAlertDeactivateConfirm = Swal.mixin({
 
 export const loadingAlert = Swal.mixin({
   toast: true,
+  // zIndex removido
   didOpen: (toast) => {
     toast.onmouseenter = Swal.stopTimer;
     toast.onmouseleave = Swal.resumeTimer;
@@ -71,6 +72,7 @@ export const Toast = Swal.mixin({
   showConfirmButton: false,
   timer: 4000,
   timerProgressBar: true,
+  // zIndex removido
   didOpen: (toast) => {
     toast.onmouseenter = Swal.stopTimer;
     toast.onmouseleave = Swal.resumeTimer;
@@ -83,6 +85,7 @@ export const Toast2 = Swal.mixin({
   showConfirmButton: false,
   timer: 4000,
   timerProgressBar: true,
+  // zIndex removido
   didOpen: (toast) => {
     toast.onmouseleave = Swal.resumeTimer;
   },

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, HashRouter } from "react-router-dom";
 import "./App.css";
+import "./assets/css/alerts.css"; // Asegura z-index de SweetAlert en toda la app
 import { AuthProvider } from './context/AuthContext'; // <- AGREGAR ESTO
 /* catch data */
 import { UserProvider } from "./context/UserContext";

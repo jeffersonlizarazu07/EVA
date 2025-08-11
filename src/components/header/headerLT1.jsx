@@ -1,5 +1,5 @@
 import Logo from "../../assets/img/logo EVA.webp";
-import axios from "axios";
+import { apiClient } from "../../utils/axiosConfig";
 import { useContext, useState, useEffect } from "react";
 import { toggleBlackMode } from "../../assets/js/toggleBlackMode";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -157,30 +157,25 @@ const HeaderLT1 = () => {
     }
   };
 
-  const config = {
-    withCredentials: true,
-  };
+  const config = { withCredentials: true };
 
   const themeContext = useContext(ThemeContext);
   const { theme, toggleTheme } = themeContext || { theme: 'light', toggleTheme: () => {} };
 
   const checkinfo = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/users/${userId}`,
-        config
-      );
+      const response = await apiClient.get(`/users/${userId}`, config);
       setUserInfo(response.data.data);
       setLanguageUser(response.data.data.language);
     } catch (error) {
       console.error(error);
     }
   };
-  const url = "http://localhost:3000/api/users/"; 
+  const url = "/users/"; 
 
   const getInfo = async () => {
     try {
-      const response = await axios.get(`${url}${userId}`, config);
+      const response = await apiClient.get(`${url}${userId}`, config);
       setUserInfo(response.data.data);
       console.log(hours, ":", minutes, ":", seconds);
       firstName.handleChange(userInfo.firstname || "");
@@ -232,7 +227,7 @@ const HeaderLT1 = () => {
         parameters["password"] = password.input;
       }
   
-      const response = await axios.put(`${url}${userId}`, parameters, config);
+      const response = await apiClient.put(`${url}${userId}`, parameters, config);
   
       if (response.data.status) {
         Toast.fire({
@@ -349,7 +344,7 @@ const HeaderLT1 = () => {
     setLanguageUser(lang);
     const parameters = { language: lang };
     try {
-      await axios.patch(`http://localhost:3000/api/language/${userId}`, parameters, config);
+      await apiClient.patch(`/language/${userId}`, parameters, config);
     } catch (error) {
       console.error("Error al actualizar el idioma:", error);
     }
@@ -366,30 +361,31 @@ const HeaderLT1 = () => {
   }));
 
   return (
-    <Box sx={{ position: 'sticky', top: 0, zIndex: 1100, width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <Paper
-        elevation={0}
-        sx={{
-          backgroundColor: "transparent",
-          px: { xs: 1, md: 2 },
-          py: { xs: 1, md: 1 },
-          width: '100%',
-          mx: 0,
-        }}
-      >
-        <AppBar
-          position="static"
+    <>
+      <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1100, width: '100%', display: 'flex', justifyContent: 'center', backgroundColor: theme === 'dark' ? 'rgb(33, 37, 41)' : '#fff' }}>
+        <Paper
           elevation={0}
           sx={{
-            mt: 0,
+            backgroundColor: "transparent",
+            px: { xs: 1, md: 2 },
+            py: { xs: 1, md: 1 },
+            width: '100%',
             mx: 0,
-            mb: 0,
-            borderRadius: "25px",
-            border: "2px solid rgb(199, 14, 143)",
-            backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "#fff",
-            position: "relative",
           }}
         >
+          <AppBar
+            position="static"
+            elevation={0}
+            sx={{
+              mt: 0,
+              mx: 0,
+              mb: 0,
+              borderRadius: "25px",
+              border: "2px solid rgb(199, 14, 143)",
+              backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "#fff",
+              position: "relative",
+            }}
+          >
           <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1.5, md: 2 } }}>
             {/* Lado izquierdo - Logo y menú móvil */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>             
@@ -605,16 +601,16 @@ const HeaderLT1 = () => {
               </Menu>
             </Box>
           </Toolbar>
-        </AppBar>
+          </AppBar>
 
-        {/* Drawer de navegación para móviles */}
-        <Drawer
+          {/* Drawer de navegación para móviles */}
+          <Drawer
           anchor="left"
           open={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
           ModalProps={{ keepMounted: true }}
           PaperProps={{ sx: { width: 260 } }}
-        >
+          >
           <Box role="presentation" sx={{ mt: 1 }}>
             <List>
               <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin'); }}>
@@ -646,9 +642,12 @@ const HeaderLT1 = () => {
               </ListItem>
             </List>
           </Box>
-        </Drawer>
-      </Paper>
-    </Box>
+          </Drawer>
+        </Paper>
+      </Box>
+      {/* Espaciador para evitar que el contenido quede debajo del header fijo */}
+      <Box sx={{ height: { xs: 80, md: 96 } }} />
+    </>
   );
 };
 

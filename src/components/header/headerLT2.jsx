@@ -335,26 +335,27 @@ const HeaderLT1 = () => {
   }));
 
   return (
-    <Box sx={{ position: "sticky", top: 0 }}>
-      <Paper
-        elevation={2}
-        sx={{
-          margin: 2,
-          marginBottom: 3,
-          borderRadius: "25px",
-          border: "2px solid rgb(199, 14, 143)",
-          backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "white",
-        }}
-      >
-        <AppBar
-          position="static"
-          elevation={0}
+    <>
+      <Box sx={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1100, width: '100%', backgroundColor: theme === 'dark' ? 'rgb(33, 37, 41)' : '#fff' }}>
+        <Paper
+          elevation={2}
           sx={{
-            backgroundColor: "transparent",
+            margin: 2,
+            marginBottom: 3,
             borderRadius: "25px",
-            color: theme === "dark" ? "#fff" : "#000",
+            border: "2px solid rgb(199, 14, 143)",
+            backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "white",
           }}
         >
+          <AppBar
+            position="static"
+            elevation={0}
+            sx={{
+              backgroundColor: "transparent",
+              borderRadius: "25px",
+              color: theme === "dark" ? "#fff" : "#000",
+            }}
+          >
           <Toolbar sx={{ justifyContent: "space-between", px: 2 }}>
             {/* Lado izquierdo - Logo y menú móvil */}
             <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -514,9 +515,12 @@ const HeaderLT1 = () => {
               </Menu>
             </Box>
           </Toolbar>
-        </AppBar>
-      </Paper>
-    </Box>
+          </AppBar>
+        </Paper>
+      </Box>
+      {/* Espaciador para evitar que el contenido quede debajo del header fijo */}
+      <Box sx={{ height: 96 }} />
+    </>
   );
 };
 
