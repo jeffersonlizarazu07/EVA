@@ -1,21 +1,14 @@
 import "../../assets/css/index.css";
-import SidebarLT2 from "../../components/aside/sidebarLT2";
 import HeaderLT2 from "../../components/header/headerLT2";
 import { Container, Grid, Box } from "@mui/material";
-import { useTranslation } from "react-i18next";
-import { useEffect, useContext } from "react";
-import { UserContext } from "../../context/UserContext";
 import {
   SatisfationCard,
   QualityCard,
 } from "../../components/cards/DashboardCards";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 const Index = () => {
-  const { t, i18n } = useTranslation();
-  const { languageUser } = useContext(UserContext);
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, []);
+  const { t } = useTranslations();
 
   return (
     <Box>

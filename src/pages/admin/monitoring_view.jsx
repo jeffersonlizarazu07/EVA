@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../../components/hooks/useTranslations"; 
 import dayjs from "dayjs";
 import HeaderLT1 from "../../components/header/headerLT1";
 import TableMonitoringView from "../../components/Tables/tableMonitoringView";
@@ -10,6 +9,7 @@ import { Box } from "@mui/material";
 
 const AgentMonitoringView = () => {
   // Estados
+  const {t} = useTranslations();
   const { agentId } = useParams();
   const [getMonitoring, setGetMonitoring] = useState([]); // Trae los minitoreos del agente
   const [filterMonitoring, setFilterMonitoring] = useState([]); // Trae los monitores del agente filtrados por fecha
@@ -62,12 +62,6 @@ const AgentMonitoringView = () => {
         return t("userTable.Viwer");
     }
   };
-  const { languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
 
   const fetchMonitoring = async () => {
     try {

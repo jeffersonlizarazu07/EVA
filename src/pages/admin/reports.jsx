@@ -44,9 +44,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 const Reports = () => {
-  const {t} = useTranslation();
+  const {t} = useTranslations();
   const nav = useNavigate();
   const { accessToken, userType, clients } = useContext(UserContext);
   const [allResponses, setAllResponses] = useState([]); // Nueva estructura para contener todas las respuestas en orden

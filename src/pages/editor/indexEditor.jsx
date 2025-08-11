@@ -2,15 +2,15 @@ import "../../assets/css/index.css";
 import HeaderLT2 from "../../components/header/headerLT2";
 import { UserContext } from "../../context/UserContext";
 import { useEffect, useContext } from "react";
-import { useTranslation } from "react-i18next";
 import { Container, Grid, Box } from "@mui/material";
 import {
   SatisfationCard,
   QualityCard,
 } from "../../components/cards/DashboardCards";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 const IndexEditor = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   const { languageUser } = useContext(UserContext);
   useEffect(() => {
     i18n.changeLanguage(languageUser);
