@@ -1,7 +1,6 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import {
@@ -42,8 +41,7 @@ const TableMonitoringView = ({
 }) => {
   const nav = useNavigate();
   // Traducción
-  const { languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   // Paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
@@ -51,10 +49,6 @@ const TableMonitoringView = ({
   //Modal
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
 
   useEffect(() => {
     if (resetPageSignal) {

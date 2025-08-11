@@ -1,7 +1,7 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations";
 import {
   Table,
   TableBody,
@@ -31,12 +31,8 @@ const TableAdmin = ({
   modalId2,
   userId,
 }) => {
-  const { userInfo, languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
+  const { userInfo } = useContext(UserContext);
+  const { t } = useTranslations();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);

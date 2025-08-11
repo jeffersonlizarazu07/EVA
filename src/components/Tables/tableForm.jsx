@@ -12,7 +12,6 @@ import {
   Grid,
   TableHead,
   TableRow,
-  Select,
   MenuItem as SelectItem,
   Menu,
 } from "@mui/material";
@@ -28,9 +27,8 @@ import {
 } from "@mui/icons-material";
 import { MenuItem } from "@mui/material";
 
-import { useState, useContext, useEffect } from "react";
-import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect } from "react";
+import { useTranslations } from "../hooks/useTranslations";
 import { useNavigate } from "react-router-dom";
 import TablePagination from "@mui/material/TablePagination";
 
@@ -45,12 +43,7 @@ const TableForms = ({
   resetPageSignal
 }) => {
   const nav = useNavigate();
-  const { languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]);
+  const { t } = useTranslations();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [menuAnchor, setMenuAnchor] = useState({});

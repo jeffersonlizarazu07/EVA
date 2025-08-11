@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../../assets/css/tabla.css";
+import { useTranslations } from "../hooks/useTranslations";
 
 const TableUsers = ({
   header,
@@ -12,6 +13,7 @@ const TableUsers = ({
   modalId,
   modalId2,
 }) => {
+  const {t} = useTranslations;
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(25);

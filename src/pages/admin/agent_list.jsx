@@ -6,7 +6,7 @@ import HeaderLT2 from "../../components/header/headerLT2";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../../components/hooks/useTranslations"; 
 import {
   getAdmins,
   getClients,
@@ -35,8 +35,8 @@ const AdminList = () => {
   const [selectedClientId, setSelectedClientId] = useState(""); // Estado para el cliente seleccionado
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
-  const { t, i18n } = useTranslation(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, languageUser, clients, userInfo } =
+  const { t } = useTranslations(); // Hook para traducciones y cambio de idioma dinámico
+  const { accessToken, clients, userInfo } =
     useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
@@ -68,10 +68,6 @@ const AdminList = () => {
     loadAdmins(); // Llamo a la función para obtener los administradores
     loadClients(); // Llamo a la función para obtener los clientes
   }, []); // Solo al montar
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]); // Cambio del idioma según lo que tenga el usuario (Solo cuando cambie el idioma)
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
   const config = {

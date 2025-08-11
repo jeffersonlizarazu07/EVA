@@ -1,4 +1,3 @@
-import React, { useEffect, useContext } from "react";
 import {
   Modal,
   Box,
@@ -62,10 +61,6 @@ const ModalAdmin = ({
   setFeedback,
 }) => {
   const { t } = useTranslations();
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
 
   return (
     <Modal open={open} onClose={formClientReset} aria-labelledby="modal-admin-title">
