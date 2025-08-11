@@ -49,6 +49,7 @@ const FormList = () => {
     "title",
     "description",
     "client_name",
+    "monitorings_number",
     "creation_date",
     "created_by_name",
     "updated_date",
@@ -56,7 +57,7 @@ const FormList = () => {
     "state",
   ];
 
-  const { userType, languageUser } = useContext(UserContext);
+  const { userType } = useContext(UserContext);
   const { t } = useTranslations();
   const navigate = useNavigate();
   const accessToken = Cookies.get("accessToken");
@@ -77,7 +78,7 @@ const FormList = () => {
   useEffect(() => {
     getForms();
     getClients();
-  });
+  }, []);
 
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -91,7 +92,6 @@ const FormList = () => {
         "http://localhost:3000/api/forms",
         config
       );
-      console.log("Response data:", response.data.data.length);
       setForms(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error al obtener formularios:", error);
