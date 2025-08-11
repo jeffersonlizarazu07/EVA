@@ -26,15 +26,14 @@ import {
   PersonAdd as PersonAddIcon,
   Groups as GroupsIcon
 } from "@mui/icons-material";
-import { useTranslation } from "react-i18next";
 import { useTranslateBackendMessage } from "../helper/helper";
-import { use } from "react";
+import { useTranslations } from "../hooks/useTranslations";
 
 const ModalEnvioMasivo = ({ survey, onClose }) => {
   const translateBackendMessage = useTranslateBackendMessage();
   const translateSuccess = useTranslateBackendMessage();
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
 
   const [activeTab, setActiveTab] = useState(0);
   const [formData, setFormData] = useState({

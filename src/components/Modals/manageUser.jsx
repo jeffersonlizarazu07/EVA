@@ -2,10 +2,11 @@ import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "../../context/UserContext";
 import "../../assets/css/ManageUser.css";
+import { useTranslations } from "../hooks/useTranslations";
 
 const ManageUser = ({ closeModal }) => {
-  const { accessToken, userId, languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { accessToken, userId } = useContext(UserContext);
+  const { t } = useTranslations();
 
   const [userInfo, setUserInfo] = useState({
     id: "",
@@ -19,7 +20,6 @@ const ManageUser = ({ closeModal }) => {
 
   useEffect(() => {
     getInfo();
-    i18n.changeLanguage(languageUser);
   }, []);
 
   const config = {};

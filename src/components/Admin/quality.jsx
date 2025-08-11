@@ -2,7 +2,7 @@ import { useEffect, useContext, useState } from "react";
 import "../../assets/css/calidad.css";
 import HeaderLT1 from "../header/headerLT1";
 import HeaderLT2 from "../header/headerLT2";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations"; 
 import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -22,8 +22,8 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 const Quality = () => {
   const navigate = useNavigate();
-  const { userType, languageUser, clients } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { userType, clients } = useContext(UserContext);
+  const { t } = useTranslations();
   const [conteoDeAgentes, setConteoDeAgentes] = useState("0");
   const [conteoDeFormulario, setConteoDeFormulario] = useState("0");
 
@@ -49,10 +49,6 @@ const Quality = () => {
       getForms();
     }
   }, [plantillaMonitor]);
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]);
 
   useEffect(() => {
     const calcularTopMonitor = async () => {
