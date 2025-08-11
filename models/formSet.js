@@ -8,6 +8,8 @@ const FormSet = {
         .join("clients", "form_set.idClient", "=", "clients.id") // Relacionamos con la tabla de clientes
         .join("users as creator", "form_set.created_by", "=", "creator.id") // Relacionamos con el creador
         .leftJoin("users as updater", "form_set.updated_by", "=", "updater.id") // Relacionamos con el editor
+        .leftJoin("monitoring", "monitoring.id_form", "=", "form_set.id")
+        .groupBy("form_set.id")
         .select(
           "form_set.id", // Usamos 'id' en lugar de 'form_id'
           "form_set.idClient", // Usamos 'idClient' en lugar de 'client_id'
@@ -34,11 +36,15 @@ const FormSet = {
           // Concatenamos el primer nombre y apellido del editor si existe
           db.raw(
             `IFNULL(CONCAT(updater.firstname, " ", updater.lastname), "No actualizada") as updated_by_name`
-          )
+          ),
+          db.raw(`COUNT(monitoring.id) as monitorings_number`)
         );
     } catch (error) {
-      console.error('Error al crear la respuesta:', error);
-      throw new Error('No se pudo crear la respuesta debido a un error en el servidor.' + error.message);
+      console.error("Error al crear la respuesta:", error);
+      throw new Error(
+        "No se pudo crear la respuesta debido a un error en el servidor." +
+          error.message
+      );
     }
   },
 
@@ -120,19 +126,25 @@ const FormSet = {
           if (!form) return null;
           return db("form_set").where({ id }).update({ state: !form.state });
         });
-    }catch (error) {
+    } catch (error) {
       console.error("Error al cambiar el estado del formulario:", error);
-      throw new Error("No se pudo cambiar el estado del formulario debido a un error en el servidor." + error.message);
+      throw new Error(
+        "No se pudo cambiar el estado del formulario debido a un error en el servidor." +
+          error.message
+      );
     }
   },
 
   delete: async (id) => {
     try {
-      const res = await db("form_set").where({ id }).del()
+      const res = await db("form_set").where({ id }).del();
       return res;
-    }catch (error) {
+    } catch (error) {
       console.error("Error al eliminar el formulario:", error);
-      throw new Error("No se pudo eliminar el formulario debido a un error en el servidor." + error.message);
+      throw new Error(
+        "No se pudo eliminar el formulario debido a un error en el servidor." +
+          error.message
+      );
     }
   },
 };
