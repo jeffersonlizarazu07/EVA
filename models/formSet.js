@@ -37,7 +37,11 @@ const FormSet = {
           db.raw(
             `IFNULL(CONCAT(updater.firstname, " ", updater.lastname), "No actualizada") as updated_by_name`
           ),
-          db.raw(`COUNT(monitoring.id) as monitorings_number`)
+          db.raw(`COUNT(monitoring.id) as monitorings_number`), // Contar el número de monitorizaciones de cada formulario
+          db.raw(
+            // Trae el promedio del score respecto al total de monitoreos con los que cuente el formulario
+            `IFNULL(CAST(AVG(monitoring.score) AS DECIMAL(10,2)), 0.00) as average_score` 
+          )
         );
     } catch (error) {
       console.error("Error al crear la respuesta:", error);
