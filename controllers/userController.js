@@ -102,6 +102,7 @@ const createUser = async (req, res) => {
 
 // Controlador para actualizar los datos de un usuario
 const updateUser = async (req, res) => {
+    console.log('Actualizando usuario...', req.params.id, req.body);
     const validacionUsurio = UserDTO.validateCreateUser(req.body);
     
     if(!validacionUsurio.status){
@@ -216,6 +217,33 @@ const getClientByUserId = async (req, res) => {
         res.status(500).json({ message: 'Error en el servidor', error: error.message });
     }
 };
+
+const updateLanguage = async (req, res) => {
+    const validarId = UserDTO.validarId(req.params.idUser);
+    if(!validarId.status){
+        return res.status(400).json(validarId);
+    }
+
+    const validarLanguage = UserDTO.validateLanguage(req.body);
+    if(!validarLanguage.status){
+        return res.status(400).json(validarLanguage);
+    }
+    const idUser  = req.params.idUser; // Tomo el ID desde los parámetros de la ruta
+    const { language } = req.body; // Obtengo el nuevo idioma del cuerpo de la solicitud
+    
+    try {
+        const updated = await User.updateLanguage(idUser, language);
+        if (updated === 0) {
+            return res.status(404).json({ error: 'No se pudo actualizar el idioma' });
+        }
+
+        res.status(200).json({ message: 'Idioma actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar el idioma:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+    
+}
 // Exporto todos los controladores para poder usarlos en las rutas
 module.exports = {
     getUsers,
@@ -224,5 +252,6 @@ module.exports = {
     updateUser,
     toggleUserState,
     deleteUser,
-    getClientByUserId
+    getClientByUserId,
+    updateLanguage
 };

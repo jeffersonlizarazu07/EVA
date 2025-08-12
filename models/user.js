@@ -78,6 +78,16 @@ const User = {
             .where({ id })
             .update({ last_visit_date: new Date() }); // Fecha actual
     },
+
+    updateLanguage: async (id, language) => {
+        try {
+            const update = await db('users').where({ id }).update({ language });
+            return update;
+        }catch (error) {
+            console.error('Error en el modelo al actualizar language:', error);
+            throw error; // Lo relanzas para que el controlador lo capture
+        }
+    }
 };
 
 module.exports = User;
