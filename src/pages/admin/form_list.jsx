@@ -50,6 +50,7 @@ const FormList = () => {
     "description",
     "client_name",
     "monitorings_number",
+    "average_score",
     "creation_date",
     "created_by_name",
     "updated_date",

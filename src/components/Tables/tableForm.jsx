@@ -40,7 +40,7 @@ const TableForms = ({
   onUpdate,
   onActive,
   onView,
-  resetPageSignal
+  resetPageSignal,
 }) => {
   const nav = useNavigate();
   const { t } = useTranslations();
@@ -185,11 +185,18 @@ const TableForms = ({
           <TableHead>
             <TableRow>
               {filteredHeader.map((item, i) => (
-                <TableCell key={i} align="center" sx={{ fontWeight: "bold", color: "#b62a8b" }}>
+                <TableCell
+                  key={i}
+                  align="center"
+                  sx={{ fontWeight: "bold", color: "#b62a8b" }}
+                >
                   {t(`formTable.${item}`)}
                 </TableCell>
               ))}
-              <TableCell align="center" sx={{ fontWeight: "bold", color: "#b62a8b" }}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", color: "#b62a8b" }}
+              >
                 {t("formTable.Actions")}
               </TableCell>
             </TableRow>
@@ -203,6 +210,8 @@ const TableForms = ({
                       ? form.state === "Activo"
                         ? t("formTable.Active")
                         : t("formTable.Inactive")
+                      : key === "average_score"
+                      ? Number(form[key]).toFixed(2)
                       : form[key]}
                   </TableCell>
                 ))}
@@ -256,7 +265,8 @@ const TableForms = ({
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage={t("userTable.Show")}
           labelDisplayedRows={({ from, to, count }) =>
-            `${from}-${to} ${t("userTable.Registered")} ${count !== -1 ? count : `más de ${to}`
+            `${from}-${to} ${t("userTable.Registered")} ${
+              count !== -1 ? count : `más de ${to}`
             }`
           }
           sx={{
@@ -268,11 +278,11 @@ const TableForms = ({
               border: "2px solid #b62a8b",
               borderRadius: "6px",
               color: "#b62a8b",
-                borderColor: "#b62a8b",
-        fontWeight: "bold",
+              borderColor: "#b62a8b",
+              fontWeight: "bold",
             },
-        ".MuiTablePagination-actions .MuiIconButton-root": {
-          color: "#b62a8b",
+            ".MuiTablePagination-actions .MuiIconButton-root": {
+              color: "#b62a8b",
             },
           }}
         />
