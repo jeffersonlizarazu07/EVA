@@ -1,35 +1,54 @@
 const knex = require("../config/db");
 const AnswersFormModel = require("../models/answersFormModel");
 
-exports.createAnswer = async (req, res) => {
+exports.saveMonitoringAndAnswers = async (req, res) => {
   try {
-    const { question_id, answer_question } = req.body;
+    const {
+      monitoringDate,
+      id_user_monitor,
+      id_user_agent,
+      id_form,
+      score,
+      feedback,
+      answers,
+    } = req.body;
 
-    console.log("🟡 Respuesta recibida en backend:", req.body);
-
-    console.log("Insertando en BD:", {
-      id_question: question_id,
-      answer_question,
-    });
-
-    if (!question_id || !answer_question) {
-      console.log("Faltan campos");
-      return res.status(400).json({ message: "Faltan campos obligatorios" });
+    // Validaciones básicas
+    if (!monitoringDate || !id_user_monitor || !id_user_agent || !id_form) {
+      return res.status(400).json({ message: "Datos obligatorios faltantes" });
     }
 
-    const result = await AnswersFormModel.createAnswer({
-      question_id,
-      answer_question,
+    if (!Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ message: "Se requiere un array de respuestas" });
+    }
+
+    for (const ans of answers) {
+      if (!ans.question_id || !ans.answer_question) {
+        return res.status(400).json({ message: "Campos incompletos en respuestas" });
+      }
+    }
+
+    // Llamar al modelo para insertar monitorización y respuestas
+    const result = await AnswersFormModel.saveMonitoringAndAnswers({
+      monitoringDate,
+      id_user_monitor,
+      id_user_agent,
+      id_form,
+      score,
+      feedback,
+      answers,
     });
 
-    console.log("Respuesta guardada en DB:", result);
-
-    res.status(201).json(result);
+    return res.status(201).json({
+      message: "Monitorización y respuestas guardadas correctamente",
+      data: result,
+    });
   } catch (error) {
-    console.error("Error en createAnswer:", error);
-    res.status(500).json({ message: "Error al guardar la respuesta" });
+    console.error("Error al guardar monitorización y respuestas:", error);
+    return res.status(500).json({ message: "Error interno del servidor" });
   }
 };
+
 exports.getAllAnswers = async (req, res) => {
   try {
     const answers = await AnswersFormModel.getAllAnswers();
@@ -39,6 +58,80 @@ exports.getAllAnswers = async (req, res) => {
     res.status(500).json({ message: "Error al obtener respuestas" });
   }
 };
+
+// Obtener el monitoreo de respuestas
+exports.getMonitoring = async (req, res) => {
+  try{
+    const monitoring = await AnswersFormModel.getMonitoring();
+    res.json(monitoring);
+  }catch (error) {
+    console.error('Error al obtener el monitoreo:', error.message);
+    res.status(500).json({ message: 'Error al obtener el monitoreo' });
+  }
+}
+
+// ...
+
+// obtener clientes y infomacion de forms_set
+
+
+exports.getClientsAndForms = async (req, res)=>{
+  try {
+    const response = await AnswersFormModel.getClientsAndForms();
+    res.json(response);
+  } catch (error) {
+    console.error('Error al obtener clientes y formularios:', error.message);
+    res.status(500).json({ message: 'Error al obtener clientes y formularios' });
+  }
+}
+
+// ...
+
+
+// obtener respuestas multiple 
+
+exports.getResponseMult = async (req, res)=>{
+  try {
+    const response = await AnswersFormModel.getResponseMult()
+    res.json(response)
+  } catch (error) {
+     console.error('Error al obtener respuestas multiple :', error.message);
+    res.status(500).json({ message: 'Error al obtener respuestas multiple ' });
+  }
+}
+
+// ...
+// obtener los reportes filtrados 
+
+exports.getReportFilter= async(req,res)=>{
+  const {fromId, starDate, endDate} = req.params
+  try {
+    const response = await AnswersFormModel.getReportFilter(fromId, starDate, endDate);
+    if(!response){
+      return res.status(404).json({message:'Reporte no encontrada'})
+    }
+    res.json(response)
+  } catch (error) {
+     console.error('Error al obtener el reporte filtrado:', error.message);
+    res.status(500).json({ message: 'Error al obtener el reporte filtrado' });
+  }
+}
+
+// ...
+
+// obtener los reportes de los monitores para agentes
+
+exports.getReportMonitoring = async (req, res)=>{
+  try {
+    const report = await AnswersFormModel.getReportMonitoring();
+    res.json(report)
+  } catch (error) {
+    console.error('Error al obtener el reporte de monitoreos:', error.message);
+    res.status(500).json({ message: 'Error al obtener el reporte de monitoreos' });
+  }
+}
+
+// ...
 
 exports.getAnswerById = async (req, res) => {
   const { id } = req.params;

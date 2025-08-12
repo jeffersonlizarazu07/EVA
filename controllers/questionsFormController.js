@@ -3,8 +3,7 @@ const QuestionFormsDTO = require("../dtos/questionFormsDTO")
 
 const createQuestions = async (req, res) => {
 
-  console.log("Datos de questions en create", req.body)
-
+  // console.log("Datos de questions en create", req.body)
   const validateQuestionsForm = await QuestionFormsDTO.validateQuestionForm(req.body);
   if(!validateQuestionsForm.status){
     return res.status(400).json(validateQuestionsForm);

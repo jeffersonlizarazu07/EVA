@@ -85,7 +85,7 @@ const createUser = async (req, res) => {
             //token_Exp: null,
             registration_date: new Date(),
             last_visit_date: null,
-            updated_at: new Date(),
+            updated_at: null,
             //created_at: new Date()
         });
 
