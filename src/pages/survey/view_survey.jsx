@@ -62,7 +62,8 @@ import {
   MenuItem as MenuItemComponent,
   Alert,
   Paper,
-  Divider
+  Divider,
+  useTheme
 } from '@mui/material';
 import {
   TurnLeft,
@@ -77,6 +78,7 @@ import {
 } from '@mui/icons-material';
 
 export default function View_survey() {
+  const theme = useTheme();
   const nav = useNavigate();
   const { id } = useParams();
   const [data, setData] = useState([]);
@@ -576,11 +578,8 @@ const config = {
   );
 
   return (
-    <Box sx={{ 
-      minHeight: "100vh",
-      backgroundColor: "#ffffff", // Fondo blanco real
-      overflow: "hidden" 
-    }}>      
+    <Box className="App">
+      <Box id="body">
         <HeaderLT1/>
         <Box component="section" 
           sx={{
@@ -588,9 +587,9 @@ const config = {
             flexWrap: "nowrap", 
             padding: 0, 
             height: "85vh", 
-            overflowY: "auto",
-            background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)" // Gradiente sutil
-          }}>
+            overflowY: "auto"
+          }}
+          >
         {/* <SidebarLT1/> */}
         <Container sx={{mt: 2, maxWidth: "95% !important", px: 3}}>
           <Grid container spacing={3}>            
@@ -611,13 +610,13 @@ const config = {
                   color: '#b62a8b',
                   borderColor: '#b62a8b',
                   boxShadow: '0 2px 8px rgba(182, 42, 139, 0.15)',
-                  transition: 'all 0.3s ease',    
+                  transition: 'all 0.1s ease',    
                   '&:hover': {
                     borderColor: '#b62a8b',
                     backgroundColor: '#b62a8b',
                     color: 'white',
                     boxShadow: '0 4px 16px rgba(182, 42, 139, 0.25)',
-                    transform: 'translateY(-2px)'
+                    transform: 'translateY(-1px)'
                   }
                 }}
                 onClick={() => nav("/survey_list")} 
@@ -627,11 +626,26 @@ const config = {
               {/* Tarjeta de información modernizada */}
               <Card sx={{
                 borderRadius: '20px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                border: '1px solid rgba(182, 42, 139, 0.1)',
-                background: 'linear-gradient(145deg, #ffffff 0%, #fafbfc 100%)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 32px rgba(0, 0, 0, 0.08)',
+                border: '1px solid',
+                borderColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(182, 42, 139, 0.2)' 
+                  : 'rgba(182, 42, 139, 0.1)',
+                background: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.05)' 
+                  : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
                 overflow: 'hidden',
                 position: 'relative',
+                transition: 'all 0.15s ease',
+                '&:hover': {
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 12px 40px rgba(0, 0, 0, 0.4)'
+                    : '0 12px 40px rgba(0, 0, 0, 0.12)',
+                  transform: 'translateY(-2px)'
+                },
                 '&::before': {
                   content: '""',
                   position: 'absolute',
@@ -646,7 +660,7 @@ const config = {
                   <Box textAlign="center" mb={3}>
                     <Typography variant="h4" sx={{ 
                       fontWeight: 700,
-                      color: '#2d3748',
+                      color: theme.palette.text.primary,
                       mb: 1,
                       letterSpacing: '-0.5px'
                     }}>
@@ -666,14 +680,14 @@ const config = {
                       <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                         <Typography variant="h5" sx={{ 
                           fontWeight: 600,
-                          color: '#1a202c',
+                          color: theme.palette.text.primary,
                           mb: 2,
                           lineHeight: 1.3
                         }}>
                           {surveyData.data?.title || 'Título de la encuesta'}
                         </Typography>
                         <Typography variant="body1" sx={{
-                          color: '#4a5568',
+                          color: theme.palette.text.secondary,
                           lineHeight: 1.6,
                           fontSize: '1.05rem'
                         }}>
@@ -686,17 +700,12 @@ const config = {
                         textAlign: { xs: 'center', md: 'right' },
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: 2
+                        gap: 3
                       }}>
-                        <Paper sx={{
-                          p: 2,
-                          borderRadius: '12px',
-                          backgroundColor: 'rgba(182, 42, 139, 0.05)',
-                          border: '1px solid rgba(182, 42, 139, 0.1)'
-                        }}>
+                        <Box>
                           <Typography variant="body2" sx={{
                             fontSize: '0.9rem',
-                            color: '#718096',
+                            color: theme.palette.text.secondary,
                             mb: 0.5,
                             fontWeight: 500
                           }}>
@@ -705,33 +714,28 @@ const config = {
                           <Typography variant="body1" sx={{
                             fontSize: '1rem',
                             fontWeight: 600,
-                            color: '#2d3748'
+                            color: theme.palette.text.primary
                           }}>
                             {surveyData.data?.start_date || "Sin fecha"} - {surveyData.data?.end_date || "Sin fecha"}
                           </Typography>
-                        </Paper>
+                        </Box>
                         
-                        <Paper sx={{
-                          p: 2,
-                          borderRadius: '12px',
-                          backgroundColor: 'rgba(182, 42, 139, 0.05)',
-                          border: '1px solid rgba(182, 42, 139, 0.1)'
-                        }}>
+                        <Box>
                           <Typography variant="body2" sx={{
                             fontSize: '0.9rem',
-                            color: '#718096',
+                            color: theme.palette.text.secondary,
                             mb: 0.5,
                             fontWeight: 500
                           }}>
-                            {t("vistaEncuestas.cantidad_preguntas")}
+                            Cantidad de veces RESPONDIDO
                           </Typography>
                           <Typography variant="h6" sx={{
                             fontWeight: 700,
                             color: '#b62a8b'
                           }}>
-                            {surveyData.sampleCount || 0}
+                            {surveyData.data?.responseCount ?? 0}
                           </Typography>
-                        </Paper>
+                        </Box>
                       </Box>
                     </Grid>
                   </Grid>
@@ -742,11 +746,26 @@ const config = {
             <Grid item xs={12} sx={{ mt: 4 }}>
               <Card sx={{
                 borderRadius: '20px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                border: '1px solid rgba(182, 42, 139, 0.1)',
-                background: 'linear-gradient(145deg, #ffffff 0%, #fafbfc 100%)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 32px rgba(0, 0, 0, 0.08)',
+                border: '1px solid',
+                borderColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(182, 42, 139, 0.2)' 
+                  : 'rgba(182, 42, 139, 0.1)',
+                background: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.05)' 
+                  : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
                 overflow: 'hidden',
                 position: 'relative',
+                transition: 'all 0.15s ease',
+                '&:hover': {
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 12px 40px rgba(0, 0, 0, 0.4)'
+                    : '0 12px 40px rgba(0, 0, 0, 0.12)',
+                  transform: 'translateY(-2px)'
+                },
                 '&::before': {
                   content: '""',
                   position: 'absolute',
@@ -762,7 +781,7 @@ const config = {
                     <Box>
                       <Typography variant="h4" sx={{ 
                         fontWeight: 700,
-                        color: '#2d3748',
+                        color: theme.palette.text.primary,
                         mb: 1,
                         letterSpacing: '-0.5px'
                       }}>
@@ -789,11 +808,11 @@ const config = {
                         py: 1.5,
                         backgroundColor: '#b62a8b',
                         boxShadow: '0 4px 16px rgba(182, 42, 139, 0.3)',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.1s ease',
                         '&:hover': {
                           backgroundColor: '#9c1c6b',
                           boxShadow: '0 6px 24px rgba(182, 42, 139, 0.4)',
-                          transform: 'translateY(-2px)'
+                          transform: 'translateY(-1px)'
                         }
                       }}
                     > 
@@ -806,7 +825,7 @@ const config = {
                       <Box sx={{
                         textAlign: 'center',
                         py: 8,
-                        color: '#718096'
+                        color: theme.palette.text.secondary
                       }}>
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
                           No hay preguntas aún
@@ -823,12 +842,20 @@ const config = {
                             elevation={0}
                             sx={{ 
                               borderRadius: '16px',
-                              border: '1px solid rgba(0, 0, 0, 0.08)',
-                              background: '#ffffff',
-                              transition: 'all 0.3s ease',
+                              border: '1px solid',
+                              borderColor: theme.palette.mode === 'dark' 
+                                ? 'rgba(182, 42, 139, 0.2)' 
+                                : 'rgba(0, 0, 0, 0.08)',
+                              background: theme.palette.mode === 'dark' 
+                                ? 'rgba(255, 255, 255, 0.05)' 
+                                : 'rgba(255, 255, 255, 0.9)',
+                              backdropFilter: 'blur(10px)',
+                              transition: 'all 0.1s ease',
                               '&:hover': {
-                                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-                                transform: 'translateY(-2px)',
+                                boxShadow: theme.palette.mode === 'dark'
+                                  ? '0 8px 24px rgba(0, 0, 0, 0.4)'
+                                  : '0 8px 24px rgba(0, 0, 0, 0.12)',
+                                transform: 'translateY(-1px)',
                                 borderColor: 'rgba(182, 42, 139, 0.2)'
                               }
                             }}
@@ -875,7 +902,7 @@ const config = {
                                   </Box>
                                   <Typography variant="h6" sx={{ 
                                     fontWeight: 600,
-                                    color: '#2d3748',
+                                    color: theme.palette.text.primary,
                                     lineHeight: 1.4,
                                     mb: 2
                                   }}>
@@ -887,10 +914,10 @@ const config = {
                                   sx={{
                                     backgroundColor: 'rgba(182, 42, 139, 0.05)',
                                     borderRadius: '12px',
-                                    transition: 'all 0.2s ease',
+                                    transition: 'all 0.1s ease',
                                     '&:hover': { 
                                       backgroundColor: 'rgba(182, 42, 139, 0.1)',
-                                      transform: 'scale(1.05)'
+                                      transform: 'scale(1.02)'
                                     }
                                   }}
                                 >
@@ -950,7 +977,9 @@ const config = {
 
                               {/* Contenido de la pregunta */}
                               <Box sx={{ 
-                                backgroundColor: 'rgba(248, 249, 250, 0.5)',
+                                backgroundColor: theme.palette.mode === 'dark' 
+                                  ? 'rgba(255, 255, 255, 0.03)' 
+                                  : 'rgba(248, 249, 250, 0.7)',
                                 borderRadius: '12px',
                                 p: 2,
                                 mt: 2
@@ -1021,12 +1050,17 @@ const config = {
             {title}
           </DialogTitle>
         </Box>
-        <DialogContent sx={{ p: 4, backgroundColor: '#fafbfc' }}>
+        <DialogContent sx={{ 
+          p: 4, 
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? 'rgba(255, 255, 255, 0.05)' 
+            : '#fafbfc' 
+        }}>
           <Grid container spacing={4}>
             <Grid item xs={operation === 1 ? 12 : 6}>
               <Typography variant="body1" sx={{ 
                 mb: 3,
-                color: '#4a5568',
+                color: theme.palette.text.secondary,
                 fontSize: '1.05rem',
                 lineHeight: 1.6
               }}>
@@ -1044,7 +1078,9 @@ const config = {
                   mb: 3,
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '12px',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.05)' 
+                      : '#ffffff',
                     '&:hover fieldset': {
                       borderColor: '#b62a8b',
                     },
@@ -1064,7 +1100,9 @@ const config = {
                   mb: 3,
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '12px',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.05)' 
+                      : '#ffffff',
                     '&:hover fieldset': {
                       borderColor: '#b62a8b',
                     },
@@ -1149,8 +1187,13 @@ const config = {
                 <Paper sx={{ 
                   p: 3, 
                   borderRadius: '16px',
-                  background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
-                  border: '1px solid rgba(182, 42, 139, 0.1)',
+                  background: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.05)' 
+                    : 'rgba(255, 255, 255, 0.9)',
+                  border: '1px solid',
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(182, 42, 139, 0.2)' 
+                    : 'rgba(182, 42, 139, 0.1)',
                   borderLeft: '5px solid #b62a8b'
                 }}>
                   {operation===2 && data.length>=1 && (
@@ -1174,7 +1217,7 @@ const config = {
                         mb: 2,
                         '& .MuiFormControlLabel-label': {
                           fontWeight: 600,
-                          color: '#2d3748'
+                          color: theme.palette.text.primary
                         }
                       }}
                     />
@@ -1275,7 +1318,9 @@ const config = {
         
         <DialogActions sx={{ 
           p: 4, 
-          backgroundColor: '#ffffff',
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? 'rgba(255, 255, 255, 0.05)' 
+            : '#ffffff',
           borderTop: '1px solid rgba(0, 0, 0, 0.08)',
           gap: 2
         }}>
@@ -1291,6 +1336,7 @@ const config = {
               py: 1.5,
               color: '#6c757d',
               borderColor: '#dee2e6',
+              transition: 'all 0.1s ease',
               '&:hover': {
                 borderColor: '#b62a8b',
                 backgroundColor: 'rgba(182, 42, 139, 0.05)',
@@ -1314,11 +1360,11 @@ const config = {
                 py: 1.5,
                 backgroundColor: '#b62a8b',
                 boxShadow: '0 4px 16px rgba(182, 42, 139, 0.3)',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.1s ease',
                 '&:hover': {
                   backgroundColor: '#9c1c6b',
                   boxShadow: '0 6px 24px rgba(182, 42, 139, 0.4)',
-                  transform: 'translateY(-2px)'
+                  transform: 'translateY(-1px)'
                 }
               }}
             >              
@@ -1328,7 +1374,7 @@ const config = {
         </DialogActions>
           
         </Dialog>
-      
+      </Box>
     </Box>
   );
 }
