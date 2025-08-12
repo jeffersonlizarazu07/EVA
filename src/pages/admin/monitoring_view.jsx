@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useTranslations } from "../../components/hooks/useTranslations"; 
+import { useTranslations } from "../../components/hooks/useTranslations";
 import dayjs from "dayjs";
 import HeaderLT1 from "../../components/header/headerLT1";
 import TableMonitoringView from "../../components/Tables/tableMonitoringView";
@@ -9,12 +9,17 @@ import { Box } from "@mui/material";
 
 const AgentMonitoringView = () => {
   // Estados
-  const {t} = useTranslations();
+  const { t } = useTranslations();
   const { agentId } = useParams();
   const [getMonitoring, setGetMonitoring] = useState([]); // Trae los minitoreos del agente
   const [filterMonitoring, setFilterMonitoring] = useState([]); // Trae los monitores del agente filtrados por fecha
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  // Tra los datos adicionales de monitorización (Total de monitorizaciones, Promedio de Score)
+  const [monitoringStats, setMonitoringStats] = useState({
+    total_monitorings: 0,
+    average_score: 0,
+  });
 
   const selectedKeys = [
     "id",
@@ -65,9 +70,10 @@ const AgentMonitoringView = () => {
 
   const fetchMonitoring = async () => {
     try {
-      const monitoringData = await getMonitoringByUser(agentId);
-      setGetMonitoring(monitoringData);
-      setFilterMonitoring(monitoringData);
+      const result = await getMonitoringByUser(agentId);
+      setGetMonitoring(result.data);
+      setFilterMonitoring(result.data);
+      setMonitoringStats(result.stats);
     } catch (error) {
       console.error("Error al cargar monitoreos:", error);
     }
@@ -113,8 +119,9 @@ const AgentMonitoringView = () => {
   }, [startDate, endDate, getMonitoring]);
 
   const monitoringViewProps = {
-    data: startDate || endDate ? filterMonitoring : getMonitoring, // Si existen filtro de fechas envia datos filtrados, de lo contrario envia la data total
+    // Si existen filtro de fechas envia datos filtrados, de lo contrario envia la data total
     header: selectedKeys,
+    data: startDate || endDate ? filterMonitoring : getMonitoring,
     startDate,
     endDate,
     setStartDate,
@@ -123,13 +130,23 @@ const AgentMonitoringView = () => {
     getHeaderLabel,
     fetchMonitoring,
     viewType: getUserType,
+    monitoringStats,
   };
 
   return (
-    <Box className="App" sx={{ overflow: "hidden" }}>
-      <Box id="body">{/* <HeaderLT1 /> */}</Box>
+    <Box sx={{ overflow: "hidden" }}>
+      <Box>
+        <HeaderLT1 />
+      </Box>
 
-      <Box className="container" mt={0}>
+      <Box
+        sx={{
+          maxWidth: "1200px",
+          mx: "auto",
+          px: 2,
+          mt: 0,
+        }}
+      >
         <TableMonitoringView {...monitoringViewProps} />
       </Box>
     </Box>

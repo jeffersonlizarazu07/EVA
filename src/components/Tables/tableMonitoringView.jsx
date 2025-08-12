@@ -38,6 +38,7 @@ const TableMonitoringView = ({
   getHeaderLabel,
   fetchMonitoring,
   viewType,
+  monitoringStats,
 }) => {
   const nav = useNavigate();
   // Traducción
@@ -307,6 +308,25 @@ const TableMonitoringView = ({
                 ))}
               </TableRow>
             ))}
+            <TableRow>
+              <TableCell colSpan={header.length} align="center">
+                <Box sx={{ display: "inline-flex", gap: 8 }}>
+                  <Box component="span">
+                    <Box component="span" sx={{ fontWeight: "bold" }}>
+                      Total monitorizaciones:
+                    </Box>{" "}
+                    {monitoringStats.total_monitorings}
+                  </Box>
+
+                  <Box component="span">
+                    <Box component="span" sx={{ fontWeight: "bold" }}>
+                      Promedio Score:
+                    </Box>{" "}
+                    {monitoringStats.average_score}
+                  </Box>
+                </Box>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
