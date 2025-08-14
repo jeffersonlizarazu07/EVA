@@ -1,9 +1,10 @@
 import Logo from "../../assets/img/logo EVA.webp";
-import axios from "axios";
+import { apiClient } from "../../utils/axiosConfig";
 import { useContext, useState, useEffect } from "react";
 import { toggleBlackMode } from "../../assets/js/toggleBlackMode";
 import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
+import { useAuth } from "../../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import Avatar from "@mui/material/Avatar";
@@ -19,6 +20,7 @@ import Swal from "sweetalert2";
 import HomeIcon from "@mui/icons-material/Home";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import PersonIcon from "@mui/icons-material/Person";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { ThemeContext } from '../../assets/js/ThemeContext';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -49,10 +51,12 @@ import {themeColors} from '../../style/ThemeColors.js'
 const HeaderLT1 = () => {
   const { accessToken, userId, languageUser, setLanguageUser } =
     useContext(UserContext);
+  const { logout: authLogout } = useAuth();
   const { t, i18n } = useTranslation();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     checkinfo();
@@ -102,44 +106,76 @@ const HeaderLT1 = () => {
   
   const logout = async () => {
     try {
-      await axios.post('http://localhost:3000/api/logout', {}, {
-        withCredentials: true,
-      });
+      console.log('[HeaderLT1] Iniciando logout...');
+      
+      // Usar el logout del AuthContext que maneja MSAL y tokenService
+      await authLogout();
+      
+      // Limpieza adicional de cookies específicas
       Cookies.remove("userId");
       Cookies.remove("userType");
       Cookies.remove("accessToken");
       Cookies.remove("clients");
-  
-      localStorage.removeItem("languageUser");
+      Cookies.remove("token");
+      Cookies.remove("refreshToken");
+      Cookies.remove("sessionId");
+      Cookies.remove("authToken");
+      Cookies.remove("userToken");
+      Cookies.remove("loginToken");
+      
+      // Limpiamos todas las cookies del dominio como respaldo
+      const allCookies = document.cookie.split(";");
+      allCookies.forEach(cookie => {
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        if (name) {
+          Cookies.remove(name);
+        }
+      });
+
+      // Limpieza adicional de localStorage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      console.log('[HeaderLT1] Logout completado, redirigiendo...');
+      
+      // Redirigimos al usuario a la página de login
       nav("/");
+      
     } catch (error) {
-      console.error("Error al cerrar sesión:", error);
+      console.error('[HeaderLT1] Error al cerrar sesión:', error);
+      
+      // Limpieza de emergencia en caso de error
+      localStorage.clear();
+      sessionStorage.clear();
+      Cookies.remove("userId");
+      Cookies.remove("userType");
+      Cookies.remove("accessToken");
+      
+      // Redirigimos al usuario de todas formas
+      nav("/");
     }
   };
 
-  const config = {
-    withCredentials: true,
-  };
-  
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const config = { withCredentials: true };
+
+  const themeContext = useContext(ThemeContext);
+  const { theme, toggleTheme } = themeContext || { theme: 'light', toggleTheme: () => {} };
 
   const checkinfo = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/users/${userId}`,
-        config
-      );
+      const response = await apiClient.get(`/users/${userId}`, config);
       setUserInfo(response.data.data);
       setLanguageUser(response.data.data.language);
     } catch (error) {
       console.error(error);
     }
   };
-  const url = "http://localhost:3000/api/users/"; 
+  const url = "/users/"; 
 
   const getInfo = async () => {
     try {
-      const response = await axios.get(`${url}${userId}`, config);
+      const response = await apiClient.get(`${url}${userId}`, config);
       setUserInfo(response.data.data);
       console.log(hours, ":", minutes, ":", seconds);
       firstName.handleChange(userInfo.firstname || "");
@@ -191,7 +227,7 @@ const HeaderLT1 = () => {
         parameters["password"] = password.input;
       }
   
-      const response = await axios.put(`${url}${userId}`, parameters, config);
+      const response = await apiClient.put(`${url}${userId}`, parameters, config);
   
       if (response.data.status) {
         Toast.fire({
@@ -308,7 +344,7 @@ const HeaderLT1 = () => {
     setLanguageUser(lang);
     const parameters = { language: lang };
     try {
-      await axios.patch(`http://localhost:3000/api/language/${userId}`, parameters, config);
+      await apiClient.patch(`/language/${userId}`, parameters, config);
     } catch (error) {
       console.error("Error al actualizar el idioma:", error);
     }
@@ -325,36 +361,50 @@ const HeaderLT1 = () => {
   }));
 
   return (
-    <Box sx={{ position: 'sticky', top: 0}}>
-      <Paper
-        elevation={2}
-        sx={{
-          margin: 2,
-          marginBottom: 3,
-          borderRadius: '25px',
-          border: '2px solid rgb(199, 14, 143)',
-          backgroundColor: theme === 'dark' ? 'rgb(33, 37, 41)' : 'white',
-        }}
-      >
-        <AppBar
-          position="static"
+    <>
+      <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1100, width: '100%', display: 'flex', justifyContent: 'center', backgroundColor: theme === 'dark' ? 'rgb(33, 37, 41)' : '#fff' }}>
+        <Paper
           elevation={0}
           sx={{
-            backgroundColor: 'transparent',
-            borderRadius: '25px',
-            color: theme === 'dark' ? '#fff' : '#000',
+            backgroundColor: "transparent",
+            px: { xs: 1, md: 2 },
+            py: { xs: 1, md: 1 },
+            width: '100%',
+            mx: 0,
           }}
         >
-          <Toolbar sx={{ justifyContent: 'space-between', px: 2 }}>
+          <AppBar
+            position="static"
+            elevation={0}
+            sx={{
+              mt: 0,
+              mx: 0,
+              mb: 0,
+              borderRadius: "25px",
+              border: "2px solid rgb(199, 14, 143)",
+              backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "#fff",
+              position: "relative",
+            }}
+          >
+          <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1.5, md: 2 } }}>
             {/* Lado izquierdo - Logo y menú móvil */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>             
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>             
+              {/* Botón menú (solo móvil) */}
+              <IconButton
+                onClick={() => setIsDrawerOpen(true)}
+                sx={{ display: { xs: 'inline-flex', md: 'none' }, mr: 0.5 }}
+                aria-label="abrir menú"
+                disableRipple
+              >
+                <MenuIcon sx={{ color: theme === 'dark' ? '#fff' : '#000' }} />
+              </IconButton>
               {/* Logo */}
               <Box
                 component="img"
                 src={Logo}
                 alt="Logo"
                 sx={{
-                  width: '63px',
+                  width: { xs: '48px', sm: '56px', md: '63px' },
                   cursor: 'pointer',
                 }}
                 onClick={() => nav("/admin")}
@@ -363,16 +413,16 @@ const HeaderLT1 = () => {
 
             {/* Navegación  */}
             <Box sx={{ 
-              display: { xs : 'flex', lg: 'flex' }, 
+              display: { xs : 'none', md: 'flex' }, 
               alignItems: 'center',
               flexGrow: 1,
               justifyContent: 'center',
-              gap: 15
+              gap: { md: 6, lg: 10 }
             }}>
               <MUIButton
                 variant="text"
                 sx={{
-                  fontSize: '95%',
+                  fontSize: { md: '90%', lg: '95%' },
                   color: getButtonColor("/admin"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
@@ -381,7 +431,7 @@ const HeaderLT1 = () => {
                 }}
                 onClick={() => nav("/admin")}
                 disableRipple
-                startIcon= {<HomeIcon sx={{ fontSize: '120% !important'  }} />}
+                startIcon= {<HomeIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
               >
                 {t("header.Home")}
               </MUIButton>
@@ -391,7 +441,7 @@ const HeaderLT1 = () => {
               <MUIButton
                 variant="text"
                 sx={{
-                  fontSize: '95%',
+                  fontSize: { md: '90%', lg: '95%' },
                   color: getButtonColor("/admin_list"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
@@ -400,7 +450,7 @@ const HeaderLT1 = () => {
                 }}
                 onClick={() => nav("/admin_list")}
                 disableRipple
-                startIcon={<PersonIcon sx={{ fontSize: '120% !important'  }} />}
+                startIcon={<PersonIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
               >
                 {t("header.Users")}
               </MUIButton>
@@ -410,7 +460,7 @@ const HeaderLT1 = () => {
               <MUIButton
                 variant="text"
                 sx={{
-                  fontSize: '95%',
+                  fontSize: { md: '90%', lg: '95%' },
                   color: getButtonColor("/client_list"),
                   "&:hover": {
                     color: "rgb(199, 14, 143)",
@@ -419,14 +469,14 @@ const HeaderLT1 = () => {
                 }}
                 onClick={() => nav("/client_list")}
                 disableRipple
-                startIcon={<AssignmentIndIcon sx={{ fontSize: '120% !important'  }} />}
+                startIcon={<AssignmentIndIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
               >
                 {t("header.Clients")}
               </MUIButton>
             </Box>
 
             {/* Lado derecho - Controles */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, md: 2 } }}>
               {/* Selector de idioma */}
               <Tooltip title="Cambiar idioma" placement="top">
                 <IconButton
@@ -442,7 +492,7 @@ const HeaderLT1 = () => {
                   }}
                 >
                   <LanguageIcon sx={{
-                    fontSize: '2rem',
+                    fontSize: { xs: '1.6rem', md: '2rem' },
                     fill: 'url(#gradient-text)',
                   }} />
                   <svg width="0" height="0">
@@ -464,12 +514,20 @@ const HeaderLT1 = () => {
                 onClose={handleLanguageClose}
                 anchorOrigin={{
                   vertical: 'bottom',
-                  horizontal: 'center',
+                  horizontal: 'right',
                 }}
                 transformOrigin={{
                   vertical: 'top',
-                  horizontal: 'center',
-                }} 
+                  horizontal: 'right',
+                }}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    minWidth: 150,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    borderRadius: '8px',
+                  }
+                }}
               >
                 <MenuItem onClick={() => handleLanguageChange("es")}>
                   <span className="flag-icon flag-icon-es me-2"></span>
@@ -526,15 +584,70 @@ const HeaderLT1 = () => {
                     handleClose();
                     logout();
                   }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    color: 'error.main',
+                    '&:hover': {
+                      backgroundColor: 'error.light',
+                      color: 'error.contrastText',
+                    }
+                  }}
                 >
+                  <LogoutIcon sx={{ fontSize: '1.2rem' }} />
                   {t("headerlt.Logout")}
                 </MenuItem>
               </Menu>
             </Box>
           </Toolbar>
-        </AppBar>
-      </Paper>
-    </Box>
+          </AppBar>
+
+          {/* Drawer de navegación para móviles */}
+          <Drawer
+          anchor="left"
+          open={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          PaperProps={{ sx: { width: 260 } }}
+          >
+          <Box role="presentation" sx={{ mt: 1 }}>
+            <List>
+              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin'); }}>
+                <ListItemIcon>
+                  <HomeIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('header.Home')} />
+              </ListItem>
+              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin_list'); }}>
+                <ListItemIcon>
+                  <PersonIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('header.Users')} />
+              </ListItem>
+              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/client_list'); }}>
+                <ListItemIcon>
+                  <AssignmentIndIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('header.Clients')} />
+              </ListItem>
+            </List>
+            <Divider />
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary={t('headerlt.Settings') || 'Ajustes'} />
+              </ListItem>
+            </List>
+          </Box>
+          </Drawer>
+        </Paper>
+      </Box>
+      {/* Espaciador para evitar que el contenido quede debajo del header fijo */}
+      <Box sx={{ height: { xs: 80, md: 96 } }} />
+    </>
   );
 };
 

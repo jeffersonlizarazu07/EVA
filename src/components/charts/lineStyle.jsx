@@ -67,7 +67,7 @@ import { useContext } from "react";
 
 
 const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme } = useContext(ThemeContext) || { theme: 'light', toggleTheme: () => {} };
   const {t} = useTranslation();
 
   console.log("Componente LineStyleCharts renderizado");
