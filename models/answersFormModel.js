@@ -55,9 +55,11 @@ class AnswersFormModel {
 
   // traer reporte filtrados 
 
-  async getReportFilter(fromId, starDate, endDate){
+  async getReportFilter(fromId, starDate, endDate, agente, evaluador){
     try {
-      return await this.knex(`${this.table_} as m`)
+        if (agente === 'null') agente = '';
+        if (evaluador === 'null') evaluador = '';
+        const query =  this.knex(`${this.table_} as m`)
         .select(
           this.knex.raw(`CONCAT(a.firstname, " ", a.lastname) as nombre_agente`),
           this.knex.raw(`CONCAT(mo.firstname, " ", mo.lastname) as nombre_monitor`),
@@ -68,7 +70,8 @@ class AnswersFormModel {
           'm.score',
           'm.feedback',
           'q.id',
-          'm.id as id_monitoreo'
+          'm.id as id_monitoreo',
+          'q.type_error'
         )
         .join(`${this.table_users} as a`, 'm.id_user_agent', 'a.id')
         .join(`${this.table_users} as mo`, 'm.id_user_monitor', 'mo.id')
@@ -80,11 +83,23 @@ class AnswersFormModel {
         .andWhere('mo.type', 1)
         // 
         .andWhere('f.id', '=' , fromId)
+        
         .andWhereRaw('m.date  = af.date')
         .andWhere(this.knex.raw('DATE(m.date) >=?' , [starDate] ))
         .andWhere(this.knex.raw('DATE(m.date) <=?' , [endDate] ));
         
         // ...
+
+        // Agregar filtro de agente solo si no está vacío
+        if (agente && agente.trim() !== '' && agente !== '""') {
+          query.andWhere(this.knex.raw(`CONCAT(a.firstname, " ", a.lastname) = ?`, [agente]));
+        }
+
+        if (evaluador && evaluador.trim() !== '' && evaluador !== '""') {
+          query.andWhere(this.knex.raw(`CONCAT(mo.firstname, " ", mo.lastname) = ?`, [evaluador]));
+        }
+
+       return await query;
         
     } catch (error) {
       console.error('Error al obtener el reporte de monitoreos filtrados:', error);
@@ -126,7 +141,8 @@ class AnswersFormModel {
           'm.score',
           'm.feedback',
           'q.id',
-          'm.id as id_monitoreo'
+          'm.id as id_monitoreo',
+          'q.type_error'
         )
         .join(`${this.table_users} as a`, 'm.id_user_agent', 'a.id')
         .join(`${this.table_users} as mo`, 'm.id_user_monitor', 'mo.id')
