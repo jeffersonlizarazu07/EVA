@@ -7,7 +7,7 @@ const answersFormController = require('../controllers/answersFormController');
 router.get('/answersform/getResponseMult', answersFormController.getResponseMult)
 
 // obtener reportes filtrados
-router.get('/answersform/filter/:fromId/:starDate/:endDate', answersFormController.getReportFilter);
+router.get('/answersform/filter/:fromId/:starDate/:endDate/:agente/:evaluador', answersFormController.getReportFilter);
 
 // obtener clientes y informacion de los forms_set
 router.get('/answersform/clients-forms', answersFormController.getClientsAndForms);
