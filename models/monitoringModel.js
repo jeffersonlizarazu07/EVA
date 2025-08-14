@@ -45,14 +45,16 @@ const MonitoringModel = {
   },
 
   // Obtener monitorizaciones por agente
-  getByUserId: (userId) => {
-    return knex("monitoring")
+  getByUserId: async (userId) => {
+    const monitorings = await knex("monitoring")
       .join("form_set", "monitoring.id_form", "form_set.id")
       .join("clients", "form_set.idClient", "clients.id")
       .join("users", "monitoring.id_user_monitor", "users.id")
       .join("users as agent", "monitoring.id_user_agent", "agent.id")
       .select(
-        knex.raw("DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_date"),
+        knex.raw(
+          "DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_date"
+        ),
         knex.raw(
           "DATE_FORMAT(monitoring.check_date, '%d/%m/%Y %H:%i:%s') as check_date_formatted"
         ),
@@ -65,6 +67,16 @@ const MonitoringModel = {
         knex.raw("CONCAT(agent.firstname, ' ', agent.lastname) as agent_name")
       )
       .where("monitoring.id_user_agent", userId);
+
+    const stats = await knex("monitoring")
+      .where("id_user_agent", userId)
+      .select(
+        knex.raw("COUNT(*) as total_monitorings"),
+        knex.raw("FORMAT(IFNULL(AVG(score), 0), 2) as average_score")
+      )
+      .first();
+
+    return { monitorings, stats };
   },
 
   // Obtener monitorización estructurada por agente
