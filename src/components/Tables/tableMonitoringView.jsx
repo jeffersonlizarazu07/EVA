@@ -41,6 +41,7 @@ const TableMonitoringView = ({
   fetchMonitoring,
   viewType,
   monitoringStats,
+  setMonitoringStats
 }) => {
   const nav = useNavigate();
   // Traducción
@@ -87,26 +88,29 @@ const TableMonitoringView = ({
 
         const matchesClient =
           !selectedClient || selectedClient === "none"
-            ? true // si no hay cliente seleccionado, no filtra por cliente
+            ? true
             : item.client_name?.toLowerCase() === selectedClient.toLowerCase();
 
         return matchesSearch && matchesClient;
       })
     : [];
 
-  const dataToCalculate =
-    !selectedClient || selectedClient === "" ? data : filteredData;
+  // Recalcular métricas cada vez que cambie filteredData
+  useEffect(() => {
+    const total = filteredData.length;
+    const avg =
+      total > 0
+        ? (
+            filteredData.reduce((sum, item) => sum + (item.score ?? 0), 0) /
+            total
+          ).toFixed(2)
+        : 0;
 
-  // Calcula métricas dinámicas
-  const totalMonitorings = dataToCalculate.length;
-
-  const averageScore =
-    totalMonitorings > 0
-      ? (
-          dataToCalculate.reduce((sum, item) => sum + (item.score ?? 0), 0) /
-          totalMonitorings
-        ).toFixed(2)
-      : 0;
+    setMonitoringStats({
+      total_monitorings: total,
+      average_score: avg,
+    });
+  }, [filteredData]); // Actualiza las formulas dependiendo del filtrado
 
   const currentRecords = filteredData.slice(
     page * rowsPerPage,
@@ -258,6 +262,7 @@ const TableMonitoringView = ({
                 value={selectedClient}
                 onChange={(e) => setSelectedClient(e.target.value)}
               >
+                <MenuItem sx={{ height: "30px" }}></MenuItem>
                 {clients.map((client, index) => (
                   <MenuItem key={index} value={client || "None"}>
                     {client}
