@@ -20,7 +20,7 @@ router.get('/answers/:id?', authMiddleware, AnswerController.answersByQuestion);
 router.get('/answers/percentage/:id?',authMiddleware,  AnswerController.answersByQuestionPercentage);
 
 // Ruta para obtener el puntaje de las respuestas de una encuesta
-//router.get('/answers/survey/score', answerController.scoreXSurvey);
+router.get('/answers/survey/score', authMiddleware, AnswerController.scoreXSurvey);
 
 // Ruta para obtener los porcentajes de respuestas de una encuesta
 
