@@ -1,9 +1,9 @@
-import axios from "axios";
+import { apiClient } from "../utils/axiosConfig";
 import { smallAlertDelete, Toast, Toast2 } from "../assets/js/alertConfig";
 
 export const getSurveys = async (urlSurveys, config) => {
     try {
-      const response = await axios.get(urlSurveys, config);
+      const response = await apiClient.get(urlSurveys.replace('http://localhost:3000/api',''), config);
       console.log("*ñññ*",response.data)
       return response.data.data.length;
     } catch (error) {
@@ -11,10 +11,10 @@ export const getSurveys = async (urlSurveys, config) => {
     }
   };
 
+
 export const getSurvey = async (id, config, setSurveyData) => {
   try{
-    const url = "http://localhost:3000/api/survey/";
-    const response = await axios.get(`${url}${id}`, config);
+    const response = await apiClient.get(`/survey/${id}`, config);
     console.log("*** response completa", response.data);
     setSurveyData(response.data);
   }catch(error){
@@ -23,8 +23,7 @@ export const getSurvey = async (id, config, setSurveyData) => {
 };
 
 export const getSurveyQuestions = async (id, config) => {
-  const url = "http://localhost:3000/api/surveys/";
-  const response = await axios.get(`${url}${id}/question`, config);
+  const response = await apiClient.get(`/surveys/${id}/question`, config);
   const responseData = response.data.data;
   console.log("Preguntas de la encuesta:", responseData);
 
@@ -61,7 +60,7 @@ export const deleteQuestion = async (
         try {
           const url =
             "http://localhost:3000/api/question/";
-          const { data } = await axios.delete(`${url}${idquestion}`, config);
+          const { data } = await apiClient.delete(`${url}${idquestion}`, config);
           if (data.status) {
             Toast.fire({
               icon: "success",
@@ -90,8 +89,8 @@ export const sendData = async (
   try {
     setLoading(true);
     if (metodo.toUpperCase() === "POST") {
-      const url = "http://localhost:3000/api/question";
-      const response = await axios.post(url, parametros, config);
+      const url = `/question`;
+      const response = await apiClient.post(url, parametros, config);
       if (response.data.status) {
         setLoading(false);
         setError("");
@@ -104,8 +103,8 @@ export const sendData = async (
         throw new Error(response.data.message || "Error desconocido");
       }
     } else if (metodo.toUpperCase() === "PUT") {
-      const url = `http://localhost:3000/api/question/`;
-      const response = await axios.put(`${url}${idToEdit}`, parametros, config);
+      const url = `/question/`;
+      const response = await apiClient.put(`${url}${idToEdit}`, parametros, config);
       if (response.data.status) {
         Toast2.fire({
           icon: "success",

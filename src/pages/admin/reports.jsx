@@ -44,9 +44,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 const Reports = () => {
-  const {t} = useTranslation();
+  const {t} = useTranslations();
   const nav = useNavigate();
   const { accessToken, userType, clients } = useContext(UserContext);
   const [allResponses, setAllResponses] = useState([]); // Nueva estructura para contener todas las respuestas en orden
@@ -89,7 +90,7 @@ const Reports = () => {
         `http://localhost:3000/api/answers/survey/${surveyId}/percentage?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
         config
       );
-  
+      console.log("xxx", response.data.data);
       // Verificar si no hay datos
       if (!response.data.data || Object.keys(response.data.data).length === 0)  {
         console.log("No hay datos o los datos están vacíos.");
@@ -633,7 +634,7 @@ const Reports = () => {
  return (
   <Box className="App">
     <Box id="body">
-      {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
+      {userType === "1" ? <HeaderLT1 /> : <HeaderLT2 />}
 
       <Box m={0} p={0}>
         <Grid container spacing={0} sx={{ m: 0 }}>

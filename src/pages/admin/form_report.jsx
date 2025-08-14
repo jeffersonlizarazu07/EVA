@@ -12,11 +12,6 @@ import {
   FormControl,
   Select,
   Alert,
-  Paper,
-  Typography,
-  Stack,
-  Divider,
-  Tooltip,
   Fade,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -37,7 +32,7 @@ import HeaderLT2 from "../../components/header/headerLT2";
 
 /* Traer traduccion  */
 import { useEffect, useContext, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../../components/hooks/useTranslations"; 
 import { UserContext } from "../../context/UserContext";
 
 /* formulario*/
@@ -51,7 +46,6 @@ import {
 /* transformar a exel  */
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { Key } from "@mui/icons-material";
 
 const FormReport = () => {
   //importacion del exel seleccionado
@@ -59,8 +53,8 @@ const FormReport = () => {
 
   const nav = useNavigate();
   // estados para el lenguaje
-  const { t, i18n } = useTranslation();
-  const { languageUser, clients, userInfo } = useContext(UserContext);
+  const { t } = useTranslations();
+  const { clients, userInfo } = useContext(UserContext);
 
   // estados para la ficha del filtro
   const [startDate, setStartDate] = useState(null);
@@ -68,20 +62,39 @@ const FormReport = () => {
 
   //  formulario
   const [fullMonitoring, setFullMonitoring] = useState([]);
+  
+  //const [monitoringSinFilter, setMonitoringSinFilter] = useState([])
+  const [monitoringAgente, setMonitoringAgente] = useState([])
+  const [monitoringEvaluador, setMonitoringEvaluador] = useState([])
+  
   // estado para respuestas multiples
   const [responseMulti, setResponseMulti] = useState([]);
   // clientes corregidos
   const [clientsAndFroms, setClientsAndForms] = useState([]);
   const [formsInfo, setFormsInfo] = useState([]);
+  // agente y evaluador
+  const [agenteFilter, setAgenteFilter]= useState([])
+  const [evaluadorFilter, setEvaluadorFilter]= useState([])
+  
+  //console.log("fulll",fullMonitoring )
+  //console.log("xxxxxxx",clientsAndFroms )
+  //console.log("jjjjjjjjj",formsInfo )
 
   // filtros para formulario
   const [idClienteFiltro, setIdClienteFiltro] = useState("");
   const [filtroSeleccionado, setFiltroSeleccionado] = useState("");
   const [reportesFiltrados, setReportesFiltrados] = useState([]);
+ 
 
   // formato para exel
   const [formatExel, setFormatExel] = useState([]);
 
+  // Promedio del score 
+  const [footerDatas, setFooterDatas]= useState([]);
+  //cantidad de preguntas
+  
+
+  
   // Manejar cambio de fechas
   const handleStartDateChange = (date) => setStartDate(date);
   const handleEndDateChange = (date) => setEndDate(date);
@@ -91,6 +104,7 @@ const FormReport = () => {
     withCredentials: true,
   };
 
+  
   // Crear un Set para almacenar preguntas únicas
   // y evitar duplicados en los headers de la tabla
   const preguntaSet = new Map();
@@ -122,21 +136,50 @@ const FormReport = () => {
 
     { key: "feedback", label: t("clientTable.feedback") },
   ];
+  //console.log("datosssssss:",filtroSeleccionado,":", agenteFilter ,":", evaluadorFilter)
 
   // cambio de lenguaje y clientes en el filtro
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
     getClientsAndFormsFuncion();
-  }, [languageUser, i18n]);
+  });
 
   // para inicializar la informacion de la tabla y clientes en el filtro
   useEffect(() => {
+    const  getFullMonitorySinFiltre = async ()=>{
+      const data2 = await getMonitoring();
+      const agente = [
+        ...new Map(data2.map(i => [i.nombre_agente,
+          {
+            nombre_agente: i.nombre_agente,
+            
+          }
+        ])).values()
+      ]
+      const evaluador = [
+        ...new Map(data2.map(i => [i.nombre_monitor,
+          {
+            
+            nombre_monitor: i.nombre_monitor
+          }
+        ])).values()
+      ]
+      setMonitoringAgente(agente)
+      setMonitoringEvaluador(evaluador)
+    }
+    getFullMonitorySinFiltre();
     getResponseMultFuncion();
     getClientsAndFormsFuncion();
     if (!reportesFiltrados || reportesFiltrados.length === 0) {
       dataMonitoring();
     }
   }, []);
+
+  // *
+  useEffect(() => {
+    if (fullMonitoring.length > 0) {
+      footerData(fullMonitoring);
+    }
+  }, [fullMonitoring]);
 
   // cambio de informacion en la tabla por filtros
   useEffect(() => {
@@ -256,18 +299,39 @@ const FormReport = () => {
           respuesta: item.answer,
           id_questions: item.id,
         }),
-        id_questions: item.id,
+        id_questions: item.id,         
+        type_error: item.type_error,
+
       });
     });
-
+    
     setFormatExel(agrupado);
+    footerData( Object.values(agrupado))
     return Object.values(agrupado);
   };
+
+  // Datos para el footer de la table 
+
+ const footerData = (data) => {
+  // Promedio de score
+  const suma = data.reduce((acc, item) => acc + Number(item.score || 0), 0);
+  const promedioGeneral = suma / data.length;
+
+  // Total de preguntas
+  const totalPreguntas = data.reduce((acc, item) => acc + (data?.length || 0), 0);
+
+  setFooterDatas([{
+    promedio: promedioGeneral,
+    preguntas: data.length
+  }]);
+};
 
   // tarer reportes filtrados
 
   const getFilterReports = async () => {
     try {
+      const agenteParam = String(agenteFilter || '').trim() || "null";
+      const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
       // formateo de fecha sin horas
       const formattedStartDate = startDate
         ? dayjs(startDate).format("YYYY-MM-DD")
@@ -277,7 +341,7 @@ const FormReport = () => {
         : "";
 
       const filtro = await axios.get(
-        `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}`,
+        `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}/${agenteParam}/${evaluadorParam}`,
         config
       );
 
@@ -290,6 +354,7 @@ const FormReport = () => {
           confirmButtonColor: "#FF66B2",
         });
       }
+      //console.log("aki:",filtro.data)
       setReportesFiltrados(filtro.data);
     } catch (error) {
       console.log("Error al consumir la api", error);
@@ -369,18 +434,12 @@ const FormReport = () => {
   // obtener todos los monitoreos desde el backend
   const dataMonitoring = async () => {
     try {
-      const data = reportesFiltrados;
-      /*
-        const data =  reportesFiltrados && reportesFiltrados.length>0 
-          ? reportesFiltrados
-          : await getMonitoring();
-        ;*/
-
-      const data2 = await getMonitoring();
+      const data = reportesFiltrados;    
       const datosAgrupados = agruparPorMonitoreo(data);
-      console.log("datos sin nada", data2);
+      
+      //console.log("datos sin nada", data2);
       setFullMonitoring(datosAgrupados);
-      //console.log("monitoreo", datosAgrupados)
+      console.log("monitoreo", datosAgrupados)
     } catch (error) {
       console.error("error al obtener los monitoreos:", error);
     }
@@ -399,7 +458,11 @@ const FormReport = () => {
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
-        {userInfo?.type === 3 ? <HeaderLT2 /> : <HeaderLT1 />}
+        {userInfo?.type === 3 || userInfo?.type === 2 ? (
+          <HeaderLT2 />
+        ) : (
+          <HeaderLT1 />
+        )}
       </Box>
       <Box
         sx={{
@@ -461,104 +524,170 @@ const FormReport = () => {
                     </svg>
                   </Button>
 
-                          {/* clientes*/}
-                          <FormControl required sx={{ minWidth: "20%", maxWidth: "20%" }} className="readOnlyField">
-                            <InputLabel id="demo-simple-select-label">{t("survey.selecciona_cliente")}</InputLabel>
-                            <Select
-                              labelId="demo-simple-select-label"
-                              id="demo-simple-select"
-                              value={idClienteFiltro}
-                              label={t("survey.selecciona_cliente")}
-                              onChange={(e)=>{
-                                setIdClienteFiltro(e.target.value);
-                                
-                              }}
-                            >
-                              <MenuItem value={''}>None</MenuItem>
-                              {clientsAndFroms.length > 0 ? (
-                                clientsAndFroms.map((i) => (
-                                  <MenuItem value={i.idClient} key={i.idClient}>
-                                    {i.client}
-                                    
-                                  </MenuItem>
-                                ))
-                              ) : (
-                                <MenuItem disabled>Cargando Clientes ...</MenuItem>
-                              )}
-                            </Select>
-                          </FormControl>
+                  {/* clientes*/}
+                  <FormControl
+                    required
+                    sx={{ minWidth: "10%" }}
+                    className="readOnlyField"
+                  >
+                    <InputLabel id="demo-simple-select-label">
+                      {t("survey.selecciona_cliente")}
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={idClienteFiltro}
+                      label={t("survey.selecciona_cliente")}
+                      onChange={(e) => {
+                        setIdClienteFiltro(e.target.value);
+                      }}
+                    >
+                      <MenuItem value={""}>None</MenuItem>
+                      {clientsAndFroms.length > 0 ? (
+                        clientsAndFroms.map((i) => (
+                          <MenuItem value={i.idClient} key={i.idClient}>
+                            {i.client}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>Cargando Clientes ...</MenuItem>
+                      )}
+                    </Select>
+                  </FormControl>
 
-                            {/* vista formularios */}
-                            <FormControl required sx={{ minWidth: "20%", maxWidth: "20%" }} className="readOnlyField">
-                              <InputLabel>{t("survey.form")}</InputLabel>
-                              <Select
-                                labelId="survey-select-label"
-                                id="survey-select"
-                                value={filtroSeleccionado}
-                                onChange={(e) => {
-                                  
-                                  const response = parseInt(e.target.value);
-                                  const infoCapturado = formsInfo.find(i=> i.id === response)
-                                  setFiltroSeleccionado(Number(infoCapturado.id));
-                                  
-                                }}
-                                input={<OutlinedInput label="Formulario" />}
-                              >
-                                <MenuItem value="">
-                                  <em>None</em>
-                                </MenuItem>
-                                {formsInfo
-                                .filter(item => item.idClient=== idClienteFiltro )
-                                .map((item, i) =>  (
-                                  <MenuItem key={i} value={item.id}>
-                                    {item.title}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                            {/* vista fechas */}
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    className="readOnlyField"
-                                    label={t("reports.fecha_inicio")}
-                                    value={startDate}
-                                    onChange={handleStartDateChange}
-                                    sx={{ width: "22%" }}
-                                />
-                                <DatePicker
-                                    className="readOnlyField"
-                                    label={t("reports.fecha_fin")}
-                                    value={endDate}
-                                    onChange={handleEndDateChange}
-                                    sx={{ width: "22%" }}
-                                />
-                                
-                            </LocalizationProvider>
-                           
-                            <ButtonGroup>
-                              <IconButton
-                                color="secondary"
-                                onClick={getFilterReports}
-                                disabled={!(filtroSeleccionado && startDate && endDate)}
-                              >
-                                <SearchIcon />
-                              </IconButton>
-                              <IconButton
-                                color="secondary"
-                                onClick={exportExel}
-                                disabled={!(filtroSeleccionado && startDate && endDate)}
-                              >
-                                <FileDownloadIcon />
-                              </IconButton>
-                            </ButtonGroup>
-                          </Box>
-                          
-                          
-                        </CardContent>
-                      </Card>
-                    </Grid>
+                  {/* vista formularios */}
+                  <FormControl
+                    required
+                    sx={{ minWidth: "15%" }}
+                    className="readOnlyField"
+                  >
+                    <InputLabel>{t("survey.form")}</InputLabel>
+                    <Select
+                      labelId="survey-select-label"
+                      id="survey-select"
+                      value={filtroSeleccionado}
+                      onChange={(e) => {
+                        const response = parseInt(e.target.value);
+                        const infoCapturado = formsInfo.find(
+                          (i) => i.id === response
+                        );
+                        setFiltroSeleccionado(Number(infoCapturado.id));
+                      }}
+                      input={<OutlinedInput label="Formulario" />}
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {formsInfo
+                        .filter((item) => item.idClient === idClienteFiltro)
+                        .map((item, i) => (
+                          <MenuItem key={i} value={item.id}>
+                            {item.title}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                  {/* Agente*/}
+                  <FormControl
+                    required
+                    sx={{ minWidth: "10%" }}
+                    className="readOnlyField"
+                  >
+                    <InputLabel id="demo-simple-select-label">
+                      {("Agente")}
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={agenteFilter}
+                      label={("Agente")}
+                      onChange={(e) => {
+                        setAgenteFilter(e.target.value);
+                      }}
+                    >
+                      <MenuItem value={""}>None</MenuItem>
+                      {monitoringAgente.length > 0 ? (
+                        [...new Set(monitoringAgente.map(i => i.nombre_agente))].map(nombre => (
+                          <MenuItem value={nombre} key={nombre}>
+                            {nombre}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>Cargando Clientes ...</MenuItem>
+                      )}
+                    </Select>
+                  </FormControl>
+
+                  {/* Evaluador */}
+                  <FormControl
+                    required
+                    sx={{ minWidth: "10%" }}
+                    className="readOnlyField"
+                  >
+                    <InputLabel id="demo-simple-select-label">
+                      {("Evaluador")}
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={evaluadorFilter}
+                      label={("Evaluador")}
+                      onChange={(e) => {
+                        setEvaluadorFilter(e.target.value);
+                      }}
+                    >
+                      <MenuItem value={""}>None</MenuItem>
+                      {monitoringEvaluador.length > 0 ? (
+                        [...new Set(monitoringEvaluador.map(i => i.nombre_monitor))].map(nombre => (
+                          <MenuItem value={nombre} key={nombre}>
+                            {nombre}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>Cargando Clientes ...</MenuItem>
+                      )}
+                    </Select>
+                  </FormControl>
+                  {/* vista fechas */}
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      className="readOnlyField"
+                      label={t("reports.fecha_inicio")}
+                      value={startDate}
+                      onChange={handleStartDateChange}
+                      sx={{ width: "15%" }}
+                    />
+                    <DatePicker
+                      className="readOnlyField"
+                      label={t("reports.fecha_fin")}
+                      value={endDate}
+                      onChange={handleEndDateChange}
+                      sx={{ width: "15%" }}
+                    />
+                  </LocalizationProvider>
+
+                  <ButtonGroup>
+                    <IconButton
+                      color="secondary"
+                      onClick={getFilterReports}
+                      disabled={!(filtroSeleccionado && startDate && endDate)}
+                    >
+                      <SearchIcon />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      onClick={exportExel}
+                      disabled={!(filtroSeleccionado && startDate && endDate)}
+                    >
+                      <FileDownloadIcon />
+                    </IconButton>
+                  </ButtonGroup>
                 </Box>
-            </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Box>
+      </Box>
 
       <Box
         sx={{
@@ -574,6 +703,7 @@ const FormReport = () => {
               header={selectedKeys}
               data={fullMonitoring}
               onSelectionChange={(rows) => setSeleccionados(rows)}
+              footerData={footerDatas}
             />
           )}
         </Box>

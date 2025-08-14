@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import HeaderLT1 from "../../components/header/headerLT1";
-import axios from "axios";
+import { apiClient } from "../../utils/axiosConfig";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useParams } from "react-router-dom";
@@ -25,15 +25,49 @@ import {
   CircularProgress,
   Divider,
   Button,
-  Autocomplete
+  Autocomplete,
+  Card,
+  CardContent,
+  Container,
+  Fade,
+  Zoom,
+  Slide,
+  useTheme,
+  alpha,
+  Fab,
+  Tooltip,
+  Collapse,
+  Stack,
+  Chip
 } from "@mui/material";
+import {
+  Add,
+  Edit,
+  Delete,
+  DragIndicator,
+  ExpandMore,
+  ExpandLess,
+  TurnLeft,
+  ArrowBack,
+  QuestionAnswer,
+  Analytics,
+  Schedule,
+  Info,
+  CheckCircle,
+  RadioButtonUnchecked,
+  TextFields,
+  ToggleOn,
+  DragHandle,
+  MoreVert,
+  CheckBox,
+  Error as ErrorIcon
+} from '@mui/icons-material';
 import {
   smallAlertDelete,
   loadingAlert,
   Toast2,
   Toast,
 } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
 import {
   sendData,
   deleteQuestion,
@@ -67,14 +101,16 @@ import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 import Cookies from "js-cookie";
 import { updateFormMetadata } from "../../services/form_listService";
 import { formatDateTimeShort } from "../../utils/dateUtils";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 export default function SurveyBlocks({}) {
+  const theme = useTheme();
   const { id_form } = useParams();
   const { userId } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const [data, setData] = useState([]);
   
- // Estado para controlar si el modal está abierto
+  // Estado para controlar si el modal está abierto
   const [modalOpen, setModalOpen] = useState(false);
   // Estado para guardar la operación y datos que pasas al modal
   const [operation, setOperation] = useState(null);
@@ -126,7 +162,7 @@ export default function SurveyBlocks({}) {
     validate: /^[A-Za-z0-9]*$/,
   });
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   const { accessToken, languageUser, user } = useContext(UserContext);
 
   /* Estado de listas de preguntas del botón + Pregunta */
@@ -144,7 +180,6 @@ export default function SurveyBlocks({}) {
   const [questionCountInput, setQuestionCountInput] = useState("");
 
   /* Selector option */
-
   const [selectorData, setSelectorData] = useState({
     options: [],
     selectedOption: null,
@@ -157,7 +192,6 @@ export default function SurveyBlocks({}) {
   const [searchTerm, setSearchTerm] = useState(""); // Para filtrado
   const [staticData, setStaticData] = useState([]); // Copia de los datos para filtrado
 
-
   // Estados para manejo de posicionamiento relativo de bloques
   const [positionType, setPositionType] = useState(""); // 'Antes o despues de'
   const [referenceBlockId, setReferenceBlockId] = useState(""); // ID del bloque de referencia
@@ -167,22 +201,22 @@ export default function SurveyBlocks({}) {
   const [newBlock, setNewBlock] = useState({ name: "", textQuestion: "" });
 
   //formulario
-
   const [collapsedQuestions, setCollapsedQuestions] = useState({}); // Estado para manejar el colapso de preguntas
   const [selectError, setSelectError] = useState(""); // Select errores
+
+  // Estados para animaciones
+  const [loadingBlocks, setLoadingBlocks] = useState(true);
+  const [showCards, setShowCards] = useState(false);
+
   /* ***********************************************************************************************************/
   /* Component Logic*/
   /* ***********************************************************************************************************/
 
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]);
-
   const fetchFormData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/form/${id_form}`,
+      const response = await apiClient.get(
+        `/form/${id_form}`,
         config
       );
       setFormData(response.data?.data || response.data);
@@ -209,10 +243,15 @@ export default function SurveyBlocks({}) {
     }
   }, [data]);
 
+  // Efecto para animaciones de carga
+  useEffect(() => {
+    if (data.length > 0) {
+      setLoadingBlocks(false);
+      setTimeout(() => setShowCards(true), 300);
+    }
+  }, [data]);
+
   const config = {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
     withCredentials: true,
   };
 
@@ -524,7 +563,7 @@ export default function SurveyBlocks({}) {
         };
 
         try {
-          const response = await axios.post("http://localhost:3000/api/blocks", parametros, config);
+          const response = await apiClient.post("/blocks", parametros, config);
 
           if (response.status === 201 || response.status === 200) {
             const newBlock = response.data;
@@ -577,7 +616,7 @@ export default function SurveyBlocks({}) {
         };
 
         try {
-          const response = await axios.put(`http://localhost:3000/api/blocks/${idToEdit}`, parametros, config);
+          const response = await apiClient.put(`/blocks/${idToEdit}`, parametros, config);
 
           if (response.status === 200) {
             // Actualizar preguntas si existen
@@ -779,7 +818,6 @@ export default function SurveyBlocks({}) {
   };
 
   // Validar el input de preguntas del modal
-
   const validateInputs = () => {
     // Validación de questionType: solo letras y guiones bajos
     const questionTypeValid = /^[A-Za-z_]+$/.test(questionType);
@@ -833,7 +871,6 @@ export default function SurveyBlocks({}) {
   useEffect(() => {
     console.log("¿Están todos los campos completos?", areAllFieldsCompleted());
   }, [nombreInput.input, ponderacionInput.input, questionsList, operation]);
-
 
   const areAllFieldsCompleted = () => {
     return operation === 2 ? validateEditMode() : validateCreateMode();
@@ -893,7 +930,7 @@ export default function SurveyBlocks({}) {
 
   const obtenerPorcentajeTotalBloques = async (formId) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/blocks/form/${formId}`);
+      const response = await apiClient.get(`/blocks/form/${formId}`);
       const bloques = response.data?.data || [];
 
       const total = bloques.reduce((suma, bloque) => {
@@ -908,7 +945,6 @@ export default function SurveyBlocks({}) {
       return 0;
     }
   };
-
 
   const resetFormFields = () => {
     nombreInput.handleChange("");
@@ -943,8 +979,8 @@ export default function SurveyBlocks({}) {
   // Obtener preguntas por ID de bloque (si no existe)
   const getQuestionsByBlockId = async (blockId) => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/questions/block/${blockId}`,
+      const response = await apiClient.get(
+        `/questions/block/${blockId}`,
         config
       );
       return response.data?.data || response.data || [];
@@ -988,7 +1024,6 @@ export default function SurveyBlocks({}) {
   };
 
   // Paginador bloques
-
   const filteredData = useMemo(() => {
     return staticData.filter((row) => {
       if (!searchTerm) return true;
@@ -1008,7 +1043,6 @@ export default function SurveyBlocks({}) {
   }, [staticData, searchTerm]);
 
   // Posición de bloques
-
   const calBlockPosition = () => {
     if (!positionType || !referenceBlockId) {
       const posiciones = data.map((bloque) => parseInt(bloque.posicion));
@@ -1050,7 +1084,7 @@ export default function SurveyBlocks({}) {
     }
 
     try {
-      setLoading(true);
+      setLoadingBlocks(true);
       const res = await getBlocksByFormId(id_form);
 
       // Verificar que la respuesta tenga la estructura esperada
@@ -1131,7 +1165,7 @@ export default function SurveyBlocks({}) {
       setData([]);
       setStaticData([]);
     } finally {
-      setLoading(false);
+      setLoadingBlocks(false);
     }
   };
 
@@ -1246,6 +1280,7 @@ export default function SurveyBlocks({}) {
     };
     setQuestionsList(updatedQuestions);
   };
+
   // Errores mapeados para mostrar en el render
   const errorLabels = {
     ecc_opt: "ECC - Error crítico de cumplimiento",
@@ -1253,349 +1288,748 @@ export default function SurveyBlocks({}) {
     ecn_opt: "ECN - Error crítico de negocio",
   };
 
+  // Función para obtener el icono según el tipo de pregunta
+  const getQuestionIcon = (type) => {
+    switch (type) {
+      case "check_opt":
+        return <CheckBox sx={{ fontSize: 18 }} />;
+      case "selector_opt":
+        return <RadioButtonUnchecked sx={{ fontSize: 18 }} />;
+      case "textfield_s":
+        return <TextFields sx={{ fontSize: 18 }} />;
+      case "yes_no":
+        return <ToggleOn sx={{ fontSize: 18 }} />;
+      default:
+        return <QuestionAnswer sx={{ fontSize: 18 }} />;
+    }
+  };
+
+  // Función para obtener el label del tipo de pregunta
+  const getQuestionTypeLabel = (type) => {
+    const typeLabels = {
+      check_opt: "Selección múltiple",
+      selector_opt: "Selección única", 
+      textfield_s: "Campo de texto",
+      yes_no: "Sí / No"
+    };
+    return typeLabels[type] || "Desconocido";
+  };
+
   return (
     <Box className="App">
       <Box id="body">
         <HeaderLT1 />
-
-        <section
-          style={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0 }}
-        >
-          <div className="container mt-0">
-            <div className="row">
-              {/* Sección de Información del Formulario */}
-              <div className="col-md-12">
-                <div className="card p-4 borderEVA">
-                  <div className="text-center">
-                    <h3>Información</h3>
-                  </div>
-
-                  <div className="card-body p-0 py-2">
-                    <div className="container-fluid">
-                      {formData ? (
-                        <div className="row d-flex align-items-center">
-                          <div className="col-6">
-                            <p>
-                              <b>Nombre del formulario: </b>
-                              {formData.title}
-                            </p>
-                            <p className="fs-6">
-                              <b>Descripción:</b> {formData.description}
-                            </p>
-                          </div>
-                          <div className="col-6 text-end">
-                            <p>
-                              <b>Fecha de Creación:</b>{" "}
-                              {formatDateTimeShort(formData.creation_date)}
-                            </p>
-                            <p className="fs-6">
-                              <b>Última Actualización:</b>{" "}
-                              {formatDateTimeShort(formData.updated_date) ||
-                                "Sin actualizar"}
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-3">
-                          <div
-                            className="spinner-border text-secondary"
-                            role="status"
-                          >
-                            <span className="visually-hidden">Cargando...</span>
-                          </div>
-                          <p className="mt-2">
-                            Sesión caducada, por favor incie sesion nuevamente.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección de Preguntas y Bloques */}
-              <div className="col-md-12 mt-3">
-                <div className="card p-4 card-outline card-success borderEVA">
-                  {/* Header de la sección de preguntas */}
-                  <div>
-                    <h3 className="text-center">Preguntas</h3>
-                    <div className="card-tools d-flex justify-content-end me-4">
-                      <button
-                        className="btn fw-bold btn-sm acces-tabla"
-                        onClick={() => openModal(1, id_form)}
-                      >
-                        + Crear Bloque
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Drag and Drop Context para los bloques */}
-                  <DragDropContext onDragEnd={handleDragEnd}>
-                    <Droppable droppableId="blocksDroppable">
-                      {(provided) => (
-                        <div
-                          className="card-body ui-sorteable"
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
+  
+        <Container maxWidth="xl" sx={{ py: 4, position: 'relative', zIndex: 1 }}>
+          {/* Información del Formulario */}
+          <Slide direction="down" in={true} timeout={300}>
+            <Card 
+              sx={{
+                borderRadius: '24px',
+                background: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.05)' 
+                  : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid',
+                borderColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(182, 42, 139, 0.2)' 
+                  : 'rgba(182, 42, 139, 0.1)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 20px 60px rgba(0, 0, 0, 0.3)'
+                  : '0 20px 60px rgba(182, 42, 139, 0.1)',
+                mb: 4,
+                overflow: 'hidden',
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: 'linear-gradient(90deg, #b62a8b 0%, #d63384 100%)'
+                }
+              }}
+            >
+              <CardContent sx={{ p: 5 }}>
+                <Box textAlign="center" mb={4}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      fontWeight: 600,
+                      color: '#b62a8b',
+                      mb: 1.5,
+                      letterSpacing: '-0.2px'
+                    }}
+                  >
+                    <Info sx={{ fontSize: 40, mr: 2, verticalAlign: 'middle', color: '#b62a8b' }} />
+                    Información del Formulario
+                  </Typography>
+                  <Box sx={{
+                    width: '80px',
+                    height: '4px',
+                    background: '#b62a8b',
+                    borderRadius: '2px',
+                    margin: '0 auto'
+                  }} />
+                </Box>
+                
+                {formData ? (
+                  <Grid container spacing={4} alignItems="center">
+                    <Grid item xs={12} md={8}>
+                      <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                        <Typography 
+                          variant="h6" 
+                          sx={{ 
+                            fontWeight: 600,
+                            color: theme.palette.text.primary,
+                            mb: 1.5,
+                            lineHeight: 1.35
+                          }}
                         >
-                          {/* Mapeo de bloques arrastrables */}
-                          {data.map((bloque, index) => (
-                            <Draggable
-                              key={bloque.id}
-                              draggableId={String(bloque.id)}
-                              index={index}
-                            >
-                              {(provided) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className="border-top p-3 m-3"
-                                >
-                                  {/* Header del bloque con título y ponderación */}
-                                  <div className="d-flex justify-content-between mb-2 w-100">
-                                    <div className="w-100 ps-2">
-                                      <div className="d-flex justify-content-between align-items-start">
-                                        <h3 className="mb-3 ms-2">
-                                          {bloque.block_name ||
-                                            bloque.nombre ||
-                                            "Sin nombre"}
-                                        </h3>
-                                        <span className="text-muted block-weighting me-3">
-                                          {`${bloque.percentage}%` ||
-                                            ("0" && bloque.ponderacion > 0)}
-                                        </span>
-                                      </div>
-
-                                      {/* Contenedor de preguntas del bloque */}
-                                      <div className="mt-2 d-flex flex-column align-items-center">
-                                        {/* Mapeo de preguntas dentro del bloque */}
-                                        {Array.isArray(bloque.preguntas) &&
-                                          bloque.preguntas.map((preg, idx) => {
-                                            const isCollapsed =
-                                              collapsedQuestions[
-                                                `${bloque.id}-${idx}`
-                                              ];
-
-                                            return (
-                                              <div
-                                                key={idx}
-                                                className="border border-secondary-subtle p-3 mb-5 rounded"
-                                                style={{ width: "100%" }}
+                          {formData.title || 'Título del formulario'}
+                        </Typography>
+                        <Typography 
+                          variant="body1" 
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            lineHeight: 1.6,
+                            fontSize: '1.1rem'
+                          }}
+                        >
+                          {formData.description || 'Descripción del formulario'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Stack spacing={3} sx={{ textAlign: { xs: 'center', md: 'right' } }}>
+                        <Box>
+                          <Typography 
+                            variant="body2" 
+                            sx={{
+                              fontSize: '0.9rem',
+                              color: theme.palette.text.secondary,
+                              mb: 1,
+                              fontWeight: 600
+                            }}
+                          >
+                            <Schedule sx={{ fontSize: 16, mr: 1, verticalAlign: 'middle' }} />
+                            Fecha de Creación
+                          </Typography>
+                          <Typography 
+                            variant="subtitle1" 
+                            sx={{
+                              fontWeight: 600,
+                              color: '#b62a8b'
+                            }}
+                          >
+                            {formatDateTimeShort(formData.creation_date)}
+                          </Typography>
+                        </Box>
+                        
+                        <Box>
+                          <Typography 
+                            variant="body2" 
+                            sx={{
+                              fontSize: '0.9rem',
+                              color: theme.palette.text.secondary,
+                              mb: 1,
+                              fontWeight: 600
+                            }}
+                          >
+                            <Analytics sx={{ fontSize: 16, mr: 1, verticalAlign: 'middle' }} />
+                            Última Actualización
+                          </Typography>
+                          <Typography 
+                            variant="subtitle1" 
+                            sx={{
+                              fontWeight: 600,
+                              color: '#d63384'
+                            }}
+                          >
+                            {formatDateTimeShort(formData.updated_date) || "Sin actualizar"}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <Box textAlign="center" py={4}>
+                    <CircularProgress size={60} sx={{ mb: 3, color: '#b62a8b' }} />
+                    <Typography variant="h6" color="text.secondary">
+                      Cargando información del formulario...
+                    </Typography>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Slide>
+  
+          {/* Sección de Bloques */}
+          <Fade in={true} timeout={400}>
+            <Card 
+              sx={{
+                borderRadius: '24px',
+                background: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.05)' 
+                  : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid',
+                borderColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(182, 42, 139, 0.2)' 
+                  : 'rgba(182, 42, 139, 0.1)',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 20px 60px rgba(0, 0, 0, 0.3)'
+                  : '0 20px 60px rgba(182, 42, 139, 0.1)',
+                overflow: 'hidden',
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: 'linear-gradient(90deg, #b62a8b 0%, #d63384 100%)'
+                }
+              }}
+            >
+              <CardContent sx={{ p: 5 }}>
+                {/* Header de la sección */}
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                  <Box>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 600,
+                        color: '#b62a8b',
+                        mb: 1.5,
+                        letterSpacing: '-0.2px'
+                      }}
+                    >
+                      <QuestionAnswer sx={{ fontSize: 40, mr: 2, verticalAlign: 'middle', color: '#b62a8b' }} />
+                      Bloques de Preguntas
+                    </Typography>
+                    <Box sx={{
+                      width: '80px',
+                      height: '4px',
+                      background: '#b62a8b',
+                      borderRadius: '2px'
+                    }} />
+                  </Box>
+                  
+                  <Zoom in={true} timeout={300}>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      startIcon={<Add />}
+                      onClick={() => openModal(1, id_form)}
+                      sx={{
+                        borderRadius: '20px',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        fontSize: '1.1rem',
+                        px: 4,
+                        py: 2,
+                        background: 'linear-gradient(90deg, #b62a8b 0%, #d63384 100%)',
+                        boxShadow: '0 8px 25px rgba(182, 42, 139, 0.4)',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          background: 'linear-gradient(90deg, #a02478 0%, #c42d76 100%)',
+                          boxShadow: '0 12px 35px rgba(182, 42, 139, 0.6)',
+                          transform: 'translateY(-2px) scale(1.02)'
+                        }
+                      }}
+                    >
+                      Crear Bloque
+                    </Button>
+                  </Zoom>
+                </Box>
+  
+                {/* Contenido de bloques */}
+                <Box sx={{ mt: 4 }}>
+                  {loadingBlocks ? (
+                    <Box textAlign="center" py={8}>
+                      <CircularProgress size={60} sx={{ mb: 3, color: '#b62a8b' }} />
+                      <Typography variant="h6" color="text.secondary">
+                        Cargando bloques...
+                      </Typography>
+                    </Box>
+                  ) : data.length === 0 ? (
+                    <Fade in={true} timeout={300}>
+                      <Box 
+                        sx={{
+                          textAlign: 'center',
+                          py: 8,
+                          color: theme.palette.text.secondary,
+                          background: theme.palette.mode === 'dark' 
+                            ? 'rgba(182, 42, 139, 0.05)' 
+                            : 'rgba(182, 42, 139, 0.02)',
+                          borderRadius: '16px',
+                          border: '2px dashed',
+                          borderColor: 'rgba(182, 42, 139, 0.3)'
+                        }}
+                      >
+                        <QuestionAnswer sx={{ fontSize: 80, mb: 3, opacity: 0.3, color: '#b62a8b' }} />
+                        <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
+                          No hay bloques aún
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
+                          Comienza creando tu primer bloque de preguntas
+                        </Typography>
+                      </Box>
+                    </Fade>
+                  ) : (
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                      <Droppable droppableId="blocksDroppable">
+                        {(provided) => (
+                          <Box
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+                          >
+                            {data.map((bloque, index) => (
+                              <Draggable
+                                key={bloque.id}
+                                draggableId={String(bloque.id)}
+                                index={index}
+                              >
+                                {(provided, snapshot) => (
+                                  <Fade 
+                                    in={showCards} 
+                                    timeout={200 + (index * 50)}
+                                    key={bloque.id}
+                                  >
+                                    <Paper
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      elevation={0}
+                                      sx={{ 
+                                        borderRadius: '20px',
+                                        background: theme.palette.mode === 'dark' 
+                                          ? 'rgba(255, 255, 255, 0.05)' 
+                                          : 'rgba(255, 255, 255, 0.9)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: '1px solid',
+                                        borderColor: theme.palette.mode === 'dark' 
+                                          ? 'rgba(182, 42, 139, 0.2)' 
+                                          : 'rgba(182, 42, 139, 0.1)',
+                                        transition: 'all 0.15s ease',
+                                        transform: snapshot.isDragging ? 'rotate(3deg) scale(1.02)' : 'none',
+                                        boxShadow: snapshot.isDragging 
+                                          ? '0 20px 40px rgba(182, 42, 139, 0.3)'
+                                          : theme.palette.mode === 'dark'
+                                            ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                                            : '0 8px 32px rgba(182, 42, 139, 0.08)',
+                                        '&:hover': {
+                                          boxShadow: theme.palette.mode === 'dark'
+                                            ? '0 16px 48px rgba(0, 0, 0, 0.4)'
+                                            : '0 16px 48px rgba(182, 42, 139, 0.15)',
+                                          transform: 'translateY(-4px)',
+                                          borderColor: 'rgba(182, 42, 139, 0.4)'
+                                        },
+                                        overflow: 'hidden',
+                                        position: 'relative'
+                                      }}
+                                    >
+                                      <CardContent sx={{ p: 4 }}>
+                                        {/* Header del bloque */}
+                                        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                                          <Box sx={{ flex: 1, mr: 2 }}>
+                                            <Box display="flex" alignItems="center" mb={2}>
+                                              <Box
+                                                {...provided.dragHandleProps}
+                                                sx={{
+                                                  cursor: 'grab',
+                                                  mr: 2,
+                                                  p: 1,
+                                                  borderRadius: '8px',
+                                                  background: 'rgba(182, 42, 139, 0.1)',
+                                                  '&:hover': {
+                                                    background: 'rgba(182, 42, 139, 0.2)',
+                                                  },
+                                                  '&:active': {
+                                                    cursor: 'grabbing'
+                                                  }
+                                                }}
                                               >
-                                                {/* Header de la pregunta con botón de colapso */}
-                                                <div className="d-flex justify-content-between align-items-center">
-                                                  <p className="mb-3 fs-5">
-                                                    <strong>
-                                                      {preg.text ||
-                                                        preg.question_name ||
-                                                        "Sin texto"}
-                                                    </strong>
-                                                  </p>
-                                                  <button
-                                                    className="btn btn-sm btn-outline-secondary"
-                                                    onClick={() =>
-                                                      toggleCollapse(
-                                                        bloque.id,
-                                                        idx
-                                                      )
-                                                    }
+                                                <DragHandle sx={{ color: '#b62a8b' }} />
+                                              </Box>
+                                              
+                                              <Typography 
+                                                variant="h6" 
+                                                sx={{ 
+                                                  fontWeight: 600,
+                                                  color: theme.palette.text.primary,
+                                                  lineHeight: 1.35
+                                                }}
+                                              >
+                                                {bloque.block_name || bloque.nombre || "Sin nombre"}
+                                              </Typography>
+                                              
+                                              <Chip
+                                                label={`${bloque.percentage || bloque.ponderacion || 0}%`}
+                                                sx={{
+                                                  ml: 2,
+                                                  fontWeight: 700,
+                                                  background: 'linear-gradient(90deg, #b62a8b 0%, #d63384 100%)',
+                                                  color: 'white'
+                                                }}
+                                              />
+                                            </Box>
+                                          </Box>
+  
+                                          {/* Menú de acciones */}
+                                          <Box sx={{ display: 'flex', gap: 1 }}>
+                                            <Tooltip title="Editar bloque">
+                                              <IconButton
+                                                onClick={() => onUpdate(bloque)}
+                                                sx={{
+                                                  background: 'rgba(182, 42, 139, 0.1)',
+                                                  color: '#b62a8b',
+                                                  borderRadius: '12px',
+                                                  transition: 'all 0.1s ease',
+                                                  '&:hover': { 
+                                                    background: 'rgba(182, 42, 139, 0.2)',
+                                                    transform: 'scale(1.05)'
+                                                  }
+                                                }}
+                                              >
+                                                <Edit sx={{ fontSize: 20 }} />
+                                              </IconButton>
+                                            </Tooltip>
+                                            
+                                            <Tooltip title="Eliminar bloque">
+                                              <IconButton
+                                                onClick={() => handleDeleteBlock(bloque.id, bloque.block_name)}
+                                                sx={{
+                                                  background: 'rgba(244, 67, 54, 0.1)',
+                                                  color: '#f44336',
+                                                  borderRadius: '12px',
+                                                  transition: 'all 0.1s ease',
+                                                  '&:hover': { 
+                                                    background: 'rgba(244, 67, 54, 0.2)',
+                                                    transform: 'scale(1.05)'
+                                                  }
+                                                }}
+                                              >
+                                                <Delete sx={{ fontSize: 20 }} />
+                                              </IconButton>
+                                            </Tooltip>
+                                          </Box>
+                                        </Box>
+  
+                                        {/* Preguntas del bloque */}
+                                        <Box sx={{ mt: 3 }}>
+                                          {Array.isArray(bloque.preguntas) && bloque.preguntas.length > 0 ? (
+                                            <Stack spacing={2}>
+                                              {bloque.preguntas.map((preg, idx) => {
+                                                const isCollapsed = collapsedQuestions[`${bloque.id}-${idx}`];
+                                                
+                                                return (
+                                                  <Paper
+                                                    key={idx}
+                                                    elevation={0}
+                                                    sx={{
+                                                      borderRadius: '16px',
+                                                      background: theme.palette.mode === 'dark' 
+                                                        ? 'rgba(255, 255, 255, 0.03)' 
+                                                        : 'rgba(182, 42, 139, 0.02)',
+                                                      border: '1px solid',
+                                                      borderColor: theme.palette.mode === 'dark' 
+                                                        ? 'rgba(182, 42, 139, 0.2)' 
+                                                        : 'rgba(182, 42, 139, 0.1)',
+                                                      transition: 'all 0.1s ease',
+                                                      '&:hover': {
+                                                        borderColor: 'rgba(182, 42, 139, 0.5)',
+                                                        background: theme.palette.mode === 'dark' 
+                                                          ? 'rgba(255, 255, 255, 0.05)' 
+                                                          : 'rgba(182, 42, 139, 0.03)'
+                                                      }
+                                                    }}
                                                   >
-                                                    {isCollapsed ? "+" : "-"}
-                                                  </button>
-                                                </div>
-
-                                                {/* Contenido expandible de la pregunta */}
-                                                <div className="m-2">
-                                                  {!isCollapsed && (<>
-                                                    {/* Pregunta tipo selección múltiple */}
-                                                    {preg.type === "check_opt" && (
-                                                      <Autocomplete
-                                                        multiple
-                                                        options={(preg.options || []).map((opt) =>
-                                                          typeof opt === "object" && opt !== null ? opt.text : String(opt)
-                                                        )}
-                                                        renderOption={(props, option, { selected }) => (
-                                                          <li {...props} key={option}>
-                                                            <Checkbox checked={selected} style={{ marginRight: 8 }} />
-                                                            {option}
-                                                          </li>
-                                                        )}
-                                                        renderInput={(params) => (
-                                                          <TextField
-                                                            {...params}
-                                                            label="Selecciona una opción:"
-                                                            placeholder="Selecciona una o varias opciones"
-                                                            className="readOnlyField"
+                                                    <Box sx={{ p: 3 }}>
+                                                      {/* Header de la pregunta */}
+                                                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                                        <Box display="flex" alignItems="center" sx={{ flex: 1 }}>
+                                                          <Chip
+                                                            icon={getQuestionIcon(preg.type)}
+                                                            label={getQuestionTypeLabel(preg.type)}
+                                                            size="small"
+                                                            sx={{
+                                                              mr: 2,
+                                                              background: 'rgba(182, 42, 139, 0.1)',
+                                                              color: '#b62a8b',
+                                                              border: 'none',
+                                                              fontWeight: 600
+                                                            }}
                                                           />
-                                                        )}
-                                                        sx={{ mb: 2 }}
-                                                      />
-                                                    )}
+                                                          
+                                                          <Typography 
+                                                            variant="h6" 
+                                                            sx={{ 
+                                                              fontWeight: 600,
+                                                              color: theme.palette.text.primary,
+                                                              lineHeight: 1.4
+                                                            }}
+                                                          >
+                                                            {preg.text || preg.question_name || "Sin texto"}
+                                                          </Typography>
+                                                        </Box>
+                                                        
+                                                        <IconButton
+                                                          onClick={() => toggleCollapse(bloque.id, idx)}
+                                                          sx={{
+                                                            background: theme.palette.mode === 'dark' 
+                                                              ? 'rgba(255, 255, 255, 0.05)' 
+                                                              : 'rgba(182, 42, 139, 0.05)',
+                                                            borderRadius: '10px',
+                                                            transition: 'all 0.1s ease',
+                                                            '&:hover': { 
+                                                              background: theme.palette.mode === 'dark' 
+                                                                ? 'rgba(255, 255, 255, 0.1)' 
+                                                                : 'rgba(182, 42, 139, 0.1)',
+                                                              transform: 'scale(1.05)'
+                                                            }
+                                                          }}
+                                                        >
+                                                          {isCollapsed ? <ExpandMore /> : <ExpandLess />}
+                                                        </IconButton>
+                                                      </Box>
+  
+                                                      {/* Contenido expandible de la pregunta */}
+                                                      <Collapse in={!isCollapsed} timeout={300}>
+                                                        <Box sx={{ mt: 2 }}>
+                                                                                                                    {/* Renderizado de diferentes tipos de preguntas */}
+                                                          {preg.type === "check_opt" && (
+                                                            <Autocomplete
+                                                              multiple
+                                                              options={(preg.options || []).map((opt) =>
+                                                                typeof opt === "object" && opt !== null ? opt.text : String(opt)
+                                                              )}
+                                                              value={preg.selected_answer ? preg.selected_answer.split(',').filter(item => item.trim() !== '') : []}
+                                                              onChange={(event, newValue) => {
+                                                                handleAnswerChange(bloque.id, idx, newValue.join(','));
+                                                              }}
+                                                              renderOption={(props, option, { selected }) => (
+                                                                <li {...props} key={option}>
+                                                                  <Checkbox checked={selected} style={{ marginRight: 8 }} />
+                                                                  {option}
+                                                                </li>
+                                                              )}
+                                                              renderInput={(params) => (
+                                                                <TextField
+                                                                  {...params}
+                                                                  label="Selecciona opciones:"
+                                                                  placeholder="Selecciona una o varias opciones"
+                                                                  sx={{
+                                                                    '& .MuiOutlinedInput-root': {
+                                                                      borderRadius: '12px',
+                                                                      '&:hover fieldset': {
+                                                                        borderColor: '#b62a8b',
+                                                                      },
+                                                                      '&.Mui-focused fieldset': {
+                                                                        borderColor: '#b62a8b',
+                                                                      }
+                                                                    }
+                                                                  }}
+                                                                />
+                                                              )}
+                                                              sx={{ mb: 2 }}
+                                                            />
+                                                          )}
 
-                                                    {/* Pregunta tipo selección única */}
-                                                    {preg.type === "selector_opt" && (
-                                                      <TextField
-                                                        select
-                                                        fullWidth
-                                                        label="Selecciona una opción:"
-                                                        sx={{ mb: 2 }}
-                                                        className="readOnlyField"
-                                                      >
-                                                        <MenuItem value="">Selecciona una opción</MenuItem>
-                                                        {(preg.options || []).map((opt, index) => {
-                                                          const optionText =
-                                                            typeof opt === "string" ? opt : opt.text || "";
-                                                          return (
-                                                            <MenuItem key={index} value={optionText}>
-                                                              {optionText}
-                                                            </MenuItem>
-                                                          );
-                                                        })}
-                                                      </TextField>
-                                                    )}
-                                    
-                                                    {/* Pregunta tipo Campo de texto corto */}
-                                                    {preg.type === "textfield_s" && (
-                                                      <Textfield_s
-                                                        value={
-                                                          preg.selected_answer ||
-                                                          ""
-                                                        }
-                                                        readOnly
-                                                      />
-                                                    )}
+                                                          {preg.type === "selector_opt" && (
+                                                            <TextField
+                                                              select
+                                                              fullWidth
+                                                              label="Selecciona una opción:"
+                                                              value={preg.selected_answer || ""}
+                                                              onChange={(event) => {
+                                                                handleAnswerChange(bloque.id, idx, event.target.value);
+                                                              }}
+                                                              sx={{ 
+                                                                mb: 2,
+                                                                '& .MuiOutlinedInput-root': {
+                                                                  borderRadius: '12px',
+                                                                  '&:hover fieldset': {
+                                                                    borderColor: '#b62a8b',
+                                                                  },
+                                                                  '&.Mui-focused fieldset': {
+                                                                    borderColor: '#b62a8b',
+                                                                  }
+                                                                }
+                                                              }}
+                                                            >
+                                                              <MenuItem value="">Selecciona una opción</MenuItem>
+                                                              {(preg.options || []).map((opt, index) => {
+                                                                const optionText =
+                                                                  typeof opt === "string" ? opt : opt.text || "";
+                                                                return (
+                                                                  <MenuItem key={index} value={optionText}>
+                                                                    {optionText}
+                                                                  </MenuItem>
+                                                                );
+                                                              })}
+                                                            </TextField>
+                                                          )}
+                          
+                                                          {preg.type === "textfield_s" && (
+                                                            <TextField
+                                                              fullWidth
+                                                              label="Campo de texto"
+                                                              placeholder="Respuesta de texto..."
+                                                              value={preg.selected_answer || ""}
+                                                              onChange={(event) => {
+                                                                handleAnswerChange(bloque.id, idx, event.target.value);
+                                                              }}
+                                                              sx={{
+                                                                '& .MuiOutlinedInput-root': {
+                                                                  borderRadius: '12px',
+                                                                  '&:hover fieldset': {
+                                                                    borderColor: '#b62a8b',
+                                                                  },
+                                                                  '&.Mui-focused fieldset': {
+                                                                    borderColor: '#b62a8b',
+                                                                  }
+                                                                }
+                                                              }}
+                                                            />
+                                                          )}
 
-                                                    {/* Pregunta tipo Sí/No */}
-                                                    {preg.type === "yes_no" && (
-                                                      <Yes_no
-                                                        value={
-                                                          preg.selected_answer ||
-                                                          ""
-                                                        }
-                                                        readOnly
-                                                      />
-                                                    )}
-                                                  </>
-                                                )}
-                                                </div>
-
-                                                <div>
-                                                  <p className="mb-3 ms-1 text-end">
-                                                    {errorLabels[preg.error] ||
-                                                      "No seleccionado"}
-                                                    {"."}
-                                                  </p>
-                                                </div>
-                                              </div>
-                                            );
-                                          })}
-
-                                      </div>
-                                    </div>
-
-                                    {/* Menú desplegable de acciones (editar/eliminar) */}
-                                    <div className="dropdown">
-                                      <button
-                                        className="btn-rect btn-dropdown"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                      >
-                                        <div className="dropdown-toggle">
-                                          <i className="fa-solid fa-ellipsis-vertical"></i>
-                                        </div>
-                                      </button>
-                                      <ul className="dropdown-menu dropdown-menu-end p-0">
-                                        <li className="text-start btn-rect">
-                                          <button
-                                            className="btn text-start"
-                                            style={{ width: "100%" }}
-                                            onClick={() => onUpdate(bloque)}
-                                          >
-                                            <i className="fa-solid fa-edit"></i>{" "}
-                                            Editar
-                                          </button>
-                                        </li>
-                                        <li className="text-start btn-rect">
-                                          <button
-                                            className="btn text-start"
-                                            style={{ width: "100%" }}
-                                            onClick={() =>
-                                              handleDeleteBlock(
-                                                bloque.id,
-                                                bloque.block_name
-                                              )
-                                            }
-                                          >
-                                            <i className="fa-solid fa-trash"></i>{" "}
-                                            {t("delete_block")}
-                                          </button>
-                                        </li>
-                                      </ul>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+                                                          {preg.type === "yes_no" && (
+                                                            <TextField
+                                                              select
+                                                              fullWidth
+                                                              label="Sí / No"
+                                                              value={preg.selected_answer || ""}
+                                                              onChange={(event) => {
+                                                                handleAnswerChange(bloque.id, idx, event.target.value);
+                                                              }}
+                                                              sx={{
+                                                                '& .MuiOutlinedInput-root': {
+                                                                  borderRadius: '12px',
+                                                                  '&:hover fieldset': {
+                                                                    borderColor: '#b62a8b',
+                                                                  },
+                                                                  '&.Mui-focused fieldset': {
+                                                                    borderColor: '#b62a8b',
+                                                                  }
+                                                                }
+                                                              }}
+                                                            >
+                                                              <MenuItem value="">Selecciona una opción</MenuItem>
+                                                              <MenuItem value="Si">Sí</MenuItem>
+                                                              <MenuItem value="No">No</MenuItem>
+                                                            </TextField>
+                                                          )}
+  
+                                                          {/* Error type indicator */}
+                                                          <Box display="flex" justifyContent="flex-end" mt={2}>
+                                                            <Chip
+                                                              icon={<ErrorIcon sx={{ fontSize: 16 }} />}
+                                                              label={errorLabels[preg.error] || "Sin error asignado"}
+                                                              size="small"
+                                                              sx={{
+                                                                background: preg.error 
+                                                                  ? 'rgba(244, 67, 54, 0.1)' 
+                                                                  : 'rgba(158, 158, 158, 0.1)',
+                                                                color: preg.error ? '#f44336' : '#9e9e9e',
+                                                                fontWeight: 600
+                                                              }}
+                                                            />
+                                                          </Box>
+                                                        </Box>
+                                                      </Collapse>
+                                                    </Box>
+                                                  </Paper>
+                                                );
+                                              })}
+                                            </Stack>
+                                          ) : (
+                                            <Box 
+                                              sx={{
+                                                textAlign: 'center',
+                                                py: 4,
+                                                color: theme.palette.text.secondary,
+                                                background: theme.palette.mode === 'dark' 
+                                                  ? 'rgba(182, 42, 139, 0.02)' 
+                                                  : 'rgba(182, 42, 139, 0.02)',
+                                                borderRadius: '12px',
+                                                border: '1px dashed',
+                                                borderColor: 'rgba(182, 42, 139, 0.3)'
+                                              }}
+                                            >
+                                              <QuestionAnswer sx={{ fontSize: 48, mb: 2, opacity: 0.3, color: '#b62a8b' }} />
+                                              <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                                Este bloque no tiene preguntas aún
+                                              </Typography>
+                                            </Box>
+                                          )}
+                                        </Box>
+                                      </CardContent>
+                                    </Paper>
+                                  </Fade>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </Box>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          </Fade>
+        </Container>
+  
+        {/* Modal para gestión de bloques */}
+        <ModalSurveyBlocks
+          open={modalOpen}
+          handleModalClose={handleModalClose}
+          operation={operation}
+          title={title}
+          descriptionText={descriptionText}
+          questionsList={questionsList}
+          handleInputChange={handleInputChange}
+          singleChoiceData={singleChoiceData}
+          multipleChoiceData={multipleChoiceData}
+          selectorData={selectorData}
+          handleSingleChoiceChange={handleSingleChoiceChange}
+          handleMultipleChoiceChange={handleMultipleChoiceChange}
+          handleSelectorChange={handleSelectorChange}
+          isChecked={isChecked}
+          listConditional={listConditional}
+          valueConditional={valueConditional}
+          conditionalHandleChange={conditionalHandleChange}
+          error={error}
+          validar={validar}
+          idToEdit={idToEdit}
+          id_form={id_form}
+          areAllFieldsCompleted={areAllFieldsCompleted}
+          obtenerPorcentajeTotalBloques={obtenerPorcentajeTotalBloques}
+          handleCancel={handleCancel}
+          addNewQuestion={addNewQuestion}
+          questionCountInput={questionCountInput}
+          setQuestionCountInput={setQuestionCountInput}
+          nombreInput={nombreInput}
+          ponderacionInput={ponderacionInput}
+          posicionInput={posicionInput}
+          positionType={positionType}
+          setPositionType={setPositionType}
+          referenceBlockId={referenceBlockId}
+          setReferenceBlockId={setReferenceBlockId}
+          data={data}
+          options={multipleChoiceData.options}
+          correctAnswers={multipleChoiceData.correctAnswers}
+          onChange={handleMultipleChoiceChange}
+          migrateQuestionData={migrateQuestionData}
+          selectError={selectError}
+          handleErrorOpt={handleErrorOpt}
+        />
       </Box>
-
-      {/* Modal para gestión de bloques de encuesta */}
-      <ModalSurveyBlocks
-        open={modalOpen}
-        handleModalClose={handleModalClose}
-        operation={operation}
-        title={title}
-        descriptionText={descriptionText}
-        questionsList={questionsList}
-        handleInputChange={handleInputChange}
-        singleChoiceData={singleChoiceData}
-        multipleChoiceData={multipleChoiceData}
-        selectorData={selectorData}
-        handleSingleChoiceChange={handleSingleChoiceChange}
-        handleMultipleChoiceChange={handleMultipleChoiceChange}
-        handleSelectorChange={handleSelectorChange}
-        isChecked={isChecked}
-        listConditional={listConditional}
-        valueConditional={valueConditional}
-        conditionalHandleChange={conditionalHandleChange}
-        error={error}
-        validar={validar}
-        idToEdit={idToEdit}
-        id_form={id_form}
-        areAllFieldsCompleted={areAllFieldsCompleted}
-        obtenerPorcentajeTotalBloques ={obtenerPorcentajeTotalBloques}
-        handleCancel={handleCancel}
-        addNewQuestion={addNewQuestion}
-        questionCountInput={questionCountInput}
-        setQuestionCountInput={setQuestionCountInput}
-        nombreInput={nombreInput}
-        ponderacionInput={ponderacionInput}
-        posicionInput={posicionInput}
-        positionType={positionType}
-        setPositionType={setPositionType}
-        referenceBlockId={referenceBlockId}
-        setReferenceBlockId={setReferenceBlockId}
-        data={data}
-        options={multipleChoiceData.options}
-        correctAnswers={multipleChoiceData.correctAnswers}
-        onChange={handleMultipleChoiceChange}
-        migrateQuestionData={migrateQuestionData}
-        selectError={selectError}
-        handleErrorOpt={handleErrorOpt}
-      />
     </Box>
-  );
+    );
 }

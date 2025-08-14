@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations";
 import {
   Dialog,
   DialogTitle,
@@ -27,18 +27,14 @@ const ModalMonitoringView = ({
   updateSelectedRow,
   viewType,
 }) => {
-  const { userInfo, accessToken, languageUser } = useContext(UserContext); // Contexto del usuario logeado para aplicar en el check
+  const { userInfo, accessToken } = useContext(UserContext); // Contexto del usuario logeado para aplicar en el check
   const [monitoringDetails, setMonitoringDetails] = useState([]); // Trae la data detallada del monitoreo
   const [openModalFeed, setOpenModalFeed] = useState(false); // Manejo del modal de feedback
   const [feedback, setFeedback] = useState(""); // Captura el input del comentario a guardar
   const [feedbackDisabled, setFeedbackDisabled] = useState(false); // Manejo del botón de comentario
-  const { t, i18n } = useTranslation(); // Traducción
+  const { t } = useTranslations(); // Traducción
   const [checked, setChecked] = useState(data.check === 1); //Cuando se aplica el check actualiza el backend 1 = check existente
   const [checkDisabled, setCheckDisabled] = useState(true); //Manejo del botón cuándo check cambia
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
 
   // Validar feedback y check al abrir el modal
 
@@ -127,10 +123,6 @@ const ModalMonitoringView = ({
       console.error("Error al actualizar el check:", error);
     }
   };
-
-  const ponderacionValidate = () => {
-    
-  }
 
   const header = [
     "id",

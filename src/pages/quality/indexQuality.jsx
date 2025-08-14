@@ -1,21 +1,14 @@
 import "../../assets/css/index.css";
-import SidebarLT2 from "../../components/aside/sidebarLT2";
 import HeaderLT2 from "../../components/header/headerLT2";
 import { Container, Grid, Box } from "@mui/material";
-import { useTranslation } from "react-i18next";
-import { useEffect, useContext } from "react";
-import { UserContext } from "../../context/UserContext";
 import {
   SatisfationCard,
   QualityCard,
 } from "../../components/cards/DashboardCards";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 const Index = () => {
-  const { t, i18n } = useTranslation();
-  const { languageUser } = useContext(UserContext);
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, []);
+  const { t } = useTranslations();
 
   return (
     <Box>
@@ -28,21 +21,9 @@ const Index = () => {
           spacing={2}
           wrap="nowrap"
         >
-          <Grid
-            item
-            xs={12}
-            md={2}
-            sx={{
-              alignSelf: "center",
-              display: "flex",
-              justifyContent: "flex-start",
-            }}
-          >
-            <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
-              <SidebarLT2 />
-            </Box>
-          </Grid>
-          {/* Cards*/}
+          <Grid item xs={false} md={2} />
+
+          {/* Cards */}
           <Grid item xs={12} md={9}>
             <Container
               sx={{
@@ -56,7 +37,6 @@ const Index = () => {
                 <Grid item xs={12} md={6}>
                   <QualityCard />
                 </Grid>
-
                 <Grid item xs={12} md={6}>
                   <SatisfationCard />
                 </Grid>

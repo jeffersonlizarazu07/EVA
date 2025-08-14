@@ -1,9 +1,9 @@
 import { Feedback } from "@mui/icons-material";
-import axios from "axios";
+import { apiClient } from "../utils/axiosConfig";
 import Swal from "sweetalert2";
 
 // Configuración base para las peticiones
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL = ""; // baseURL ya está en apiClient
 const config = {
   withCredentials: true,
 };
@@ -11,8 +11,8 @@ const config = {
 //obtener respuestas multiple
 export const getResponseMult = async () => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/answersform/getResponseMult`,
+    const response = await apiClient.get(
+      `/answersform/getResponseMult`,
       config
     );
     return response.data;
@@ -26,8 +26,8 @@ export const getResponseMult = async () => {
 
 export const getClientsAndForms = async () => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/answersform/clients-forms`,
+    const response = await apiClient.get(
+      `/answersform/clients-forms`,
       config
     );
     return response.data;
@@ -41,8 +41,8 @@ export const getClientsAndForms = async () => {
 
 export const getMonitoring = async () => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/answersform/report-monitoring`,
+    const response = await apiClient.get(
+      `/answersform/report-monitoring`,
       config
     );
     return response.data;
@@ -55,14 +55,29 @@ export const getMonitoring = async () => {
 // Obtener todos los administradores (agentes) desde el backend
 export const getAdmins = async (clients) => {
   try {
-    const response = await axios.post(
-      `${API_BASE_URL}/agent`,
-      { clients },
+    const safeClients = Array.isArray(clients)
+      ? Array.from(new Set(
+          clients
+            .map((c) => (typeof c === 'string' ? parseInt(c, 10) : c))
+            .filter((c) => Number.isFinite(c))
+        ))
+      : [];
+
+    if (safeClients.length === 0) {
+      // Sin clientes asignados, no llamar al backend para evitar 400
+      return [];
+    }
+
+    // Algunos backends esperan 'clients' como texto (CSV)
+    const clientsCsv = safeClients.join(',');
+    const response = await apiClient.post(
+      `/agent`,
+      { clients: clientsCsv },
       config
     );
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching admins:", error);
+    console.error("Error fetching admins:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -70,7 +85,7 @@ export const getAdmins = async (clients) => {
 // Función para obtener la lista de clientes registrados
 export const getClients = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/clients`, config);
+    const response = await apiClient.get(`/clients`, config);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching clients:", error);
@@ -81,8 +96,8 @@ export const getClients = async () => {
 // Función para obtener los clientes asignados a un usuario específico
 export const getUserClients = async (id) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/users_client/${id}`,
+    const response = await apiClient.get(
+      `/users_client/${id}`,
       config
     );
     const responseData = response.data.data;
@@ -113,8 +128,8 @@ export const getUserClients = async (id) => {
 // Función para obtener un agente específico por ID
 export const getAgentById = async (agentId) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/agent/${agentId}`,
+    const response = await apiClient.get(
+      `/agent/${agentId}`,
       config
     );
     return response.data.data;
@@ -150,7 +165,7 @@ export const getFormsByClient = async (clientId) => {
       return null;
     }
 
-    const response = await axios.get(`${API_BASE_URL}/clients/forms`, {
+    const response = await apiClient.get(`/clients/forms`, {
       params: { clientId: numericClientId },
       ...config,
     });
@@ -182,8 +197,8 @@ export const getFormsByClient = async (clientId) => {
 // Obtener bloques para un formulario específico
 export const getBlocksForIdForm = async (formId) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/blocks/form/${formId}`,
+    const response = await apiClient.get(
+      `/blocks/form/${formId}`,
       config
     );
     console.log("Bloques cargados:", response.data.data);
@@ -198,7 +213,7 @@ export const getBlocksForIdForm = async (formId) => {
 // Guardar monitorización y respuestas
 export const saveMonitoringAndAnswers = async (payload) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/answersform`, payload, {
+    const response = await apiClient.post(`/answersform`, payload, {
       headers: { "Content-Type": "application/json" },
       ...config,
     });
@@ -216,8 +231,8 @@ export const getMonitoringByUser = async (id) => {
     throw new Error("userId no proporcionado");
   }
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/monitoring/user/${id}`,
+    const response = await apiClient.get(
+      `/monitoring/user/${id}`,
       config
     );
     console.log("Respuesta de la API:", response.data);
@@ -231,8 +246,8 @@ export const getMonitoringByUser = async (id) => {
 // Traer las monitorizaciones estructuradas
 export const getMonitorinStructure = async (id) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/monitoring/${id}/details`,
+    const response = await apiClient.get(
+      `/monitoring/${id}/details`,
       config
     );
     console.log("Estructura del monitoreo actual", response.data);
@@ -246,8 +261,8 @@ export const getMonitorinStructure = async (id) => {
 // Guardar el feedback desde la vista general de monitorizaciones
 export const saveFeedback = async (id, feedback) => {
   try {
-    const response = await axios.put(
-      `${API_BASE_URL}/monitoring/${id}`,
+    const response = await apiClient.put(
+      `/monitoring/${id}`,
       { feedback },
       config
     );
@@ -262,8 +277,8 @@ export const saveFeedback = async (id, feedback) => {
 export const updateCheck = async (id, checkValue, check_date) => {
   console.log("Enviando data:", { id, checkValue, check_date });
   try {
-    const response = await axios.put(
-      `${API_BASE_URL}/monitoring/${id}/check`,
+    const response = await apiClient.put(
+      `/monitoring/${id}/check`,
       {
         check: checkValue,
       },

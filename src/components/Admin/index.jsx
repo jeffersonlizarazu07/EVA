@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import "../../assets/css/index.css";
-import SidebarLT1 from "../aside/sidebarLT1";
+import HeaderLT2 from "../header/headerLT2.jsx"
 import HeaderLT1 from "../header/headerLT1";
 import i18n from "../../assets/js/i18n.jsx";
 import { useEffect, useContext, useState } from "react";
@@ -26,21 +26,21 @@ const Index = () => {
 
   return (
     <Box>
-      <HeaderLT1 />
+      {userType === "2" ? <HeaderLT2 /> : <HeaderLT1 />}
       {/* id="body" */}
       <Box>
         <Box sx={{ marginTop: 12 }}>
           <Grid size={12}>
-            {/* marginLeft: 27 */}
             <Container
+              maxWidth={false}
               sx={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <Grid container spacing={1}>
-                <Grid item xs={12} md={6}>
+              <Grid container spacing={6} justifyContent="center">
+                <Grid item xs={12} md={6} display="flex" justifyContent="center">
                   <Link href="/quality" underline="none">
                     <Card
                       id="card1"
@@ -51,6 +51,7 @@ const Index = () => {
                         justifyContent: "center",
                         minHeight: 300, // Ajusta según tu necesidad
                         textAlign: "center",
+                        width: { xs: '90vw', md: 600 },
                       }}
                     >
                       <CardContent>
@@ -67,7 +68,7 @@ const Index = () => {
                   </Link>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={6} display="flex" justifyContent="center">
                   <Link href="/satisfaction" underline="none">
                     <Card
                       id="card2"
@@ -78,6 +79,7 @@ const Index = () => {
                         justifyContent: "center",
                         minHeight: 300,
                         textAlign: "center",
+                        width: { xs: '90vw', md: 600 },
                       }}
                     >
                       <CardContent>
@@ -99,7 +101,6 @@ const Index = () => {
               </Grid>
             </Container>
           </Grid>
-          {/* <SidebarLT1 /> */}
         </Box>
       </Box>
     </Box>

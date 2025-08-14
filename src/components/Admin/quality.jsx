@@ -2,7 +2,7 @@ import { useEffect, useContext, useState } from "react";
 import "../../assets/css/calidad.css";
 import HeaderLT1 from "../header/headerLT1";
 import HeaderLT2 from "../header/headerLT2";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations"; 
 import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -17,12 +17,13 @@ import {
   IconButton,
   Grid,
 } from "@mui/material";
+import { TurnLeft } from "@mui/icons-material";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 const Quality = () => {
   const navigate = useNavigate();
-  const { userType, languageUser, clients } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { userType, clients } = useContext(UserContext);
+  const { t } = useTranslations();
   const [conteoDeAgentes, setConteoDeAgentes] = useState("0");
   const [conteoDeFormulario, setConteoDeFormulario] = useState("0");
 
@@ -48,10 +49,6 @@ const Quality = () => {
       getForms();
     }
   }, [plantillaMonitor]);
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]);
 
   useEffect(() => {
     const calcularTopMonitor = async () => {
@@ -220,16 +217,16 @@ const Quality = () => {
   return (
     <Box className="App">
       <Box id="body">
-        {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
+        {userType === "1" ? <HeaderLT1 /> : <HeaderLT2 />}
         <section>
           <Grid
-            container
-            sx={{
-              mt: { xs: 2, sm: 4, md: 6, lg: 8 },
-              ml: { xs: 0, sm: 2, md: 4, lg: 8 },
-              px: { xs: 1, sm: 2, md: 4, lg: 8 },
-              justifyContent: "center",
-            }}
+             container
+              sx={{
+                mt: { xs: 1, sm: 2, md: 4, lg: 8 },
+                ml: { xs: 0, sm: 0, md: 2, lg: 8 },
+                px: { xs: 0.5, sm: 2, md: 2, lg: 8 },
+                justifyContent: "center",
+              }}
           >
             <Grid container spacing={2}>
               {/* OPCION MODO GRID */}
@@ -237,14 +234,36 @@ const Quality = () => {
                 <Grid
                   item
                   xs={12}
-                  md={10}
+                  md={8}
                   lg={8}
                   className="cards-group "
                   id="grid-mode"
                 >
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      minWidth: 0,
+                      width: 30,
+                      height: 30,
+                      padding: 0,
+                      marginTop: "15px",
+                      borderRadius: "50%",
+                      color: "#b62a8b",
+                      borderColor: "#b62a8b",
+                      "&:hover": {
+                        borderColor: "#b62a8b",
+                        backgroundColor: "#b62a8b",
+                        color: "white",
+                      },
+                    }}
+                    onClick={() => navigate("/editor")}
+                  >
+                    <TurnLeft />
+                  </Button>
                   <Grid spacing={2} m={3}>
                     <Grid container spacing={2} sx={{ display: "flex" }}>
-                      <Grid item xs={8} md={8} lg={8} sx={{ p: 0 }}>
+                      <Grid item xs={8}  sx={{ p: 0 }}>
                         <Typography
                           sx={{
                             textAlign: "left",
@@ -252,17 +271,21 @@ const Quality = () => {
                             fontWeight: "bold",
                             m: 0,
                             width: "100%",
-                            fontSize: "2rem",
+                            fontSize: {
+                              xs: "1.5rem",
+                              md: "1.8rem",
+                              lg: "2rem",
+                            },
                           }}
                           className="tituloCardGroup"
                         >
                           {t("qualitySite.Quality_system")}
                         </Typography>
                       </Grid>
-                      <Grid item xs={4} md={4} lg={4}>
+                      <Grid item xs={4} >
                         <Typography
                           sx={{
-                            mt: 4,
+                            mt: { xs: 2, md: 2, lg: 4 },
                             flexShrink: 1,
                             textAlign: "right",
                           }}
@@ -276,8 +299,7 @@ const Quality = () => {
                       <Grid
                         item
                         xs={12}
-                        md={12}
-                        lg={12}
+                        
                         sx={{
                           mb: 2,
                           textAlign: "right",
@@ -308,7 +330,7 @@ const Quality = () => {
                         item
                         xs={2}
                         md={2}
-                        lg={2}
+                        
                         sx={{ textAlign: "center" }}
                       >
                         <Typography className="cardElement" variant="h4">
@@ -365,7 +387,7 @@ const Quality = () => {
                   >
                     {/* Card 1 */}
                     {userType === "4" ? (
-                      <Grid item xs={12} md={6} lg={3}>
+                      <Grid item xs={12} md={12} lg={4}>
                         <Card className="card card1">
                           <CardContent
                             sx={{ display: "grid" }}
@@ -1009,11 +1031,16 @@ const Quality = () => {
 
               {/* Cards laterales */}
 
-              <Grid item xs={12} md={6} lg={4}>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Grid item xs={12} md={4} lg={4}>
+                <Box sx={{
+                        mt: { xs: 3, md: 0 }, 
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: { xs: 2, md: 3 }, 
+                      }}>
                   {/* Card de formularios */}
-
-                  <Card className="outstanding-card extern" sx={{ mb: 2 }}>
+                  
+                  <Card className="outstanding-card extern"  sx={{ mb: 2 , overflowX: 'hidden' }}>
                     <CardContent className="card-body div-title">
                       <Typography variant="h5">
                         {t("qualitySite.Monitoring_forms")}
@@ -1132,7 +1159,7 @@ const Quality = () => {
                         </Grid>
                       </Box>
                       <Grid container spacing={2}>
-                        <Typography sx={{ textAlign: "left" }}>
+                        <Typography sx={{ textAlign: "center" , mt:2}}>
                           {t(
                             "qualitySite.Rate_the_quality_of_customer_service_being_provided_by_the_agent"
                           )}

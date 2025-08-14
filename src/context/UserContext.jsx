@@ -1,90 +1,81 @@
-import React, { createContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
-import axios from "axios"; // ✅ Asegúrate de tenerlo importado
+// src/context/UserContext.jsx
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { useAuth } from "./AuthContext";
+import { apiClient } from "../utils/axiosConfig";
+import { tokenService } from "../services/tokenService";
 
 const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
-  const [userId, setUserId] = useState(() => Cookies.get("userId") || "");
-  const [userType, setUserType] = useState(() => Cookies.get("userType") || "");
-  const [accessToken, setAccessToken] = useState(
-    () => Cookies.get("accessToken") || ""
-  );
-  const [clients, setClients] = useState(() => Cookies.get("clients") || "");
+  const { isAuthenticated, user } = useAuth();
   const [languageUser, setLanguageUser] = useState(
     () => localStorage.getItem("languageUser") || "es"
   );
   const [userInfo, setUserInfo] = useState(null);
+  const [clients, setClients] = useState([]); // Array de IDs de clientes permitidos
 
-  // Guardar cookies y limpiar al cerrar
-  useEffect(() => {
-    const tabCount = sessionStorage.getItem("tabCount");
-    sessionStorage.setItem("tabCount", tabCount ? parseInt(tabCount) + 1 : 1);
+  // Derivar valores del AuthContext
+  const userId = user?.backendData?.cdt || user?.backendData?.user?.id_user || "";
+  const userType = user?.backendData?.rl || user?.backendData?.role || "";
 
-    if (userId) Cookies.set("userId", userId, { expires: 1 / 24, path: "/" });
-    if (userType)
-      Cookies.set("userType", userType, { expires: 1 / 24, path: "/" });
-    if (accessToken)
-      Cookies.set("accessToken", accessToken, { expires: 1 / 24, path: "/" });
-    if (clients)
-      Cookies.set("clients", clients, { expires: 1 / 24, path: "/" });
-    if (languageUser) localStorage.setItem("languageUser", languageUser);
-
-    const handleBeforeUnload = () => {
-      const count = parseInt(sessionStorage.getItem("tabCount") || "1");
-      const newCount = count - 1;
-      sessionStorage.setItem("tabCount", newCount);
-
-      if (newCount <= 0) {
-        Cookies.remove("userId");
-        Cookies.remove("userType");
-        Cookies.remove("accessToken");
-        Cookies.remove("clients");
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [userId, userType, accessToken, clients, languageUser]);
-
-  // Carga los datos completos del usuario
+  // Cargar datos completos del usuario
   useEffect(() => {
     const fetchUserInfo = async () => {
-      if (userId) {
-        try {
-          const response = await axios.get(
-            `http://localhost:3000/api/users/${userId}`,
-            {
-              withCredentials: true,
-            }
-          );
-          setUserInfo(response.data.data); // Asignar al contexto
-          console.log("Usuario logueado:", response.data.data);
-        } catch (err) {
-          console.error("Error al cargar el usuario logueado", err);
-          setUserInfo(null);
-        }
+      if (!userId || !isAuthenticated) {
+        setUserInfo(null);
+        setClients([]);
+        return;
+      }
+
+      // PEQUEÑO DELAY para asegurar que el token esté guardado y los interceptores configurados
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      try {
+        const response = await apiClient.get(`/users/${userId}`);
+        setUserInfo(response.data.data);
+      } catch (err) {
+        console.error("Error al cargar el usuario logueado", err);
+        setUserInfo(null);
+        // El interceptor ya maneja el 401, no necesitamos hacer nada más aquí
+      }
+
+      // Cargar clientes asignados al usuario (como array de IDs)
+      try {
+        const resClients = await apiClient.get(`/users/${userId}/clients`);
+        const ids = Array.isArray(resClients.data?.data)
+          ? resClients.data.data.map((c) => c.idClient ?? c.id ?? c)
+          : [];
+        setClients(ids);
+      } catch (err) {
+        console.warn("No fue posible cargar los clientes del usuario", err);
+        setClients([]);
       }
     };
 
     fetchUserInfo();
-  }, [userId]);
+  }, [userId, isAuthenticated]);
+
+  // Guardar idioma
+  useEffect(() => {
+    localStorage.setItem("languageUser", languageUser);
+  }, [languageUser]);
 
   return (
     <UserContext.Provider
       value={{
-        userId,
-        setUserId,
+        // Estados derivados (read-only)
+        userId: userId.toString(),
         userType,
-        setUserType,
-        accessToken,
-        setAccessToken,
+        
+        // Estados locales
         languageUser,
         setLanguageUser,
-        clients,
-        setClients,
         userInfo,
         setUserInfo,
+        // Compatibilidad con código existente
+        accessToken: tokenService.getToken(),
+        clients,
+        setClients,
       }}
     >
       {children}
@@ -93,3 +84,9 @@ const UserProvider = ({ children }) => {
 };
 
 export { UserContext, UserProvider };
+
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) throw new Error('useUser debe usarse dentro de UserProvider');
+  return context;
+};

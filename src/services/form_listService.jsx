@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "../utils/axiosConfig";
 
 export const updateFormMetadata = async (id_form, userId) => {
   const now = new Date().toISOString().slice(0, 19).replace("T", " ");
@@ -9,7 +9,7 @@ export const updateFormMetadata = async (id_form, userId) => {
   }
 
   try {
-    const response = await axios.get(`http://localhost:3000/api/form/${id_form}`, {
+    const response = await apiClient.get(`/form/${id_form}`, {
       withCredentials: true,
     });
 
@@ -24,13 +24,13 @@ export const updateFormMetadata = async (id_form, userId) => {
       updated_by: userId 
     };
 
-    const putResponse = await axios.put(
-      `http://localhost:3000/api/form/${id_form}`,
+    const putResponse = await apiClient.put(
+      `/form/${id_form}`,
       updatedForm,
       { withCredentials: true }
     );
 
-    return putResponse.data.data; // ✅ Devuelve los datos actualizados
+    return putResponse.data.data; // Devuelve los datos actualizados
   } catch (error) {
     console.error("Error al actualizar metadatos del formulario:", error);
     if (error.response) {

@@ -1,14 +1,14 @@
 import axios from "axios";
-import Swal from "sweetalert2";
 import { useState, useEffect, useContext } from "react";
 import HeaderLT1 from "../../components/header/headerLT1";
 import TableDetalle from "../../components/Tables/tableClients";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../../components/hooks/useTranslations";
 import { SketchPicker } from "react-color";
 import "../../assets/css/newUser.css";
+import placeholderImg from "../../assets/img/placeholder-image.png";
 import {
   Box,
   Modal,
@@ -20,33 +20,34 @@ import {
   Grid,
   Divider,
   Chip,
-  Stack
-} from '@mui/material';
+  Stack,
+} from "@mui/material";
 import {
   Close as CloseIcon,
   CloudUpload as CloudUploadIcon,
   Edit as EditIcon,
-  Add as AddIcon
-} from '@mui/icons-material';
+  Add as AddIcon,
+} from "@mui/icons-material";
 
 export default function Client_list() {
   const [operation, setOperation] = useState([1]); // Estado para saber si estoy creando (1) o editando (2)
-  const [idToEdit, setidToEdit] = useState(null);  // Guarda el ID del cliente que se está editando
-  const [logoEdit, setLogoToEdit] = useState("");  // Guarda el logo actual del cliente a editar
-  const [title, setTitle] = useState();  // Título del modal que se muestra (crear/editar)
-  const selectedKeys = ["id", "client", "state"];  // Campos seleccionados en la tabla (solo ciertos campos)
-  const [data, setData] = useState([]);  // Datos de los clientes traídos de la API
-  const [selectedFile, setSelectedFile] = useState(null);  // Archivo del logo que selecciona el usuario
-  const [displayColorPicker, setDisplayColorPicker] = useState(false);  // Mostrar u ocultar el picker de color principal
-  const [displayColorPicker2, setDisplayColorPicker2] = useState(false);  // Mostrar u ocultar el picker de color secundario
-  const [error, setError] = useState("");  // Mostrar error en validación
-  const [colors1, setColors1] = useState("#FFFFFF");  // Color principal del cliente
-  const [colors2, setColors2] = useState("#FFFFFF");  // Color secundario del cliente
-  const [previewUrl, setPreviewUrl] = useState(null);// Vista previa del logo cargado
-  const [showColorPicker, setShowColorPicker] = useState(false);  // Mostrar/Ocultar el color picker 1
-  const [showColorPicker2, setShowColorPicker2] = useState(false);   // Mostrar/Ocultar el color picker 2
-  const { t, i18n } = useTranslation();   // Hook para traducciones
+  const [idToEdit, setidToEdit] = useState(null); // Guarda el ID del cliente que se está editando
+  const [logoEdit, setLogoToEdit] = useState(""); // Guarda el logo actual del cliente a editar
+  const [title, setTitle] = useState(); // Título del modal que se muestra (crear/editar)
+  const selectedKeys = ["id", "client", "state"]; // Campos seleccionados en la tabla (solo ciertos campos)
+  const [data, setData] = useState([]); // Datos de los clientes traídos de la API
+  const [selectedFile, setSelectedFile] = useState(null); // Archivo del logo que selecciona el usuario
+  const [displayColorPicker, setDisplayColorPicker] = useState(false); // Mostrar u ocultar el picker de color principal
+  const [displayColorPicker2, setDisplayColorPicker2] = useState(false); // Mostrar u ocultar el picker de color secundario
+  const [error, setError] = useState(""); // Mostrar error en validación
+  const [colors1, setColors1] = useState("#FFFFFF"); // Color principal del cliente
+  const [colors2, setColors2] = useState("#FFFFFF"); // Color secundario del cliente
+  const [previewUrl, setPreviewUrl] = useState(null); // Vista previa del logo cargado
+  const [showColorPicker, setShowColorPicker] = useState(false); // Mostrar/Ocultar el color picker 1
+  const [showColorPicker2, setShowColorPicker2] = useState(false); // Mostrar/Ocultar el color picker 2
+  const { t } = useTranslations(); // Hook para traducciones
   const url = "http://localhost:3000/api/clients"; // URL base de la API para clientes
+  const CLIENTS_BASE_URL = "http://localhost:3000/clientes";
 
   // Estados para los modales MUI
   const [openCreateModal, setOpenCreateModal] = useState(false);
@@ -60,21 +61,20 @@ export default function Client_list() {
   const [openColorModal, setOpenColorModal] = useState(false);
   const [openColorModal2, setOpenColorModal2] = useState(false);
 
-
   const handleOpenColor1 = () => setOpenColorModal(true);
   const handleCloseColor1 = () => setOpenColorModal(false);
 
   const handleOpenColor2 = () => setOpenColorModal2(true);
   const handleCloseColor2 = () => setOpenColorModal2(false);
 
-  const { accessToken, languageUser } = useContext(UserContext); // Trae el token y el idioma desde el contexto del usuario logueado
+  const { accessToken } = useContext(UserContext); // Trae el token y el idioma desde el contexto del usuario logueado
 
-  useEffect(() => {// Efecto que se ejecuta al montar o cuando cambia el idioma del usuario
+  useEffect(() => {
+    // Efecto que se ejecuta al montar o cuando cambia el idioma del usuario
     fetchData(); // Trae todos los clientes
-    i18n.changeLanguage(languageUser); // Cambia el idioma
-  }, [languageUser]); // Dependencia del idioma
+  });
 
-   // Función para manejar el cierre del modal MUI
+  // Función para manejar el cierre del modal MUI
   const handleModalClose = () => {
     setOpenCreateModal(false);
     resetForm();
@@ -134,10 +134,10 @@ export default function Client_list() {
         confirmButtonText: `${t("alertActivate.Confirm")}`,
         cancelButtonText: `${t("alertActivate.Cancel")}`,
         confirmButtonColor: "#b62a8b",
-        customClass :{
-          actions: 'swal2-actions-center ', 
-          icon: 'icono-personalizado',
-          title: 'titulo-pequeno',
+        customClass: {
+          actions: "swal2-actions-center ",
+          icon: "icono-personalizado",
+          title: "titulo-pequeno",
         },
       })
       .then(async (result) => {
@@ -147,16 +147,16 @@ export default function Client_list() {
 
             Toast.fire({
               icon: "success",
-              title: `${t("alertActivate.InitialPhrase")} ${clientData.client} ${t(
-                "alertActivate.SuccessAlert"
-              )}`,
+              title: `${t("alertActivate.InitialPhrase")} ${
+                clientData.client
+              } ${t("alertActivate.SuccessAlert")}`,
             });
           } catch (error) {
             Toast.fire({
               icon: "error",
-              title: `${t("alertActivate.InitialPhrase")} ${clientData.client}${t(
-                "alertActivate.ErrorAlert"
-              )} `,
+              title: `${t("alertActivate.InitialPhrase")} ${
+                clientData.client
+              }${t("alertActivate.ErrorAlert")} `,
             });
             console.error(error);
           }
@@ -186,10 +186,10 @@ export default function Client_list() {
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
         confirmButtonColor: "#b62a8b",
-        customClass :{
-          actions: 'swal2-actions-center ', 
-          icon: 'icono-personalizado',
-          title: 'titulo-pequeno',
+        customClass: {
+          actions: "swal2-actions-center ",
+          icon: "icono-personalizado",
+          title: "titulo-pequeno",
         },
       })
       .then(async (result) => {
@@ -198,17 +198,17 @@ export default function Client_list() {
             await axios.patch(`${url}/${id}`, parametros, config);
             Toast.fire({
               icon: "success",
-              title: `${t("alertDeactivate.InitialPhrase")} ${clientData.client} ${t(
-                "alertDeactivate.SuccessAlert"
-              )}`,
+              title: `${t("alertDeactivate.InitialPhrase")} ${
+                clientData.client
+              } ${t("alertDeactivate.SuccessAlert")}`,
             });
             fetchData(); // Recarga los datos después de desactivar
           } catch (error) {
             Toast.fire({
               icon: "error",
-              title: `${t("alertDeactivate.InitialPhrase")} ${clientData.client} ${t(
-                "alertDeactivate.ErrorAlert"
-              )}`,
+              title: `${t("alertDeactivate.InitialPhrase")} ${
+                clientData.client
+              } ${t("alertDeactivate.ErrorAlert")}`,
             });
             console.error(error);
           }
@@ -234,7 +234,7 @@ export default function Client_list() {
 
       // Si está en modo editar, oculta la imagen original
       const logoOriginal = document.getElementById("logoToEditOriginal");
-       if (operation === 2 && logoOriginal) {
+      if (operation === 2 && logoOriginal) {
         logoOriginal.style.display = "none";
       }
 
@@ -249,7 +249,7 @@ export default function Client_list() {
         setPreviewUrl(reader.result);
       };
       reader.readAsDataURL(selectedFile);
-    } else if(selectedFile) {
+    } else if (selectedFile) {
       // Si el archivo no es válido
       console.log("Por favor selecciona un archivo JPEG o PNG.");
       // Si el archivo no es válido pero existe
@@ -261,6 +261,11 @@ export default function Client_list() {
       // Limpiar el input para que se pueda seleccionar otro archivo
       e.target.value = "";
     }
+  };
+
+  const handleImgError = (e) => {
+    e.target.onerror = null;
+    e.target.src = placeholderImg;
   };
 
   const handleColor1Change = (color) => {
@@ -302,42 +307,85 @@ export default function Client_list() {
 
   const validar = async () => {
     // Usamos el ID del estado, no recibimos uno como parámetro
-  const id = idToEdit;
-  
-  const urlpost = `http://localhost:3000/api/clients`; // URL para crear cliente
-  const formData = new FormData();
-  console.log("Archivo seleccionado:", selectedFile);
-  console.log("Cliente:", client.input);
-  console.log("Color 1:", colors1);
-  console.log("Color 2:", colors2);
-  console.log("Operación:", operation);
-  console.log("ID a editar:", id);
+    const id = idToEdit;
 
-  // Si hay un archivo, se agrega al FormData
-  selectedFile ? formData.append("logo", selectedFile) : null;
+    const urlpost = `http://localhost:3000/api/clients`; // URL para crear cliente
+    const formData = new FormData();
+    console.log("Archivo seleccionado:", selectedFile);
+    console.log("Cliente:", client.input);
+    console.log("Color 1:", colors1);
+    console.log("Color 2:", colors2);
+    console.log("Operación:", operation);
+    console.log("ID a editar:", id);
 
-  // Agrega los demás campos del formulario al FormData
-  formData.append("client", client.input);
-  formData.append("color_tag1", colors1);
-  formData.append("color_tag2", colors2);
-  formData.append("state", 1);
+    // Si hay un archivo, se agrega al FormData
+    selectedFile ? formData.append("logo", selectedFile) : null;
 
-  if (!client.input.trim()) {
-  setError("El nombre del cliente es necesario");
-  Toast.fire({
-    icon: "error",
-    title: "El nombre del cliente es necesario",
-  });
-  return;
-}
+    // Agrega los demás campos del formulario al FormData
+    formData.append("client", client.input);
+    formData.append("color_tag1", colors1);
+    formData.append("color_tag2", colors2);
+    formData.append("state", 1);
 
-  const newClientName = client.input.trim().toLowerCase();
+    if (!client.input.trim()) {
+      setError("El nombre del cliente es necesario");
+      Toast.fire({
+        icon: "error",
+        title: "El nombre del cliente es necesario",
+      });
+      return;
+    }
 
-  // Verificamos si estamos en modo creación (1) o edición (2)
-  if (operation === 1) {
-    // Aquí se crea un nuevo cliente
-    try {
-      const clientExists = data.some(item => item.client.trim().toLowerCase() === newClientName);
+    const newClientName = client.input.trim().toLowerCase();
+
+    // Verificamos si estamos en modo creación (1) o edición (2)
+    if (operation === 1) {
+      // Aquí se crea un nuevo cliente
+      try {
+        const clientExists = data.some(
+          (item) => item.client.trim().toLowerCase() === newClientName
+        );
+        if (clientExists) {
+          setError("El nombre del cliente ya existe");
+          Toast.fire({
+            icon: "error",
+            title: t("clientModal.DuplicatedUser"),
+          });
+          return;
+        }
+
+        if (!selectedFile) {
+          setError("Debes seleccionar un logo");
+          Toast.fire({
+            icon: "error",
+            title: "Debes seleccionar un logo",
+          });
+          return;
+        }
+
+        const response = await axios.post(`${urlpost}`, formData, {
+          withCredentials: true,
+        });
+        console.log("Respuesta del servidor (CREAR):", response.data);
+
+        if (response.data.status) {
+          resetForm();
+          fetchData();
+          handleModalClose();
+
+          Toast.fire({
+            icon: "success",
+            title: `${client.input} ${t("alertCreateEdit.SuccessAlert")}`,
+          });
+        }
+      } catch (error) {
+        console.error("Error subiendo el archivo:", error);
+      }
+    } else if (operation === 2 && id) {
+      const clientExists = data.some(
+        (item) =>
+          item.client.trim().toLowerCase() === newClientName && item.id !== id
+      );
       if (clientExists) {
         setError("El nombre del cliente ya existe");
         Toast.fire({
@@ -346,98 +394,61 @@ export default function Client_list() {
         });
         return;
       }
-      
-      if (!selectedFile) {
-        setError("Debes seleccionar un logo");
-        Toast.fire({
-          icon: "error",
-          title: "Debes seleccionar un logo",
-        });
-        return;
-    }
-      
-      const response = await axios.post(`${urlpost}`, formData, {
-        withCredentials: true,
-      });
-      console.log("Respuesta del servidor (CREAR):", response.data);
+      // Aquí se realiza una actualización del cliente con PUT
+      const urlput = `http://localhost:3000/api/clients/${id}`;
+      console.log("URL de actualización:", urlput);
 
-      if (response.data.status) {
-        resetForm();
-        fetchData();
-        handleModalClose();
-
-        Toast.fire({
-          icon: "success",
-          title: `${client.input} ${t("alertCreateEdit.SuccessAlert")}`,
+      try {
+        const response = await axios.put(urlput, formData, {
+          "Content-Type": "multipart/form-data",
+          withCredentials: true,
         });
+
+        console.log("Respuesta del servidor (EDITAR):", response);
+
+        if (!response.data.status) {
+          alert("No se realizó la edición del cliente");
+          handleModalClose();
+          console.log(response.data);
+        } else {
+          Toast.fire({
+            icon: "success",
+            title:
+              t("alertCreateEdit.el_cliente") +
+              ` ${client.input}` +
+              t("alertCreateEdit.editado_exitsosamente"),
+          });
+          resetForm();
+          fetchData();
+          handleModalClose();
+        }
+      } catch (error) {
+        console.error("Error actualizando el cliente:", error);
       }
-    } catch (error) {
-      console.error("Error subiendo el archivo:", error);
+    } else {
+      console.error("Operación no válida o ID faltante para edición");
     }
-  } else if (operation === 2 && id) {
-
-     const clientExists = data.some(item => item.client.trim().toLowerCase() === newClientName && item.id !== id);
-      if (clientExists) {
-        setError("El nombre del cliente ya existe");
-        Toast.fire({
-          icon: "error",
-          title: t("clientModal.DuplicatedUser"),
-        });
-        return;
-      }
-    // Aquí se realiza una actualización del cliente con PUT
-    const urlput = `http://localhost:3000/api/clients/${id}`;
-    console.log("URL de actualización:", urlput);
-
-    try {
-      const response = await axios.put(urlput, formData, {
-        "Content-Type": "multipart/form-data",
-        withCredentials: true,
-      });
-      
-      console.log("Respuesta del servidor (EDITAR):", response);
-      
-      if (!response.data.status) {
-        alert("No se realizó la edición del cliente");
-        handleModalClose();
-        console.log(response.data);
-      } else {
-        Toast.fire({
-          icon: "success",
-          title: t('alertCreateEdit.el_cliente') + ` ${client.input}` + t('alertCreateEdit.editado_exitsosamente'),
-        });
-        resetForm();
-        fetchData();
-        handleModalClose();
-
-      }
-    } catch (error) {
-      console.error("Error actualizando el cliente:", error);
-    }
-  } else {
-    console.error("Operación no válida o ID faltante para edición");
-  }
   };
 
-//  función para resetear el formulario
-const resetForm = () => {
-  setColors1("#FFFFFF");
-  setColors2("#FFFFFF");
-  setSelectedFile(null);
-  setPreviewUrl(null);
-  setError("");
-  setidToEdit(null);
-  client.handleChange("");
-  logo.handleChange("");
-  setLogoToEdit("");
+  //  función para resetear el formulario
+  const resetForm = () => {
+    setColors1("#FFFFFF");
+    setColors2("#FFFFFF");
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setError("");
+    setidToEdit(null);
+    client.handleChange("");
+    logo.handleChange("");
+    setLogoToEdit("");
 
     // Resetear el input de archivo para permitir seleccionar el mismo archivo de nuevo
-  const fileInput = document.getElementById("imagenLogo");
-  if (fileInput) {
-    fileInput.value = "";
-  }
-  fetchData();
-};
+    const fileInput = document.getElementById("imagenLogo");
+    if (fileInput) {
+      fileInput.value = "";
+    }
+    fetchData();
+  };
 
   const handleClose = () => {
     setDisplayColorPicker(false);
@@ -513,7 +524,12 @@ const resetForm = () => {
       <Box id="body">
         <HeaderLT1 />
         <Box
-          sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex" }}
+          sx={{
+            alignItems: "stretch",
+            flexWrap: "nowrap",
+            padding: 0,
+            display: "flex",
+          }}
         >
           {/* <SidebarLT1 /> */}
           <Box className="container" mt={0}>
@@ -540,21 +556,28 @@ const resetForm = () => {
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: { xs: '90%', sm: 500 },
-            bgcolor: 'background.paper',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 500 },
+            bgcolor: "background.paper",
             boxShadow: 24,
             borderRadius: 2,
             p: 0,
-            outline: 'none'
+            outline: "none",
           }}
         >
           <Paper elevation={0} sx={{ borderRadius: 2 }}>
             {/* Header */}
-            <Box sx={{  display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                p: 3,
+              }}
+            >
               <Typography variant="h5" component="h2" fontWeight="bold">
                 {t("clientViewModal.Client")}
               </Typography>
@@ -562,10 +585,10 @@ const resetForm = () => {
                 <CloseIcon />
               </IconButton>
             </Box>
-            
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
               sx={{ px: 3, mb: 2 }}
             >
               {t("clientViewModal.ClientInfo")}
@@ -576,28 +599,33 @@ const resetForm = () => {
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} sm={4}>
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <Box
-                      component="img"
-                      src={`clientes/${logo.input}`}
-                      alt="Logo"
-                      sx={{
-                        width: 100,
-                        height: 100,                        
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        borderRadius: 1
-                      }}
-                    />
+                      <Box
+                        component="img"
+                        src={`${CLIENTS_BASE_URL}/${logo.input || ''}`}
+                        alt="Logo"
+                        onError={handleImgError}
+                        sx={{
+                          width: 100,
+                          height: 100,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 1
+                        }}
+                      />
                   </Box>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={8}>
-                  <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+                  <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
                     <Typography variant="h5" fontWeight="600" gutterBottom>
                       {client.input}
                     </Typography>
                     <Chip
-                      label={estado.input == 1 ? t("clientTable.Active") : t("clientTable.Inactive")}
+                      label={
+                        estado.input == 1
+                          ? t("clientTable.Active")
+                          : t("clientTable.Inactive")
+                      }
                       color={estado.input == 1 ? "success" : "default"}
                       variant="outlined"
                     />
@@ -607,7 +635,13 @@ const resetForm = () => {
 
               <Divider sx={{ my: 3 }} />
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Typography variant="body1" fontWeight="500">
                   {t("clientTable.selectedColor")}:
                 </Typography>
@@ -617,10 +651,10 @@ const resetForm = () => {
                       width: 36,
                       height: 24,
                       backgroundColor: colors1,
-                      border: '1px solid',
-                      borderColor: 'divider',
+                      border: "1px solid",
+                      borderColor: "divider",
                       borderRadius: 0.5,
-                      cursor: 'pointer'
+                      cursor: "pointer",
                     }}
                     //onClick={handleClick}
                   />
@@ -629,10 +663,10 @@ const resetForm = () => {
                       width: 36,
                       height: 24,
                       backgroundColor: colors2,
-                      border: '1px solid',
-                      borderColor: 'divider',
+                      border: "1px solid",
+                      borderColor: "divider",
                       borderRadius: 0.5,
-                      cursor: 'pointer'
+                      cursor: "pointer",
                     }}
                     //onClick={handle2Click}
                   />
@@ -642,14 +676,18 @@ const resetForm = () => {
               {displayColorPicker && (
                 <Box sx={styles.popover}>
                   <Box sx={styles.cover} onClick={handleClose} />
-                  <Box sx={{ background: colors1, width: 50, height: 50, mt: 1 }} />
+                  <Box
+                    sx={{ background: colors1, width: 50, height: 50, mt: 1 }}
+                  />
                 </Box>
               )}
 
               {displayColorPicker2 && (
                 <Box sx={styles2.popover}>
                   <Box sx={styles2.cover} onClick={handle2Close} />
-                  <Box sx={{ background: colors2, width: 50, height: 50, mt: 1 }} />
+                  <Box
+                    sx={{ background: colors2, width: 50, height: 50, mt: 1 }}
+                  />
                 </Box>
               )}
             </Box>
@@ -665,29 +703,31 @@ const resetForm = () => {
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: { xs: '90%', sm: 650 },
-            bgcolor: 'background.paper',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 650 },
+            bgcolor: "background.paper",
             boxShadow: 24,
             borderRadius: 2,
             p: 0,
-            outline: 'none',
-            maxHeight: '90vh',
-            overflowY: 'auto'
+            outline: "none",
+            maxHeight: "90vh",
+            overflowY: "auto",
           }}
         >
           <Paper elevation={0} sx={{ borderRadius: 2 }}>
             {/* Header */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              p: 3, 
-              pb: 2 
-            }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                p: 3,
+                pb: 2,
+              }}
+            >
               <Typography variant="h5" component="h2" fontWeight="bold">
                 {title}
               </Typography>
@@ -701,28 +741,33 @@ const resetForm = () => {
               <Grid container spacing={3}>
                 {/* Sección de Logo */}
                 <Grid item xs={12} sm={5}>
-                  <Box sx={{  textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: 250  }}>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minHeight: 250,
+                    }}
+                  >
                     {logoEdit && operation === 2 && !selectedFile ? (
                       <Box
                         component="img"
-                        src={`clientes/${logoEdit}`}
+                        src={`${CLIENTS_BASE_URL}/${logoEdit || ''}`}
                         alt="Logo"
+                        onError={handleImgError}
                         sx={{
                           width: 150,
                           height: 150,
-                          border: '2px dashed',
-                          borderColor: 'divider',
+                          border: "2px dashed",
+                          borderColor: "divider",
                           borderRadius: 2,
-                          mb: 2
+                          mb: 2,
                         }}
                       />
                     ) : null}
-                    
+
                     {selectedFile && previewUrl ? (
                       <Box
                         component="img"
@@ -731,11 +776,11 @@ const resetForm = () => {
                         sx={{
                           width: 150,
                           height: 150,
-                          objectFit: 'contain',
-                          border: '2px solid',
-                          borderColor: 'primary.main',
+                          objectFit: "contain",
+                          border: "2px solid",
+                          borderColor: "primary.main",
                           borderRadius: 2,
-                          mb: 2
+                          mb: 2,
                         }}
                       />
                     ) : null}
@@ -745,17 +790,19 @@ const resetForm = () => {
                         sx={{
                           width: 150,
                           height: 150,
-                          border: '2px dashed',
-                          borderColor: 'divider',
+                          border: "2px dashed",
+                          borderColor: "divider",
                           borderRadius: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           mb: 2,
-                          backgroundColor: 'grey.50'
+                          backgroundColor: "grey.50",
                         }}
                       >
-                        <CloudUploadIcon sx={{ fontSize: 40, color: 'grey.400' }} />
+                        <CloudUploadIcon
+                          sx={{ fontSize: 40, color: "grey.400" }}
+                        />
                       </Box>
                     )}
 
@@ -766,15 +813,17 @@ const resetForm = () => {
                       // sx={{ mb: 1 }}
                       sx={{
                         mb: 1,
-                        backgroundColor: '#b62a8b', // Color morado estándar de MUI
-                        '&:hover': {
-                          backgroundColor: '#581244', // Morado más oscuro al hover
-                        }
-                      }}    
+                        backgroundColor: "#b62a8b", // Color morado estándar de MUI
+                        "&:hover": {
+                          backgroundColor: "#581244", // Morado más oscuro al hover
+                        },
+                      }}
                     >
-                      {operation === 2 ?  t("clientModal.editLogo") :t("clientModal.newLogo")}
+                      {operation === 2
+                        ? t("clientModal.editLogo")
+                        : t("clientModal.newLogo")}
                     </Button>
-                    
+
                     <input
                       type="file"
                       id="imagenLogo"
@@ -804,7 +853,9 @@ const resetForm = () => {
 
                   <Grid container spacing={2} sx={{ mt: 1 }}>
                     <Grid item xs={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <Typography variant="body2">
                           {t("clientModal.color1")}
                         </Typography>
@@ -813,10 +864,10 @@ const resetForm = () => {
                             width: 36,
                             height: 24,
                             backgroundColor: colors1,
-                            border: '1px solid',
-                            borderColor: 'divider',
+                            border: "1px solid",
+                            borderColor: "divider",
                             borderRadius: 0.5,
-                            cursor: 'pointer'
+                            cursor: "pointer",
                           }}
                           //onClick={handleClick}
                           onClick={handleOpenColor1}
@@ -825,7 +876,9 @@ const resetForm = () => {
                     </Grid>
 
                     <Grid item xs={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <Typography variant="body2">
                           {t("clientModal.color2")}
                         </Typography>
@@ -834,10 +887,10 @@ const resetForm = () => {
                             width: 36,
                             height: 24,
                             backgroundColor: colors2,
-                            border: '1px solid',
-                            borderColor: 'divider',
+                            border: "1px solid",
+                            borderColor: "divider",
                             borderRadius: 0.5,
-                            cursor: 'pointer'
+                            cursor: "pointer",
                           }}
                           onClick={handleOpenColor2}
                           //onClick={handle2Click}
@@ -849,9 +902,9 @@ const resetForm = () => {
               </Grid>
 
               {displayColorPicker && (
-                <Box sx={{ position: 'relative', mt: 2 }}>
+                <Box sx={{ position: "relative", mt: 2 }}>
                   <Box sx={styles.cover} onClick={handleClose} />
-                  <Box sx={{ position: 'absolute', zIndex: 1000 }}>
+                  <Box sx={{ position: "absolute", zIndex: 1000 }}>
                     <SketchPicker
                       color={colors1}
                       onChange={handleColor1Change}
@@ -861,9 +914,9 @@ const resetForm = () => {
               )}
 
               {displayColorPicker2 && (
-                <Box sx={{ position: 'relative', mt: 2 }}>
+                <Box sx={{ position: "relative", mt: 2 }}>
                   <Box sx={styles2.cover} onClick={handle2Close} />
-                  <Box sx={{ position: 'absolute', zIndex: 1000 }}>
+                  <Box sx={{ position: "absolute", zIndex: 1000 }}>
                     <SketchPicker
                       color={colors2}
                       onChange={handleColor2Change}
@@ -873,7 +926,12 @@ const resetForm = () => {
               )}
 
               {error && (
-                <Typography color="error" variant="body2" textAlign="center" sx={{ mt: 2 }}>
+                <Typography
+                  color="error"
+                  variant="body2"
+                  textAlign="center"
+                  sx={{ mt: 2 }}
+                >
                   {error}
                 </Typography>
               )}
@@ -881,22 +939,24 @@ const resetForm = () => {
 
             {/* Footer */}
             <Divider />
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'flex-end', 
-              gap: 2, 
-              p: 3 
-            }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                p: 3,
+              }}
+            >
               <Button
                 variant="outlined"
                 onClick={handleModalClose}
-                sx={{            
-                  color: '#b62a8b',       // Texto morado
-                  borderColor: '#b62a8b',  // Borde morado
-                  '&:hover': {
-                    borderColor: '#b62a8b', // Borde morado oscuro al hover
-                    backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
-                  }
+                sx={{
+                  color: "#b62a8b", // Texto morado
+                  borderColor: "#b62a8b", // Borde morado
+                  "&:hover": {
+                    borderColor: "#b62a8b", // Borde morado oscuro al hover
+                    backgroundColor: "rgba(156, 39, 176, 0.04)", // Fondo muy transparente al hover
+                  },
                 }}
               >
                 {t("clientModal.Close")}
@@ -904,12 +964,12 @@ const resetForm = () => {
               <Button
                 variant="contained"
                 onClick={validar}
-                 sx={{
-                  backgroundColor: '#b62a8b', // Color morado estándar de MUI
-                  '&:hover': {
-                    backgroundColor: '#581244', // Morado más oscuro al hover
-                  }
-                }}                
+                sx={{
+                  backgroundColor: "#b62a8b", // Color morado estándar de MUI
+                  "&:hover": {
+                    backgroundColor: "#581244", // Morado más oscuro al hover
+                  },
+                }}
               >
                 {t("clientModal.Save")}
               </Button>
@@ -925,20 +985,17 @@ const resetForm = () => {
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            bgcolor: 'background.paper',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
             p: 2,
             borderRadius: 2,
             boxShadow: 24,
           }}
         >
-          <SketchPicker
-            color={colors1}
-            onChange={handleColor1Change}
-          />
+          <SketchPicker color={colors1} onChange={handleColor1Change} />
         </Box>
       </Modal>
 
@@ -950,22 +1007,18 @@ const resetForm = () => {
       >
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            bgcolor: 'background.paper',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
             p: 2,
             borderRadius: 2,
             boxShadow: 24,
           }}
         >
-          <SketchPicker
-            color={colors2}
-            onChange={handleColor2Change}
-          />
+          <SketchPicker color={colors2} onChange={handleColor2Change} />
         </Box>
-        
       </Modal>
     </Box>
   );
