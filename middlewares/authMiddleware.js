@@ -1,7 +1,19 @@
 const jwt = require('jsonwebtoken');
 
 const authMiddleware = (req, res, next) => {
-    const token = req.cookies.token;
+    let token = null;
+    
+    // ✅ INTENTAR LEER DEL HEADER AUTHORIZATION PRIMERO
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+    }
+    
+    // ✅ SI NO HAY EN HEADER, LEER DE COOKIES (PARA COMPATIBILIDAD)
+    if (!token) {
+        token = req.cookies.token;
+    }
+    
     if (!token) {
         return res.status(401).json({ message: 'Acceso denegado. Token no proporcionado.' });
     }
@@ -11,6 +23,7 @@ const authMiddleware = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
+        console.error('Error verificando token:', error);
         res.status(401).json({ message: 'Token inválido o expirado.' });
     }
 };

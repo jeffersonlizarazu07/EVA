@@ -50,8 +50,8 @@ app.use("/api", questionFormRoutes); // Rutas de preguntas de bloques
 app.use("/api", answersFormRoutes); // Rutas de respuestas de bloques
 app.use("/api", monitoringRoutes); // Rutas para monitoreo
 
-// Hacer accesible la carpeta 'public' para el navegador
 app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/clientes", express.static(path.join(__dirname, "public", "clientes")));
 
 // Ruta específica para manejar enlaces de encuestas
 app.get("/survey/:encodedData", async (req, res) => {
