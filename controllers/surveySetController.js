@@ -65,12 +65,22 @@ const surveySetController = {
                 console.log('Encuesta no encontrada con ID:', id);  // Si no se encuentra la encuesta, imprime el ID
                 return res.status(404).json({ status: '404', message: 'Encuesta no encontrada' });
             }
+
+            // Obtener el conteo de respuestas de la encuesta
+            const responseCount = await SurveySet.getResponseCount(id);
     
             // Si la encuesta fue encontrada, imprimir los datos
             //console.log('Encuesta encontrada:', survey);
     
-            // Responder con los datos de la encuesta
-            res.json({ status: '200', message: 'Encuesta obtenida correctamente', data: survey });
+            // Responder con los datos de la encuesta incluyendo el conteo de respuestas
+            res.json({ 
+                status: '200', 
+                message: 'Encuesta obtenida correctamente', 
+                data: {
+                    ...survey,
+                    responseCount: responseCount
+                }
+            });
     
         } catch (error) {
             // Si hay un error en la ejecución, imprimirlo

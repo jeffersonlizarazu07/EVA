@@ -65,21 +65,17 @@ const createUser = async (req, res) => {
         return res.status(400).json(validacionUsurio);
     }
     
-    const { firstname, middlename, lastname, email, type, language, password } = req.body;
+    const { firstname, middlename, lastname, type, language, user_red } = req.body;
 
     try {
-        // Encripto la contraseña antes de guardarla en la base de datos
-        const hashedPassword = await bcrypt.hash(password, 10);
-
         // Construyo el objeto del nuevo usuario
         const newUser = await User.createUser({
             firstname,
             middlename,
             lastname,
-            email,
             type,
             language,
-            password: hashedPassword,
+            user_red: user_red || null,
             state: 1, // Estado activo por defecto
             //accessToken: null,
             //token_Exp: null,
@@ -117,19 +113,6 @@ const updateUser = async (req, res) => {
 
     const { id } = req.params;
     const userData = req.body;
-
-    // Si el usuario envía una nueva contraseña, la encripto
-    if (userData.password && userData.password.trim() !== "") {
-        try {
-            const hashedPassword = await bcrypt.hash(userData.password, 10);
-            userData.password = hashedPassword;
-        } catch (error) {
-            return res.status(500).json({ message: 'Error al encriptar la contraseña', error: error.message });
-        }
-    } else {
-        // Si no hay contraseña nueva, la elimino del objeto para que no se actualice
-        delete userData.password;
-    }
 
     // Limpio el campo de idioma si está presente
     if (userData.language) {

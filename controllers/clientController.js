@@ -5,6 +5,13 @@ const fs = require("fs");
 const knex = require("../config/db");
 const clientModel = new ClientModel(knex);
 const ClientsDTO = require("../dtos/clientsDTO");
+const pathBaseClientes = path.join(__dirname, '..', 'public', 'clientes');
+
+function ensureDirSync(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
 
 // Método para crear un cliente
 const createClient = async (req, res) => {
@@ -18,7 +25,7 @@ const createClient = async (req, res) => {
     const { client, state, color_tag1, color_tag2 } = req.body;
 
     // Si hay una imagen, obtenemos su nombre
-    let logo = req.file ? req.file.filename : null;
+    let logo = null;
 
     // Crear cliente en la base de datos
     const newClient = await clientModel.create({
@@ -26,8 +33,27 @@ const createClient = async (req, res) => {
       state,
       color_tag1,
       color_tag2,
-      logo,
+      logo: null,
     });
+
+    // Si se subió imagen en POST, mover desde tmp a /clientes/{id}/foto{ext} y actualizar registro
+    if (req.file && newClient?.id) {
+      const clientDir = path.join(pathBaseClientes, String(newClient.id));
+      ensureDirSync(clientDir);
+      const ext = path.extname(req.file.originalname) || path.extname(req.file.filename);
+      const finalName = `foto${ext}`;
+      const tmpPath = path.join(pathBaseClientes, 'tmp', req.file.filename);
+      const finalPath = path.join(clientDir, finalName);
+      try {
+        if (fs.existsSync(tmpPath)) {
+          fs.renameSync(tmpPath, finalPath);
+        }
+        await clientModel.update(newClient.id, { logo: `${newClient.id}/${finalName}` });
+        newClient.logo = `${newClient.id}/${finalName}`;
+      } catch (moveErr) {
+        console.error('Error moviendo logo a carpeta del cliente:', moveErr);
+      }
+    }
 
     return res.status(201).json({
       status: true,
@@ -112,19 +138,34 @@ const updateClient = async (req, res) => {
        let dataToUpdate = { client, state, color_tag1, color_tag2 };
 
        if (req.file) {
-           // cliente existente para saber si tiene una imagen anterior
            const existingClient = await clientModel.getById(id);
-           
+
+           // Asegurar carpeta del cliente
+           const clientDir = path.join(pathBaseClientes, String(id));
+           ensureDirSync(clientDir);
+
+           // Borrar anterior si existe
            if (existingClient && existingClient.logo) {
-              // Construye la ruta absoluta de la imagen antigua
-              const oldImagePath = path.join(process.env.FILE_DIR, existingClient.logo);
+              const oldImagePath = path.join(pathBaseClientes, existingClient.logo);
               if (fs.existsSync(oldImagePath)) {
-                  fs.unlinkSync(oldImagePath); 
+                  fs.unlinkSync(oldImagePath);
               }
            }
-           
-           // Agrega el nombre del nuevo
-           dataToUpdate.logo = req.file.filename;
+
+           // Renombrar a foto{ext}
+           const ext = path.extname(req.file.originalname) || path.extname(req.file.filename);
+           const finalName = `foto${ext}`;
+           const currentPath = path.join(clientDir, req.file.filename);
+           const finalPath = path.join(clientDir, finalName);
+           try {
+             if (fs.existsSync(currentPath)) {
+               fs.renameSync(currentPath, finalPath);
+             }
+           } catch (renameErr) {
+             console.error('Error renombrando logo:', renameErr);
+           }
+
+           dataToUpdate.logo = `${id}/${finalName}`;
        }
        
        // Actualiza el client
@@ -190,17 +231,11 @@ const deleteClient = async (req, res) => {
 
     // Eliminar el logo si existe
     if (client.logo) {
-      const logoPath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "public",
-        "clientes",
-        client.logo
-      );
+      const logoPath = path.join(pathBaseClientes, client.logo);
       if (fs.existsSync(logoPath)) {
         fs.unlinkSync(logoPath);
       }
+      // Si la carpeta queda vacía, opcionalmente no hacemos nada; se mantiene estructura por cliente
     }
 
     await clientModel.delete(id);
