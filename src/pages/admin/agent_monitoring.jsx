@@ -16,9 +16,8 @@ import ModalRegisterUser from "../../components/Tables/tableMonitoring";
 import Loading from "../layout/loading";
 import Swal from "sweetalert2";
 import "../../assets/css/agent_monitoring.css";
-import SurveyBlocks from "../../pages/quality/surveyBlocks";
-import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
+import { smallAlertDelete } from "../../assets/js/alertConfig";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 const AdminList = () => {
   const [open, setOpen] = useState(false);
@@ -28,7 +27,7 @@ const AdminList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [survey, setSurvey] = useState([]);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   const navigate = useNavigate();
 
   const config = {

@@ -1,5 +1,3 @@
-import React, { useEffect, useContext } from "react";
-import Swal from "sweetalert2";
 import {
   Modal,
   Box,
@@ -7,15 +5,11 @@ import {
   Typography,
   IconButton,
   Grid,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   TextField,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  FormControlLabel,
   Checkbox,
   CircularProgress,
   Divider,
@@ -25,8 +19,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useTranslation } from "react-i18next";
-import { UserContext } from "../../context/UserContext";
+import { useTranslations } from "../hooks/useTranslations";
 
 const ModalAdmin = ({
   monitoringStep,
@@ -67,12 +60,7 @@ const ModalAdmin = ({
   feedback,
   setFeedback,
 }) => {
-  const { t, i18n } = useTranslation();
-  const { languageUser } = useContext(UserContext);
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
+  const { t } = useTranslations();
 
   return (
     <Modal open={open} onClose={formClientReset} aria-labelledby="modal-admin-title">

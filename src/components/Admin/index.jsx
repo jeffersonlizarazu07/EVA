@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import "../../assets/css/index.css";
-import SidebarLT1 from "../aside/sidebarLT1";
+import HeaderLT2 from "../header/headerLT2.jsx"
 import HeaderLT1 from "../header/headerLT1";
 import i18n from "../../assets/js/i18n.jsx";
 import { useEffect, useContext, useState } from "react";
@@ -26,7 +26,7 @@ const Index = () => {
 
   return (
     <Box>
-      <HeaderLT1 />
+      {userType === "2" ? <HeaderLT2 /> : <HeaderLT1 />}
       {/* id="body" */}
       <Box>
         <Box sx={{ marginTop: 12 }}>
@@ -101,7 +101,6 @@ const Index = () => {
               </Grid>
             </Container>
           </Grid>
-          {/* <SidebarLT1 /> */}
         </Box>
       </Box>
     </Box>

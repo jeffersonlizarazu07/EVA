@@ -7,7 +7,7 @@ import HeaderLT1 from "../../components/header/headerLT1";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../../components/hooks/useTranslations";
 import {
   Modal,
   Box,
@@ -20,11 +20,14 @@ import {
   Divider,
   MenuItem,
   Checkbox,
-  Autocomplete
-} from '@mui/material';
-
-import {Close as CloseIcon, CloudUpload as CloudUploadIcon, Edit as EditIcon, Add as AddIcon } from '@mui/icons-material';
-import { use } from "react";
+  Autocomplete,
+} from "@mui/material";
+import {
+  Close as CloseIcon,
+  CloudUpload as CloudUploadIcon,
+  Edit as EditIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
 
 const AdminList = () => {
   //ocultar o mostrar los modales
@@ -58,19 +61,20 @@ const AdminList = () => {
   const [agenteExport, setAgenteExport] = useState([]);
 
   // Traducción e idioma desde el contexto global del usuario
-  const { t, i18n } = useTranslation();
-  const { accessToken, languageUser, setClients, userId, clients } = useContext(UserContext);
+  const { t } = useTranslations();
+  const { accessToken, setClients, userId, clients } = useContext(UserContext);
 
   // Se ejecuta cuando cambia el idioma del usuario o se monta el componente
 
- 
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
     const day = today.getDate();
     // Formateo de la fecha (YYYY-MM-DD)
-    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${ day < 10 ? "0" + day : day }`;
+    const formattedDater = `${year}-${month < 10 ? "0" + month : month}-${
+      day < 10 ? "0" + day : day
+    }`;
 
     // Cargo admins y clientes desde el backend
     setFormattedDate(formattedDater);
@@ -102,9 +106,6 @@ const AdminList = () => {
     console.log("Agentes export:", agentes);
   }, [admins]);
 
-
- 
-  
   const state = useInput({ defaultValue: "", validate: /^[0-1]+$/ });
   const language = useInput({ defaultValue: "", validate: /^(es|en|it|pt)$/ });
   const registration_date = useInput({
@@ -172,7 +173,11 @@ const AdminList = () => {
     if (metodo.toUpperCase() === "PUT") {
 
       try {
-        const respuesta = await axios.put(`${urlUsers}/${idToEdit}`, rest, config);
+        const respuesta = await axios.put(
+          `${urlUsers}/${idToEdit}`,
+          rest,
+          config
+        );
 
         if (respuesta.status >= 200 && respuesta.status < 300) {
           const envioC = await sendClients(respuesta.data.data.id, 2);
@@ -265,13 +270,13 @@ const AdminList = () => {
   };
 
   const sendClients = async (id, metodo) => {
-    try{      
-    if (metodo == 1) {
-      const parametros = selectedClients.map((client) => ({
-        idUser: id,
-        clientId: client,
-      }));
-      
+    try {
+      if (metodo == 1) {
+        const parametros = selectedClients.map((client) => ({
+          idUser: id,
+          clientId: client,
+        }));
+
         const respuesta = await axios.post(
           `${urlUsersClients}`,
           parametros,
@@ -281,31 +286,35 @@ const AdminList = () => {
         if (respuesta.status >= 200 && respuesta.status < 300) {
           return { success: true, data: respuesta.data };
         }
-    } else if (metodo == 2) {
-      const parametros = {
-        clientIds: selectedClients.map((client) => client),
-      };      
+      } else if (metodo == 2) {
+        const parametros = {
+          clientIds: selectedClients.map((client) => client),
+        };
         const respuesta = await axios.put(
           `${urlUsersClients}/${id}`,
           parametros,
           config
         );
         if (respuesta.status >= 200 && respuesta.status < 300) {
-        return { success: true, data: respuesta.data };
-      }      
-    }
-    }catch (error) {
+          return { success: true, data: respuesta.data };
+        }
+      }
+    } catch (error) {
       console.error("Error: ", error);
       // Obtener mensaje de error del servidor
       let errorMessage = "Error al asignar clientes al usuario";
-      if (error.response && error.response.data && error.response.data.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         errorMessage = error.response.data.message;
       }
-      
-      return { 
-        success: false, 
+
+      return {
+        success: false,
         error: errorMessage,
-        status: error.response ? error.response.status : 500
+        status: error.response ? error.response.status : 500,
       };
     }
   };
@@ -313,10 +322,10 @@ const AdminList = () => {
     const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
-  
+
     // Estado a enviar: 0 = desactivado
     const parametros = { state: 0 };
-  
+
     // Confirmación antes de desactivar
     smallAlertDelete
       .fire({
@@ -330,12 +339,11 @@ const AdminList = () => {
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
         confirmButtonColor: "#b62a8b",
-        customClass :{
-          actions: 'swal2-actions-center ', 
-          icon: 'icono-personalizado',
-          title: 'titulo-pequeno',
+        customClass: {
+          actions: "swal2-actions-center ",
+          icon: "icono-personalizado",
+          title: "titulo-pequeno",
         },
-
       })
       .then(async (result) => {
         if (result.isConfirmed) {
@@ -343,7 +351,7 @@ const AdminList = () => {
             await axios.patch(`${url}/${id}`, parametros, {
               withCredentials: true,
             });
-  
+
             // Notificación de éxito al desactivar
             Toast.fire({
               icon: "success",
@@ -364,16 +372,16 @@ const AdminList = () => {
         }
         getAdmins(); // Refrescar lista de admins
       });
-  };  
-  
+  };
+
   const activeUser = (admin) => {
     const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
-  
+
     // Estado a enviar: 1 = activo
     const parametros = { state: 1 };
-  
+
     smallAlertDelete
       .fire({
         icon: "warning",
@@ -384,10 +392,10 @@ const AdminList = () => {
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
         confirmButtonColor: "#b62a8b",
-        customClass :{
-          actions: 'swal2-actions-center ', 
-          icon: 'icono-personalizado',
-          title: 'titulo-pequeno',
+        customClass: {
+          actions: "swal2-actions-center ",
+          icon: "icono-personalizado",
+          title: "titulo-pequeno",
         },
       })
       .then(async (result) => {
@@ -396,7 +404,7 @@ const AdminList = () => {
             await axios.patch(`${url}/${id}`, parametros, {
               withCredentials: true,
             });
-  
+
             // Notificación de éxito al activar
             Toast.fire({
               icon: "success",
@@ -418,13 +426,13 @@ const AdminList = () => {
         getAdmins(); // Refrescar lista de admins
       });
   };
-  
+
   //MODALS//
   // Manejo cerrar modal
   const handleModalClose = () => {
     setOpenCreateModal(false);
     setOpenViewModal(false);
-    setSelectedClients([]);  // Limpia selección si quieres
+    setSelectedClients([]); // Limpia selección si quieres
   };
 
   // Función abrir modal
@@ -479,10 +487,9 @@ const AdminList = () => {
     setidToEdit(admin?.id);
 
     // Aquí abres el modal de MUI y defines que la operación sea "ver"
-    setOperation(3);          // 3 = Ver info user
+    setOperation(3); // 3 = Ver info user
     setOpenViewModal(true); // abrir modal
   };
-
 
   const formatDate = (dateTimeString) => {
     const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{1,6}Z$/;
@@ -601,13 +608,20 @@ const AdminList = () => {
 
     setSelectedClients(selectedClientIds);
   };
- 
+
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {loading && <p>Cargando...</p>}
         <HeaderLT1 />
-        <Box sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex" }}>
+        <Box
+          sx={{
+            alignItems: "stretch",
+            flexWrap: "nowrap",
+            padding: 0,
+            display: "flex",
+          }}
+        >
           {/* <SidebarLT1 /> */}
           <Box className="container" mt={0}>
             {admins.length > 0 && (
@@ -634,7 +648,9 @@ const AdminList = () => {
         <Box className="modalBox">
           <Paper elevation={0} sx={{ borderRadius: 2 }}>
             {/* Encabezado */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 3 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", p: 3 }}
+            >
               <Typography variant="h6" fontWeight="bold">
                 {title}
               </Typography>
@@ -686,10 +702,15 @@ const AdminList = () => {
                     disableCloseOnSelect
                     getOptionLabel={(option) => option.client}
                     onChange={onChange}
-                    value={listClients.filter(client => selectedClients.includes(client.id))}
+                    value={listClients.filter((client) =>
+                      selectedClients.includes(client.id)
+                    )}
                     renderOption={(props, option, { selected }) => (
                       <li {...props} key={option.id}>
-                        <Checkbox checked={selected} style={{ marginRight: 8 }} />
+                        <Checkbox
+                          checked={selected}
+                          style={{ marginRight: 8 }}
+                        />
                         {option.client}
                       </li>
                     )}
@@ -736,7 +757,9 @@ const AdminList = () => {
                     sx={{ mb: 2 }}
                     className="readOnlyField"
                   >
-                    <MenuItem value="0" disabled>{t("UserModal.SelectRole")}</MenuItem>
+                    <MenuItem value="0" disabled>
+                      {t("UserModal.SelectRole")}
+                    </MenuItem>
                     <MenuItem value="1">{t("UserModal.SuperAdmin")}</MenuItem>
                     <MenuItem value="2">{t("UserModal.Admin")}</MenuItem>
                     <MenuItem value="3">{t("UserModal.Editor")}</MenuItem>
@@ -748,17 +771,19 @@ const AdminList = () => {
 
             {/* Footer */}
             <Divider />
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, p: 3 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "flex-end", gap: 2, p: 3 }}
+            >
               <Button
                 variant="outlined"
                 onClick={handleModalClose}
-                sx={{            
-                  color: '#b62a8b',       // Texto morado
-                  borderColor: '#b62a8b',  // Borde morado
-                  '&:hover': {
-                    borderColor: '#b62a8b', // Borde morado oscuro al hover
-                    backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
-                  }
+                sx={{
+                  color: "#b62a8b", // Texto morado
+                  borderColor: "#b62a8b", // Borde morado
+                  "&:hover": {
+                    borderColor: "#b62a8b", // Borde morado oscuro al hover
+                    backgroundColor: "rgba(156, 39, 176, 0.04)", // Fondo muy transparente al hover
+                  },
                 }}
               >
                 {t("clientModal.Close")}
@@ -767,10 +792,10 @@ const AdminList = () => {
                 variant="contained"
                 onClick={() => validar(idToEdit)}
                 sx={{
-                  backgroundColor: '#b62a8b',
-                  '&:hover': {
-                    backgroundColor: '#581244'
-                  }
+                  backgroundColor: "#b62a8b",
+                  "&:hover": {
+                    backgroundColor: "#581244",
+                  },
                 }}
               >
                 {t("UserModal.Save")}
@@ -782,14 +807,16 @@ const AdminList = () => {
 
       {/*Modal de visualización*/}
       <Modal
-        open={openViewModal}  // operation=3 es ver
+        open={openViewModal} // operation=3 es ver
         onClose={handleModalClose}
         aria-labelledby="view-user-modal-title"
       >
         <Box className="modalBox">
           <Paper elevation={0} sx={{ borderRadius: 2 }}>
             {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 3 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", p: 3 }}
+            >
               <Typography variant="h6" fontWeight="bold">
                 {t("viewUserModal.UserDetails")}
               </Typography>
@@ -810,11 +837,19 @@ const AdminList = () => {
               <Grid container spacing={3}>
                 {/* Left column */}
                 <Grid item xs={12} sm={6}>
-
                   <TextField
                     fullWidth
                     label={t("viewUserModal.Name")}
                     value={`${firstName.input} ${middleName.input} ${lastName.input}`}
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField readOnlyField_"
+                  />
+
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.NetworkUser")}
+                    value={userRed.input || "No especificado"}
                     InputProps={{ readOnly: true }}
                     sx={{ mb: 2}}
                     className="readOnlyField readOnlyField_"
@@ -838,7 +873,7 @@ const AdminList = () => {
                         : t("clientTable.Inactive")
                     }
                     InputProps={{ readOnly: true }}
-                    sx={{mb: 2 }}
+                    sx={{ mb: 2 }}
                     className="readOnlyField readOnlyField_"
                   />
 
@@ -847,7 +882,7 @@ const AdminList = () => {
                     label={t("viewUserModal.RegisterDate")}
                     value={formatDate(registration_date.input)}
                     InputProps={{ readOnly: true }}
-                    sx={{ mb: 2}}
+                    sx={{ mb: 2 }}
                     className="readOnlyField readOnlyField_"
                   />
 
@@ -864,7 +899,7 @@ const AdminList = () => {
                         : t("headerlt.Portuguese")
                     }
                     InputProps={{ readOnly: true }}
-                    sx={{ mb: 2}}
+                    sx={{ mb: 2 }}
                     className="readOnlyField readOnlyField_"
                   />
                 </Grid>
@@ -887,7 +922,7 @@ const AdminList = () => {
                         : "Agente"
                     }
                     InputProps={{ readOnly: true }}
-                    sx={{ mb: 2}}
+                    sx={{ mb: 2 }}
                     className="readOnlyField readOnlyField_"
                   />
 
@@ -896,26 +931,36 @@ const AdminList = () => {
                     label={t("viewUserModal.LastVisit")}
                     value={formatDate(last_visit_date.input)}
                     InputProps={{ readOnly: true }}
-                    sx={{ mb: 2}}
+                    sx={{ mb: 2 }}
                     className="readOnlyField readOnlyField_"
                   />
 
                   <Box>
                     <Box className="textarea-box">
-                      <Typography className="text-area" variant="subtitle2" gutterBottom>
+                      <Typography
+                        className="text-area"
+                        variant="subtitle2"
+                        gutterBottom
+                      >
                         {t("viewUserModal.Clients")}
                       </Typography>
                       {selectedClients.length > 0 ? (
                         <ul style={{ margin: 0, paddingLeft: 16 }}>
                           {selectedClients.map((clientId) => {
-                            const client = listClients.find((c) => c.id === clientId);
+                            const client = listClients.find(
+                              (c) => c.id === clientId
+                            );
                             return client ? (
                               <li key={client.id}>{client.client}</li>
                             ) : null;
                           })}
                         </ul>
                       ) : (
-                        <Typography variant="body2" color="text.secondary" sx={{ m: 1 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ m: 1 }}
+                        >
                           {t("viewUserModal.NotClients")}
                         </Typography>
                       )}

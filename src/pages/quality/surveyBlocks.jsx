@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import HeaderLT1 from "../../components/header/headerLT1";
 import { apiClient } from "../../utils/axiosConfig";
@@ -68,7 +68,6 @@ import {
   Toast2,
   Toast,
 } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
 import {
   sendData,
   deleteQuestion,
@@ -102,6 +101,7 @@ import ModalSurveyBlocks from "../../components/Modals/modalSurveyBlocks";
 import Cookies from "js-cookie";
 import { updateFormMetadata } from "../../services/form_listService";
 import { formatDateTimeShort } from "../../utils/dateUtils";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 export default function SurveyBlocks({}) {
   const theme = useTheme();
@@ -162,7 +162,8 @@ export default function SurveyBlocks({}) {
     validate: /^[A-Za-z0-9]*$/,
   });
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
+  const { accessToken, languageUser, user } = useContext(UserContext);
 
   /* Estado de listas de preguntas del botón + Pregunta */
   const [questionsList, setQuestionsList] = useState([
@@ -210,10 +211,6 @@ export default function SurveyBlocks({}) {
   /* ***********************************************************************************************************/
   /* Component Logic*/
   /* ***********************************************************************************************************/
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]);
 
   const fetchFormData = async () => {
     setLoading(true);

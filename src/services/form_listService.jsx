@@ -30,7 +30,7 @@ export const updateFormMetadata = async (id_form, userId) => {
       { withCredentials: true }
     );
 
-    return putResponse.data.data; // ✅ Devuelve los datos actualizados
+    return putResponse.data.data; // Devuelve los datos actualizados
   } catch (error) {
     console.error("Error al actualizar metadatos del formulario:", error);
     if (error.response) {
