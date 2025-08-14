@@ -61,7 +61,8 @@ import {
   MenuItem as MenuItemComponent,
   Alert,
   Paper,
-  Divider
+  Divider,
+  useTheme
 } from '@mui/material';
 import {
   TurnLeft,
@@ -77,6 +78,7 @@ import {
 import { useTranslations } from "../../components/hooks/useTranslations";
 
 export default function View_survey() {
+  const theme = useTheme();
   const nav = useNavigate();
   const { id } = useParams();
   const [data, setData] = useState([]);
@@ -575,231 +577,543 @@ const config = {
   );
 
   return (
-    <Box style={{ overflow: "hidden" }}>      
+    <Box className="App">
+      <Box id="body">
         <HeaderLT1/>
-        <Box component = "section" 
-          sx={{alignItems: "stretch", 
+        <Box component="section" 
+          sx={{
+            alignItems: "stretch", 
             flexWrap: "nowrap", 
             padding: 0, 
             height: "85vh", 
-            overflowY: "auto" 
-          }}>
+            overflowY: "auto"
+          }}
+          >
         {/* <SidebarLT1/> */}
-        <Container sx={{mt:0, maxWidth: "93.5% !important"}}>
-          <Grid container >            
-            <Grid item xs={12} md={12} >
+        <Container sx={{mt: 2, maxWidth: "95% !important", px: 3}}>
+          <Grid container spacing={3}>            
+            <Grid item xs={12}>
+              {/* Botón de retorno moderno */}
               <Button 
                 variant="outlined"
-                size="small"
+                size="medium"
+                startIcon={<ArrowBack />}
                 sx={{  
-                  minWidth: 0,       
-                  width: 30,
-                  height: 30,
-                  padding: 0,
-                  marginBottom: 1,
-                  borderRadius: '50%',        
+                  mb: 3,
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1,
+                  fontSize: '0.95rem',        
                   color: '#b62a8b',
-                  borderColor: '#b62a8b',    
+                  borderColor: '#b62a8b',
+                  boxShadow: '0 2px 8px rgba(182, 42, 139, 0.15)',
+                  transition: 'all 0.1s ease',    
                   '&:hover': {
                     borderColor: '#b62a8b',
                     backgroundColor: '#b62a8b',
-                    color: 'white'
+                    color: 'white',
+                    boxShadow: '0 4px 16px rgba(182, 42, 139, 0.25)',
+                    transform: 'translateY(-1px)'
                   }
                 }}
                 onClick={() => nav("/survey_list")} 
               >
-                <TurnLeft /> 
               </Button>
-              <Card className="borderEVA" sx={{padding: "1.25rem", backgroundColor: '#f8f9fa'}}>             
-                <Box textAlign="center">
-                  <Typography variant="h5" sx={{ fontWeight: "bold"}}>
-                    {t("vistaEncuestas.informacion_encuesta")}
-                  </Typography>
-                </Box>
-                <CardContent sx={{ p: 0, py: 2 }}>
-                   <Grid container alignItems="center">
-                    <Grid item xs={6}>
-                      {console.log("-----surveyData aca ------", surveyData)}
-                      <Typography variant="h6" sx={{ fontWeight: "bold"}}>{surveyData.data?.title}</Typography>
-                      <Typography variant="body2" >{surveyData.data?.description}</Typography>
+
+              {/* Tarjeta de información modernizada */}
+              <Card sx={{
+                borderRadius: '20px',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 32px rgba(0, 0, 0, 0.08)',
+                border: '1px solid',
+                borderColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(182, 42, 139, 0.2)' 
+                  : 'rgba(182, 42, 139, 0.1)',
+                background: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.05)' 
+                  : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                overflow: 'hidden',
+                position: 'relative',
+                transition: 'all 0.15s ease',
+                '&:hover': {
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 12px 40px rgba(0, 0, 0, 0.4)'
+                    : '0 12px 40px rgba(0, 0, 0, 0.12)',
+                  transform: 'translateY(-2px)'
+                },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: 'linear-gradient(90deg, #b62a8b 0%, #d63384 100%)'
+                }
+              }}>             
+                <CardContent sx={{ p: 4 }}>
+                  <Box textAlign="center" mb={3}>
+                    <Typography variant="h4" sx={{ 
+                      fontWeight: 700,
+                      color: theme.palette.text.primary,
+                      mb: 1,
+                      letterSpacing: '-0.5px'
+                    }}>
+                      {t("vistaEncuestas.informacion_encuesta")}
+                    </Typography>
+                    <Box sx={{
+                      width: '60px',
+                      height: '4px',
+                      backgroundColor: '#b62a8b',
+                      borderRadius: '2px',
+                      margin: '0 auto'
+                    }} />
+                  </Box>
+                  
+                  <Grid container spacing={4} alignItems="center">
+                    <Grid item xs={12} md={8}>
+                      <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                        <Typography variant="h5" sx={{ 
+                          fontWeight: 600,
+                          color: theme.palette.text.primary,
+                          mb: 2,
+                          lineHeight: 1.3
+                        }}>
+                          {surveyData.data?.title || 'Título de la encuesta'}
+                        </Typography>
+                        <Typography variant="body1" sx={{
+                          color: theme.palette.text.secondary,
+                          lineHeight: 1.6,
+                          fontSize: '1.05rem'
+                        }}>
+                          {surveyData.data?.description || 'Descripción de la encuesta'}
+                        </Typography>
+                      </Box>
                     </Grid>
-                    <Grid item xs={6} textAlign="right">
-                      {console.log("-----surveyData aca", surveyData)}
-                      <Typography variant="body2" sx={{fontSize: 16}}>
-                        {surveyData.data?.start_date || "Sin fecha"} / 
-                        {surveyData.data?.end_date || "Sin fecha"}
-                      </Typography>
-                      <Typography variant="body2" sx={{fontSize: 16}}>
-                        {t("vistaEncuestas.cantidad_preguntas")}: {surveyData.sampleCount || 0}
-                      </Typography>
+                    <Grid item xs={12} md={4}>
+                      <Box sx={{ 
+                        textAlign: { xs: 'center', md: 'right' },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 3
+                      }}>
+                        <Box>
+                          <Typography variant="body2" sx={{
+                            fontSize: '0.9rem',
+                            color: theme.palette.text.secondary,
+                            mb: 0.5,
+                            fontWeight: 500
+                          }}>
+                            Período de encuesta
+                          </Typography>
+                          <Typography variant="body1" sx={{
+                            fontSize: '1rem',
+                            fontWeight: 600,
+                            color: theme.palette.text.primary
+                          }}>
+                            {surveyData.data?.start_date || "Sin fecha"} - {surveyData.data?.end_date || "Sin fecha"}
+                          </Typography>
+                        </Box>
+                        
+                        <Box>
+                          <Typography variant="body2" sx={{
+                            fontSize: '0.9rem',
+                            color: theme.palette.text.secondary,
+                            mb: 0.5,
+                            fontWeight: 500
+                          }}>
+                            Cantidad de veces respondida
+                          </Typography>
+                          <Typography variant="h6" sx={{
+                            fontWeight: 700,
+                            color: '#b62a8b'
+                          }}>
+                            {surveyData.data?.responseCount ?? 0}
+                          </Typography>
+                        </Box>
+                      </Box>
                     </Grid>
                   </Grid>
                 </CardContent>
               </Card>
             </Grid>
 
-            <Grid item xs={12} sx={{ mt: 3 }}>
-              <Card className ="borderEVA" sx={{padding: "1.25rem", backgroundColor: '#f8f9fa'}}>
-                <Box display="flex" flexDirection="column"   mb={2}>
-                  <Box  sx={{ textAlign: 'center' }}>
-                    <Typography variant="h5" sx={{ fontWeight: "bold"}}>
-                      {t("vistaEncuestas.preguntas_encuesta")}
-                    </Typography>
-                  </Box>
-                  <Box>
+            <Grid item xs={12} sx={{ mt: 4 }}>
+              <Card sx={{
+                borderRadius: '20px',
+                boxShadow: theme.palette.mode === 'dark'
+                  ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 32px rgba(0, 0, 0, 0.08)',
+                border: '1px solid',
+                borderColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(182, 42, 139, 0.2)' 
+                  : 'rgba(182, 42, 139, 0.1)',
+                background: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.05)' 
+                  : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                overflow: 'hidden',
+                position: 'relative',
+                transition: 'all 0.15s ease',
+                '&:hover': {
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 12px 40px rgba(0, 0, 0, 0.4)'
+                    : '0 12px 40px rgba(0, 0, 0, 0.12)',
+                  transform: 'translateY(-2px)'
+                },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: 'linear-gradient(90deg, #b62a8b 0%, #d63384 100%)'
+                }
+              }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                    <Box>
+                      <Typography variant="h4" sx={{ 
+                        fontWeight: 700,
+                        color: theme.palette.text.primary,
+                        mb: 1,
+                        letterSpacing: '-0.5px'
+                      }}>
+                        {t("vistaEncuestas.preguntas_encuesta")}
+                      </Typography>
+                      <Box sx={{
+                        width: '60px',
+                        height: '4px',
+                        backgroundColor: '#b62a8b',
+                        borderRadius: '2px'
+                      }} />
+                    </Box>
                     <Button                      
                       startIcon={<Add />}
                       onClick={() => openModal(1, id)}
-                      variant="h5"
-                      size="small"
+                      variant="contained"
+                      size="large"
                       sx={{
-                        height: 30, 
-                        width: 175,
-                        fontSize: 12,
-                        whiteSpace: 'nowrap',
-                        fontWeight: "bold",
-                        borderRadius: '18px',
-                        border: '1px solid #b62a8b',
-                        color: 'black',
-                        borderColor: '#b62a8b',    
+                        borderRadius: '16px',
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                        px: 4,
+                        py: 1.5,
+                        backgroundColor: '#b62a8b',
+                        boxShadow: '0 4px 16px rgba(182, 42, 139, 0.3)',
+                        transition: 'all 0.1s ease',
                         '&:hover': {
-                          borderColor: '#b62a8b',
-                          backgroundColor: '#b62a8b',
-                          color: 'white'
+                          backgroundColor: '#9c1c6b',
+                          boxShadow: '0 6px 24px rgba(182, 42, 139, 0.4)',
+                          transform: 'translateY(-1px)'
                         }
                       }}
-                    > {t("vistaEncuestas.agregar_pregunta")}</Button>
+                    > 
+                      {t("vistaEncuestas.agregar_pregunta")}
+                    </Button>
                   </Box>
-                </Box>
             
-                  <CardContent>
-                    {data.map((question) => (
-                      <Paper
-                      className="shadowbox5"
-                      key={question.id}
-                      elevation={3}
-                      sx={{ p: 3, m: 2, backgroundColor: '#f8f9fa' }}
-                      >
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="h6" sx={{ mt: 1, fontWeight: "bold" }}>
-                          {question.question}
+                  <Box sx={{ mt: 2 }}>
+                    {data.length === 0 ? (
+                      <Box sx={{
+                        textAlign: 'center',
+                        py: 8,
+                        color: theme.palette.text.secondary
+                      }}>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+                          No hay preguntas aún
                         </Typography>
-                        <IconButton
-                          onClick={(e) => handleMenuClick(e, question)}
-                        >
-                          <MoreVert  
-                            sx={{ 
-                              color:' #b62a8b',
-                              '&:hover': { backgroundColor: '#e9ecef' }
-                            }} />
-                        </IconButton>
-                        <Menu
-                          anchorEl={anchorEl}
-                          open={Boolean(anchorEl)}
-                          onClose={handleMenuClose}
-                          PaperProps={{
-                            elevation: 0, // <- elimina la sombra
-                            sx: {
-                              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1) !important' // sombra más sutil
-                            }
-                          }}
-                        >
-                          <MenuItemComponent sx={{ 
-                              display: 'flex', 
-                              gap: 1,
-                              color:' #b62a8b',
-                              '&:hover': { backgroundColor: '#f8f9fa' }
-                              }}  
-                            onClick={handleEditClick}>
-                            <Edit sx={{ fontSize: 18 }} />
-                            {t("survey.editar")}
-                          </MenuItemComponent>
-                          <MenuItemComponent
-                            sx={{ 
-                                display: 'flex', 
-                                gap: 1,
-                                color:' #b62a8b',
-                                '&:hover': { backgroundColor: '#f8f9fa' }
-                                }}  
-                            onClick={handleDeleteClick}>
-                            <Delete sx={{ fontSize: 18 }} />
-                            {t("vistaEncuestas.eliminar")}
-                          </MenuItemComponent>
-                        </Menu>
+                        <Typography variant="body2">
+                          Comienza agregando tu primera pregunta a la encuesta
+                        </Typography>
                       </Box>
+                    ) : (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {data.map((question, index) => (
+                          <Paper
+                            key={question.id}
+                            elevation={0}
+                            sx={{ 
+                              borderRadius: '16px',
+                              border: '1px solid',
+                              borderColor: theme.palette.mode === 'dark' 
+                                ? 'rgba(182, 42, 139, 0.2)' 
+                                : 'rgba(0, 0, 0, 0.08)',
+                              background: theme.palette.mode === 'dark' 
+                                ? 'rgba(255, 255, 255, 0.05)' 
+                                : 'rgba(255, 255, 255, 0.9)',
+                              backdropFilter: 'blur(10px)',
+                              transition: 'all 0.1s ease',
+                              '&:hover': {
+                                boxShadow: theme.palette.mode === 'dark'
+                                  ? '0 8px 24px rgba(0, 0, 0, 0.4)'
+                                  : '0 8px 24px rgba(0, 0, 0, 0.12)',
+                                transform: 'translateY(-1px)',
+                                borderColor: 'rgba(182, 42, 139, 0.2)'
+                              }
+                            }}
+                          >
+                            <CardContent sx={{ p: 3 }}>
+                              <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                                <Box sx={{ flex: 1, mr: 2 }}>
+                                  <Box display="flex" alignItems="center" mb={1}>
+                                    <Typography 
+                                      variant="body2" 
+                                      sx={{ 
+                                        backgroundColor: 'rgba(182, 42, 139, 0.1)',
+                                        color: '#b62a8b',
+                                        px: 2,
+                                        py: 0.5,
+                                        borderRadius: '20px',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        mr: 2
+                                      }}
+                                    >
+                                      Pregunta {index + 1}
+                                    </Typography>
+                                    {question.conditional === "SI" && (
+                                      <Typography 
+                                        variant="body2" 
+                                        sx={{ 
+                                          backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                          color: '#f57c00',
+                                          px: 2,
+                                          py: 0.5,
+                                          borderRadius: '20px',
+                                          fontSize: '0.8rem',
+                                          fontWeight: 600,
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 0.5
+                                        }}
+                                      >
+                                        <Help sx={{ fontSize: 14 }} />
+                                        Condicional
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                  <Typography variant="h6" sx={{ 
+                                    fontWeight: 600,
+                                    color: theme.palette.text.primary,
+                                    lineHeight: 1.4,
+                                    mb: 2
+                                  }}>
+                                    {question.question}
+                                  </Typography>
+                                </Box>
+                                <IconButton
+                                  onClick={(e) => handleMenuClick(e, question)}
+                                  sx={{
+                                    backgroundColor: 'rgba(182, 42, 139, 0.05)',
+                                    borderRadius: '12px',
+                                    transition: 'all 0.1s ease',
+                                    '&:hover': { 
+                                      backgroundColor: 'rgba(182, 42, 139, 0.1)',
+                                      transform: 'scale(1.02)'
+                                    }
+                                  }}
+                                >
+                                  <MoreVert sx={{ color: '#b62a8b' }} />
+                                </IconButton>
+                              </Box>
+                              
+                              <Menu
+                                anchorEl={anchorEl}
+                                open={Boolean(anchorEl)}
+                                onClose={handleMenuClose}
+                                PaperProps={{
+                                  sx: {
+                                    borderRadius: '12px',
+                                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+                                    border: '1px solid rgba(0, 0, 0, 0.08)',
+                                    mt: 1
+                                  }
+                                }}
+                              >
+                                <MenuItemComponent 
+                                  sx={{ 
+                                    display: 'flex', 
+                                    gap: 1.5,
+                                    py: 1.5,
+                                    px: 2,
+                                    color: '#2d3748',
+                                    fontWeight: 500,
+                                    '&:hover': { 
+                                      backgroundColor: 'rgba(182, 42, 139, 0.05)',
+                                      color: '#b62a8b'
+                                    }
+                                  }}  
+                                  onClick={handleEditClick}
+                                >
+                                  <Edit sx={{ fontSize: 18 }} />
+                                  {t("survey.editar")}
+                                </MenuItemComponent>
+                                <MenuItemComponent
+                                  sx={{ 
+                                    display: 'flex', 
+                                    gap: 1.5,
+                                    py: 1.5,
+                                    px: 2,
+                                    color: '#e53e3e',
+                                    fontWeight: 500,
+                                    '&:hover': { 
+                                      backgroundColor: 'rgba(229, 62, 62, 0.05)'
+                                    }
+                                  }}  
+                                  onClick={handleDeleteClick}
+                                >
+                                  <Delete sx={{ fontSize: 18 }} />
+                                  {t("vistaEncuestas.eliminar")}
+                                </MenuItemComponent>
+                              </Menu>
 
-                      {question.type == "range_onetofive" ? (
-                        <Range_onetofive />
-                      ) : question.type == "range_zerototen" ? (
-                        <Range_zerototen />
-                      ) : question.type == "range_difficulty" ? (
-                        <Range_difficulty />
-                      ) : question.type == "yes_no" ? (
-                        <Yes_no />
-                      ) : question.type == "range_emoji" ? (
-                        <Range_emoji />
-                      ) : question.type == "textfield_s" ? (
-                        <Textfield_s />
-                      ) : question.type == "radio_opt" ? (
-                        <SingleChoiceView
-                          options={question.select_option}
-                          correctOption={question.selected_answer}
-                        />
-                      ) : (
-                        <MultipleChoiceView
-                          options={question.select_option}
-                          correctOption={question.selected_answer}
-                        />
-                      )}
-
-                      <Box textAlign="right" sx={{ mt: 2 }}>
-                        {question.conditional === "SI" && (
-                          <Box display="flex" alignItems="center" justifyContent="flex-end">
-                            <Help color="primary" sx={{ mr: 1 }} />
-                            <Typography variant="body2">
-                              {t("vistaEncuestas.pregunta_condicionals")}
-                            </Typography>
-                          </Box>
-                        )}
+                              {/* Contenido de la pregunta */}
+                              <Box sx={{ 
+                                backgroundColor: theme.palette.mode === 'dark' 
+                                  ? 'rgba(255, 255, 255, 0.03)' 
+                                  : 'rgba(248, 249, 250, 0.7)',
+                                borderRadius: '12px',
+                                p: 2,
+                                mt: 2
+                              }}>
+                                {question.type == "range_onetofive" ? (
+                                  <Range_onetofive />
+                                ) : question.type == "range_zerototen" ? (
+                                  <Range_zerototen />
+                                ) : question.type == "range_difficulty" ? (
+                                  <Range_difficulty />
+                                ) : question.type == "yes_no" ? (
+                                  <Yes_no />
+                                ) : question.type == "range_emoji" ? (
+                                  <Range_emoji />
+                                ) : question.type == "textfield_s" ? (
+                                  <Textfield_s />
+                                ) : question.type == "radio_opt" ? (
+                                  <SingleChoiceView
+                                    options={question.select_option}
+                                    correctOption={question.selected_answer}
+                                  />
+                                ) : (
+                                  <MultipleChoiceView
+                                    options={question.select_option}
+                                    correctOption={question.selected_answer}
+                                  />
+                                )}
+                              </Box>
+                            </CardContent>
+                          </Paper>
+                        ))}
                       </Box>
-                    </Paper>
-                    ))}
-                  </CardContent>
-                </Card>
-              </Grid>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
             </Grid>
-          </Container>
-        </Box>
-      
+          </Grid>
+        </Container>
+      </Box>
    
+      {/* Modal modernizado */}
       <Dialog
         open={modalOpen}
         onClose={handleCancel}
-        maxWidth={operation === 1 ? "md" : "md"}
+        maxWidth={operation === 1 ? "md" : "lg"}
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+            border: '1px solid rgba(182, 42, 139, 0.1)',
+            overflow: 'hidden'
+          }
+        }}
       >
-        <Box sx={{ borderBottom: '1px solid #e0e0e0'}}>
-          <DialogTitle>{title}</DialogTitle>
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #b62a8b 0%, #d63384 100%)',
+          color: 'white',
+          position: 'relative'
+        }}>
+          <DialogTitle sx={{ 
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            py: 3,
+            px: 4
+          }}>
+            {title}
+          </DialogTitle>
         </Box>
-        <DialogContent>
-          <Grid container spacing={2}>
+        <DialogContent sx={{ 
+          p: 4, 
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? 'rgba(255, 255, 255, 0.05)' 
+            : '#fafbfc' 
+        }}>
+          <Grid container spacing={4}>
             <Grid item xs={operation === 1 ? 12 : 6}>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              <Typography variant="body1" sx={{ 
+                mb: 3,
+                color: theme.palette.text.secondary,
+                fontSize: '1.05rem',
+                lineHeight: 1.6
+              }}>
                 {descriptionText}
               </Typography>
                
               <TextField
-                className="readOnlyField"
                 fullWidth
                 label={t("vistaEncuestas.pregunta")}
                 variant="outlined"
                 value={description.input}
                 onChange={(e) => description.handleChange(e.target.value)}
-                sx={{ mb: 3 }}
                 required
+                sx={{ 
+                  mb: 3,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.05)' 
+                      : '#ffffff',
+                    '&:hover fieldset': {
+                      borderColor: '#b62a8b',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#b62a8b',
+                    }
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#b62a8b',
+                  }
+                }}
               />
 
-              <FormControl className="readOnlyField" fullWidth sx={{ mb: 3 }}>
+              <FormControl 
+                fullWidth 
+                sx={{ 
+                  mb: 3,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.05)' 
+                      : '#ffffff',
+                    '&:hover fieldset': {
+                      borderColor: '#b62a8b',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#b62a8b',
+                    }
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#b62a8b',
+                  }
+                }}
+              >
                 <InputLabel>{t("vistaEncuestas.tipo_pregunta")}</InputLabel>
                 <Select
                   value={questionType.input}
@@ -869,17 +1183,42 @@ const config = {
               
             {questionType.input && operation===2 && (
               <Grid item xs={6}>
-                <Paper sx={{ p: 2, borderLeft: '5px solid gray' }}>
+                <Paper sx={{ 
+                  p: 3, 
+                  borderRadius: '16px',
+                  background: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.05)' 
+                    : 'rgba(255, 255, 255, 0.9)',
+                  border: '1px solid',
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(182, 42, 139, 0.2)' 
+                    : 'rgba(182, 42, 139, 0.1)',
+                  borderLeft: '5px solid #b62a8b'
+                }}>
                   {operation===2 && data.length>=1 && (
                     <FormControlLabel
                       control={
                         <Switch 
                           checked={isChecked} 
                           onChange={(e) => conditionalHandleChange(e.target.checked)}
+                          sx={{
+                            '& .MuiSwitch-switchBase.Mui-checked': {
+                              color: '#b62a8b',
+                            },
+                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                              backgroundColor: '#b62a8b',
+                            },
+                          }}
                         />
                       }
                       label={t("vistaEncuestas.pregunta_condicional")}
-                      sx={{ mb: 2 }}
+                      sx={{ 
+                        mb: 2,
+                        '& .MuiFormControlLabel-label': {
+                          fontWeight: 600,
+                          color: theme.palette.text.primary
+                        }
+                      }}
                     />
                   )}
                   
@@ -976,40 +1315,65 @@ const config = {
           </Grid>
         </DialogContent>
         
-        <DialogActions>
+        <DialogActions sx={{ 
+          p: 4, 
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? 'rgba(255, 255, 255, 0.05)' 
+            : '#ffffff',
+          borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+          gap: 2
+        }}>
+          <Button
+            variant="outlined"
+            onClick={handleCancel}
+            size="large"
+            sx={{            
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 600,
+              px: 3,
+              py: 1.5,
+              color: '#6c757d',
+              borderColor: '#dee2e6',
+              transition: 'all 0.1s ease',
+              '&:hover': {
+                borderColor: '#b62a8b',
+                backgroundColor: 'rgba(182, 42, 139, 0.05)',
+                color: '#b62a8b'
+              }
+            }}
+          >
+            {t("buttons.cancelar")}
+          </Button>
           {questionType.input && (
             <Button
               variant="contained"
-              color="primary"
               onClick={() => validar(idToEdit, id)}
+              size="large"
               sx={{
-                  backgroundColor: '#b62a8b',
-                  '&:hover': {
-                    backgroundColor: '#581244',
-                  }
-                }}
+                borderRadius: '12px',
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '1rem',
+                px: 4,
+                py: 1.5,
+                backgroundColor: '#b62a8b',
+                boxShadow: '0 4px 16px rgba(182, 42, 139, 0.3)',
+                transition: 'all 0.1s ease',
+                '&:hover': {
+                  backgroundColor: '#9c1c6b',
+                  boxShadow: '0 6px 24px rgba(182, 42, 139, 0.4)',
+                  transform: 'translateY(-1px)'
+                }
+              }}
             >              
               {t("buttons.guardar")}
             </Button>
           )}
-          <Button
-            variant="outlined"
-            onClick={handleCancel}
-            sx={{            
-                  color: '#b62a8b',       // Texto morado
-                  borderColor: '#b62a8b',  // Borde morado
-                  '&:hover': {
-                    borderColor: '#b62a8b', // Borde morado oscuro al hover
-                    backgroundColor: 'rgba(156, 39, 176, 0.04)' // Fondo muy transparente al hover
-                  }
-                }}
-          >
-            {t("buttons.cancelar")}
-          </Button>
         </DialogActions>
           
         </Dialog>
-      
+      </Box>
     </Box>
   );
 }

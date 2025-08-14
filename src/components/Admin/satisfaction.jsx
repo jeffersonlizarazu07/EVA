@@ -48,7 +48,8 @@ const Satisfaction = () => {
     const fetchTopSurveys = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/top-surveys/${userId}`
+          `http://localhost:3000/api/top-surveys/${userId}`,
+          config
         );
         setTopSurveys(response.data.data);
         console.log("Top Surveys:", response.data.data);        
@@ -611,7 +612,7 @@ const Satisfaction = () => {
                               }}
                             >
                               <Link
-                                href={i.link}
+                                href={survey.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 sx={{

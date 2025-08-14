@@ -83,6 +83,8 @@ const TableAdmin = ({
         return t("headerlt.Last_name");
       case "type":
         return t("headerlt.Role");
+      case "user_red":
+        return t("UserModal.NetworkUser");
       default:
         return t("viewUserModal.State");
     }

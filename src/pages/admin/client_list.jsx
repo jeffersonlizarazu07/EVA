@@ -8,6 +8,7 @@ import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslations } from "../../components/hooks/useTranslations";
 import { SketchPicker } from "react-color";
 import "../../assets/css/newUser.css";
+import placeholderImg from "../../assets/img/placeholder-image.png";
 import {
   Box,
   Modal,
@@ -46,6 +47,7 @@ export default function Client_list() {
   const [showColorPicker2, setShowColorPicker2] = useState(false); // Mostrar/Ocultar el color picker 2
   const { t } = useTranslations(); // Hook para traducciones
   const url = "http://localhost:3000/api/clients"; // URL base de la API para clientes
+  const CLIENTS_BASE_URL = "http://localhost:3000/clientes";
 
   // Estados para los modales MUI
   const [openCreateModal, setOpenCreateModal] = useState(false);
@@ -259,6 +261,11 @@ export default function Client_list() {
       // Limpiar el input para que se pueda seleccionar otro archivo
       e.target.value = "";
     }
+  };
+
+  const handleImgError = (e) => {
+    e.target.onerror = null;
+    e.target.src = placeholderImg;
   };
 
   const handleColor1Change = (color) => {
@@ -591,19 +598,20 @@ export default function Client_list() {
             <Box sx={{ px: 3, pb: 3 }}>
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} sm={4}>
-                  <Box sx={{ display: "flex", justifyContent: "center" }}>
-                    <Box
-                      component="img"
-                      src={`clientes/${logo.input}`}
-                      alt="Logo"
-                      sx={{
-                        width: 100,
-                        height: 100,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        borderRadius: 1,
-                      }}
-                    />
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                      <Box
+                        component="img"
+                        src={`${CLIENTS_BASE_URL}/${logo.input || ''}`}
+                        alt="Logo"
+                        onError={handleImgError}
+                        sx={{
+                          width: 100,
+                          height: 100,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 1
+                        }}
+                      />
                   </Box>
                 </Grid>
 
@@ -746,8 +754,9 @@ export default function Client_list() {
                     {logoEdit && operation === 2 && !selectedFile ? (
                       <Box
                         component="img"
-                        src={`clientes/${logoEdit}`}
+                        src={`${CLIENTS_BASE_URL}/${logoEdit || ''}`}
                         alt="Logo"
+                        onError={handleImgError}
                         sx={{
                           width: 150,
                           height: 150,

@@ -1,12 +1,12 @@
-import axios from "axios";
+import { apiClient } from "../utils/axiosConfig";
 
-const API_URL = "http://localhost:3000/api/questions";
+const API_URL = "/questions";
 
 // Crear preguntas para un bloque
 export const createQuestions = async (blockId, preguntas) => {
   try {
     console.log("Preguntas enviadas:", preguntas);
-    const response = await axios.post(
+    const response = await apiClient.post(
       `${API_URL}`,
       {
         block_id: blockId,
@@ -30,15 +30,15 @@ export const createQuestions = async (blockId, preguntas) => {
 
 // Obtener preguntas por ID de bloque
 export const getQuestionsByBlockId = (blockId) => {
-  return axios.get(`${API_URL}/block/${blockId}`, {
+  return apiClient.get(`${API_URL}/block/${blockId}`, {
     withCredentials: true,
   });
 };
 
 export const updateQuestions = async (blockId, preguntas) => {
   try {
-    return await axios.put(
-      `http://localhost:3000/api/questions/${blockId}`,
+    return await apiClient.put(
+      `/questions/${blockId}`,
       { preguntas },
       { withCredentials: true }
     );

@@ -8,6 +8,7 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslations } from "../../components/hooks/useTranslations";
+import i18n from "../../assets/js/i18n";
 import {
   Modal,
   Box,
@@ -48,12 +49,21 @@ const AdminList = () => {
   const [loading, setLoading] = useState(false); // Bandera de carga (puede ser útil)
   const [selectedClients, setSelectedClients] = useState([]); // Clientes seleccionados para un admin
 
+  // Estados para validación de errores
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    userRed: "",
+    type: "",
+    clients: ""
+  });
+
   // exportar solo agente
   const [agenteExport, setAgenteExport] = useState([]);
 
   // Traducción e idioma desde el contexto global del usuario
   const { t } = useTranslations();
-  const { accessToken, setClients, userId, clients } = useContext(UserContext);
+  const { accessToken, setClients, userId, clients, languageUser } = useContext(UserContext);
 
   // Se ejecuta cuando cambia el idioma del usuario o se monta el componente
 
@@ -70,28 +80,21 @@ const AdminList = () => {
     // Cargo admins y clientes desde el backend
     setFormattedDate(formattedDater);
     getAdmins();
-  });
-  const config = {
-    withCredentials: true,
-  };
-  // Llaves para campos específicos al mostrar data
-  const selectedKeys = ["firstname", "lastname", "type", "state"];
-  const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-  const email = useInput({
-    defaultValue: "",
-    validate: /^[^\s@]+@[^\s@]+\.[^\s@]*$/,
-  });
-  const cPassword = useInput({ defaultValue: "" });
-  const password = useInput({
-    defaultValue: "",
-    validate: (value) =>
-      value === "" ||
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/.test(
-        value
-      ),
-  });
+
+    // Cambio el idioma actual del usuario
+    i18n.changeLanguage(languageUser);
+      getClients();
+    }, [languageUser]);
+    const config = {
+      withCredentials: true,
+    };
+    // Llaves para campos específicos al mostrar data
+    const selectedKeys = ["firstname", "lastname", "type", "state", "user_red"];
+    const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+    const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+    const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+    const userRed = useInput({ defaultValue: "", validate: /^[A-Za-z0-9._-]*$/ });
+
 
   const type = useInput({ defaultValue: "", validate: /^[1-4]+$/ });
 
@@ -157,7 +160,7 @@ const AdminList = () => {
   };
 
   // Envío de datos al servidor (crear o editar admin)
-  const sendData2 = async (metodo, { password, cPassword, ...rest }) => {
+  const sendData2 = async (metodo, rest) => {
     if (selectedClients.length === 0) {
       Toast.fire({
         icon: "warning",
@@ -166,22 +169,9 @@ const AdminList = () => {
       return;
     }
 
-    if (password && cPassword !== password) {
-      Toast.fire({
-        icon: "error",
-        title: t("UserModal.PasswordMismatch"),
-      });
-      return;
-    }
-
     const nombre = rest.firstname;
 
     if (metodo.toUpperCase() === "PUT") {
-      if (!password || password.trim() === "") {
-        delete rest.password;
-      } else {
-        rest.password = password;
-      }
 
       try {
         const respuesta = await axios.put(
@@ -246,11 +236,7 @@ const AdminList = () => {
       }
 
       try {
-        const respuesta = await axios.post(
-          `${urlUsers}`,
-          { ...rest, password },
-          config
-        );
+        const respuesta = await axios.post(`${urlUsers}`, rest, config);
 
         if (respuesta.status >= 200 && respuesta.status < 300) {
           const envioC = await sendClients(respuesta.data.data.id, 1);
@@ -459,8 +445,7 @@ const AdminList = () => {
       lastName.handleChange("");
       firstName.handleChange("");
       middleName.handleChange("");
-      email.handleChange("");
-      password.handleChange("");
+      userRed.handleChange("");
       type.handleChange(0);
       language.handleChange("es");
       state.handleChange(1);
@@ -472,8 +457,7 @@ const AdminList = () => {
       lastName.handleChange(admin?.lastname || "");
       firstName.handleChange(admin?.firstname || "");
       middleName.handleChange(admin?.middlename || "");
-      email.handleChange(admin?.email || "");
-      password.handleChange("");
+      userRed.handleChange(admin?.user_red || "");
       type.handleChange(admin?.type || "");
       state.handleChange(admin?.state || "");
       language.handleChange(admin?.language || "en");
@@ -495,8 +479,7 @@ const AdminList = () => {
     lastName.handleChange(admin?.lastname || "");
     firstName.handleChange(admin?.firstname || "");
     middleName.handleChange(admin?.middlename || "");
-    email.handleChange(admin?.email || "");
-    password.handleChange("");
+    userRed.handleChange(admin?.user_red || "");
     type.handleChange(admin?.type || "");
     state.handleChange(admin?.state || "");
     language.handleChange(admin?.language || "en");
@@ -527,65 +510,96 @@ const AdminList = () => {
   const validar = () => {
     var parametros;
     var metodo;
+    
+    // Limpiar errores previos
+    setErrors({
+      firstName: "",
+      lastName: "",
+      userRed: "",
+      type: "",
+      clients: ""
+    });
 
     // Imprime los valores para depurar
     console.log("lastName:", lastName.input);
     console.log("firstName:", firstName.input);
-    console.log("email:", email.input);
     console.log("type:", type.input);
     console.log("registration_date:", registration_date.input);
+  
+    // Validación de campos
+    let hasErrors = false;
+    const newErrors = {
+      firstName: "",
+      lastName: "",
+      userRed: "",
+      type: "",
+      clients: ""
+    };
 
-    // Verificación de campos vacíos
-    if (
-      lastName.input.trim() == "" ||
-      firstName.input.trim() == "" ||
-      email.input.trim() == "" ||
-      password.input.trim() == "" ||
-      cPassword.input.trim() == "" ||
-      type.input == ""
-    ) {
-      // Asegúrate de que `Toast` está correctamente configurado
-      Toast.fire({
-        icon: "error",
-        title: t("alerts.fillRequiredFields"), // Verifica que `nombre` tiene valor
-      });
-      return; // Sale de la función si hay campos vacíos
-    } else {
-      // Si la validación pasa, asignamos los parámetros y el método
-      if (operation === 1) {
-        parametros = {
-          lastname: lastName.input,
-          firstname: firstName.input,
-          middlename: middleName.input,
-          email: email.input,
-          password: password.input,
-          cPassword: cPassword.input,
-          type: type.input,
-          language: "es",
-        };
-        metodo = "post";
-      } else if (operation === 2) {
-        parametros = {
-          lastname: lastName.input,
-          firstname: firstName.input,
-          middlename: middleName.input,
-          email: email.input,
-          type: type.input,
-          cPassword: cPassword.input,
-          language: "es",
-          registration_date: registration_date.input,
-        };
-        if (password.input.trim() !== "") {
-          parametros.password = password.input;
-        }
-
-        metodo = "put";
-      }
-
-      console.log("Parametros:", parametros);
-
-      sendData2(metodo, parametros); // Llamada a la función de envío de datos
+    // Validar nombre
+    if (firstName.input.trim() === "") {
+      newErrors.firstName = "El nombre es obligatorio";
+      hasErrors = true;
     }
+
+    // Validar apellido
+    if (lastName.input.trim() === "") {
+      newErrors.lastName = "El apellido es obligatorio";
+      hasErrors = true;
+    }
+
+    // Validar usuario de red
+    if (userRed.input.trim() === "") {
+      newErrors.userRed = "El usuario de red es obligatorio";
+      hasErrors = true;
+    }
+
+    // Validar tipo
+    if (type.input === "" || type.input === "0") {
+      newErrors.type = "Debe seleccionar un tipo de usuario";
+      hasErrors = true;
+    }
+
+    // Validar clientes
+    if (selectedClients.length === 0) {
+      newErrors.clients = "Debe asignar al menos un cliente";
+      hasErrors = true;
+    }
+
+    // Si hay errores, mostrarlos y salir
+    if (hasErrors) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Si la validación pasa, asignamos los parámetros y el método
+    if (operation === 1) {
+      parametros = {
+        lastname: lastName.input,
+        firstname: firstName.input,
+        middlename: middleName.input,
+        user_red: userRed.input,
+        type: type.input,
+        language: "es",
+      };
+      metodo = "post";
+    } else if (operation === 2) {
+      parametros = {
+        lastname: lastName.input,
+        firstname: firstName.input,
+        middlename: middleName.input,
+        user_red: userRed.input,
+        type: type.input,
+        language: "es",
+        registration_date: registration_date.input,
+      };
+
+      metodo = "put";
+    }
+
+    console.log("Parametros:", parametros);
+
+    sendData2(metodo, parametros); // Llamada a la función de envío de datos
   };
 
   //? Select //
@@ -660,6 +674,8 @@ const AdminList = () => {
                     label={t("UserModal.FirstName")}
                     value={firstName.input}
                     onChange={(e) => firstName.handleChange(e.target.value)}
+                    error={!!errors.firstName}
+                    helperText={errors.firstName}
                     sx={{ mb: 2 }}
                     className="readOnlyField"
                   />
@@ -676,6 +692,8 @@ const AdminList = () => {
                     label={t("UserModal.LastName")}
                     value={lastName.input}
                     onChange={(e) => lastName.handleChange(e.target.value)}
+                    error={!!errors.lastName}
+                    helperText={errors.lastName}
                     sx={{ mb: 2 }}
                     className="readOnlyField"
                   />
@@ -698,10 +716,12 @@ const AdminList = () => {
                       </li>
                     )}
                     renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={t("viewUserModal.Clients")}
+                      <TextField 
+                        {...params} 
+                        label={t("viewUserModal.Clients")} 
                         placeholder={t("viewUserModal.Clients")}
+                        error={!!errors.clients}
+                        helperText={errors.clients}
                       />
                     )}
                     sx={{ mb: 2 }}
@@ -717,56 +737,24 @@ const AdminList = () => {
 
                   <TextField
                     fullWidth
-                    label={t("UserModal.Email")}
-                    value={email.input}
-                    onChange={(e) => email.handleChange(e.target.value)}
+                    label={t("UserModal.NetworkUser")}
+                    value={userRed.input}
+                    onChange={(e) => userRed.handleChange(e.target.value)}
+                    error={!!errors.userRed}
+                    helperText={errors.userRed}
                     sx={{ mb: 2 }}
                     className="readOnlyField"
+                    placeholder="Ej: apellidos.15"
                   />
-                  <TextField
-                    fullWidth
-                    label={t("UserModal.Password")}
-                    type="password"
-                    value={password.value}
-                    onChange={(e) => password.handleChange(e.target.value)}
-                    placeholder={t(
-                      "headerlt.Leave_this_blank_if_you_dont_want_to_change_the_password"
-                    )}
-                    sx={{
-                      mb: 2,
-                      "& input::placeholder": {
-                        fontSize: "0.75rem",
-                        opacity: 1,
-                        color: "gray",
-                      },
-                    }}
-                    className="readOnlyField"
-                  />
-                  <TextField
-                    fullWidth
-                    label={t("UserModal.ConfirmPassword")}
-                    type="password"
-                    value={cPassword.value}
-                    onChange={(e) => cPassword.handleChange(e.target.value)}
-                    placeholder={t(
-                      "headerlt.Leave_this_blank_if_you_dont_want_to_change_the_password"
-                    )}
-                    sx={{
-                      mb: 2,
-                      "& input::placeholder": {
-                        fontSize: "0.75rem",
-                        opacity: 1,
-                        color: "gray",
-                      },
-                    }}
-                    className="readOnlyField"
-                  />
+
                   <TextField
                     select
                     fullWidth
                     label={t("UserModal.Type")}
                     value={type.input}
                     onChange={(e) => type.handleChange(e.target.value)}
+                    error={!!errors.type}
+                    helperText={errors.type}
                     sx={{ mb: 2 }}
                     className="readOnlyField"
                   >
@@ -861,6 +849,24 @@ const AdminList = () => {
 
                   <TextField
                     fullWidth
+                    label={t("viewUserModal.NetworkUser")}
+                    value={userRed.input || "No especificado"}
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2}}
+                    className="readOnlyField readOnlyField_"
+                  />
+
+                  <TextField
+                    fullWidth
+                    label={t("viewUserModal.NetworkUser")}
+                    value={userRed.input || "No especificado"}
+                    InputProps={{ readOnly: true }}
+                    sx={{ mb: 2}}
+                    className="readOnlyField readOnlyField_"
+                  />
+
+                  <TextField
+                    fullWidth
                     label={t("viewUserModal.State")}
                     value={
                       state.input === 1
@@ -901,14 +907,8 @@ const AdminList = () => {
 
                 {/* Right column */}
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label={t("viewUserModal.Email")}
-                    value={email.input}
-                    InputProps={{ readOnly: true }}
-                    sx={{ mb: 2 }}
-                    className="readOnlyField readOnlyField_"
-                  />
+
+
 
                   <TextField
                     fullWidth
