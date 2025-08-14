@@ -8,6 +8,7 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslations } from "../../components/hooks/useTranslations";
+import i18n from "../../assets/js/i18n";
 import {
   Modal,
   Box,
@@ -62,7 +63,7 @@ const AdminList = () => {
 
   // Traducción e idioma desde el contexto global del usuario
   const { t } = useTranslations();
-  const { accessToken, setClients, userId, clients } = useContext(UserContext);
+  const { accessToken, setClients, userId, clients, languageUser } = useContext(UserContext);
 
   // Se ejecuta cuando cambia el idioma del usuario o se monta el componente
 
