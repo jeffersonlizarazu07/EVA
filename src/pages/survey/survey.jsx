@@ -27,12 +27,16 @@ import {
 } from '@mui/material';
 import placeholderImg from '../../assets/img/placeholder-image.png';
 
-// Sistema de colores inteligente que garantiza contraste y diseño
-const useColorSystem = (color1, color2) => {
+// Sistema de colores súper inteligente que garantiza contraste perfecto
+const useIntelligentColorSystem = (color1, color2, isDarkMode) => {
   return useMemo(() => {
+    // Función para convertir hex a RGB
     const hexToRgb = (hex) => {
-      if (!hex) return { r: 103, g: 80, b: 164 }; // fallback
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      if (!hex || typeof hex !== 'string') return { r: 103, g: 80, b: 164 };
+      const cleanHex = hex.replace('#', '');
+      if (cleanHex.length !== 6) return { r: 103, g: 80, b: 164 };
+      
+      const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(cleanHex);
       return result ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
@@ -40,10 +44,13 @@ const useColorSystem = (color1, color2) => {
       } : { r: 103, g: 80, b: 164 };
     };
 
+    // Función para convertir RGB a hex
     const rgbToHex = (r, g, b) => {
-      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      const clamp = (val) => Math.max(0, Math.min(255, Math.round(val)));
+      return "#" + ((1 << 24) + (clamp(r) << 16) + (clamp(g) << 8) + clamp(b)).toString(16).slice(1);
     };
 
+    // Calcular luminancia relativa
     const getLuminance = (r, g, b) => {
       const [rs, gs, bs] = [r, g, b].map(c => {
         c = c / 255;
@@ -52,6 +59,7 @@ const useColorSystem = (color1, color2) => {
       return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
     };
 
+    // Calcular ratio de contraste
     const getContrastRatio = (hex1, hex2) => {
       const rgb1 = hexToRgb(hex1);
       const rgb2 = hexToRgb(hex2);
@@ -60,74 +68,255 @@ const useColorSystem = (color1, color2) => {
       return (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
     };
 
-    const adjustBrightness = (hex, factor) => {
-      const rgb = hexToRgb(hex);
-      const adjusted = {
-        r: Math.max(0, Math.min(255, Math.round(rgb.r * factor))),
-        g: Math.max(0, Math.min(255, Math.round(rgb.g * factor))),
-        b: Math.max(0, Math.min(255, Math.round(rgb.b * factor)))
-      };
-      return rgbToHex(adjusted.r, adjusted.g, adjusted.b);
+    // Ajustar color para cumplir ratio mínimo de contraste
+    const ensureContrast = (foregroundHex, backgroundHex, minRatio = 4.5) => {
+      let currentRatio = getContrastRatio(foregroundHex, backgroundHex);
+      if (currentRatio >= minRatio) return foregroundHex;
+
+      const fgRgb = hexToRgb(foregroundHex);
+      const bgRgb = hexToRgb(backgroundHex);
+      const bgLum = getLuminance(bgRgb.r, bgRgb.g, bgRgb.b);
+      
+      // Determinar si necesitamos hacer el color más claro u oscuro
+      const needLighter = bgLum < 0.5;
+      
+      let bestColor = foregroundHex;
+      let bestRatio = currentRatio;
+      
+      // Probar diferentes niveles de ajuste
+      for (let factor = 0.1; factor <= 2; factor += 0.1) {
+        let adjustedRgb;
+        
+        if (needLighter) {
+          // Hacer más claro
+          const lightenFactor = 1 + factor;
+          adjustedRgb = {
+            r: Math.min(255, fgRgb.r * lightenFactor),
+            g: Math.min(255, fgRgb.g * lightenFactor),
+            b: Math.min(255, fgRgb.b * lightenFactor)
+          };
+        } else {
+          // Hacer más oscuro
+          const darkenFactor = 1 - (factor * 0.5);
+          adjustedRgb = {
+            r: fgRgb.r * darkenFactor,
+            g: fgRgb.g * darkenFactor,
+            b: fgRgb.b * darkenFactor
+          };
+        }
+        
+        const adjustedHex = rgbToHex(adjustedRgb.r, adjustedRgb.g, adjustedRgb.b);
+        const newRatio = getContrastRatio(adjustedHex, backgroundHex);
+        
+        if (newRatio >= minRatio && newRatio > bestRatio) {
+          bestColor = adjustedHex;
+          bestRatio = newRatio;
+          break;
+        } else if (newRatio > bestRatio) {
+          bestColor = adjustedHex;
+          bestRatio = newRatio;
+        }
+      }
+      
+      return bestColor;
     };
 
-    const primary = color1 || '#6750a4';
-    const secondary = color2 || '#625b71';
+    // Hacer color más vibrante/intenso
+    const enhanceVibrancy = (hex, factor = 1.2) => {
+      const rgb = hexToRgb(hex);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      
+      // Aumentar saturación
+      hsl.s = Math.min(1, hsl.s * factor);
+      
+      const enhancedRgb = hslToRgb(hsl.h, hsl.s, hsl.l);
+      return rgbToHex(enhancedRgb.r, enhancedRgb.g, enhancedRgb.b);
+    };
+
+    // Convertir RGB a HSL
+    const rgbToHsl = (r, g, b) => {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h, s, l };
+    };
+
+    // Convertir HSL a RGB
+    const hslToRgb = (h, s, l) => {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+
+      let r, g, b;
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+      return { r: r * 255, g: g * 255, b: b * 255 };
+    };
+
+    // Obtener color de fondo base según el modo
+    const baseBackground = isDarkMode ? '#121212' : '#ffffff';
+    const surfaceBackground = isDarkMode ? '#1e1e1e' : '#ffffff';
+    const paperBackground = isDarkMode ? '#2d2d2d' : '#ffffff';
     
-    // Generar colores seguros
-    const primaryDark = adjustBrightness(primary, 0.7);
-    const primaryLight = adjustBrightness(primary, 1.3);
+    // Colores base (fallbacks si no se proporcionan)
+    const rawPrimary = color1 || '#6750a4';
+    const rawSecondary = color2 || '#625b71';
     
-    return {
+    // Hacer colores más vibrantes
+    const vibrantPrimary = enhanceVibrancy(rawPrimary, 1.3);
+    const vibrantSecondary = enhanceVibrancy(rawSecondary, 1.3);
+    
+    // Asegurar contraste perfecto con los fondos
+    const primary = ensureContrast(vibrantPrimary, paperBackground, 3.5);
+    const secondary = ensureContrast(vibrantSecondary, paperBackground, 4.5);
+    
+    // Crear variaciones inteligentes
+    const primaryRgb = hexToRgb(primary);
+    const secondaryRgb = hexToRgb(secondary);
+    
+    // Variaciones oscuras y claras que mantienen contraste
+    const primaryDark = ensureContrast(
+      rgbToHex(primaryRgb.r * 0.7, primaryRgb.g * 0.7, primaryRgb.b * 0.7),
+      paperBackground,
+      4.5
+    );
+    
+    const primaryLight = ensureContrast(
+      rgbToHex(
+        Math.min(255, primaryRgb.r * 1.4),
+        Math.min(255, primaryRgb.g * 1.4),
+        Math.min(255, primaryRgb.b * 1.4)
+      ),
+      paperBackground,
+      3
+    );
+
+    const secondaryDark = ensureContrast(
+      rgbToHex(secondaryRgb.r * 0.7, secondaryRgb.g * 0.7, secondaryRgb.b * 0.7),
+      paperBackground,
+      4.5
+    );
+
+    // Determinar colores de texto óptimos
+    const textOnPrimary = getContrastRatio(primary, '#ffffff') > getContrastRatio(primary, '#000000') ? '#ffffff' : '#000000';
+    const textOnSecondary = getContrastRatio(secondary, '#ffffff') > getContrastRatio(secondary, '#000000') ? '#ffffff' : '#000000';
+    
+    // Sistema de colores inteligente para modo oscuro
+    const adaptedColors = {
+      // Colores principales
       primary,
       secondary,
       primaryDark,
       primaryLight,
-      // Colores con alpha para overlays
+      secondaryDark,
+      
+      // Fondos adaptativos
+      background: baseBackground,
+      surface: surfaceBackground,
+      paper: paperBackground,
+      
+      // Colores con alpha optimizados
+      primaryAlpha5: alpha(primary, 0.05),
       primaryAlpha10: alpha(primary, 0.1),
+      primaryAlpha15: alpha(primary, 0.15),
       primaryAlpha20: alpha(primary, 0.2),
+      primaryAlpha30: alpha(primary, 0.3),
+      primaryAlpha40: alpha(primary, 0.4),
       primaryAlpha60: alpha(primary, 0.6),
-      // Sombras
-      shadowLight: alpha('#000000', 0.1),
-      shadowMedium: alpha('#000000', 0.15),
-      shadowStrong: alpha('#000000', 0.25),
+      
+      secondaryAlpha10: alpha(secondary, 0.1),
+      secondaryAlpha20: alpha(secondary, 0.2),
+      secondaryAlpha60: alpha(secondary, 0.6),
+      
+      // Sombras adaptativas
+      shadowLight: alpha(isDarkMode ? '#000000' : '#000000', isDarkMode ? 0.3 : 0.1),
+      shadowMedium: alpha(isDarkMode ? '#000000' : '#000000', isDarkMode ? 0.4 : 0.15),
+      shadowStrong: alpha(isDarkMode ? '#000000' : '#000000', isDarkMode ? 0.6 : 0.25),
+      
+      // Bordes adaptativos
+      borderLight: alpha(primary, isDarkMode ? 0.3 : 0.08),
+      borderMedium: alpha(primary, isDarkMode ? 0.4 : 0.12),
+      borderStrong: alpha(primary, isDarkMode ? 0.6 : 0.2),
+      
       // Texto sobre colores
-      textOnPrimary: getContrastRatio(primary, '#ffffff') > 4.5 ? '#ffffff' : '#000000',
-      textOnSecondary: getContrastRatio(secondary, '#ffffff') > 4.5 ? '#ffffff' : '#000000',
+      textOnPrimary,
+      textOnSecondary,
+      
+      // Colores de texto adaptativos
+      textPrimary: isDarkMode ? '#ffffff' : '#000000',
+      textSecondary: isDarkMode ? '#b0b0b0' : '#666666',
+      
+      // Overlays para glassmorphism
+      glassOverlay: alpha(isDarkMode ? '#ffffff' : '#ffffff', isDarkMode ? 0.05 : 0.95),
+      glassOverlayStrong: alpha(isDarkMode ? '#ffffff' : '#ffffff', isDarkMode ? 0.1 : 0.98),
     };
-  }, [color1, color2]);
+
+    return adaptedColors;
+  }, [color1, color2, isDarkMode]);
 };
 
-// Switch personalizado mejorado
-const createMaterialUISwitch = (colors) => styled(Switch)(({ theme }) => ({
-  width: 58,
-  height: 32,
-  padding: 4,
+// Switch personalizado ultra mejorado
+const createIntelligentSwitch = (colors) => styled(Switch)(({ theme }) => ({
+  width: 62,
+  height: 34,
+  padding: 7,
   "& .MuiSwitch-switchBase": {
     margin: 1,
     padding: 0,
     transform: "translateX(6px)",
     "&.Mui-checked": {
       color: "#fff",
-      transform: "translateX(22px)",
+      transform: "translateX(24px)",
       "& .MuiSwitch-thumb": {
-        backgroundColor: colors.primary,
+        backgroundColor: colors.secondary,
+        boxShadow: `0 4px 12px ${colors.shadowMedium}`,
       },
       "& + .MuiSwitch-track": {
         opacity: 1,
-        backgroundColor: colors.primaryAlpha60,
+        backgroundColor: colors.secondaryAlpha60,
+        border: `1px solid ${colors.borderMedium}`,
       },
     },
   },
   "& .MuiSwitch-thumb": {
-    backgroundColor: theme.palette.mode === 'dark' ? colors.primaryDark : '#fff',
-    width: 24,
-    height: 24,
-    boxShadow: `0 2px 4px ${colors.shadowLight}`,
+    backgroundColor: colors.glassOverlayStrong,
+    width: 26,
+    height: 26,
+    boxShadow: `0 2px 8px ${colors.shadowLight}`,
+    border: `1px solid ${colors.borderLight}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   "& .MuiSwitch-track": {
     opacity: 1,
-    backgroundColor: theme.palette.mode === 'dark' ? '#39393D' : '#E9E9EA',
-    borderRadius: 16,
+    backgroundColor: colors.primaryAlpha20,
+    borderRadius: 17,
+    border: `1px solid ${colors.borderLight}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
 }));
 
@@ -147,9 +336,9 @@ export default function Survey() {
   const nav = useNavigate();
   const accessToken = Cookies.get('accessToken');
 
-  // Sistema de colores inteligente
-  const colors = useColorSystem(survey.color_tag1, survey.color_tag2);
-  const MaterialUISwitch = createMaterialUISwitch(colors);
+  // Sistema de colores súper inteligente
+  const colors = useIntelligentColorSystem(survey.color_tag1, survey.color_tag2, theme === 'dark');
+  const IntelligentSwitch = createIntelligentSwitch(colors);
 
   // Effects existentes
   useEffect(() => {
@@ -204,7 +393,7 @@ export default function Survey() {
           text: t("alerts.exito_enviar_respuestas"),
           icon: 'success',
           confirmButtonText: 'Aceptar',
-          confirmButtonColor: colors.primary,
+          confirmButtonColor: colors.secondary, // Usando color2 aquí
         })
         .then((result) => {
           if (result.isConfirmed) {
@@ -296,17 +485,17 @@ export default function Survey() {
     <Box sx={{ 
       minHeight: '100vh', 
       position: 'relative',
-      background: `linear-gradient(135deg, ${colors.primaryAlpha10} 0%, ${alpha('#ffffff', 0.95)} 100%)`,
+      background: `linear-gradient(135deg, ${colors.primaryAlpha10} 0%, ${alpha('#ffffff', theme === 'dark' ? 0.05 : 0.95)} 100%)`, // TU FONDO GENIAL RESTAURADO
     }}>
       
-      {/* Header flotante mejorado */}
+      {/* Header flotante ultra mejorado */}
       <Box
         sx={{
           position: 'fixed',
           top: { xs: 16, md: 24 },
           right: { xs: 16, md: 24 },
           zIndex: 1200,
-          background: alpha('#ffffff', 0.95),
+          background: colors.glassOverlay,
           backdropFilter: 'blur(20px)',
           borderRadius: 3,
           p: { xs: 1.5, md: 2 },
@@ -314,7 +503,7 @@ export default function Survey() {
           alignItems: 'center',
           gap: { xs: 1, md: 2 },
           boxShadow: `0 8px 32px ${colors.shadowLight}`,
-          border: `1px solid ${alpha(colors.primary, 0.1)}`,
+          border: `1px solid ${colors.borderLight}`,
           transition: 'all 0.3s ease',
           '&:hover': {
             boxShadow: `0 12px 40px ${colors.shadowMedium}`,
@@ -324,7 +513,7 @@ export default function Survey() {
         <Tooltip title={t("cambiar_tema")} placement="bottom">
           <FormControlLabel
             control={
-              <MaterialUISwitch
+              <IntelligentSwitch
                 checked={theme === 'dark'}
                 onChange={toggleTheme}
               />
@@ -336,7 +525,7 @@ export default function Survey() {
         <LanguageSelector />
       </Box>
 
-      {/* Fondo decorativo mejorado */}
+      {/* TU FONDO DECORATIVO GENIAL ORIGINAL RESTAURADO CON COLORES INTELIGENTES */}
       <Box
         sx={{
           position: 'fixed',
@@ -366,6 +555,7 @@ export default function Survey() {
               <stop offset="100%" stopColor={colors.primaryAlpha10} />
             </linearGradient>
           </defs>
+          {/* TUS PATHS ORIGINALES GENIALES */}
           <path
             d="M0,0 L1920,0 L1920,400 C1800,350 1600,300 1400,350 C1200,400 1000,450 800,400 C600,350 400,300 200,350 C100,375 50,387 0,400 Z"
             fill="url(#bgGradient)"
@@ -403,14 +593,14 @@ export default function Survey() {
               mb: 4,
               width: '100%',
               maxWidth: 900,
-              background: alpha('#ffffff', 0.98),
+              background: colors.glassOverlayStrong,
               backdropFilter: 'blur(20px)',
               borderRadius: 4,
-              border: `1px solid ${alpha(colors.primary, 0.08)}`,
+              border: `1px solid ${colors.borderLight}`,
               boxShadow: `
                 0 1px 3px ${colors.shadowLight},
-                0 8px 32px ${colors.shadowLight},
-                inset 0 1px 0 ${alpha('#ffffff', 0.9)}
+                0 8px 32px ${colors.shadowMedium},
+                inset 0 1px 0 ${alpha(colors.glassOverlay, 0.9)}
               `,
             }}
           >
@@ -441,11 +631,12 @@ export default function Survey() {
                   />
                 )}
                 
+                {/* TÍTULO CON COLOR2 */}
                 <Typography 
                   variant={isMobile ? "h5" : "h4"} 
                   fontWeight="600"
                   sx={{
-                    color: colors.primary,
+                    color: colors.secondary, // Usando color2
                     textAlign: 'center',
                     lineHeight: 1.2,
                   }}
@@ -453,8 +644,6 @@ export default function Survey() {
                   {title}
                 </Typography>
               </Box>
-              
-
             </Box>
 
             {/* Preguntas */}
@@ -466,12 +655,12 @@ export default function Survey() {
                     mb: 4,
                     p: { xs: 2, md: 3 },
                     borderRadius: 3,
-                    background: alpha(colors.primary, 0.02),
-                    border: `1px solid ${alpha(colors.primary, 0.06)}`,
+                    background: colors.primaryAlpha5,
+                    border: `1px solid ${colors.borderLight}`,
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      background: alpha(colors.primary, 0.04),
-                      border: `1px solid ${alpha(colors.primary, 0.12)}`,
+                      background: colors.primaryAlpha10,
+                      border: `1px solid ${colors.borderMedium}`,
                     }
                   }}
                 >
@@ -481,7 +670,7 @@ export default function Survey() {
                     sx={{ 
                       mb: 3, 
                       textAlign: 'center',
-                      color: 'text.primary',
+                      color: colors.textPrimary,
                       fontSize: { xs: '1.1rem', md: '1.25rem' },
                       lineHeight: 1.4,
                     }}
@@ -545,12 +734,13 @@ export default function Survey() {
                           maxWidth: 600,
                           '& .MuiOutlinedInput-root': {
                             borderRadius: 2,
-                            backgroundColor: alpha('#ffffff', 0.8),
+                            backgroundColor: colors.glassOverlay,
+                            color: colors.textPrimary,
                             '& fieldset': {
-                              borderColor: alpha(colors.primary, 0.3),
+                              borderColor: colors.borderLight,
                             },
                             '&:hover fieldset': {
-                              borderColor: alpha(colors.primary, 0.5),
+                              borderColor: colors.borderMedium,
                             },
                             '&.Mui-focused fieldset': {
                               borderColor: colors.primary,
@@ -565,7 +755,7 @@ export default function Survey() {
               ))}
             </Box>
 
-            {/* Botón de envío */}
+            {/* BOTÓN CON COLOR2 */}
             <Box sx={{ textAlign: 'center' }}>
               <Button
                 type="submit"
@@ -577,14 +767,14 @@ export default function Survey() {
                   fontSize: { xs: '1rem', md: '1.1rem' },
                   fontWeight: '600',
                   borderRadius: 3,
-                  background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%)`,
-                  color: colors.textOnPrimary,
+                  background: `linear-gradient(135deg, ${colors.secondary} 0%, ${colors.secondaryDark} 100%)`, // COLOR2
+                  color: colors.textOnSecondary,
                   textTransform: 'none',
-                  boxShadow: `0 4px 16px ${alpha(colors.primary, 0.3)}`,
+                  boxShadow: `0 4px 16px ${alpha(colors.secondary, 0.3)}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.primary} 100%)`,
-                    boxShadow: `0 6px 20px ${alpha(colors.primary, 0.4)}`,
+                    background: `linear-gradient(135deg, ${colors.secondaryDark} 0%, ${colors.secondary} 100%)`,
+                    boxShadow: `0 6px 20px ${alpha(colors.secondary, 0.4)}`,
                     transform: 'translateY(-2px)',
                   },
                   '&:active': {

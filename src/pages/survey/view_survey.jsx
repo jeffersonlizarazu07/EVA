@@ -727,7 +727,7 @@ const config = {
                             mb: 0.5,
                             fontWeight: 500
                           }}>
-                            Cantidad de veces RESPONDIDO
+                            Cantidad de veces respondida
                           </Typography>
                           <Typography variant="h6" sx={{
                             fontWeight: 700,
