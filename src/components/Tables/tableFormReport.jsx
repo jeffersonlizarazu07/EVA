@@ -14,6 +14,7 @@ import {
   Grid,
   InputAdornment,
   TablePagination,
+  TableFooter,
 } from "@mui/material";
 import {
   Search
@@ -22,7 +23,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 
-const TableFormReport = ({ header, data, onSelectionChange }) => {
+const TableFormReport = ({ header, data, onSelectionChange, footerData }) => {
  
   const [selectedRows, setSelectedRows] = useState([]);
 
@@ -165,6 +166,30 @@ const TableFormReport = ({ header, data, onSelectionChange }) => {
         );
       })}
     </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell sx={{ backgroundColor: "#f5f5f5", color: "#fff", fontWeight: "bold" }} />
+          {header.map((col, idx) => (
+            <TableCell
+              key={idx}
+              align="center"
+              sx={{
+                backgroundColor: "#f5f5f5", 
+                color: "#c70e8f",              
+                fontWeight: "bold"        
+              }}
+            >
+              {col.key === "nombre_agente"
+                ? `Datos de Monitoreo`
+                : col.key === "score"
+                ? `Promedio: ${footerData[0]?.promedio}`
+                : col.key === "nombre_form"
+                ? `Monitorizaciones: ${footerData[0]?.preguntas}`
+                : ""}
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableFooter>
   </Table>
 </TableContainer>
 

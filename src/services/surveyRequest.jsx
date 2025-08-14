@@ -11,6 +11,7 @@ export const getSurveys = async (urlSurveys, config) => {
     }
   };
 
+
 export const getSurvey = async (id, config, setSurveyData) => {
   try{
     const url = "http://localhost:3000/api/survey/";

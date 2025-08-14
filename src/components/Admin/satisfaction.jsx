@@ -42,6 +42,7 @@ const Satisfaction = () => {
   const urlSurveys = `http://localhost:3000/api/clients/surveys?clientIds=${clients}`;
   const [surveys, setSurveys] = useState("");
   const [topSurveys, setTopSurveys] = useState([]);
+  const [topForm, setTopForm]= useState([]);
 
   useEffect(() => {
     const fetchTopSurveys = async () => {
@@ -50,6 +51,7 @@ const Satisfaction = () => {
           `http://localhost:3000/api/top-surveys/${userId}`
         );
         setTopSurveys(response.data.data);
+        console.log("Top Surveys:", response.data.data);        
       } catch (error) {
         console.error("Error fetching top surveys:", error);
       }
@@ -59,6 +61,7 @@ const Satisfaction = () => {
   }, []);
 
   useEffect(() => {
+    scoreXSurvey();
     cSurveys();
     i18n.changeLanguage(languageUser);
   }, []);
@@ -97,6 +100,41 @@ const Satisfaction = () => {
         console.error("Error fetching survey questions", error);
       });
   };
+
+  // traer data con puntages
+  const scoreXSurvey = async ()=>{
+    try {
+      const response = await axios.get('http://localhost:3000/api/answers/survey/score',config)
+      console.log("Puntajes por encuesta:", response.data);
+      const data = {};
+      
+      if (response.data && response.data.length > 0) {
+        response.data.forEach((i) => {
+          const key = `${i.title}`;
+          if(!data[key]){
+            data[key]={
+              link:i.link,
+              formulario:i.title,
+              puntaje:i.final_score,
+            }
+          }
+          
+        })
+        const TopForm = Object.values(data)
+            .sort((a,b)=> b.puntaje - a.puntaje)
+            .slice(0, 5)
+
+        setTopForm(TopForm);
+        console.log("Top 5:", TopForm);
+
+        return TopForm;
+      }
+      
+      return [];
+    } catch (error) {
+      
+    }
+  }
 
   const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, "0");
@@ -573,7 +611,7 @@ const Satisfaction = () => {
                               }}
                             >
                               <Link
-                                href={survey.link}
+                                href={i.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 sx={{
@@ -588,6 +626,7 @@ const Satisfaction = () => {
                                   {survey.title}{" "}
                                   {/* : {survey.encuestas_enviadas} */}
                                 </Typography>
+
                               </Link>
                             </ListItem>
                           ))}
