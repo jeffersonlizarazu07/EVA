@@ -26,6 +26,7 @@ const Satisfaction = () => {
   const urlSurveys = `http://localhost:3000/api/clients/surveys?clientIds=${clients}`;
   const [surveys, setSurveys] = useState("");
   const [topSurveys, setTopSurveys] = useState([]);
+  const [topForm, setTopForm]= useState([]);
 
 
   useEffect(() => {
@@ -33,6 +34,7 @@ const Satisfaction = () => {
       try {
         const response = await axios.get(`http://localhost:3000/api/top-surveys/${userId}`);
         setTopSurveys(response.data.data);
+        console.log("Top Surveys:", response.data.data);
         
       } catch (error) {
        
@@ -44,6 +46,7 @@ const Satisfaction = () => {
   }, []);
 
   useEffect(() => {
+    scoreXSurvey();
     cSurveys();
     i18n.changeLanguage(languageUser);
   }, []);
@@ -82,6 +85,41 @@ const Satisfaction = () => {
         console.error("Error fetching survey questions", error);
       });
   };
+
+  // traer data con puntages
+  const scoreXSurvey = async ()=>{
+    try {
+      const response = await axios.get('http://localhost:3000/api/answers/survey/score',config)
+      console.log("Puntajes por encuesta:", response.data);
+      const data = {};
+      
+      if (response.data && response.data.length > 0) {
+        response.data.forEach((i) => {
+          const key = `${i.title}`;
+          if(!data[key]){
+            data[key]={
+              link:i.link,
+              formulario:i.title,
+              puntaje:i.final_score,
+            }
+          }
+          
+        })
+        const TopForm = Object.values(data)
+            .sort((a,b)=> b.puntaje - a.puntaje)
+            .slice(0, 5)
+
+        setTopForm(TopForm);
+        console.log("Top 5:", TopForm);
+
+        return TopForm;
+      }
+      
+      return [];
+    } catch (error) {
+      
+    }
+  }
 
   const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, "0");
@@ -477,9 +515,9 @@ const Satisfaction = () => {
                            flexDirection: 'column',
                            gap: 2
                         }}>
-                          {topSurveys.map((survey, index) => (
+                          {topForm.map((i, idx) => (
                             <ListItem 
-                              key={survey.survey_id || `survey-${index}`} 
+                              key={i.formulario || `${idx}`} 
                               sx={{
                                 display: 'inline-block',
                                 textAlign: 'center',
@@ -487,14 +525,52 @@ const Satisfaction = () => {
                               }}
                             >
                               <Link
-                                href={survey.link}
+                                href={i.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                sx={{ textDecoration: 'none', color: 'inherit' }}
-                              >
-                                <Typography component="strong" sx={{ fontSize: '90%'}}>
-                                   {survey.title} {/* : {survey.encuestas_enviadas} */}
-                                </Typography>
+                                sx={{ 
+                                  textDecoration: 'none', 
+                                  color: 'inherit', 
+                                  width: '100%' 
+                                }}
+                              > 
+                                <Grid 
+                                  container 
+                                  justifyContent="space-between" 
+                                  alignItems="center" 
+                                  sx={{
+                                    border: "1px solid #fff",
+                                    borderRadius: "15px",
+                                    padding: "4px",
+                                    
+                                    
+                                  }}
+                                >
+                                  {/* Formulario a la izquierda */}
+                                  <Grid item xs={8}>
+                                    <Typography sx={{ fontSize: '90%',flexGrow: 1,textAlign: 'left'  }}>
+                                      {i.formulario}
+                                    </Typography>
+                                  </Grid>
+
+                                  {/* Puntaje a la derecha */}
+                                  <Grid item xs="auto" 
+                                     sx={{ 
+                                      border: "1px solid #fff",
+                                      borderRadius: "50px", // grande para ovalar
+                                      px: 1,                // padding horizontal
+                                      py: 1,                // padding vertical
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      minWidth: '50px'      // opcional para mantener ancho mínimo
+                                    }}>
+                                    <Typography sx={{ fontSize: '90%', fontWeight: 'bold',textAlign: 'right'  }}>
+                                      {i.puntaje}
+                                    </Typography>
+                                  </Grid>
+                                </Grid>
+                                
                               </Link>
                             </ListItem>
                           ))}

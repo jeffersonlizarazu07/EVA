@@ -89,7 +89,7 @@ const Reports = () => {
         `http://localhost:3000/api/answers/survey/${surveyId}/percentage?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
         config
       );
-  
+      console.log("xxx", response.data.data);
       // Verificar si no hay datos
       if (!response.data.data || Object.keys(response.data.data).length === 0)  {
         console.log("No hay datos o los datos están vacíos.");
