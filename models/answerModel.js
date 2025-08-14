@@ -91,6 +91,20 @@ class AnswerModel {
         }
     }
 
+    // obtener respuestas por pregunta
+    async getAnswersBySurveyScore(){
+        try {
+            return await db('answers')
+            .select('survey_set.link','survey_set.title','questions.select_option','questions.selected_answer','questions.survey_id','answers.question_id', 'questions.type', 'answers.answer', 'questions.question')
+            .join('questions', 'answers.question_id', '=', 'questions.id')
+            .join('survey_set', 'questions.survey_id', '=', 'survey_set.id');
+
+        } catch (error) {
+            console.error('Error en getAnswersBySurveyScore:', error.message);
+            throw error;
+        }
+    }
+
     // Obtener respuestas por encuesta y fechas
     async getAnswersBySurvey(surveyId, startDate, endDate) {
         try {

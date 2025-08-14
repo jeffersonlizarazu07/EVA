@@ -283,6 +283,147 @@ class AnswerController {
         }
     }
 
+        //  Función para calcular puntaje por pregunta
+        
+
+        //  Controlador principal
+        async  scoreXSurvey(req, res) {
+
+            function calcularPuntaje(type, answer, option, selected_answer){
+                if (!answer || answer.trim() === "") return 0;
+
+                answer = answer.trim();
+                option = option ? option.trim() : "";
+                selected_answer = selected_answer ? selected_answer.trim() : "";
+
+                
+                if (type === "yes_no") {
+                    if (answer === "0") {
+                        return 0;
+                    }
+                    
+                    if (option === "" || selected_answer === "" || selected_answer === " ") {
+                        return 100;
+                    }
+                    const opciones = option.split(",").map(o => o.trim());
+                    const correctIndex = selected_answer.split(",").map(i => parseInt(i.trim(), 10));
+                    const correctAnswers = correctIndex.map(idx => opciones[idx]);
+                    return (correctAnswers.includes(answer)) ? 100 : 0;
+                }
+
+
+                
+                if (option === "" || selected_answer === "" || selected_answer === " ") {
+                    return 100;
+                }
+
+                
+
+                if (type === "check_opt" || type === "radio_opt" ) {
+                    const opciones = option.split(",").map(o => o.trim());
+                    const correctIndex = selected_answer.split(",").map(i => parseInt(i.trim(), 10));
+                    const correctAnswers = correctIndex.map(idx => opciones[idx]);
+                    const respuestasUsuario = answer.split(",").map(a => a.trim());
+                    let aciertos = 0;
+                    respuestasUsuario.forEach(r => {
+                        if (correctAnswers.includes(r)) aciertos++;
+                    });
+                    return (aciertos / correctAnswers.length) * 100;
+                }
+                
+
+                
+                return 100;
+            }
+            try {
+                
+                const answers = await answerModel.getAnswersBySurveyScore();
+                const agrupado = {};
+
+                answers.forEach((i) => {
+                    const key = i.survey_id;
+                    if (!agrupado[key]) {
+                        agrupado[key] = {
+                            survey_id: i.survey_id,
+                            title: i.title,
+                            link: i.link,
+                            questions: []
+                        };
+                    }
+                    
+                    agrupado[key].questions.push({
+                        question_id: i.question_id,
+                        type: i.type,
+                        answer: i.answer,
+                        question: i.question,
+                        option: i.select_option,
+                        selected_answer: i.selected_answer,
+                        
+                        score: calcularPuntaje(i.type, i.answer, i.select_option, i.selected_answer) 
+                    });
+                });
+                
+                Object.values(agrupado).forEach(survey => {
+                    //  Agrupar por question_id
+                    const preguntasAgrupadas = {};
+                    survey.questions.forEach(q => {
+                        if (!preguntasAgrupadas[q.question_id]) {
+                            preguntasAgrupadas[q.question_id] = [];
+                        }
+                        preguntasAgrupadas[q.question_id].push(q.score);
+                    });
+
+                    //  Calcular promedio por question_id
+                    const promediosPorPregunta = Object.values(preguntasAgrupadas).map(scores => {
+                        const suma = scores.reduce((a, b) => a + b, 0);
+                        return suma / scores.length;
+                    });
+
+                    //  Final score como promedio de promedios
+                    const totalScore = promediosPorPregunta.reduce((a, b) => a + b, 0);
+                    survey.final_score = promediosPorPregunta.length > 0
+                        ? parseFloat((totalScore / promediosPorPregunta.length).toFixed(2))
+                        : 0;
+                });
+
+                const resultado = Object.values(agrupado).map(x => {
+                    // Agrupar datos para mostrar solo una entrada por question_id
+                    const preguntasUnicas = Object.values(
+                        x.questions.reduce((acc, q) => {
+                            if (!acc[q.question_id]) {
+                                acc[q.question_id] = {
+                                    question_id: q.question_id,
+                                    type: q.type,
+                                    answer: q.answer,
+                                    question: q.question,
+                                    option: q.option,
+                                    selected_answer: q.selected_answer,
+                                    
+                                    p: q.score
+                                };
+                            } else {
+                                // Si hay varias, actualizar p como el promedio
+                                acc[q.question_id].p = (acc[q.question_id].p + q.score) / 2;
+                            }
+                            return acc;
+                        }, {})
+                    );
+
+                    return {
+                        title: x.title,
+                        score_questions: preguntasUnicas,
+                        
+                        final_score: x.final_score,
+                        link: x.link,
+                    };
+                });
+
+                res.json(resultado);
+            } catch (error) {
+                console.error('Error en scoreXSurvey:', error.message);
+                throw error;
+            }
+        }
 
         // Controlador para obtener los porcentajes de respuestas por encuesta
         async percentagesXSurvey(req, res) {
