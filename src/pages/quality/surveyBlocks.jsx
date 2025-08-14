@@ -106,7 +106,7 @@ import { useTranslations } from "../../components/hooks/useTranslations";
 export default function SurveyBlocks({}) {
   const theme = useTheme();
   const { id_form } = useParams();
-  const { userId, languageUser } = useContext(UserContext);
+  const { userId } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const [data, setData] = useState([]);
   
