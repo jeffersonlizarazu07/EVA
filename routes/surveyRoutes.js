@@ -11,10 +11,8 @@ router.post('/surveys',authMiddleware, surveySetController.postSurvey);
 router.put('/survey/:id?', authMiddleware,surveySetController.putSurvey);
 router.patch('/survey/:id?', authMiddleware,surveySetController.patchSurvey);
 router.delete('/survey/:id?',authMiddleware, surveySetController.deleteSurvey);
-router.get('/surveyByLink', authMiddleware, surveySetController.surveyByLink);
-
-//ruta para obtener las preguntas de una encuesta y responder
-router.get('/surveyByLink', authMiddleware, surveySetController.surveyByLink)
+//ruta para obtener las preguntas de una encuesta y responder (sin autenticación para encuestas públicas)
+router.get('/surveyByLink', surveySetController.surveyByLink)
 
 //ruta para obtener las encuestas asociadas a un usuario
 router.get('/surveys-user/:id?', authMiddleware, surveySetController.surveysByUser); 
