@@ -12,11 +12,6 @@ import {
   FormControl,
   Select,
   Alert,
-  Paper,
-  Typography,
-  Stack,
-  Divider,
-  Tooltip,
   Fade,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -37,7 +32,7 @@ import HeaderLT2 from "../../components/header/headerLT2";
 
 /* Traer traduccion  */
 import { useEffect, useContext, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../../components/hooks/useTranslations"; 
 import { UserContext } from "../../context/UserContext";
 
 /* formulario*/
@@ -51,7 +46,6 @@ import {
 /* transformar a exel  */
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { Key } from "@mui/icons-material";
 
 const FormReport = () => {
   //importacion del exel seleccionado
@@ -59,8 +53,8 @@ const FormReport = () => {
 
   const nav = useNavigate();
   // estados para el lenguaje
-  const { t, i18n } = useTranslation();
-  const { languageUser, clients, userInfo } = useContext(UserContext);
+  const { t } = useTranslations();
+  const { clients, userInfo } = useContext(UserContext);
 
   // estados para la ficha del filtro
   const [startDate, setStartDate] = useState(null);
@@ -146,9 +140,8 @@ const FormReport = () => {
 
   // cambio de lenguaje y clientes en el filtro
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
     getClientsAndFormsFuncion();
-  }, [languageUser, i18n]);
+  });
 
   // para inicializar la informacion de la tabla y clientes en el filtro
   useEffect(() => {
@@ -465,7 +458,11 @@ const FormReport = () => {
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
-        {userInfo?.type === 3 ? <HeaderLT2 /> : <HeaderLT1 />}
+        {userInfo?.type === 3 || userInfo?.type === 2 ? (
+          <HeaderLT2 />
+        ) : (
+          <HeaderLT1 />
+        )}
       </Box>
       <Box
         sx={{

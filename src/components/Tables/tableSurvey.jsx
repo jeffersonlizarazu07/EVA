@@ -3,7 +3,7 @@ import { UserContext } from "../../context/UserContext";
 import axios from "axios";
 import "../../assets/css/tabla.css";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations"; 
 import React from "react";
 import {
   Table,
@@ -59,7 +59,7 @@ const TableSurvey = ({
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [userClients, setUserClients] = useState([]);
   const { userId, accessToken, languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [selectedItem, setSelectedItem] = React.useState(null);
@@ -92,10 +92,9 @@ const TableSurvey = ({
   };
 
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
     getUserClients(userId);
     filteredData;
-  }, [languageUser]);
+  });
 
   const getUserClients = async (id) => {
     const config = {

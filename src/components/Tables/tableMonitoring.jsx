@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslations } from "../hooks/useTranslations";
 import {
   Dialog,
   DialogTitle,
@@ -16,6 +17,7 @@ import Cookies from "js-cookie";
 import Swal from "sweetalert2";
 
 const ModalRegisterUser = ({ open, handleClose, formId }) => {
+  const { t } = useTranslations;
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState("");
   const [formName, setFormName] = useState("");
@@ -28,7 +30,7 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
         const userId = Cookies.get("userId");
 
         if (!token || !userId) {
-          console.error("❌ Token o userId no encontrado en cookies");
+          console.error("Token o userId no encontrado en cookies");
           return;
         }
 
@@ -50,7 +52,10 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
             setClients([]);
           }
         } catch (error) {
-          console.error("❌ Error al obtener clientes:", error.response || error.message);
+          console.error(
+            "Error al obtener clientes:",
+            error.response || error.message
+          );
           setClients([]);
         }
       }
@@ -62,7 +67,7 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
   const handleSave = async () => {
     const token = Cookies.get("accessToken");
     const userId = Cookies.get("userId");
-  
+
     if (!formName || !description || !selectedClient) {
       // Muestra un error en forma de Toast cuando los campos están vacíos
       const Toast = Swal.mixin({
@@ -76,15 +81,15 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
           toast.onmouseleave = Swal.resumeTimer;
         },
       });
-  
+
       Toast.fire({
         icon: "error",
         title: "Todos los campos son obligatorios",
       });
-  
+
       return;
     }
-  
+
     const formData = {
       title: formName,
       description,
@@ -95,7 +100,7 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
       updated_by: userId,
       state: 1,
     };
-  
+
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -103,15 +108,15 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
       },
       withCredentials: true,
     };
-  
+
     try {
       const response = await axios.post(
         "http://localhost:3000/api/forms",
         formData,
         config
       );
-      console.log("✅ Formulario creado:", response.data);
-  
+      console.log("Formulario creado:", response.data);
+
       // Muestra un Toast de éxito cuando el formulario se crea correctamente
       const Toast = Swal.mixin({
         toast: true,
@@ -124,16 +129,19 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
           toast.onmouseleave = Swal.resumeTimer;
         },
       });
-  
+
       Toast.fire({
         icon: "success",
         title: "Formulario creado correctamente",
       });
-  
+
       handleClose();
     } catch (error) {
-      console.error("❌ Error al guardar el formulario:", error.response || error.message);
-  
+      console.error(
+        "Error al guardar el formulario:",
+        error.response || error.message
+      );
+
       // Muestra un Toast de error si ocurre un fallo al guardar el formulario
       const Toast = Swal.mixin({
         toast: true,
@@ -146,14 +154,13 @@ const ModalRegisterUser = ({ open, handleClose, formId }) => {
           toast.onmouseleave = Swal.resumeTimer;
         },
       });
-  
+
       Toast.fire({
         icon: "error",
         title: "Error al guardar el formulario",
       });
     }
   };
-  
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>

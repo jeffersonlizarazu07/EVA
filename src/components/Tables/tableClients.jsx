@@ -1,6 +1,5 @@
-import { useState,useContext, useEffect } from "react";
-import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import { useTranslations } from "../hooks/useTranslations";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/tabla.css";
 import {
@@ -38,13 +37,8 @@ const TableDetalle = ({
   modalId,
   modalId2
 }) => {
-  const { languageUser } = useContext(UserContext);
-  useEffect(()=>{
-    i18n.changeLanguage(languageUser)
-  },[languageUser])
-
   const nav = useNavigate()
-  const { t,i18n } = useTranslation();
+  const { t } = useTranslations();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Cambios para MUI Pagination - usar page (base 0) en lugar de currentPage (base 1)

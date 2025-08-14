@@ -10,7 +10,6 @@ import {
   Toast2,
   Toast,
 } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
 import {
   sendData,
   deleteQuestion,
@@ -75,6 +74,7 @@ import {
   Link, 
   Update
 } from '@mui/icons-material';
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 export default function View_survey() {
   const nav = useNavigate();
@@ -133,7 +133,7 @@ export default function View_survey() {
     validate: /^[A-Za-z0-9]*$/,
   });
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   const { accessToken, languageUser } = useContext(UserContext);
 
   useEffect(() => {
@@ -161,10 +161,9 @@ useEffect(() => {
 }, [multipleChoiceData.correctAnswers]);
 
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
     getSurvey(id, config, setSurveyData);
     updateSurveyQuestions();
-  }, [id, languageUser]);
+  }, [id]);
 
 
 useEffect(() => {
