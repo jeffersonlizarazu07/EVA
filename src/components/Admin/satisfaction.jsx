@@ -30,9 +30,6 @@ import {
   Stack,
   Link,
 } from "@mui/material";
-import { TurnLeft } from "@mui/icons-material";
-import ViewListIcon from "@mui/icons-material/ViewList";
-import AppsIcon from "@mui/icons-material/Apps";
 
 const Satisfaction = () => {
   const navigate = useNavigate();
@@ -72,21 +69,6 @@ const Satisfaction = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // document
-  //   .getElementById("grid-button-mode")
-  //   .addEventListener("click", toggleGridMode);
-  // document
-  //   .getElementById("list-button-mode")
-  //   .addEventListener("click", toggleListMode);
-
-  // return () => {
-  //   document
-  //     .getElementById("grid-button-mode")
-  //     .removeEventListener("click", toggleGridMode);
-  //   document
-  //     .getElementById("list-button-mode")
-  //     .removeEventListener("click", toggleListMode);
-  // };
   const config = {
     withCredentials: true,
   };
@@ -148,41 +130,17 @@ const Satisfaction = () => {
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
-        {userType === "1" ? <HeaderLT1 /> : <HeaderLT2 />}
-        <Box>
-          <Container maxWidth="xl" sx={{ ml: 4 }}>
-            <Grid container sx={{ mt: 5 }}>
+        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
+                 <Box>
+           <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+             <Grid container sx={{ mt: 6 }} justifyContent="center">
               {/* <!-- OPCION  MODO GRID  --> */}
-              <Box
-                className="cards-group text-center"
-                id="grid-mode"
-                style={{ display: "block" }}
-                sx={{ width: "66.666667%" }}
-              >
-                <Box sx={{ textAlign: "left" }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      minWidth: 0,
-                      width: 30,
-                      height: 30,
-                      marginTop: "10px",
-                      marginLeft: "10px",
-                      borderRadius: "50%",
-                      color: "#b62a8b",
-                      borderColor: "#b62a8b",
-                      "&:hover": {
-                        borderColor: "#b62a8b",
-                        backgroundColor: "#b62a8b",
-                        color: "white",
-                      },
-                    }}
-                    onClick={() => navigate("/editor")}
-                  >
-                    <TurnLeft />
-                  </Button>
-                </Box>
+                             <Box
+                 className="cards-group text-center"
+                 id="grid-mode"
+                 style={{ display: "block" }}
+                 sx={{ width: { xs: "100%", md: "70%", lg: "60%" } }}
+               >
                 <Grid margin={3}>
                   <Typography
                     variant="h4"
@@ -248,8 +206,8 @@ const Satisfaction = () => {
                   </Grid>
                 </Grid>
 
-                <Grid container sx={{ textAlign: "center" }}>
-                  <Grid item lg={5} mr={4} ml={7} mb={3}>
+                                 <Grid container sx={{ textAlign: "center" }} spacing={3} justifyContent="center">
+                   <Grid item xs={12} md={5} lg={5}>
                     <Card className="card card4">
                       <CardContent sx={{ display: "grid" }}>
                         <Grid container>
@@ -304,7 +262,7 @@ const Satisfaction = () => {
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item lg={5}>
+                                     <Grid item xs={12} md={5} lg={5}>
                     <Card className="card card5">
                       <CardContent sx={{ display: "grid" }}>
                         <Grid container>
@@ -370,12 +328,12 @@ const Satisfaction = () => {
               {/* <!-- OPCION  MODO GRID  --> */}
 
               {/* <!-- OPCION MODO LISTA --> */}
-              <Box
-                className="cards-group text-center"
-                id="list-mode"
-                style={{ display: "none" }}
-                sx={{ width: "66.666667%" }} // equivalente a col-lg-8
-              >
+                             <Box
+                 className="cards-group text-center"
+                 id="list-mode"
+                 style={{ display: "none" }}
+                 sx={{ width: { xs: "100%", md: "70%", lg: "60%" } }}
+               >
                 <Grid margin={3}>
                   <Typography
                     variant="h4"
@@ -572,7 +530,7 @@ const Satisfaction = () => {
               </Box>
 
               {/* <!-- OPCION MODO LISTA  --> */}
-              <Grid item xs={12} lg={4} sm={12}>
+                             <Grid item xs={12} md={4} lg={3}>
                 <Card className="outstanding-card2 extern">
                   <CardContent className="div-title">
                     <Typography variant="h6" mt={3}>

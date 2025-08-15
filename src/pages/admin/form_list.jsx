@@ -225,9 +225,9 @@ const FormList = () => {
   return (
     <>
       <Box sx={{ bgcolor: "#fafafa", minHeight: "100vh" }}>
-        {userType === "1" ? <HeaderLT1 /> : <HeaderLT2 />}
+        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
 
-        <Box sx={{ px: 3, py: 4 }}>
+        <Box sx={{ px: 3, py: 4, mt: { xs: 10, sm: 12, md: 14, lg: 16 } }}>
           <Paper elevation={2} sx={{ borderRadius: 3, px: 3, py: 4 }}>
             {loading ? (
               <Box textAlign="center" py={4}>

@@ -96,7 +96,7 @@ const App = () => {
             {/*superAdmin sites*/}
            <Route
               element={
-                <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2]} />
+                <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 4]} />
               }
             > 
               <Route path="/admin_list" element={<AdminList />} />

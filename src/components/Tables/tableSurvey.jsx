@@ -209,25 +209,27 @@ const TableSurvey = ({
         </Grid>
         <Grid item xs={12} sm={6} md={6} lg={6}>
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button
-              variant="h5"
-              size="small"
-              sx={{
-                borderRadius: "18px",
-                border: "1px solid #b62a8b",
-                color: "#b62a8b",
-                borderColor: "#b62a8b",
-                "&:hover": {
+            {userInfo?.type !== 4 && (
+              <Button
+                variant="h5"
+                size="small"
+                sx={{
+                  borderRadius: "18px",
+                  border: "1px solid #b62a8b",
+                  color: "#b62a8b",
                   borderColor: "#b62a8b",
-                  backgroundColor: "#b62a8b",
-                  color: "white",
-                },
-              }}
-              onClick={() => onCreate()}
-            >
-              <Add sx={{ fontSize: "18px" }} />
-              {t("survey.encuestas")}
-            </Button>
+                  "&:hover": {
+                    borderColor: "#b62a8b",
+                    backgroundColor: "#b62a8b",
+                    color: "white",
+                  },
+                }}
+                onClick={() => onCreate()}
+              >
+                <Add sx={{ fontSize: "18px" }} />
+                {t("survey.encuestas")}
+              </Button>
+            )}
           </Box>
         </Grid>
       </Grid>
