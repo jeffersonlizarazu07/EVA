@@ -21,6 +21,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { ThemeContext } from '../../assets/js/ThemeContext';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -437,6 +438,30 @@ const HeaderLT1 = () => {
                 {t("header.Home")}
               </MUIButton>
 
+              {/* ✅ Solo mostrar "Mi Perfil" si ES agente */}
+              {(userType == 4 || userType == "4") && (
+                <>
+                  <VerticalDivider theme={theme} />
+
+                  <MUIButton
+                    variant="text"
+                    sx={{
+                      fontSize: { md: '90%', lg: '95%' },
+                      color: getButtonColor("/mi-perfil"),
+                      "&:hover": {
+                        color: "rgb(199, 14, 143)",
+                      },
+                      fontWeight: 'bold',
+                    }}
+                    onClick={() => nav("/mi-perfil")}
+                    disableRipple
+                    startIcon={<AccountCircleIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
+                  >
+                    Mi Perfil
+                  </MUIButton>
+                </>
+              )}
+
               {/* ✅ Solo mostrar botones adicionales si NO es agente */}
               {userType != 4 && userType != "4" && (
                 <>
@@ -626,6 +651,15 @@ const HeaderLT1 = () => {
                   </ListItemIcon>
                   <ListItemText primary={t('header.Home')} />
                 </ListItem>
+                {/* ✅ Solo mostrar "Mi Perfil" en el drawer si ES agente */}
+                {(userType == 4 || userType == "4") && (
+                  <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/mi-perfil'); }}>
+                    <ListItemIcon>
+                      <AccountCircleIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Mi Perfil" />
+                  </ListItem>
+                )}
                 <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin_list'); }}>
                   <ListItemIcon>
                     <PersonIcon />

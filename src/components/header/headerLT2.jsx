@@ -13,6 +13,7 @@ import Tooltip from "@mui/material/Tooltip";
 import "../../assets/css/header_aside.css";
 import Swal from "sweetalert2";
 import HomeIcon from "@mui/icons-material/Home";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { ThemeContext } from "../../assets/js/ThemeContext";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -250,7 +251,7 @@ const HeaderLT2 = () => {
                   alignItems: "center",
                   flexGrow: 1,
                   justifyContent: "center",
-                  gap: 15,
+                  gap: 6,
                 }}
               >
                 <MUIButton
@@ -269,6 +270,26 @@ const HeaderLT2 = () => {
                 >
                   {t("header.Home")}
                 </MUIButton>
+
+                {/* ✅ Solo mostrar "Mi Perfil" si ES agente */}
+                {(userType == 4 || userType == "4") && (
+                  <MUIButton
+                    variant="text"
+                    sx={{
+                      fontSize: "95%",
+                      color: getButtonColor("/mi-perfil"),
+                      "&:hover": {
+                        color: "rgb(199, 14, 143)",
+                      },
+                      fontWeight: "bold",
+                    }}
+                    onClick={() => nav("/mi-perfil")}
+                    disableRipple
+                    startIcon={<AccountCircleIcon sx={{ fontSize: "120% !important" }} />}
+                  >
+                    Mi Perfil
+                  </MUIButton>
+                )}
               </Box>
 
               {/* Lado derecho - Controles */}

@@ -156,28 +156,30 @@ const TableSurvey = ({
             gap={1}
             sx={{ height: "40px" }}
           >
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{
-                minWidth: 0,
-                width: 30,
-                height: 30,
-                padding: 0,
-                borderRadius: "50%",
-                color: "#b62a8b",
-                borderColor: "#b62a8b",
-                "&:hover": {
+            {userInfo?.type !== 4 && (
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{
+                  minWidth: 0,
+                  width: 30,
+                  height: 30,
+                  padding: 0,
+                  borderRadius: "50%",
+                  color: "#b62a8b",
                   borderColor: "#b62a8b",
-                  backgroundColor: "#b62a8b",
-                  color: "white",
-                },
-              }}
-              onClick={() => nav("/satisfaction")}
-            >
-              {" "}
-              <TurnLeft />
-            </Button>
+                  "&:hover": {
+                    borderColor: "#b62a8b",
+                    backgroundColor: "#b62a8b",
+                    color: "white",
+                  },
+                }}
+                onClick={() => nav("/satisfaction")}
+              >
+                {" "}
+                <TurnLeft />
+              </Button>
+            )}
             <TextField
               size="small"
               className="inp-search"
@@ -297,20 +299,18 @@ const TableSurvey = ({
                         open={Boolean(anchorEl) && selectedItem === item}
                         onClose={handleMenuClose}
                       >
-                        {userInfo?.type !== 4 && (
-                          <MenuItem
-                            onClick={() => handleMenuAction(onCheck, item)}
-                            sx={{
-                              display: "flex",
-                              gap: 1,
-                              color: " #b62a8b",
-                              "&:hover": { backgroundColor: "#f8f9fa" },
-                            }}
-                          >
-                            <HelpOutline sx={{ fontSize: 18 }} />
-                            {t("survey.ver_preguntas")}
-                          </MenuItem>
-                        )}
+                        <MenuItem
+                          onClick={() => handleMenuAction(onCheck, item)}
+                          sx={{
+                            display: "flex",
+                            gap: 1,
+                            color: " #b62a8b",
+                            "&:hover": { backgroundColor: "#f8f9fa" },
+                          }}
+                        >
+                          <HelpOutline sx={{ fontSize: 18 }} />
+                          {t("survey.ver_preguntas")}
+                        </MenuItem>
 
                         <MenuItem
                           onClick={() => handleMenuAction(onCopyLink, item)}
@@ -388,11 +388,13 @@ const TableSurvey = ({
                     <Box
                       sx={{ display: "flex", gap: 1, justifyContent: "center" }}
                     >
-                      <Tooltip title={t("survey.activar")} placement="bottom">
-                        <IconButton onClick={() => onActive(item)} size="small">
-                          <PowerSettingsNew />
-                        </IconButton>
-                      </Tooltip>
+                      {userInfo?.type !== 4 && (
+                        <Tooltip title={t("survey.activar")} placement="bottom">
+                          <IconButton onClick={() => onActive(item)} size="small">
+                            <PowerSettingsNew />
+                          </IconButton>
+                        </Tooltip>
+                      )}
 
                       <Tooltip
                         title={t("survey.ver_detalle")}

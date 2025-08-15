@@ -52,6 +52,7 @@ import Reports from "./pages/admin/reports"
 
 // agents
 import AgentList from "./pages/admin/agent_list";
+import MiPerfil from "./pages/admin/mi-perfil";
 
 /* ---------------------------------------------------------*/
 
@@ -114,6 +115,7 @@ const App = () => {
               <Route path="/editor" element={<IndexEditor />} />
               <Route path="/view_survey/:id" element={<View_survey />} />
               <Route path="/agent_list" element={<AgentList />} /> 
+              <Route path="/mi-perfil" element={<MiPerfil />} /> 
             </Route> 
             <Route
               element={
