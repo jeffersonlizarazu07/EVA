@@ -5,10 +5,10 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 // obtener respuestas multiples 
 
-router.get('/answersform/getResponseMult', authMiddleware, answersFormController.getResponseMult)
+router.get('/answersform/getResponseMult',authMiddleware, answersFormController.getResponseMult)
 
 // obtener reportes filtrados
-router.get('/answersform/filter/:fromId/:starDate/:endDate', authMiddleware, answersFormController.getReportFilter);
+router.get('/answersform/filter/:fromId/:starDate/:endDate/:agente/:evaluador',authMiddleware,   answersFormController.getReportFilter);
 
 // obtener clientes y informacion de los forms_set
 router.get('/answersform/clients-forms', authMiddleware, answersFormController.getClientsAndForms);
