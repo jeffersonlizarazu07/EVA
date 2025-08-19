@@ -8,6 +8,9 @@ const authMiddleware = require('../middlewares/authMiddleware');
 // Ruta para obtener todas las respuestas
 router.get('/answers',authMiddleware, AnswerController.getAllAnswers);
 
+// Traer respuestas por rango
+router.get("/answers/ranges", authMiddleware, AnswerController.getAnswersByRangesController);
+
 // Ruta para obtener una respuesta por ID
 router.get('/answers/:id?', authMiddleware, AnswerController.getAnswerById);
 
@@ -37,7 +40,6 @@ router.post('/answers',AnswerController.postAnswer);
 router.put('/answers/:id?', authMiddleware, AnswerController.updateAnswer);
 
 //router.put('/answers/:id', answerController.putAnswer);
-
 
 // Ruta para eliminar una respuesta
 router.delete('/answers/:id?',authMiddleware, AnswerController.deleteAnswer);
