@@ -24,6 +24,8 @@ const Quality = () => {
   const navigate = useNavigate();
   const { userType, clients } = useContext(UserContext);
   const { t } = useTranslations();
+  
+
   const [conteoDeAgentes, setConteoDeAgentes] = useState("0");
   const [conteoDeFormulario, setConteoDeFormulario] = useState("0");
 
@@ -215,14 +217,14 @@ const Quality = () => {
   };
 
   return (
-    <Box className="App">
-      <Box id="body">
-        {userType === "1" ? <HeaderLT1 /> : <HeaderLT2 />}
+    <Box className="App" sx={{ position: 'relative' }}>
+      <Box id="body" sx={{ position: 'relative', zIndex: 1 }}>
+        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
         <section>
           <Grid
              container
               sx={{
-                mt: { xs: 1, sm: 2, md: 4, lg: 8 },
+                mt: { xs: 10, sm: 12, md: 14, lg: 16 },
                 ml: { xs: 0, sm: 0, md: 2, lg: 8 },
                 px: { xs: 0.5, sm: 2, md: 2, lg: 8 },
                 justifyContent: "center",
@@ -239,28 +241,7 @@ const Quality = () => {
                   className="cards-group "
                   id="grid-mode"
                 >
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      minWidth: 0,
-                      width: 30,
-                      height: 30,
-                      padding: 0,
-                      marginTop: "15px",
-                      borderRadius: "50%",
-                      color: "#b62a8b",
-                      borderColor: "#b62a8b",
-                      "&:hover": {
-                        borderColor: "#b62a8b",
-                        backgroundColor: "#b62a8b",
-                        color: "white",
-                      },
-                    }}
-                    onClick={() => navigate("/editor")}
-                  >
-                    <TurnLeft />
-                  </Button>
+                  {/* Botón de regresar removido */}
                   <Grid spacing={2} m={3}>
                     <Grid container spacing={2} sx={{ display: "flex" }}>
                       <Grid item xs={8}  sx={{ p: 0 }}>

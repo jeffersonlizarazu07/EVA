@@ -21,6 +21,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { ThemeContext } from '../../assets/js/ThemeContext';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -45,12 +46,13 @@ import {
 } from "@mui/material";
 
 // importaciones de temas
-
 import {themeColors} from '../../style/ThemeColors.js'
 
 const HeaderLT1 = () => {
-  const { accessToken, userId, languageUser, setLanguageUser } =
+  const { accessToken, userId, languageUser, setLanguageUser, userType } = // ✅ Agregar userType
     useContext(UserContext);
+  
+
   const { logout: authLogout } = useAuth();
   const { t, i18n } = useTranslation();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -351,12 +353,10 @@ const HeaderLT1 = () => {
     handleLanguageClose();
   };
 
-
   // Componente personalizado para el separador vertical 
   const VerticalDivider = styled(Box)(({ theme }) => ({
     width: '1px',
     height: '24px',
-    //backgroundColor: theme === 'dark' ? themeColors.light.Box.backgroundColor :  themeColors.dark.Box.backgroundColor,
     margin: '0 16px',
   }));
 
@@ -389,15 +389,17 @@ const HeaderLT1 = () => {
           <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1.5, md: 2 } }}>
             {/* Lado izquierdo - Logo y menú móvil */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>             
-              {/* Botón menú (solo móvil) */}
-              <IconButton
-                onClick={() => setIsDrawerOpen(true)}
-                sx={{ display: { xs: 'inline-flex', md: 'none' }, mr: 0.5 }}
-                aria-label="abrir menú"
-                disableRipple
-              >
-                <MenuIcon sx={{ color: theme === 'dark' ? '#fff' : '#000' }} />
-              </IconButton>
+              {/* Botón menú (solo móvil) - CONDICIONAL PARA AGENTES */}
+              {userType != 4 && userType != "4" && ( // ✅ Solo mostrar menú hamburguesa si NO es agente
+                <IconButton
+                  onClick={() => setIsDrawerOpen(true)}
+                  sx={{ display: { xs: 'inline-flex', md: 'none' }, mr: 0.5 }}
+                  aria-label="abrir menú"
+                  disableRipple
+                >
+                  <MenuIcon sx={{ color: theme === 'dark' ? '#fff' : '#000' }} />
+                </IconButton>
+              )}
               {/* Logo */}
               <Box
                 component="img"
@@ -411,7 +413,7 @@ const HeaderLT1 = () => {
               />
             </Box>
 
-            {/* Navegación  */}
+            {/* ✅ Navegación CONDICIONAL - Solo "Inicio" para agentes */}
             <Box sx={{ 
               display: { xs : 'none', md: 'flex' }, 
               alignItems: 'center',
@@ -436,43 +438,72 @@ const HeaderLT1 = () => {
                 {t("header.Home")}
               </MUIButton>
 
-              <VerticalDivider theme={theme} />
+              {/* ✅ Solo mostrar "Mi Perfil" si ES agente */}
+              {(userType == 4 || userType == "4") && (
+                <>
+                  <VerticalDivider theme={theme} />
 
-              <MUIButton
-                variant="text"
-                sx={{
-                  fontSize: { md: '90%', lg: '95%' },
-                  color: getButtonColor("/admin_list"),
-                  "&:hover": {
-                    color: "rgb(199, 14, 143)",
-                  },
-                  fontWeight: 'bold',
-                }}
-                onClick={() => nav("/admin_list")}
-                disableRipple
-                startIcon={<PersonIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
-              >
-                {t("header.Users")}
-              </MUIButton>
+                  <MUIButton
+                    variant="text"
+                    sx={{
+                      fontSize: { md: '90%', lg: '95%' },
+                      color: getButtonColor("/mi-perfil"),
+                      "&:hover": {
+                        color: "rgb(199, 14, 143)",
+                      },
+                      fontWeight: 'bold',
+                    }}
+                    onClick={() => nav("/mi-perfil")}
+                    disableRipple
+                    startIcon={<AccountCircleIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
+                  >
+                    Mi Perfil
+                  </MUIButton>
+                </>
+              )}
 
-              <VerticalDivider theme={theme} />
+              {/* ✅ Solo mostrar botones adicionales si NO es agente */}
+              {userType != 4 && userType != "4" && (
+                <>
+                  <VerticalDivider theme={theme} />
 
-              <MUIButton
-                variant="text"
-                sx={{
-                  fontSize: { md: '90%', lg: '95%' },
-                  color: getButtonColor("/client_list"),
-                  "&:hover": {
-                    color: "rgb(199, 14, 143)",
-                  },
-                  fontWeight: 'bold',
-                }}
-                onClick={() => nav("/client_list")}
-                disableRipple
-                startIcon={<AssignmentIndIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
-              >
-                {t("header.Clients")}
-              </MUIButton>
+                  <MUIButton
+                    variant="text"
+                    sx={{
+                      fontSize: { md: '90%', lg: '95%' },
+                      color: getButtonColor("/admin_list"),
+                      "&:hover": {
+                        color: "rgb(199, 14, 143)",
+                      },
+                      fontWeight: 'bold',
+                    }}
+                    onClick={() => nav("/admin_list")}
+                    disableRipple
+                    startIcon={<PersonIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
+                  >
+                    {t("header.Users")}
+                  </MUIButton>
+
+                  <VerticalDivider theme={theme} />
+
+                  <MUIButton
+                    variant="text"
+                    sx={{
+                      fontSize: { md: '90%', lg: '95%' },
+                      color: getButtonColor("/client_list"),
+                      "&:hover": {
+                        color: "rgb(199, 14, 143)",
+                      },
+                      fontWeight: 'bold',
+                    }}
+                    onClick={() => nav("/client_list")}
+                    disableRipple
+                    startIcon={<AssignmentIndIcon sx={{ fontSize: { md: '115% !important', lg: '120% !important' } }} />}
+                  >
+                    {t("header.Clients")}
+                  </MUIButton>
+                </>
+              )}
             </Box>
 
             {/* Lado derecho - Controles */}
@@ -603,46 +634,57 @@ const HeaderLT1 = () => {
           </Toolbar>
           </AppBar>
 
-          {/* Drawer de navegación para móviles */}
-          <Drawer
-          anchor="left"
-          open={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-          ModalProps={{ keepMounted: true }}
-          PaperProps={{ sx: { width: 260 } }}
-          >
-          <Box role="presentation" sx={{ mt: 1 }}>
-            <List>
-              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin'); }}>
-                <ListItemIcon>
-                  <HomeIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('header.Home')} />
-              </ListItem>
-              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin_list'); }}>
-                <ListItemIcon>
-                  <PersonIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('header.Users')} />
-              </ListItem>
-              <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/client_list'); }}>
-                <ListItemIcon>
-                  <AssignmentIndIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('header.Clients')} />
-              </ListItem>
-            </List>
-            <Divider />
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <SettingsIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('headerlt.Settings') || 'Ajustes'} />
-              </ListItem>
-            </List>
-          </Box>
-          </Drawer>
+          {/* ✅ Drawer de navegación para móviles - CONDICIONAL PARA AGENTES */}
+          {userType != 4 && userType != "4" && (
+            <Drawer
+            anchor="left"
+            open={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            PaperProps={{ sx: { width: 260 } }}
+            >
+            <Box role="presentation" sx={{ mt: 1 }}>
+              <List>
+                <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin'); }}>
+                  <ListItemIcon>
+                    <HomeIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t('header.Home')} />
+                </ListItem>
+                {/* ✅ Solo mostrar "Mi Perfil" en el drawer si ES agente */}
+                {(userType == 4 || userType == "4") && (
+                  <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/mi-perfil'); }}>
+                    <ListItemIcon>
+                      <AccountCircleIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Mi Perfil" />
+                  </ListItem>
+                )}
+                <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/admin_list'); }}>
+                  <ListItemIcon>
+                    <PersonIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t('header.Users')} />
+                </ListItem>
+                <ListItem button onClick={() => { setIsDrawerOpen(false); nav('/client_list'); }}>
+                  <ListItemIcon>
+                    <AssignmentIndIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t('header.Clients')} />
+                </ListItem>
+              </List>
+              <Divider />
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <SettingsIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={t('headerlt.Settings') || 'Ajustes'} />
+                </ListItem>
+              </List>
+            </Box>
+            </Drawer>
+          )}
         </Paper>
       </Box>
       {/* Espaciador para evitar que el contenido quede debajo del header fijo */}

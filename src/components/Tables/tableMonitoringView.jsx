@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslations } from "../hooks/useTranslations";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
@@ -44,8 +44,12 @@ const TableMonitoringView = ({
   setMonitoringStats
 }) => {
   const nav = useNavigate();
+  const location = useLocation();
   // Traducción
   const { t } = useTranslations();
+  
+  // Verificar si estamos en la vista de agente (monitoring_view)
+  const isAgentView = location.pathname.includes('/monitoring_view/');
   // Paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
@@ -168,27 +172,30 @@ const TableMonitoringView = ({
               gap={1}
               sx={{ marginLeft: "12px" }}
             >
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  minWidth: 30,
-                  width: 30,
-                  height: 30,
-                  padding: 0,
-                  borderRadius: "50%",
-                  color: "#b62a8b",
-                  borderColor: "#b62a8b",
-                  "&:hover": {
+              {/* Solo mostrar el botón de devolver si NO estamos en la vista de agente */}
+              {!isAgentView && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    minWidth: 30,
+                    width: 30,
+                    height: 30,
+                    padding: 0,
+                    borderRadius: "50%",
+                    color: "#b62a8b",
                     borderColor: "#b62a8b",
-                    backgroundColor: "#b62a8b",
-                    color: "white",
-                  },
-                }}
-                onClick={() => nav("/agent_list")}
-              >
-                <TurnLeft />
-              </Button>
+                    "&:hover": {
+                      borderColor: "#b62a8b",
+                      backgroundColor: "#b62a8b",
+                      color: "white",
+                    },
+                  }}
+                  onClick={() => nav("/agent_list")}
+                >
+                  <TurnLeft />
+                </Button>
+              )}
 
               <TextField
                 size="small"

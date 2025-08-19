@@ -927,71 +927,71 @@ const Reports = () => {
     );
   };
 
-  return (
-    <Box className="App">
-      <Box id="body">
-        {userType === "1" ? <HeaderLT1 /> : <HeaderLT2 />}
+ return (
+  <Box className="App">
+    <Box id="body">
+      {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
 
-        <Box m={0} p={0}>
-          <Grid container spacing={0} sx={{ m: 0 }}>
-            <Grid
-              item
-              xs={12}
+      <Box m={0} p={0} sx={{ mt: { xs: 10, sm: 12, md: 14, lg: 16 } }}>
+        <Grid container spacing={0} sx={{ m: 0 }}>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              px: 2,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Box
               sx={{
-                px: 2,
-                display: "flex",
-                justifyContent: "center",
+                width: "100%",
+                px: 3,
+                maxWidth: "96%",
               }}
             >
-              <Box
-                sx={{
-                  width: "100%",
-                  px: 3,
-                  maxWidth: "96%",
-                }}
-              >
-                <Grid item xs={12} sx={{ mb: 4 }}>
-                  <Card>
-                    <CardContent sx={{ borderRadius: "50px" }}>
-                      <Box
-                        display="flex"
-                        flexWrap="wrap"
-                        alignItems="center"
-                        justifyContent="center"
-                        gap={2}
-                        sx={{ mb: 2 }}
-                      >
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => nav("/satisfaction")}
-                          sx={{
-                            py: 2,
-                            minWidth: "2%",
-                            fontWeight: "bold",
-                            color: "#b62a8b",
+              <Grid item xs={12} sx={{ mb: 4 }}>
+                <Card>
+                  <CardContent sx={{ borderRadius: "50px" }}>
+                    <Box
+                      display="flex"
+                      flexWrap="wrap"
+                      alignItems="center"
+                      justifyContent="center"
+                      gap={2}
+                      sx={{ mb: 2 }}
+                    >
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => nav("/satisfaction")}
+                        sx={{
+                          py: 2,
+                          minWidth: "2%",
+                          fontWeight: "bold",
+                          color: "#b62a8b",
+                          borderColor: "#b62a8b",
+                          borderTopLeftRadius: "20px",
+                          borderBottomLeftRadius: "20px",
+                          "&:hover": {
                             borderColor: "#b62a8b",
-                            borderTopLeftRadius: "20px",
-                            borderBottomLeftRadius: "20px",
-                            "&:hover": {
-                              borderColor: "#b62a8b",
-                              backgroundColor: "rgba(156, 39, 176, 0.04)",
-                            },
-                          }}
+                            backgroundColor: "rgba(156, 39, 176, 0.04)",
+                          },
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          viewBox="0 0 16 16"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
-                            />
-                          </svg>
-                        </Button>
+                          <path
+                            fillRule="evenodd"
+                            d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
+                          />
+                        </svg>
+                      </Button>
 
                         <FormControl
                           required
