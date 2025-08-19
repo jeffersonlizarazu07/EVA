@@ -4,10 +4,10 @@ const answersFormController = require('../controllers/answersFormController');
 
 // obtener respuestas multiples 
 
-router.get('/answersform/getResponseMult', answersFormController.getResponseMult)
+router.get('/answersform/getResponseMult',authMiddleware, answersFormController.getResponseMult)
 
 // obtener reportes filtrados
-router.get('/answersform/filter/:fromId/:starDate/:endDate/:agente/:evaluador', answersFormController.getReportFilter);
+router.get('/answersform/filter/:fromId/:starDate/:endDate/:agente/:evaluador',authMiddleware,   answersFormController.getReportFilter);
 
 // obtener clientes y informacion de los forms_set
 router.get('/answersform/clients-forms', answersFormController.getClientsAndForms);
