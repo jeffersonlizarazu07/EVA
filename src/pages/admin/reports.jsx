@@ -7,29 +7,29 @@ import LineStyleCharts from "../../components/charts/lineStyle";
 import HeaderLT1 from "../../components/header/headerLT1";
 import HeaderLT2 from "../../components/header/headerLT2";
 import dayjs from "dayjs";
-import Cookies from "js-cookie"; 
-import Swal from 'sweetalert2';
+import Cookies from "js-cookie";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { Toast } from "../../assets/js/alertConfig";
 import { useTranslation } from "react-i18next";
-import { 
-  Box, 
+import {
+  Box,
   Button,
   ButtonGroup,
   IconButton,
   Grid,
   Card,
   CardContent,
-  Skeleton, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper, 
-  Accordion, 
-  AccordionSummary, 
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Accordion,
+  AccordionSummary,
   AccordionDetails,
   InputLabel,
   OutlinedInput,
@@ -37,17 +37,25 @@ import {
   FormControl,
   Select,
   Typography,
-  Alert
+  Alert,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useTranslations } from "../../components/hooks/useTranslations";
 
+const ID_TIPO_1_5 = 2;
+const ID_TIPO_1_10 = 3;
+const ID_TIPO_YES_NO = 4;
+const ID_TIPO_CES = 5;
+
 const Reports = () => {
-  const {t} = useTranslations();
+  const { t } = useTranslations();
   const nav = useNavigate();
   const { accessToken, userType, clients } = useContext(UserContext);
   const [allResponses, setAllResponses] = useState([]); // Nueva estructura para contener todas las respuestas en orden
@@ -61,6 +69,7 @@ const Reports = () => {
   const responseRefs = useRef([]);
   // const chartRefs = useRef([]);
   // const tableRefs = useRef([]);
+  const [answersStats, setAnswersStats] = useState([]);
 
   useEffect(() => {
     getSurveys();
@@ -79,141 +88,151 @@ const Reports = () => {
       alert("Please select a Survey ID");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
-      const formattedStartDate = startDate ? dayjs(startDate).format("YYYY-MM-DD") : "";
-      const formattedEndDate = endDate ? dayjs(endDate).format("YYYY-MM-DD") : "";
-  
+      const formattedStartDate = startDate
+        ? dayjs(startDate).format("YYYY-MM-DD")
+        : "";
+      const formattedEndDate = endDate
+        ? dayjs(endDate).format("YYYY-MM-DD")
+        : "";
+
       const response = await axios.get(
         `http://localhost:3000/api/answers/survey/${surveyId}/percentage?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
         config
       );
       console.log("xxx", response.data.data);
       // Verificar si no hay datos
-      if (!response.data.data || Object.keys(response.data.data).length === 0)  {
+      if (!response.data.data || Object.keys(response.data.data).length === 0) {
         console.log("No hay datos o los datos están vacíos.");
-        
+
         if (startDate || endDate) {
           alert("No se encontraron datos para las fechas proporcionadas.");
         } else {
-          alert("No se encontraron datos para la encuesta con el ID proporcionado.");
+          alert(
+            "No se encontraron datos para la encuesta con el ID proporcionado."
+          );
         }
-        
+
         setLoading(false);
         return;
       }
 
       // Array unificado para todas las respuestas en el orden original
       const allResponsesArray = [];
-      
+
       // Transformar los datos manteniendo el orden original
-      Object.entries(response.data.data).forEach(([questionId, questionData]) => {
-        // Si es tipo textfield_s, lo añadimos como datos de texto
-        if (questionData.type === "textfield_s") {
-          allResponsesArray.push({
-            id: questionId,
-            label: questionData.name,
-            data: questionData.data[0],
-            labels: questionData.labels,
-            type: questionData.type,
-            displayType: "text" // Indicador para saber cómo renderizarlo
-          });
-        } 
-        // NUEVO: Para el tipo check_opt, preparamos los datos para mostrarlo en una tabla
-        else if (questionData.type === "check_opt") {
-          // Preparar los datos para la tabla con respuestas y porcentajes
-          const tableData = [];
-          
-          // Si tenemos datos
-          if (questionData.data && questionData.data.length > 0) {
-            // Usar solo el primer elemento de data ya que contiene porcentajes
-            const firstDataItem = questionData.data[0];
-            
-            // Convertir el objeto de respuestas a un array para la tabla
-            Object.entries(firstDataItem).forEach(([key, value]) => {
-              tableData.push({
-                respuesta: key, // La respuesta
-                porcentaje: value // El porcentaje como string (con el %)
-              });
+      Object.entries(response.data.data).forEach(
+        ([questionId, questionData]) => {
+          // Si es tipo textfield_s, lo añadimos como datos de texto
+          if (questionData.type === "textfield_s") {
+            allResponsesArray.push({
+              id: questionId,
+              label: questionData.name,
+              data: questionData.data[0],
+              labels: questionData.labels,
+              type: questionData.type,
+              displayType: "text", // Indicador para saber cómo renderizarlo
             });
           }
-          
-          allResponsesArray.push({
-            id: questionId,
-            label: questionData.name,
-            data: tableData,
-            type: questionData.type,
-            displayType: "check_opt_table" // Nuevo tipo para tablas de check_opt
-          });
-        } else {
-          // Para el resto de tipos, preparamos datos para gráficas
-          const chartData = [];
-          
-          // Si tenemos datos y labels
-          if (questionData.data && questionData.data.length > 0) {
-            // Usar solo el primer elemento de data ya que contiene porcentajes
-            const firstDataItem = questionData.data[0];
-            
-            // Convertir el objeto de respuestas a un array
-            Object.entries(firstDataItem).forEach(([key, value]) => {
-              // Usamos el label original en lugar de key cuando sea posible
-              const labelIndex = questionData.labels ? questionData.labels.indexOf(key) : -1;
-              const displayName = labelIndex >= 0 ? questionData.labels[labelIndex] : key;
-              
-              chartData.push({
-                name: displayName, // El nombre de la opción
-                key: key, // La clave original (para tipos como yes_no donde 0=No, 1=Si)
-                value: parseFloat(value) // El porcentaje como número
+          // NUEVO: Para el tipo check_opt, preparamos los datos para mostrarlo en una tabla
+          else if (questionData.type === "check_opt") {
+            // Preparar los datos para la tabla con respuestas y porcentajes
+            const tableData = [];
+
+            // Si tenemos datos
+            if (questionData.data && questionData.data.length > 0) {
+              // Usar solo el primer elemento de data ya que contiene porcentajes
+              const firstDataItem = questionData.data[0];
+
+              // Convertir el objeto de respuestas a un array para la tabla
+              Object.entries(firstDataItem).forEach(([key, value]) => {
+                tableData.push({
+                  respuesta: key, // La respuesta
+                  porcentaje: value, // El porcentaje como string (con el %)
+                });
               });
+            }
+
+            allResponsesArray.push({
+              id: questionId,
+              label: questionData.name,
+              data: tableData,
+              type: questionData.type,
+              displayType: "check_opt_table", // Nuevo tipo para tablas de check_opt
+            });
+          } else {
+            // Para el resto de tipos, preparamos datos para gráficas
+            const chartData = [];
+
+            // Si tenemos datos y labels
+            if (questionData.data && questionData.data.length > 0) {
+              // Usar solo el primer elemento de data ya que contiene porcentajes
+              const firstDataItem = questionData.data[0];
+
+              // Convertir el objeto de respuestas a un array
+              Object.entries(firstDataItem).forEach(([key, value]) => {
+                // Usamos el label original en lugar de key cuando sea posible
+                const labelIndex = questionData.labels
+                  ? questionData.labels.indexOf(key)
+                  : -1;
+                const displayName =
+                  labelIndex >= 0 ? questionData.labels[labelIndex] : key;
+
+                chartData.push({
+                  name: displayName, // El nombre de la opción
+                  key: key, // La clave original (para tipos como yes_no donde 0=No, 1=Si)
+                  value: parseFloat(value), // El porcentaje como número
+                });
+              });
+            }
+
+            allResponsesArray.push({
+              id: questionId,
+              label: questionData.name,
+              data: chartData,
+              type: questionData.type,
+              displayType: "chart", // Indicador para saber cómo renderizarlo
             });
           }
-          
-          allResponsesArray.push({
-            id: questionId,
-            label: questionData.name,
-            data: chartData,
-            type: questionData.type,
-            displayType: "chart" // Indicador para saber cómo renderizarlo
-          });
         }
-      });
-      
-    console.log("Todos los datos de respuestas en orden:", allResponsesArray);
-    setAllResponses(allResponsesArray);
-    setLoading(false);
+      );
+
+      console.log("Todos los datos de respuestas en orden:", allResponsesArray);
+      setAllResponses(allResponsesArray);
+      setLoading(false);
     } catch (error) {
       console.error("Error al obtener los datos:", error);
-      
+
       if (error.response && error.response.status === 404) {
         Swal.fire({
-                title: t("reports.sin_datos"),
-                text: t("reports.texto_sin_datos"),
-                icon: 'info',
-                confirmButtonText: t("buttons.aceptar"),
-                confirmButtonColor: '#FF66B2',
-              });
-      }else{
+          title: t("reports.sin_datos"),
+          text: t("reports.texto_sin_datos"),
+          icon: "info",
+          confirmButtonText: t("buttons.aceptar"),
+          confirmButtonColor: "#FF66B2",
+        });
+      } else {
         // Muestra un mensaje de error usando SweetAlert
         Swal.fire({
           title: t("alerts.error"),
           text: t("alerts.error_obtener_datos"),
-          icon: 'error',
+          icon: "error",
           confirmButtonText: t("buttons.aceptar"),
-          confirmButtonColor: '#FF66B2',
-      });
-      }  
+          confirmButtonColor: "#FF66B2",
+        });
+      }
 
       setLoading(false);
       return;
     }
-
   };
-    
+
   const getSurveys = async () => {
     try {
-      console.log(clients)
+      console.log(clients);
       const response = await axios.get(
         `http://localhost:3000/api/clients/surveys?clientIds=${clients}`,
         config
@@ -224,6 +243,59 @@ const Reports = () => {
       console.error("Error fetching data", error);
     }
   };
+
+  // llamada al backend
+  const getAnswersByRanges = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/api/answers/ranges",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      console.log("📊 Data global recibida:", response.data.data);
+      setAnswersStats(response.data.data);
+    } catch (error) {
+      console.error("Error obteniendo rangos", error);
+    }
+  };
+
+  // cada vez que cambia el filtro y hay preguntas visibles, llamamos al backend
+  useEffect(() => {
+    console.log("🔍 allResponses:", allResponses);
+
+    if (allResponses.length > 0) {
+      const ids = allResponses
+        .filter((q) =>
+          [
+            "range_onetofive",
+            "range_zerototen",
+            "yes_no",
+            "range_difficulty",
+          ].includes(q.type)
+        )
+        .map((q) => q.id);
+
+      console.log("🆔 IDs encontrados (solo para debug):", ids);
+      console.log(
+        "📊 Preguntas filtradas:",
+        allResponses.filter((q) =>
+          [
+            "range_onetofive",
+            "range_zerototen",
+            "yes_no",
+            "range_difficulty",
+          ].includes(q.type)
+        )
+      );
+
+      getAnswersByRanges();
+    }
+  }, [allResponses]);
+
+  useEffect(() => {
+    console.log("📈 answersStats actualizado:", answersStats);
+  }, [answersStats]);
 
   const handleStartDateChange = (newValue) => {
     setStartDate(newValue);
@@ -243,13 +315,13 @@ const Reports = () => {
         text: t("alerts.fecha_incio_Seleccione"),
         confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
-        customClass :{
-          actions: 'swal2-actions-center ', 
-          title: 'titulo-pequeno',
-        },     
-    })    
-    return;
-  }
+        customClass: {
+          actions: "swal2-actions-center ",
+          title: "titulo-pequeno",
+        },
+      });
+      return;
+    }
 
     if (newValue && newEndDate.isAfter(today)) {
       Swal.fire({
@@ -258,11 +330,11 @@ const Reports = () => {
         text: t("alerts.fecha_fin_mayor"),
         confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
-        customClass :{
-          actions: 'swal2-actions-center ', 
-          title: 'titulo-pequeno',
-        },     
-      })    
+        customClass: {
+          actions: "swal2-actions-center ",
+          title: "titulo-pequeno",
+        },
+      });
       setEndDate(today);
       return;
     }
@@ -274,11 +346,11 @@ const Reports = () => {
         text: t("alerts.fecha_fin_menor"),
         confirmButtonText: t("buttons.aceptar"),
         confirmButtonColor: "#b62a8b",
-        customClass :{
-          actions: 'swal2-actions-center ', 
-          title: 'titulo-pequeno',
-        },     
-      })    
+        customClass: {
+          actions: "swal2-actions-center ",
+          title: "titulo-pequeno",
+        },
+      });
       setEndDate(dayjs(startDate));
       return;
     }
@@ -287,14 +359,15 @@ const Reports = () => {
   };
 
   const exportCharts = async () => {
-  
     let downloadToast; // Variable para almacenar la instancia del toast y poder actualizarla
 
     // Primero, abrimos todos los acordeones para asegurarnos de que el contenido sea visible
-    const accordions = document.querySelectorAll('.MuiAccordion-root');
-    accordions.forEach(accordion => {
-      if (!accordion.classList.contains('Mui-expanded')) {
-        const expandButton = accordion.querySelector('.MuiAccordionSummary-root');// Buscar el botón de expansión y hacer clic en él
+    const accordions = document.querySelectorAll(".MuiAccordion-root");
+    accordions.forEach((accordion) => {
+      if (!accordion.classList.contains("Mui-expanded")) {
+        const expandButton = accordion.querySelector(
+          ".MuiAccordionSummary-root"
+        ); // Buscar el botón de expansión y hacer clic en él
 
         if (expandButton) {
           expandButton.click();
@@ -302,18 +375,22 @@ const Reports = () => {
       }
     });
 
-    await new Promise(resolve => setTimeout(resolve, 500)); // Esperar un momento para que las animaciones de expansión terminen
+    await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar un momento para que las animaciones de expansión terminen
 
-    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });  // Creamos el PDF en formato A4
-    
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4",
+    }); // Creamos el PDF en formato A4
+
     // Obtenemos dimensiones de la página
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 40; // Margen en todos los lados
-    
-    const contentWidth = pageWidth - (margin * 2);
-    const contentHeight = pageHeight - (margin * 2);
-    
+
+    const contentWidth = pageWidth - margin * 2;
+    const contentHeight = pageHeight - margin * 2;
+
     const numCols = 2;
     const numRows = 2;
     const cellWidth = contentWidth / numCols;
@@ -321,73 +398,77 @@ const Reports = () => {
 
     let chartCount = 0; // Contador para saber cuántas gráficas van en la página actual
 
-      downloadToast = Toast.fire({
+    downloadToast = Toast.fire({
       icon: "info", // Puedes usar 'info' o 'loading' si tu librería Toast lo soporta
       title: t("reports.preparando_graficas"), // Título del Toast
       text: "0%", // Texto inicial con el porcentaje
-      position: 'bottom-end', // Posición en la esquina inferior derecha
+      position: "bottom-end", // Posición en la esquina inferior derecha
       showConfirmButton: false, // No mostrar botón de confirmación
       timer: false, // No cerrar automáticamente
     });
-  
+
     // Capturamos cada elemento de respuesta (incluye tanto el título como el contenido)
     for (let index = 0; index < responseRefs.current.length; index++) {
       const ref = responseRefs.current[index];
       if (!ref) continue;
-      
+
       try {
         // Verificar si necesitamos una nueva página antes de procesar la gráfica actual
         if (chartCount > 0 && chartCount % (numCols * numRows) === 0) {
           pdf.addPage();
           chartCount = 0; // Reiniciar contador para la nueva página
         }
-        
+
         // Opciones para mejorar la calidad de la captura pero manteniendo un tamaño razonable
         const options = {
           scale: 1.5, // Reducido a 1 para evitar imágenes demasiado grandes
           useCORS: true,
           allowTaint: true,
-          backgroundColor: '#ffffff',
+          backgroundColor: "#ffffff",
           logging: false, // Deshabilitar logs para mejorar rendimiento
         };
-        
-        const canvas = await html2canvas(ref, options);      
-        const imgData = canvas.toDataURL("image/jpeg", 1); // Formato JPEG con 100% de calidad      
+
+        const canvas = await html2canvas(ref, options);
+        const imgData = canvas.toDataURL("image/jpeg", 1); // Formato JPEG con 100% de calidad
         const imgProps = pdf.getImageProperties(imgData);
-        
+
         // Calcular la altura proporcionalmente pero limitada al alto de la página menos márgenes
         let imgWidth = cellWidth;
         let imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-        
+
         // Si la altura es mayor que el espacio disponible en la página, ajustamos proporcionalmente
         if (imgHeight > cellHeight) {
           imgHeight = cellHeight;
           imgWidth = (imgProps.width * imgHeight) / imgProps.height;
-        }     
-      
+        }
+
         // Calculamos la posición de la celda actual
         const col = chartCount % numCols;
         const row = Math.floor(chartCount / numCols) % numRows;
 
         const xPos = margin + col * cellWidth + (cellWidth - imgWidth) / 2;
         const yPos = margin + row * cellHeight + (cellHeight - imgHeight) / 2;
-              
+
         // Añadir la imagen al PDF
         pdf.addImage(imgData, "JPEG", xPos, yPos, imgWidth, imgHeight);
         chartCount++; // Incrementamos el contador después de añadir la imagen
 
         // Actualizar el progreso en el Toast
-        const progress = Math.round(((index + 1) / responseRefs.current.length) * 100);
+        const progress = Math.round(
+          ((index + 1) / responseRefs.current.length) * 100
+        );
         downloadToast.update({
           title: `Generando PDF: ${progress}%`,
-          text: "Preparando gráficas..." // Puedes mantener este texto o cambiarlo
+          text: "Preparando gráficas...", // Puedes mantener este texto o cambiarlo
         });
 
         // Mostrar progreso de procesamiento
         if (index % 2 === 0) {
-          const progress = Math.round((index / responseRefs.current.length) * 100);
+          const progress = Math.round(
+            (index / responseRefs.current.length) * 100
+          );
           await loadingSwal.update({
-            html: `<i class="fas fa-file-pdf fa-3x mb-3" style="color: #b62a8b;"></i><br>Procesando gráficas... ${progress}%`
+            html: `<i class="fas fa-file-pdf fa-3x mb-3" style="color: #b62a8b;"></i><br>Procesando gráficas... ${progress}%`,
           });
         }
       } catch (error) {
@@ -400,36 +481,38 @@ const Reports = () => {
         icon: "info",
         title: "Descargando PDF...",
         text: "", // Limpiar el texto si lo deseas
-        position: 'bottom-end',
+        position: "bottom-end",
       });
       pdf.save("reporte_encuesta.pdf");
-      
+
       // Mensaje de éxito
       Swal.fire({
         title: t("alerts.exito"),
         text: t("reports.descargar_reporte"),
-        icon: 'success',
+        icon: "success",
         confirmButtonText: t("buttons.aceptar"),
-        confirmButtonColor: '#b62a8b',
+        confirmButtonColor: "#b62a8b",
       });
-      
-      // Cerrar los acordeones después de la exportación 
-      accordions.forEach(accordion => {
-        if (accordion.classList.contains('Mui-expanded')) {
-          const expandButton = accordion.querySelector('.MuiAccordionSummary-root');
+
+      // Cerrar los acordeones después de la exportación
+      accordions.forEach((accordion) => {
+        if (accordion.classList.contains("Mui-expanded")) {
+          const expandButton = accordion.querySelector(
+            ".MuiAccordionSummary-root"
+          );
           if (expandButton) {
             expandButton.click();
           }
         }
-      });    
+      });
     } catch (error) {
       console.error("Error al generar el PDF:", error);
       Swal.fire({
         title: t("alerts.error"),
         text: t("alerts.problema_descargar_pdf"),
-        icon: 'error',
+        icon: "error",
         confirmButtonText: t("buttons.aceptar"),
-        confirmButtonColor: '#b62a8b',
+        confirmButtonColor: "#b62a8b",
       });
     }
   };
@@ -437,96 +520,22 @@ const Reports = () => {
   // Renderiza un item de respuesta de texto
   const renderTextResponse = (item, index) => {
     return (
-    <Box key={`text-${index}`} ref={(el) => (responseRefs.current[index] = el)}
-      sx={{
-        p: 2,
-        width: { md: '50%', lg: '33.33%' }, // para col-md-6 col-lg-4
-        boxSizing: 'border-box',
-    }}>
-      <Accordion className="shadowbox5">
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls={`panel-${item.id}-content`}
-          id={`panel-${item.id}-header`}
-        >
-          <Typography
-            variant="h6"
-            sx={{ m: 0, color: '#b62a8b' }}
-          >
-            {item.label}
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <TableContainer
-            component={Paper}
-            sx={{
-              backgroundColor: 'transparent !important',
-              border: '1px solid #ccc !important',
-              overflow: 'auto',
-            }}
-          >
-            <Table
-              aria-label="tabla de respuestas"
-              sx={{ backgroundColor: 'transparent !important' }}
-            >
-              <TableHead>
-                <TableRow>
-                  <TableCell
-                    align="center"
-                    sx={{
-                      backgroundColor: '#b62a8b',
-                      color: 'white',
-                      fontWeight: 'bold',
-                      p: 3,
-                    }}
-                  >
-                    {t("reports.respuestas")}
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody sx={{ backgroundColor: 'transparent !important' }}>
-                {Object.entries(item.data).map(([key], idx) => (
-                  <TableRow
-                    key={idx}
-                    sx={{
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      backgroundColor: 'transparent !important',
-                    }}
-                  >
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      sx={{ backgroundColor: 'transparent !important' }}
-                    >
-                      {key}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </AccordionDetails>
-      </Accordion>
-    </Box>
-    );
-  };
-
-  // Renderiza un item de respuesta de tipo check_opt en una tabla
-  const renderCheckOptResponse = (item, index) => {
-    return (
-      <Box key={`check-opt-${index}`} ref={(el) => (responseRefs.current[index] = el)}
+      <Box
+        key={`text-${index}`}
+        ref={(el) => (responseRefs.current[index] = el)}
         sx={{
           p: 2,
-          flexBasis: { xs: '100%', md: '50%', lg: '33.3333%' }, // para col-md-6 col-lg-4
-          boxSizing: 'border-box',
-      }}>
+          width: { md: "50%", lg: "33.33%" }, // para col-md-6 col-lg-4
+          boxSizing: "border-box",
+        }}
+      >
         <Accordion className="shadowbox5">
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls={`panel-${item.id}-content`}
             id={`panel-${item.id}-header`}
           >
-            <Typography variant="h6" sx={{ color: '#b62a8b', m: 0 }}>
+            <Typography variant="h6" sx={{ m: 0, color: "#b62a8b" }}>
               {item.label}
             </Typography>
           </AccordionSummary>
@@ -534,58 +543,137 @@ const Reports = () => {
             <TableContainer
               component={Paper}
               sx={{
-                backgroundColor: 'transparent !important',
-                border: 'solid 1px #ccc !important',
-                overflow: 'auto',
+                backgroundColor: "transparent !important",
+                border: "1px solid #ccc !important",
+                overflow: "auto",
               }}
             >
               <Table
-                aria-label="tabla de respuestas check_opt"
-                sx={{ backgroundColor: 'transparent !important' }}
+                aria-label="tabla de respuestas"
+                sx={{ backgroundColor: "transparent !important" }}
               >
                 <TableHead>
                   <TableRow>
                     <TableCell
+                      align="center"
                       sx={{
-                        backgroundColor: '#b62a8b',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        textAlign: 'start',
+                        backgroundColor: "#b62a8b",
+                        color: "white",
+                        fontWeight: "bold",
                         p: 3,
                       }}
                     >
-                      {t('reports.respuestas')}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        backgroundColor: '#b62a8b',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        textAlign: 'start',
-                        p: 3,
-                      }}
-                    >
-                      {t('reports.porcentaje')}
+                      {t("reports.respuestas")}
                     </TableCell>
                   </TableRow>
                 </TableHead>
-                <TableBody sx={{ backgroundColor: 'transparent !important' }}>
-                  {item.data.map((row, idx) => (
+                <TableBody sx={{ backgroundColor: "transparent !important" }}>
+                  {Object.entries(item.data).map(([key], idx) => (
                     <TableRow
                       key={idx}
                       sx={{
-                        '&:last-child td, &:last-child th': { border: 0 },
-                        backgroundColor: 'transparent !important',
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        backgroundColor: "transparent !important",
                       }}
                     >
                       <TableCell
                         component="th"
                         scope="row"
-                        sx={{ backgroundColor: 'transparent !important' }}
+                        sx={{ backgroundColor: "transparent !important" }}
+                      >
+                        {key}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </AccordionDetails>
+        </Accordion>
+      </Box>
+    );
+  };
+
+  // Renderiza un item de respuesta de tipo check_opt en una tabla
+  const renderCheckOptResponse = (item, index) => {
+    return (
+      <Box
+        key={`check-opt-${index}`}
+        ref={(el) => (responseRefs.current[index] = el)}
+        sx={{
+          p: 2,
+          flexBasis: { xs: "100%", md: "50%", lg: "33.3333%" }, // para col-md-6 col-lg-4
+          boxSizing: "border-box",
+        }}
+      >
+        <Accordion className="shadowbox5">
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls={`panel-${item.id}-content`}
+            id={`panel-${item.id}-header`}
+          >
+            <Typography variant="h6" sx={{ color: "#b62a8b", m: 0 }}>
+              {item.label}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <TableContainer
+              component={Paper}
+              sx={{
+                backgroundColor: "transparent !important",
+                border: "solid 1px #ccc !important",
+                overflow: "auto",
+              }}
+            >
+              <Table
+                aria-label="tabla de respuestas check_opt"
+                sx={{ backgroundColor: "transparent !important" }}
+              >
+                <TableHead>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        backgroundColor: "#b62a8b",
+                        color: "white",
+                        fontWeight: "bold",
+                        textAlign: "start",
+                        p: 3,
+                      }}
+                    >
+                      {t("reports.respuestas")}
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        backgroundColor: "#b62a8b",
+                        color: "white",
+                        fontWeight: "bold",
+                        textAlign: "start",
+                        p: 3,
+                      }}
+                    >
+                      {t("reports.porcentaje")}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody sx={{ backgroundColor: "transparent !important" }}>
+                  {item.data.map((row, idx) => (
+                    <TableRow
+                      key={idx}
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        backgroundColor: "transparent !important",
+                      }}
+                    >
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        sx={{ backgroundColor: "transparent !important" }}
                       >
                         {row.respuesta}
                       </TableCell>
-                      <TableCell sx={{ backgroundColor: 'transparent !important' }}>
+                      <TableCell
+                        sx={{ backgroundColor: "transparent !important" }}
+                      >
                         {row.porcentaje}%
                       </TableCell>
                     </TableRow>
@@ -601,11 +689,15 @@ const Reports = () => {
 
   // Renderiza un item de respuesta de gráfica
   const renderChartResponse = (item, index) => {
+    const stats = answersStats.find((s) => s.question_type === item.type);
+
     return (
-      <Box key={`chart-${index}`} ref={(el) => (responseRefs.current[index] = el)}
+      <Box
+        key={`chart-${index}`}
+        ref={(el) => (responseRefs.current[index] = el)}
         sx={{
           p: 2,
-          width: { xs: '100%', md: '50%', lg: '33.33%' } // para col-md-6 col-lg-4
+          width: { xs: "100%", md: "50%", lg: "33.33%" },
         }}
       >
         <Accordion className="shadowbox5">
@@ -614,17 +706,221 @@ const Reports = () => {
             aria-controls={`panel-${item.id}-content`}
             id={`panel-${item.id}-header`}
           >
-            <Typography variant="h6" sx={{ color: '#b62a8b', m: 0 }}>
+            <Typography variant="h6" sx={{ color: "#b62a8b", m: 0 }}>
               {item.label}
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
+            {/* Gráfica */}
             <LineStyleCharts
               label={item.label}
               dataChart={item.data}
               type={item.type}
               initialType="pie"
             />
+
+            {/* Tabla condicional */}
+            {[
+              "range_onetofive",
+              "range_zerototen",
+              "yes_no",
+              "range_difficulty",
+            ].includes(item.type) && (
+              <Table
+                size="small"
+                sx={{
+                  mt: 2,
+                  border: "1px solid #ccc",
+                  width: "100%",
+                  tableLayout: "fixed",
+                  fontSize: "0.85rem",
+                }}
+              >
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                    <TableCell
+                      colSpan={2}
+                      sx={{
+                        color: "#b62a8b",
+                        fontWeight: "bold",
+                        textAlign: "center",
+                      }}
+                    >
+                      {item.label}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {stats ? (
+                    <>
+                      {item.type === "range_onetofive" && (
+                        <>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Top Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_4_5 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Top Two Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.exact_5 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Bottom Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.exact_1 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Bottom Two Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_1_2 || 0}
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+
+                      {item.type === "range_zerototen" && (
+                        <>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Promotores
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_9_10 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Neutros
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_7_8 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Detractores
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_0_6 || 0}
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+
+                      {item.type === "yes_no" && (
+                        <>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Sí
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.total_si || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              No
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.total_no || 0}
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+
+                      {item.type === "range_difficulty" && (
+                        <>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Muy difícil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.muy_dificil || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Difícil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.dificil || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Ni fácil/ni difícil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.ni_facil || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Fácil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.facil || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Muy fácil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.muy_facil || 0}
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+
+                      <TableRow>
+                        <TableCell
+                          sx={{
+                            width: "66%",
+                            fontWeight: "bold",
+                            color: "#b62a8b",
+                            py: 0.5,
+                          }}
+                        >
+                          Total
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            width: "34%",
+                            fontWeight: "bold",
+                            color: "#b62a8b",
+                            py: 0.5,
+                          }}
+                        >
+                          {stats.total_responses || 0}
+                        </TableCell>
+                      </TableRow>
+                    </>
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={2}
+                        sx={{ py: 0.5, color: "text.secondary" }}
+                      >
+                        No hay datos para esta pregunta.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </AccordionDetails>
         </Accordion>
       </Box>
@@ -697,118 +993,120 @@ const Reports = () => {
                         </svg>
                       </Button>
 
-                      <FormControl required sx={{ minWidth: "40%" }} className="readOnlyField">
-                        <InputLabel>{t("reports.encuesta")}</InputLabel>
-                        <Select
-                          labelId="survey-select-label"
-                          id="survey-select"
-                          value={surveyId}
-                          onChange={(e) => {
-                            handleChange(e);
-                            console.log(e.target.value);
-                          }}
-                          input={<OutlinedInput label="Encuesta" />}
+                        <FormControl
+                          required
+                          sx={{ minWidth: "40%" }}
+                          className="readOnlyField"
                         >
-                          <MenuItem value="">
-                            <em>None</em>
-                          </MenuItem>
-                          {surveys.map((item, i) => (
-                            <MenuItem key={i} value={item.id}>
-                              {item.title}
+                          <InputLabel>{t("reports.encuesta")}</InputLabel>
+                          <Select
+                            labelId="survey-select-label"
+                            id="survey-select"
+                            value={surveyId}
+                            onChange={(e) => {
+                              handleChange(e);
+                              console.log(e.target.value);
+                            }}
+                            input={<OutlinedInput label="Encuesta" />}
+                          >
+                            <MenuItem value="">
+                              <em>None</em>
                             </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                            {surveys.map((item, i) => (
+                              <MenuItem key={i} value={item.id}>
+                                {item.title}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
 
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                          className="readOnlyField"
-                          label={t("reports.fecha_inicio")}
-                          value={startDate}
-                          onChange={handleStartDateChange}
-                          sx={{ width: "22%" }}
-                        />
-                        <DatePicker
-                          className="readOnlyField"
-                          label={t("reports.fecha_fin")}
-                          value={endDate}
-                          onChange={handleEndDateChange}
-                          sx={{ width: "22%" }}
-                        />
-                      </LocalizationProvider>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DatePicker
+                            className="readOnlyField"
+                            label={t("reports.fecha_inicio")}
+                            value={startDate}
+                            onChange={handleStartDateChange}
+                            sx={{ width: "22%" }}
+                          />
+                          <DatePicker
+                            className="readOnlyField"
+                            label={t("reports.fecha_fin")}
+                            value={endDate}
+                            onChange={handleEndDateChange}
+                            sx={{ width: "22%" }}
+                          />
+                        </LocalizationProvider>
 
-                      <ButtonGroup>
-                        <IconButton
-                          color="secondary"
-                          onClick={getPercentages}
-                          disabled={!(surveyId && startDate && endDate)}
-                        >
-                          <SearchIcon />
-                        </IconButton>
-                        <IconButton
-                          color="secondary"
-                          onClick={exportCharts}
-                          disabled={allResponses.length === 0}
-                        >
-                          <FileDownloadIcon />
-                        </IconButton>
-                      </ButtonGroup>
-                    </Box>
-
-                    {!loading && allResponses.length === 0 && (
-                      <Box mt={3}>
-                        <Alert severity="info" sx={{ textAlign: "center" }}>
-                          {t("reports.mensaje_reporte")}
-                        </Alert>
+                        <ButtonGroup>
+                          <IconButton
+                            color="secondary"
+                            onClick={getPercentages}
+                            disabled={!(surveyId && startDate && endDate)}
+                          >
+                            <SearchIcon />
+                          </IconButton>
+                          <IconButton
+                            color="secondary"
+                            onClick={exportCharts}
+                            disabled={allResponses.length === 0}
+                          >
+                            <FileDownloadIcon />
+                          </IconButton>
+                        </ButtonGroup>
                       </Box>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
 
-              <Box className="row">
-                {allResponses.length > 0 ? (
-                  allResponses.map((item, i) => {
-                    if (item.displayType === "text") {
-                      return renderTextResponse(item, i);
-                    } else if (item.displayType === "check_opt_table") {
-                      return renderCheckOptResponse(item, i);
-                    } else {
-                      return renderChartResponse(item, i);
-                    }
-                  })
-                ) : loading ? (
-                  <Grid container spacing={2}>
-                    {[...Array(4)].map((_, index) => (
-                      <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                        <Skeleton
-                          variant="text"
-                          width="100%"
-                          sx={{ marginBottom: "8px" }}
-                        />
-                        <Skeleton
-                          animation="wave"
-                          variant="circular"
-                          width="100%"
-                          height={200}
-                          sx={{ borderRadius: "10px", marginBottom: "8px" }}
-                        />
-                        <Box className="d-flex">
-
-                          <Skeleton variant="text" width="50%" />
+                      {!loading && allResponses.length === 0 && (
+                        <Box mt={3}>
+                          <Alert severity="info" sx={{ textAlign: "center" }}>
+                            {t("reports.mensaje_reporte")}
+                          </Alert>
                         </Box>
-                      </Grid>
-                    ))}
-                  </Grid>
-                ) : null}
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                <Box className="row">
+                  {allResponses.length > 0 ? (
+                    allResponses.map((item, i) => {
+                      if (item.displayType === "text") {
+                        return renderTextResponse(item, i);
+                      } else if (item.displayType === "check_opt_table") {
+                        return renderCheckOptResponse(item, i);
+                      } else {
+                        return renderChartResponse(item, i);
+                      }
+                    })
+                  ) : loading ? (
+                    <Grid container spacing={2}>
+                      {[...Array(4)].map((_, index) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                          <Skeleton
+                            variant="text"
+                            width="100%"
+                            sx={{ marginBottom: "8px" }}
+                          />
+                          <Skeleton
+                            animation="wave"
+                            variant="circular"
+                            width="100%"
+                            height={200}
+                            sx={{ borderRadius: "10px", marginBottom: "8px" }}
+                          />
+                          <Box className="d-flex">
+                            <Skeleton variant="text" width="50%" />
+                          </Box>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  ) : null}
+                </Box>
               </Box>
-            </Box>
+            </Grid>
           </Grid>
-        </Grid>
+        </Box>
       </Box>
     </Box>
-  </Box>
-);
-
+  );
 };
 export default Reports;
