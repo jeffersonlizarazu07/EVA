@@ -1,7 +1,6 @@
-import { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslations } from "../hooks/useTranslations";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import {
@@ -21,6 +20,8 @@ import {
   Select,
   Typography,
   InputAdornment,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { TurnLeft, Search, Today, MarginOutlined } from "@mui/icons-material";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
@@ -39,22 +40,27 @@ const TableMonitoringView = ({
   getHeaderLabel,
   fetchMonitoring,
   viewType,
+  monitoringStats,
+  setMonitoringStats
 }) => {
   const nav = useNavigate();
+  const location = useLocation();
   // Traducción
-  const { languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
+  
+  // Verificar si estamos en la vista de agente (monitoring_view)
+  const isAgentView = location.pathname.includes('/monitoring_view/');
   // Paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
+  // Filtro de clientes
+  // Filtra por los formularios de clientes existentes en las monitorizaciones
+  const clients = [...new Set(data.map((item) => item.client_name))];
+  const [selectedClient, setSelectedClient] = useState(""); // Cliente seleccionado en el filtro
   //Modal
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
 
   useEffect(() => {
     if (resetPageSignal) {
@@ -77,14 +83,38 @@ const TableMonitoringView = ({
   };
 
   const filteredData = Array.isArray(data)
-    ? data.filter((item) =>
-        Object.values(item).some(
+    ? data.filter((item) => {
+        const matchesSearch = Object.values(item).some(
           (val) =>
             typeof val === "string" &&
             val.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      )
+        );
+
+        const matchesClient =
+          !selectedClient || selectedClient === "none"
+            ? true
+            : item.client_name?.toLowerCase() === selectedClient.toLowerCase();
+
+        return matchesSearch && matchesClient;
+      })
     : [];
+
+  // Recalcular métricas cada vez que cambie filteredData
+  useEffect(() => {
+    const total = filteredData.length;
+    const avg =
+      total > 0
+        ? (
+            filteredData.reduce((sum, item) => sum + (item.score ?? 0), 0) /
+            total
+          ).toFixed(2)
+        : 0;
+
+    setMonitoringStats({
+      total_monitorings: total,
+      average_score: avg,
+    });
+  }, [filteredData]); // Actualiza las formulas dependiendo del filtrado
 
   const currentRecords = filteredData.slice(
     page * rowsPerPage,
@@ -142,27 +172,30 @@ const TableMonitoringView = ({
               gap={1}
               sx={{ marginLeft: "12px" }}
             >
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  minWidth: 30,
-                  width: 30,
-                  height: 30,
-                  padding: 0,
-                  borderRadius: "50%",
-                  color: "#b62a8b",
-                  borderColor: "#b62a8b",
-                  "&:hover": {
+              {/* Solo mostrar el botón de devolver si NO estamos en la vista de agente */}
+              {!isAgentView && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    minWidth: 30,
+                    width: 30,
+                    height: 30,
+                    padding: 0,
+                    borderRadius: "50%",
+                    color: "#b62a8b",
                     borderColor: "#b62a8b",
-                    backgroundColor: "#b62a8b",
-                    color: "white",
-                  },
-                }}
-                onClick={() => nav("/agent_list")}
-              >
-                <TurnLeft />
-              </Button>
+                    "&:hover": {
+                      borderColor: "#b62a8b",
+                      backgroundColor: "#b62a8b",
+                      color: "white",
+                    },
+                  }}
+                  onClick={() => nav("/agent_list")}
+                >
+                  <TurnLeft />
+                </Button>
+              )}
 
               <TextField
                 size="small"
@@ -172,7 +205,7 @@ const TableMonitoringView = ({
                 className="inp-search"
                 variant="outlined"
                 sx={{
-                  width: "450px",
+                  width: "250px",
                   "& .MuiOutlinedInput-root": {
                     height: "4vh",
                     "&.Mui-focused fieldset": {
@@ -192,8 +225,60 @@ const TableMonitoringView = ({
                 }}
               />
             </Box>
+            {/*Filtro evaluador */}
+            <FormControl
+              sx={{
+                width: "14rem",
+                "& .MuiInputBase-root": {
+                  height: "40px",
+                },
+                "& .MuiSelect-select": {
+                  padding: "8px 14px",
+                  display: "flex",
+                  alignItems: "center",
+                },
+                // Borde fucsia en todos los estados
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#b62a8b",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#b62a8b",
+                },
+                "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#b62a8b !important",
+                },
+                // Label fucsia en focus
+                "& .Mui-focused": {
+                  color: "#b62a8b !important",
+                },
+                // Fondo y texto fucsia en el item seleccionado
+                "& .MuiMenuItem-root.Mui-selected": {
+                  backgroundColor: "rgba(182, 42, 139, 0.1) !important",
+                  color: "#b62a8b",
+                },
+                "& .MuiMenuItem-root.Mui-selected:hover": {
+                  backgroundColor: "rgba(182, 42, 139, 0.2) !important",
+                },
+              }}
+              size="small"
+            >
+              <InputLabel sx={{ color: "#b62a8b" }}>
+                Seleccione un evaluador
+              </InputLabel>
+              <Select
+                value={selectedClient}
+                onChange={(e) => setSelectedClient(e.target.value)}
+              >
+                <MenuItem sx={{ height: "30px" }}></MenuItem>
+                {clients.map((client, index) => (
+                  <MenuItem key={index} value={client || "None"}>
+                    {client}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-            {/* Derecha: filtros de fecha */}
+            {/* DATEPICKERS */}
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <Box
                 display="flex"
@@ -215,6 +300,15 @@ const TableMonitoringView = ({
                         "& .MuiInputBase-root": {
                           height: "40px",
                         },
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#b62a8b",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#b62a8b",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#b62a8b",
+                        },
                       },
                     },
                   }}
@@ -232,6 +326,15 @@ const TableMonitoringView = ({
                       sx: {
                         "& .MuiInputBase-root": {
                           height: "40px",
+                        },
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#b62a8b",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#b62a8b",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#b62a8b",
                         },
                       },
                     },
@@ -254,6 +357,7 @@ const TableMonitoringView = ({
               fontSize: "20px",
               paddingTop: "6px",
               paddingBottom: "6px",
+              color: "#b62a8b",
             }}
           >
             {data[0].agent_name}
@@ -277,6 +381,7 @@ const TableMonitoringView = ({
                     fontSize: "1rem",
                     textAlign: "center",
                     fontWeight: "bold",
+                    color: "#b62a8b",
                   }}
                 >
                   {getHeaderLabel(item)}
@@ -313,6 +418,31 @@ const TableMonitoringView = ({
                 ))}
               </TableRow>
             ))}
+            <TableRow>
+              {header.map((key, i) => (
+                <TableCell key={i} align="center">
+                  {key === "id" ? (
+                    <>
+                      <Box sx={{ fontWeight: "bold", color: "#b62a8b" }}>
+                        Total
+                      </Box>
+                      <Typography sx={{ fontWeight: "bold" }}>
+                        {monitoringStats.total_monitorings}
+                      </Typography>
+                    </>
+                  ) : key === "score" ? (
+                    <>
+                      <Box sx={{ fontWeight: "bold", color: "#b62a8b" }}>
+                        Promedio
+                      </Box>
+                      <Typography sx={{ fontWeight: "bold" }}>
+                        {monitoringStats.average_score}
+                      </Typography>
+                    </>
+                  ) : null}
+                </TableCell>
+              ))}
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>

@@ -1,6 +1,5 @@
 import { useState,useContext,useEffect} from "react";
-import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/tabla.css";
 import {
@@ -38,13 +37,8 @@ const TableAdmin = ({
   modalId,
   modalId2,
 }) => {
-  const { languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   const nav = useNavigate();
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
@@ -89,6 +83,8 @@ const TableAdmin = ({
         return t("headerlt.Last_name");
       case "type":
         return t("headerlt.Role");
+      case "user_red":
+        return t("UserModal.NetworkUser");
       default:
         return t("viewUserModal.State");
     }

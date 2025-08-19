@@ -1,5 +1,3 @@
-import React, { useEffect, useContext } from "react";
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
   SingleChoiceQuestion,
@@ -31,12 +29,6 @@ import {
   IconButton,
   Divider,
   MenuItem,
-  Checkbox,
-  Autocomplete,
-  Select,
-  Tooltip,
-  FormControl,
-  InputLabel,
   Alert
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -84,12 +76,8 @@ const ModalSurveyBlocks = ({
   selectError,
   handleErrorOpt,
 }) => {
-  const { t, i18n } = useTranslation();
-  const { languageUser } = useContext(UserContext);
+  const { t } = useTranslation();
 
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
 return (
     <Modal
       open={open}

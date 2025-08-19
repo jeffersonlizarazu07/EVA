@@ -1,7 +1,10 @@
 import { BrowserRouter, Routes, Route, HashRouter } from "react-router-dom";
 import "./App.css";
+import "./assets/css/alerts.css"; // Asegura z-index de SweetAlert en toda la app
+import { AuthProvider } from './context/AuthContext'; // <- AGREGAR ESTO
 /* catch data */
 import { UserProvider } from "./context/UserContext";
+import { ThemeProvider } from "./assets/js/ThemeContext";
 /* -------------------------------------------- */
 import ProtectedRoute from "./utils/ProtectedRoute";
 /* --------------------------------------------*/
@@ -47,13 +50,11 @@ import Gratitude from "./pages/survey/gratitude";
 // graphs imports
 import Reports from "./pages/admin/reports"
 
-
-
 // agents
-import AgentList from "./pages/admin/agent_list"; // Asegúrate que este path sea correcto
+import AgentList from "./pages/admin/agent_list";
+import MiPerfil from "./pages/admin/mi-perfil";
 
 /* ---------------------------------------------------------*/
-
 
 //boostrap imports
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -61,76 +62,83 @@ import 'flag-icon-css/css/flag-icons.min.css';
 
 /* ---------------------------------------------------------*/
 
-export const App = () => {
+const App = () => {
   return (
-    <UserProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LogIn />} />
-          <Route path="/survey/:link" element={<Survey />} />  { /*ruta del link*/}
-          <Route path="/gratitude" element={<Gratitude/>}/>
-          <Route path="/agent_monitoring" element={<Agent_Monitoring />} />
-          <Route path="/forms" element={<Forms />} />
+    <AuthProvider> {/* <- CAMBIO: Envolver con AuthProvider */}
+      <UserProvider>
+        <ThemeProvider>
+          <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LogIn />} />
+            <Route path="/survey/:link" element={<Survey />} />
+            <Route path="/gratitude" element={<Gratitude/>}/>
+            <Route path="/agent_monitoring" element={<Agent_Monitoring />} />
+            <Route path="/forms" element={<Forms />} />
 
-          <Route
+            <Route
+                element={
+                  <ProtectedRoute redirectPath="/" allowedUserTypes={[1,2,3,4]}/>
+                }
+              >
+              
+              <Route path="/forms_report" element={<FormReport/>}/>
+            </Route>
+            
+            <Route path="/survey_blocks/:id_form" element={<SurveyBlocks />} />
+            <Route path="/monitoring_view/:agentId" element={<AgentMonitoringView />} />
+            {/* Pruebas de barras */}
+            {/*error views*/}
+            <Route path="/auth/inactive" element={<Inactive />} />
+             <Route
+              element={<ProtectedRoute redirectPath="/" allowedUserTypes={[1]} />}
+            > 
+              <Route path="/client_list" element={<Client_list />} />
+            </Route> 
+            {/*superAdmin sites*/}
+           <Route
               element={
-                <ProtectedRoute redirectPath="/" allowedUserTypes={[1,2,3,4]}/>
+                <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 4]} />
+              }
+            > 
+              <Route path="/admin_list" element={<AdminList />} />
+              <Route path="/admin" element={<Index />} />
+             </Route> 
+
+        <Route
+              element={
+                <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 3,4]} />
               }
             >
-            
-            <Route path="/forms_report" element={<FormReport/>}/>
-          </Route>
-          
-          <Route path="/survey_blocks/:id_form" element={<SurveyBlocks />} />
-          <Route path="/monitoring_view/:agentId" element={<AgentMonitoringView />} />
-          {/* Pruebas de barras */}
-          {/*error views*/}
-          <Route path="/auth/inactive" element={<Inactive />} />
-           <Route
-            element={<ProtectedRoute redirectPath="/" allowedUserTypes={[1]} />}
-          > 
-            <Route path="/client_list" element={<Client_list />} />
-          </Route> 
-          {/*superAdmin sites*/}
-         <Route
-            element={
-              <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 4]} />
-            }
-          > 
-            <Route path="/admin_list" element={<AdminList />} />
-            <Route path="/admin" element={<Index />} />
+              <Route path="/reports" element={<Reports/>}></Route>
+              <Route path="/satisfaction" element={<Satisfaction />} />
+              <Route path="/survey_list" element={<SurveyList />} />
+              <Route path="/editor" element={<IndexEditor />} />
+              <Route path="/view_survey/:id" element={<View_survey />} />
+              <Route path="/agent_list" element={<AgentList />} /> 
+              <Route path="/mi-perfil" element={<MiPerfil />} /> 
+            </Route> 
+            <Route
+              element={
+                <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 3,4,]} />
+              }
+            > 
+              <Route path="/quality" element={<Quality />} />
+              <Route path="/index=Quality" element={<IndexQuality />} />
+              
            </Route> 
 
-      <Route
-            element={
-              <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 3,4]} />
-            }
-          >
-            <Route path="/reports" element={<Reports/>}></Route>
-            <Route path="/satisfaction" element={<Satisfaction />} />
-            <Route path="/survey_list" element={<SurveyList />} />
-            <Route path="/editor" element={<IndexEditor />} />
-            <Route path="/view_survey/:id" element={<View_survey />} />
-            <Route path="/agent_list" element={<AgentList />} /> 
-          </Route> 
-          <Route
-            element={
-              <ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2, 3,4,]} />
-            }
-          > 
-            <Route path="/quality" element={<Quality />} />
-            <Route path="/index=Quality" element={<IndexQuality />} />
-            
-         </Route> 
+            {/*quality sites*/}
+            {/* Pruebas de encuestas */}
 
-          {/*quality sites*/}
-          {/* Pruebas de encuestas */}
+            {/*admin sites*/}
 
-          {/*admin sites*/}
-
-          {/*editor sites*/}
-        </Routes>
-      </BrowserRouter>
-    </UserProvider>
+            {/*editor sites*/}
+                      </Routes>
+          </BrowserRouter>
+        </ThemeProvider>
+      </UserProvider>
+    </AuthProvider>
   );
 };
+
+export default App;

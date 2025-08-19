@@ -1,7 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import SidebarLT1 from "../../components/aside/sidebarLT1";
 import HeaderLT1 from "../../components/header/headerLT1";
-import SidebarLT2 from "../../components/aside/sidebarLT2";
 import HeaderLT2 from "../../components/header/headerLT2";
 import useInput from "../../components/hooks/useInput";
 import TableSurvey from "../../components/Tables/tableSurvey";
@@ -10,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { smallAlertDelete, Toast, Toast2 } from "../../assets/js/alertConfig";
 import { generateRandomLink } from "../../components/survey/encrypt";
-import { useTranslation } from "react-i18next";
 import { formatDate,getTomorrowDate } from "../../utils/dateUtils.jsx";
 import Cookies from "js-cookie"; // si no lo has importado ya
 import { getSurveyQuestions } from "../../services/surveyRequest";
@@ -36,6 +33,7 @@ import {
   Edit as EditIcon,
   Add as AddIcon
 } from '@mui/icons-material';
+import { useTranslations } from "../../components/hooks/useTranslations.jsx";
 
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
@@ -45,7 +43,7 @@ const SurveyList = () => {
   // En el estado del componente añade:
   const [showEnvioModal, setShowEnvioModal] = useState(false);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   //const url = "http://localhost:3000/api/surveys";
   const headers = ["Title", "Start_date", "End_date", "state"];
   const [operation, setOperation] = useState([1]);
@@ -117,20 +115,13 @@ const SurveyList = () => {
     if (userId && accessToken) {
       getClients(userId);
     }
-  }, [userId, accessToken]);
-  
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]);
-  
+  }, [userId, accessToken]); 
 
   const config = {
     headers: {
     },
     withCredentials: true,
   };
-  
 
   const getSurveys = async () => {
     try {
@@ -643,8 +634,8 @@ const SurveyList = () => {
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
-        {userType == "1" || userType == "2" ? <HeaderLT1 /> : <HeaderLT2 />}
-        <Box m={0} sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex" }}>
+        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
+                 <Box m={0} sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex", mt: 3 }}>
           {/* <Box div className="col-1 d-flex  align-items-center mx-auto p-0">
           {/* {userType == "1" || userType == "2" ? <SidebarLT1 /> : <SidebarLT2 />} 
           </div> */}

@@ -1,5 +1,5 @@
 import { React, useEffect, useState } from "react";
-import axios from "axios";
+import { apiClient } from "../../utils/axiosConfig";
 import {
   Modal,
   Box,
@@ -16,9 +16,8 @@ import ModalRegisterUser from "../../components/Tables/tableMonitoring";
 import Loading from "../layout/loading";
 import Swal from "sweetalert2";
 import "../../assets/css/agent_monitoring.css";
-import SurveyBlocks from "../../pages/quality/surveyBlocks";
-import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
+import { smallAlertDelete } from "../../assets/js/alertConfig";
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 const AdminList = () => {
   const [open, setOpen] = useState(false);
@@ -28,27 +27,20 @@ const AdminList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [survey, setSurvey] = useState([]);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   const navigate = useNavigate();
-
-  const config = {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    withCredentials: true,
-  };
 
   const handleOpen = (id = null) => {
     setFormId(id);
-    setOpen(true); // Esto abre el modal para edición si id existe o creación si es null.
+    setOpen(true);
   };  
 
   const handleClose = () => setOpen(false);
 
   const getForms = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/forms", config);
-      setSurvey(response.data.data);  // Setea los formularios con los datos actualizados
+      const response = await apiClient.get("/forms");
+      setSurvey(response.data.data);
       console.log("Formularios cargados:", response.data.data);
     } catch (error) {
       console.error("Error al obtener formularios:", error);
@@ -112,9 +104,9 @@ const AdminList = () => {
     description: "Description",
     client_name: "Client",
     creation_date: "Creation Date",
-    created_by_name: "Created By", // Actualizado a 'created_by_name'
+    created_by_name: "Created By",
     updated_date: "Updated Date",
-    updated_by_name: "Updated By", // Actualizado a 'updated_by_name'
+    updated_by_name: "Updated By",
     state: "State",
     actions: "Actions",
   };
@@ -125,7 +117,6 @@ const AdminList = () => {
   };
 
   const deactivateForm = (form) => {
-    const url = `http://localhost:3000/api/form`;
     const id = form.id;
     const name = form.title;
     const parametros = { state: 0 };
@@ -141,7 +132,7 @@ const AdminList = () => {
     .then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.patch(`${url}/${id}`, parametros, config);
+          await apiClient.patch(`/form/${id}`, parametros);
   
           const Toast = Swal.mixin({
             toast: true,
@@ -187,17 +178,16 @@ const AdminList = () => {
   const formatDate = (dateString) => { 
     const date = new Date(dateString);
     
-    const day = ("0" + date.getDate()).slice(-2);  // Asegura que el día tenga 2 dígitos
-    const month = ("0" + (date.getMonth() + 1)).slice(-2); // Los meses van de 0 a 11
+    const day = ("0" + date.getDate()).slice(-2);
+    const month = ("0" + (date.getMonth() + 1)).slice(-2);
     const year = date.getFullYear();
     
-    const hours = ("0" + date.getHours()).slice(-2);  // Asegura que las horas tengan 2 dígitos
-    const minutes = ("0" + date.getMinutes()).slice(-2);  // Asegura que los minutos tengan 2 dígitos
-    const seconds = ("0" + date.getSeconds()).slice(-2);  // Asegura que los segundos tengan 2 dígitos
+    const hours = ("0" + date.getHours()).slice(-2);
+    const minutes = ("0" + date.getMinutes()).slice(-2);
+    const seconds = ("0" + date.getSeconds()).slice(-2);
   
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;  // Devuelve la fecha y hora en formato: dd/mm/yyyy hh:mm:ss
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
-  
 
   return (
     <div className="App">
@@ -264,7 +254,7 @@ const AdminList = () => {
                                     <button
                                       className="btn text-start"
                                       style={{ width: "100%" }}
-                                      onClick={() => handleOpen(row.id_form)} // Pasa el ID para editar
+                                      onClick={() => handleOpen(row.id_form)}
                                     >
                                       <i className="fa-solid fa-edit"></i> Editar
                                     </button>
@@ -273,7 +263,7 @@ const AdminList = () => {
                                     <button
                                       className="btn text-start"
                                       style={{ width: "100%" }}
-                                      onClick={() => deactivateForm(row)} // Desactivar formulario
+                                      onClick={() => deactivateForm(row)}
                                     >
                                       <i className="fa-solid fa-power-off"></i> <span>Deshabilitar</span>
                                     </button>
@@ -282,7 +272,7 @@ const AdminList = () => {
                               </div>
                             ) : (
                               key === "creation_date" || key === "updated_date" ? (
-                                formatDate(row[key])  // Usa la función para formatear las fechas
+                                formatDate(row[key])
                               ) : (
                                 row[key]
                               )
@@ -292,7 +282,6 @@ const AdminList = () => {
                       </tr>
                     ))}
                   </tbody>
-
                 </table>
 
                 {/* Selector de registros en la parte inferior izquierda */}

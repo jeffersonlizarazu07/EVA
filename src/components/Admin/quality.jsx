@@ -2,7 +2,7 @@ import { useEffect, useContext, useState } from "react";
 import "../../assets/css/calidad.css";
 import HeaderLT1 from "../header/headerLT1";
 import HeaderLT2 from "../header/headerLT2";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations"; 
 import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -17,12 +17,15 @@ import {
   IconButton,
   Grid,
 } from "@mui/material";
+import { TurnLeft } from "@mui/icons-material";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 const Quality = () => {
   const navigate = useNavigate();
-  const { userType, languageUser, clients } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { userType, clients } = useContext(UserContext);
+  const { t } = useTranslations();
+  
+
   const [conteoDeAgentes, setConteoDeAgentes] = useState("0");
   const [conteoDeFormulario, setConteoDeFormulario] = useState("0");
 
@@ -48,10 +51,6 @@ const Quality = () => {
       getForms();
     }
   }, [plantillaMonitor]);
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser]);
 
   useEffect(() => {
     const calcularTopMonitor = async () => {
@@ -218,18 +217,14 @@ const Quality = () => {
   };
 
   return (
-    <Box className="App" 
-        sx={{
-          height: '100%',
-          overflowY: 'auto',
-        }}>
-      <Box >
-        {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
+    <Box className="App" sx={{ position: 'relative' }}>
+      <Box id="body" sx={{ position: 'relative', zIndex: 1 }}>
+        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
         <section>
           <Grid
              container
               sx={{
-                mt: { xs: 1, sm: 2, md: 4, lg: 8 },
+                mt: { xs: 10, sm: 12, md: 14, lg: 16 },
                 ml: { xs: 0, sm: 0, md: 2, lg: 8 },
                 px: { xs: 0.5, sm: 2, md: 2, lg: 8 },
                 justifyContent: "center",
@@ -246,7 +241,8 @@ const Quality = () => {
                   className="cards-group "
                   id="grid-mode"
                 >
-                  <Grid spacing={2}  m={{ xs: 1, md: 2 }}>
+                  {/* Botón de regresar removido */}
+                  <Grid spacing={2} m={3}>
                     <Grid container spacing={2} sx={{ display: "flex" }}>
                       <Grid item xs={8}  sx={{ p: 0 }}>
                         <Typography

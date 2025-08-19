@@ -23,13 +23,14 @@ import TableForms from "../../components/Tables/tableForm.jsx";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../../components/hooks/useTranslations.jsx";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { smallAlertDelete, Toast } from "../../assets/js/alertConfig";
 
 const formatDateTime = (dateString) => {
-  if (!dateString || dateString === "No actualizada" || dateString === "NULL") return "No actualizada";
+  if (!dateString || dateString === "No actualizada" || dateString === "NULL")
+    return "No actualizada";
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return "No actualizada";
   const utcMinus5 = new Date(date.getTime() - 5 * 60 * 60 * 1000);
@@ -44,13 +45,21 @@ const formatDateTime = (dateString) => {
 
 const FormList = () => {
   const headersArray = [
-    "id", "title", "description", "client_name",
-    "creation_date", "created_by_name", "updated_date",
-    "updated_by_name", "state",
+    "id",
+    "title",
+    "description",
+    "client_name",
+    "monitorings_number",
+    "average_score",
+    "creation_date",
+    "created_by_name",
+    "updated_date",
+    "updated_by_name",
+    "state",
   ];
 
-  const { userType, languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { userType } = useContext(UserContext);
+  const { t } = useTranslations();
   const navigate = useNavigate();
   const accessToken = Cookies.get("accessToken");
   const userId = Cookies.get("userId");
@@ -68,10 +77,9 @@ const FormList = () => {
   const idClient = useInput({ defaultValue: "", validate: /^[0-9]+$/ });
 
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
     getForms();
     getClients();
-  }, [languageUser]);
+  }, []);
 
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -81,8 +89,10 @@ const FormList = () => {
   const getForms = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:3000/api/forms", config);
-      console.log("Response data:", response.data.data.length);
+      const response = await axios.get(
+        "http://localhost:3000/api/forms",
+        config
+      );
       setForms(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error al obtener formularios:", error);
@@ -106,39 +116,63 @@ const FormList = () => {
 
   const activateForm = async (form) => {
     try {
-      await axios.patch(`http://localhost:3000/api/form/${form.id}`, { state: 1 }, config);
-      Toast.fire({ icon: "success", title: `${form.title} ${t("alertActivate.SuccessAlert")}` });
+      await axios.patch(
+        `http://localhost:3000/api/form/${form.id}`,
+        { state: 1 },
+        config
+      );
+      Toast.fire({
+        icon: "success",
+        title: `${form.title} ${t("alertActivate.SuccessAlert")}`,
+      });
       getForms();
     } catch (error) {
-      Toast.fire({ icon: "error", title: `${form.title} ${t("alertActivate.ErrorAlert")}` });
+      Toast.fire({
+        icon: "error",
+        title: `${form.title} ${t("alertActivate.ErrorAlert")}`,
+      });
       console.error("Error al activar formulario:", error);
     }
   };
 
   const deactivateForm = async (form) => {
-    smallAlertDelete.fire({
-      icon: "warning",
-      html: `<p style="text-align:center;">El formulario <strong>${form.title}</strong> será deshabilitado.<br>¿Desea continuar?</p>`,
-      showCancelButton: true,
-      confirmButtonText: "Confirmar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#b62a8b",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await axios.patch(`http://localhost:3000/api/form/${form.id}`, { state: 0 }, config);
-          Toast.fire({ icon: "success", title: `${form.title} ${t("alertDeactivate.SuccessAlert")}` });
-          getForms();
-        } catch (error) {
-          Toast.fire({ icon: "error", title: `${form.title} ${t("alertDeactivate.ErrorAlert")}` });
-          console.error("Error al desactivar formulario:", error);
+    smallAlertDelete
+      .fire({
+        icon: "warning",
+        html: `<p style="text-align:center;">El formulario <strong>${form.title}</strong> será deshabilitado.<br>¿Desea continuar?</p>`,
+        showCancelButton: true,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#b62a8b",
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await axios.patch(
+              `http://localhost:3000/api/form/${form.id}`,
+              { state: 0 },
+              config
+            );
+            Toast.fire({
+              icon: "success",
+              title: `${form.title} ${t("alertDeactivate.SuccessAlert")}`,
+            });
+            getForms();
+          } catch (error) {
+            Toast.fire({
+              icon: "error",
+              title: `${form.title} ${t("alertDeactivate.ErrorAlert")}`,
+            });
+            console.error("Error al desactivar formulario:", error);
+          }
         }
-      }
-    });
+      });
   };
 
   const openModal = (mode, form = null) => {
-    setModalTitle(mode === "create" ? t("formModal.NewForm") : t("formModal.EditClient"));
+    setModalTitle(
+      mode === "create" ? t("formModal.NewForm") : t("formModal.EditClient")
+    );
     setIdToEdit(form?.id || null);
     title.handleChange(form?.title || "");
     description.handleChange(form?.description || "");
@@ -169,11 +203,18 @@ const FormList = () => {
     };
     try {
       if (idToEdit) {
-        await axios.put(`http://localhost:3000/api/form/${idToEdit}`, dataToSend, config);
+        await axios.put(
+          `http://localhost:3000/api/form/${idToEdit}`,
+          dataToSend,
+          config
+        );
       } else {
         await axios.post("http://localhost:3000/api/forms", dataToSend, config);
       }
-      Toast.fire({ icon: "success", title: `${title.input} ${t("alertCreateEdit.SuccessAlert")}` });
+      Toast.fire({
+        icon: "success",
+        title: `${title.input} ${t("alertCreateEdit.SuccessAlert")}`,
+      });
       getForms();
       closeModal();
     } catch (error) {
@@ -184,9 +225,9 @@ const FormList = () => {
   return (
     <>
       <Box sx={{ bgcolor: "#fafafa", minHeight: "100vh" }}>
-        {userType === "1" || userType === "2" ? <HeaderLT1 /> : <HeaderLT2 />}
+        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
 
-        <Box sx={{ px: 3, py: 4 }}>
+        <Box sx={{ px: 3, py: 4, mt: { xs: 2, sm: 3, md: 4, lg: 5 } }}>
           <Paper elevation={2} sx={{ borderRadius: 3, px: 3, py: 4 }}>
             {loading ? (
               <Box textAlign="center" py={4}>
@@ -275,18 +316,18 @@ const FormList = () => {
               fullWidth
               variant="outlined"
               sx={{
-                  borderRadius: 2,
-                  "& .MuiSelect-select": {
-                    color: "#b62a8b",
-                    fontWeight: "bold",
-                  },
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#b62a8b",
-                  },
-                  "& svg": {
-                    color: "#b62a8b",
-                  },
-                }}
+                borderRadius: 2,
+                "& .MuiSelect-select": {
+                  color: "#b62a8b",
+                  fontWeight: "bold",
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#b62a8b",
+                },
+                "& svg": {
+                  color: "#b62a8b",
+                },
+              }}
             />
 
             {/* Cliente */}
@@ -333,18 +374,18 @@ const FormList = () => {
               variant="outlined"
               fullWidth
               sx={{
-                  borderRadius: 2,
-                  "& .MuiSelect-select": {
-                    color: "#b62a8b",
-                    fontWeight: "bold",
-                  },
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#b62a8b",
-                  },
-                  "& svg": {
-                    color: "#b62a8b",
-                  },
-                }}
+                borderRadius: 2,
+                "& .MuiSelect-select": {
+                  color: "#b62a8b",
+                  fontWeight: "bold",
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#b62a8b",
+                },
+                "& svg": {
+                  color: "#b62a8b",
+                },
+              }}
             />
           </Box>
         </DialogContent>

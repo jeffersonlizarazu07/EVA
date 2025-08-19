@@ -1,10 +1,13 @@
 import React, { createContext, useState, useEffect } from 'react';
 
-import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
+import { ThemeProvider as MuiThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import { lightTheme, darkTheme } from "../../components/Admin/index.styles";
 
 
-export const ThemeContext = createContext();
+export const ThemeContext = createContext({
+  theme: 'light',
+  toggleTheme: () => {}
+});
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState('light');
@@ -24,7 +27,20 @@ export const ThemeProvider = ({ children }) => {
     //document.body.className = newTheme;
   };
 
-  const muiTheme = theme === "light" ? lightTheme: darkTheme;
+  let muiTheme;
+  try {
+    muiTheme = theme === "light" ? lightTheme : darkTheme;
+  } catch (error) {
+    console.error('[ThemeProvider] Error creating theme:', error);
+    // Fallback a un tema básico si hay error
+    muiTheme = createTheme({
+      palette: {
+        mode: theme,
+      },
+    });
+  }
+
+
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

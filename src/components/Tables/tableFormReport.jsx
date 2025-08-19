@@ -1,7 +1,5 @@
-import { useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../context/UserContext";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect } from "react";
+import { useTranslations } from "../hooks/useTranslations"; 
 import {
   Table,
   TableBody,
@@ -10,7 +8,6 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Button,
   IconButton,
   Paper,
   Box,
@@ -24,10 +21,8 @@ import {
   InputLabel
 } from "@mui/material";
 import {
-  TurnLeft,
   Search
 } from "@mui/icons-material";
-import FactCheckRoundedIcon from '@mui/icons-material/FactCheckRounded';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
@@ -52,12 +47,7 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
     });
   };
 
-  const { languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
-
-  useEffect(() => {
-    i18n.changeLanguage(languageUser);
-  }, [languageUser, i18n]);
+  const { t } = useTranslations();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);

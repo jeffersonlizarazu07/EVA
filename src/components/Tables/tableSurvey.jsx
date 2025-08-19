@@ -3,7 +3,7 @@ import { UserContext } from "../../context/UserContext";
 import axios from "axios";
 import "../../assets/css/tabla.css";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations"; 
 import React from "react";
 import {
   Table,
@@ -59,7 +59,7 @@ const TableSurvey = ({
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [userClients, setUserClients] = useState([]);
   const { userId, accessToken, languageUser } = useContext(UserContext);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [selectedItem, setSelectedItem] = React.useState(null);
@@ -92,10 +92,9 @@ const TableSurvey = ({
   };
 
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
     getUserClients(userId);
     filteredData;
-  }, [languageUser]);
+  });
 
   const getUserClients = async (id) => {
     const config = {
@@ -157,28 +156,30 @@ const TableSurvey = ({
             gap={1}
             sx={{ height: "40px" }}
           >
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{
-                minWidth: 0,
-                width: 30,
-                height: 30,
-                padding: 0,
-                borderRadius: "50%",
-                color: "#b62a8b",
-                borderColor: "#b62a8b",
-                "&:hover": {
+            {userInfo?.type !== 4 && (
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{
+                  minWidth: 0,
+                  width: 30,
+                  height: 30,
+                  padding: 0,
+                  borderRadius: "50%",
+                  color: "#b62a8b",
                   borderColor: "#b62a8b",
-                  backgroundColor: "#b62a8b",
-                  color: "white",
-                },
-              }}
-              onClick={() => nav("/satisfaction")}
-            >
-              {" "}
-              <TurnLeft />
-            </Button>
+                  "&:hover": {
+                    borderColor: "#b62a8b",
+                    backgroundColor: "#b62a8b",
+                    color: "white",
+                  },
+                }}
+                onClick={() => nav("/satisfaction")}
+              >
+                {" "}
+                <TurnLeft />
+              </Button>
+            )}
             <TextField
               size="small"
               className="inp-search"
@@ -210,25 +211,27 @@ const TableSurvey = ({
         </Grid>
         <Grid item xs={12} sm={6} md={6} lg={6}>
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button
-              variant="h5"
-              size="small"
-              sx={{
-                borderRadius: "18px",
-                border: "1px solid #b62a8b",
-                color: "#b62a8b",
-                borderColor: "#b62a8b",
-                "&:hover": {
+            {userInfo?.type !== 4 && (
+              <Button
+                variant="h5"
+                size="small"
+                sx={{
+                  borderRadius: "18px",
+                  border: "1px solid #b62a8b",
+                  color: "#b62a8b",
                   borderColor: "#b62a8b",
-                  backgroundColor: "#b62a8b",
-                  color: "white",
-                },
-              }}
-              onClick={() => onCreate()}
-            >
-              <Add sx={{ fontSize: "18px" }} />
-              {t("survey.encuestas")}
-            </Button>
+                  "&:hover": {
+                    borderColor: "#b62a8b",
+                    backgroundColor: "#b62a8b",
+                    color: "white",
+                  },
+                }}
+                onClick={() => onCreate()}
+              >
+                <Add sx={{ fontSize: "18px" }} />
+                {t("survey.encuestas")}
+              </Button>
+            )}
           </Box>
         </Grid>
       </Grid>
@@ -296,20 +299,18 @@ const TableSurvey = ({
                         open={Boolean(anchorEl) && selectedItem === item}
                         onClose={handleMenuClose}
                       >
-                        {userInfo?.type !== 4 && (
-                          <MenuItem
-                            onClick={() => handleMenuAction(onCheck, item)}
-                            sx={{
-                              display: "flex",
-                              gap: 1,
-                              color: " #b62a8b",
-                              "&:hover": { backgroundColor: "#f8f9fa" },
-                            }}
-                          >
-                            <HelpOutline sx={{ fontSize: 18 }} />
-                            {t("survey.ver_preguntas")}
-                          </MenuItem>
-                        )}
+                        <MenuItem
+                          onClick={() => handleMenuAction(onCheck, item)}
+                          sx={{
+                            display: "flex",
+                            gap: 1,
+                            color: " #b62a8b",
+                            "&:hover": { backgroundColor: "#f8f9fa" },
+                          }}
+                        >
+                          <HelpOutline sx={{ fontSize: 18 }} />
+                          {t("survey.ver_preguntas")}
+                        </MenuItem>
 
                         <MenuItem
                           onClick={() => handleMenuAction(onCopyLink, item)}
@@ -387,11 +388,13 @@ const TableSurvey = ({
                     <Box
                       sx={{ display: "flex", gap: 1, justifyContent: "center" }}
                     >
-                      <Tooltip title={t("survey.activar")} placement="bottom">
-                        <IconButton onClick={() => onActive(item)} size="small">
-                          <PowerSettingsNew />
-                        </IconButton>
-                      </Tooltip>
+                      {userInfo?.type !== 4 && (
+                        <Tooltip title={t("survey.activar")} placement="bottom">
+                          <IconButton onClick={() => onActive(item)} size="small">
+                            <PowerSettingsNew />
+                          </IconButton>
+                        </Tooltip>
+                      )}
 
                       <Tooltip
                         title={t("survey.ver_detalle")}

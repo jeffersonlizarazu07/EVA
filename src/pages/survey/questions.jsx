@@ -1,6 +1,5 @@
 import "../../assets/css/questions.css";
 import React from 'react';
-import { useTranslation } from "react-i18next";
 import { 
   Box, 
   Typography, 
@@ -14,10 +13,11 @@ import {
   Checkbox, 
 
 } from '@mui/material';
+import { useTranslations } from "../../components/hooks/useTranslations";
 
 
 function Range_onetofive() {
-    const { t } = useTranslation();
+    const { t } = useTranslations();
     const theme = useTheme();
     const [value, setValue] = React.useState('');  // Estados para manejar el valor seleccionado
 
@@ -130,7 +130,7 @@ function Range_onetofive() {
 }
 
 function Range_zerototen (){
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const theme = useTheme();
 
   const [value, setValue] = React.useState('');  // Estado para manejar el valor seleccionado
@@ -247,7 +247,7 @@ function Range_zerototen (){
 }
 
 function Range_difficulty(){
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const theme = useTheme();
   
   const [value, setValue] = React.useState(''); // Estado para manejar el valor seleccionado
@@ -348,7 +348,7 @@ function Range_difficulty(){
     )
 }
 function Yes_no(){
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const theme = useTheme();
   const [value, setValue] = React.useState('');  // Estados para manejar el valor seleccionado
 
@@ -438,7 +438,7 @@ function Yes_no(){
 }
 
 function Range_emoji(){
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const theme = useTheme();
   const [value, setValue] = React.useState(''); // Estado para manejar el valor seleccionado
 
@@ -539,7 +539,7 @@ function Range_emoji(){
 }
 
 function Textfield_s(){
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const [value, setValue] = React.useState(''); // Estado para manejar el valor del textarea
 
   const handleChange = (event) => {
@@ -584,7 +584,7 @@ function Textfield_s(){
 }
 
 function SingleChoiceView({options,correctOption}){
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const theme = useTheme();
   
   const optionsArray = options.split(",");
@@ -642,7 +642,7 @@ function SingleChoiceView({options,correctOption}){
   );
 }
 function MultipleChoiceView({ options, correctOption }) {
-   const { t } = useTranslation();
+   const { t } = useTranslations();
    const theme = useTheme();
 
   // Asegurar que 'options' sea un array
