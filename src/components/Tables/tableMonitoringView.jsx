@@ -417,7 +417,7 @@ const TableMonitoringView = ({
                   {key === "id" ? (
                     <>
                       <Box sx={{ fontWeight: "bold", color: "#b62a8b" }}>
-                        Total monitorizaciones
+                        Total
                       </Box>
                       <Typography sx={{ fontWeight: "bold" }}>
                         {monitoringStats.total_monitorings}
@@ -426,7 +426,7 @@ const TableMonitoringView = ({
                   ) : key === "score" ? (
                     <>
                       <Box sx={{ fontWeight: "bold", color: "#b62a8b" }}>
-                        Promedio Score
+                        Promedio
                       </Box>
                       <Typography sx={{ fontWeight: "bold" }}>
                         {monitoringStats.average_score}

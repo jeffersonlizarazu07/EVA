@@ -49,6 +49,11 @@ import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useTranslations } from "../../components/hooks/useTranslations";
 
+const ID_TIPO_1_5 = 2;
+const ID_TIPO_1_10 = 3;
+const ID_TIPO_YES_NO = 4;
+const ID_TIPO_CES = 5;
+
 const Reports = () => {
   const { t } = useTranslations();
   const nav = useNavigate();
@@ -64,6 +69,7 @@ const Reports = () => {
   const responseRefs = useRef([]);
   // const chartRefs = useRef([]);
   // const tableRefs = useRef([]);
+  const [answersStats, setAnswersStats] = useState([]);
 
   useEffect(() => {
     getSurveys();
@@ -237,6 +243,59 @@ const Reports = () => {
       console.error("Error fetching data", error);
     }
   };
+
+  // llamada al backend
+  const getAnswersByRanges = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/api/answers/ranges",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      console.log("📊 Data global recibida:", response.data.data);
+      setAnswersStats(response.data.data);
+    } catch (error) {
+      console.error("Error obteniendo rangos", error);
+    }
+  };
+
+  // cada vez que cambia el filtro y hay preguntas visibles, llamamos al backend
+  useEffect(() => {
+    console.log("🔍 allResponses:", allResponses);
+
+    if (allResponses.length > 0) {
+      const ids = allResponses
+        .filter((q) =>
+          [
+            "range_onetofive",
+            "range_zerototen",
+            "yes_no",
+            "range_difficulty",
+          ].includes(q.type)
+        )
+        .map((q) => q.id);
+
+      console.log("🆔 IDs encontrados (solo para debug):", ids);
+      console.log(
+        "📊 Preguntas filtradas:",
+        allResponses.filter((q) =>
+          [
+            "range_onetofive",
+            "range_zerototen",
+            "yes_no",
+            "range_difficulty",
+          ].includes(q.type)
+        )
+      );
+
+      getAnswersByRanges();
+    }
+  }, [allResponses]);
+
+  useEffect(() => {
+    console.log("📈 answersStats actualizado:", answersStats);
+  }, [answersStats]);
 
   const handleStartDateChange = (newValue) => {
     setStartDate(newValue);
@@ -630,13 +689,15 @@ const Reports = () => {
 
   // Renderiza un item de respuesta de gráfica
   const renderChartResponse = (item, index) => {
+    const stats = answersStats.find((s) => s.question_type === item.type);
+
     return (
       <Box
         key={`chart-${index}`}
         ref={(el) => (responseRefs.current[index] = el)}
         sx={{
           p: 2,
-          width: { xs: "100%", md: "50%", lg: "33.33%" }, // para col-md-6 col-lg-4
+          width: { xs: "100%", md: "50%", lg: "33.33%" },
         }}
       >
         <Accordion className="shadowbox5">
@@ -650,12 +711,216 @@ const Reports = () => {
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
+            {/* Gráfica */}
             <LineStyleCharts
               label={item.label}
               dataChart={item.data}
               type={item.type}
               initialType="pie"
             />
+
+            {/* Tabla condicional */}
+            {[
+              "range_onetofive",
+              "range_zerototen",
+              "yes_no",
+              "range_difficulty",
+            ].includes(item.type) && (
+              <Table
+                size="small"
+                sx={{
+                  mt: 2,
+                  border: "1px solid #ccc",
+                  width: "100%",
+                  tableLayout: "fixed",
+                  fontSize: "0.85rem",
+                }}
+              >
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                    <TableCell
+                      colSpan={2}
+                      sx={{
+                        color: "#b62a8b",
+                        fontWeight: "bold",
+                        textAlign: "center",
+                      }}
+                    >
+                      {item.label}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {stats ? (
+                    <>
+                      {item.type === "range_onetofive" && (
+                        <>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Top Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_4_5 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Top Two Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.exact_5 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Bottom Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.exact_1 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Bottom Two Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_1_2 || 0}
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+
+                      {item.type === "range_zerototen" && (
+                        <>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Promotores
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_9_10 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Neutros
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_7_8 || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Detractores
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_0_6 || 0}
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+
+                      {item.type === "yes_no" && (
+                        <>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Sí
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.total_si || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              No
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.total_no || 0}
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+
+                      {item.type === "range_difficulty" && (
+                        <>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Muy difícil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.muy_dificil || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Difícil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.dificil || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Ni fácil/ni difícil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.ni_facil || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Fácil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.facil || 0}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Muy fácil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.muy_facil || 0}
+                            </TableCell>
+                          </TableRow>
+                        </>
+                      )}
+
+                      <TableRow>
+                        <TableCell
+                          sx={{
+                            width: "66%",
+                            fontWeight: "bold",
+                            color: "#b62a8b",
+                            py: 0.5,
+                          }}
+                        >
+                          Total
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            width: "34%",
+                            fontWeight: "bold",
+                            color: "#b62a8b",
+                            py: 0.5,
+                          }}
+                        >
+                          {stats.total_responses || 0}
+                        </TableCell>
+                      </TableRow>
+                    </>
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={2}
+                        sx={{ py: 0.5, color: "text.secondary" }}
+                      >
+                        No hay datos para esta pregunta.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )}
           </AccordionDetails>
         </Accordion>
       </Box>
@@ -835,47 +1100,6 @@ const Reports = () => {
                       ))}
                     </Grid>
                   ) : null}
-                </Box>
-                <Box>
-                  <Card
-                    sx={{
-                      mb: 2,
-                      boxShadow: 3,
-                      borderRadius: 2,
-                      backgroundColor: "#fff",
-                      width: "25%",
-                    }}
-                  >
-                    <CardContent sx={{ p: 2 }}>
-                      <List
-                        sx={{
-                          width: "100%",
-                          maxWidth: 360,
-                          bgcolor: "background.paper",
-                        }}
-                      >
-                        <ListItem disableGutters>
-                          <ListItemText primary="CSAT" />
-                        </ListItem>
-
-                        <ListItem disableGutters>
-                          <ListItemText primary="Encuestas calificadas = 4 y 5/" />
-                        </ListItem>
-
-                        <ListItem disableGutters>
-                          <ListItemText primary="Encuestas calificadas = 5/" />
-                        </ListItem>
-
-                        <ListItem disableGutters>
-                          <ListItemText primary="Encuestas calificadas = 1/" />
-                        </ListItem>
-
-                        <ListItem disableGutters>
-                          <ListItemText primary="Encuestas calificadas = 1 y 2/" />
-                        </ListItem>
-                      </List>
-                    </CardContent>
-                  </Card>
                 </Box>
               </Box>
             </Grid>

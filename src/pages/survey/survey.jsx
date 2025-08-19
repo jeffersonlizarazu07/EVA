@@ -499,7 +499,7 @@ export default function Survey() {
         `http://localhost:3000/api/surveyByLink?link=${fullLink}`,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`, // token que tengas guardado
+            Authorization: `Bearer ${accessToken}`, // token guardado
           },
         }
       );
@@ -522,8 +522,6 @@ export default function Survey() {
       console.error("Error al cargar encuesta:", error);
     }
   };
-
-  
 
   const handleChange = (event, id) => {
     const newAnswer = { answer: event.target.value, question_id: id };
