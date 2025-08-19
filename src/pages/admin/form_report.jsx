@@ -91,7 +91,10 @@ const FormReport = () => {
 
   // Promedio del score 
   const [footerDatas, setFooterDatas]= useState([]);
-  //cantidad de preguntas
+  //cantidad de errores por pregunta
+  const [errorConteo, setErrorConteo] = useState([]);
+  //cantidad de errores general
+  const [errorGeneral, setErrorGeneral] = useState([]);
   
 
   
@@ -188,11 +191,97 @@ const FormReport = () => {
     }
   }, [reportesFiltrados]);
 
+  
+
+  //contar los errores individual 
+
+  const obtenerErroresPorPregunta = (fullMonitoring, responseMulti) => {
+    const conteo = {};
+
+    const esRespuestaIncorrecta = (pregunta) => {
+      const configMulti = responseMulti.find(r => r.question_id === pregunta.id_questions);
+
+      // Si no hay configuración de respuesta múltiple, no es error
+      if (!configMulti || !configMulti.selected_answer || !configMulti.select_option) return false;
+
+      // Si la respuesta está vacía, no se cuenta como error
+      if (!pregunta.respuesta) return false;
+
+      // Respuestas correctas y dadas como arrays de string
+      const respuestasCorrectas = (configMulti.selected_answer || "").split(",").map(r => r.trim()).sort();
+      const respuestasDadas = (pregunta.respuesta || "").split(",").map(r => r.trim()).sort();
+
+      // Deben coincidir exactamente todas las posiciones (mismo orden y cantidad)
+      if (respuestasDadas.length !== respuestasCorrectas.length) return true;
+
+      for (let i = 0; i < respuestasDadas.length; i++) {
+        if (respuestasDadas[i] !== respuestasCorrectas[i]) return true;
+      }
+      return false; // Solo si todas coinciden es correcto
+    };
+
+    fullMonitoring.forEach((monitoreo) => {
+      monitoreo.preguntas.forEach((pregunta) => {
+        const key = `${pregunta.texto}|${pregunta.type_error}`;
+
+        if (!conteo[key]) {
+          conteo[key] = {
+            texto: pregunta.texto,
+            tipo_error: pregunta.type_error,
+            cantidad_malas: 0,
+            total_preguntas: 0
+          };
+        }
+
+        conteo[key].total_preguntas++;
+
+        // Solo cuenta como error si esRespuestaIncorrecta
+        if (pregunta.type_error && esRespuestaIncorrecta(pregunta)) {
+          conteo[key].cantidad_malas++;
+        }
+      });
+    });
+
+    return Object.values(conteo).map(item => ({
+      ...item,
+      porcentaje: parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
+    }));
+  };
+
+  // contar los errores en general 
+  const conteoErrorGeneral = (general) => {
+    const datos = {}
+
+    general.forEach((i) => {
+      const key = i.tipo_error
+      if (!datos[key]) {
+        datos[key] = {
+          tipo_error: i.tipo_error,
+          cantidad_malas: 0,
+          total_preguntas: 0
+        }
+      }
+
+      // acumular totales
+      datos[key].cantidad_malas += i.cantidad_malas
+      datos[key].total_preguntas += i.total_preguntas
+    })
+
+    // calcular porcentaje
+    return Object.values(datos).map(item => ({
+      ...item,
+      porcentaje: item.total_preguntas > 0 
+        ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2)) 
+        : 0
+    }))
+  }
+
   // logica para hacer comparacion con answer
   const getRespuestaTransformada = (pregunta) => {
     // Se extrae la respuesta original y el id de la pregunta
     const respuestaOriginal = pregunta.respuesta;
     const idPregunta = pregunta.id_questions;
+    const type_error = pregunta.type_error
 
     // Se busca en la lista de respuestas múltiples la que corresponde a esta pregunta
     const respuestaMulti = responseMulti.find(
@@ -298,9 +387,10 @@ const FormReport = () => {
         respuesta: getRespuestaTransformada({
           respuesta: item.answer,
           id_questions: item.id,
+          type_error: item.type_error.split("_")[0],
         }),
         id_questions: item.id,         
-        type_error: item.type_error,
+        type_error: item.type_error.split("_")[0],
 
       });
     });
@@ -439,6 +529,13 @@ const FormReport = () => {
       
       //console.log("datos sin nada", data2);
       setFullMonitoring(datosAgrupados);
+      const erroresAgrupados = obtenerErroresPorPregunta(datosAgrupados, responseMulti);
+      setErrorConteo(erroresAgrupados);
+      console.log("conteo de errores",erroresAgrupados);
+      const erroresGeneral = conteoErrorGeneral(erroresAgrupados);
+      setErrorGeneral(erroresGeneral);
+      console.log("conteo de errores agrupados",erroresGeneral);
+      
       console.log("monitoreo", datosAgrupados)
     } catch (error) {
       console.error("error al obtener los monitoreos:", error);
@@ -704,6 +801,8 @@ const FormReport = () => {
               data={fullMonitoring}
               onSelectionChange={(rows) => setSeleccionados(rows)}
               footerData={footerDatas}
+              table2={errorConteo}
+              table3={errorGeneral}
             />
           )}
         </Box>
