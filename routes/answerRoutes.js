@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const AnswerController = require('../controllers/answerController'); // Importamos el controlador
-const answerController = require('../controllers/answerController');
 
 const authMiddleware = require('../middlewares/authMiddleware');
 //const answerControllerInstance = new AnswerController();
 
 // Ruta para obtener todas las respuestas
 router.get('/answers',authMiddleware, AnswerController.getAllAnswers);
+
+// Traer respuestas por rango
+router.get("/answers/ranges", authMiddleware, AnswerController.getAnswersByRangesController);
 
 // Ruta para obtener una respuesta por ID
 router.get('/answers/:id?', authMiddleware, AnswerController.getAnswerById);
@@ -21,11 +23,11 @@ router.get('/answers/:id?', authMiddleware, AnswerController.answersByQuestion);
 router.get('/answers/percentage/:id?',authMiddleware,  AnswerController.answersByQuestionPercentage);
 
 // Ruta para obtener el puntaje de las respuestas de una encuesta
-router.get('/answers/survey/score', AnswerController.scoreXSurvey);
+router.get('/answers/survey/score', authMiddleware, AnswerController.scoreXSurvey);
 
 // Ruta para obtener los porcentajes de respuestas de una encuesta
 
-router.get('/answers/survey/:id?/percentage', answerController.percentagesXSurvey);
+router.get('/answers/survey/:id?/percentage', AnswerController.percentagesXSurvey);
 
 
 // Ruta para crear una nueva respuesta
@@ -35,10 +37,9 @@ router.post('/answers',AnswerController.postAnswer);
 
 //router.put('/answers/:id', AnswerController.putAnswer);
 
-router.put('/answers/:id?', authMiddleware, answerController.updateAnswer);
+router.put('/answers/:id?', authMiddleware, AnswerController.updateAnswer);
 
 //router.put('/answers/:id', answerController.putAnswer);
-
 
 // Ruta para eliminar una respuesta
 router.delete('/answers/:id?',authMiddleware, AnswerController.deleteAnswer);

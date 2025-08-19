@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const answersFormController = require('../controllers/answersFormController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // obtener respuestas multiples 
 
@@ -10,36 +11,36 @@ router.get('/answersform/getResponseMult',authMiddleware, answersFormController.
 router.get('/answersform/filter/:fromId/:starDate/:endDate/:agente/:evaluador',authMiddleware,   answersFormController.getReportFilter);
 
 // obtener clientes y informacion de los forms_set
-router.get('/answersform/clients-forms', answersFormController.getClientsAndForms);
+router.get('/answersform/clients-forms', authMiddleware, answersFormController.getClientsAndForms);
 
 // obtener monitores de los agentes 
-router.get('/answersform/report-monitoring', answersFormController.getReportMonitoring);
+router.get('/answersform/report-monitoring', authMiddleware, answersFormController.getReportMonitoring);
 
 // ruta para ver monitoreo
-router.get('/answersform/monitoring', answersFormController.getMonitoring);
+router.get('/answersform/monitoring', authMiddleware, answersFormController.getMonitoring);
 
 // Obtener todas las respuestas
-router.get('/answersform', answersFormController.getAllAnswers);
+router.get('/answersform', authMiddleware, answersFormController.getAllAnswers);
 
 // Obtener una respuesta específica por ID
-router.get('/answersform/id/:id', answersFormController.getAnswerById);
+router.get('/answersform/id/:id', authMiddleware, answersFormController.getAnswerById);
 
 // Obtener respuestas por ID de bloque
-router.get('/answersform/block/:blockId', answersFormController.getAnswersByBlockId);
+router.get('/answersform/block/:blockId', authMiddleware, answersFormController.getAnswersByBlockId);
 
 // Obtener respuestas por ID de pregunta
-router.get('/answersform/question/:questionId', answersFormController.getAnswersByQuestionId);
+router.get('/answersform/question/:questionId', authMiddleware, answersFormController.getAnswersByQuestionId);
 
 // Obtener preguntas y respuestas por ID de bloque
-router.get('/answersform/block-questions/:blockId', answersFormController.getQuestionsAndAnswersByBlockId);
+router.get('/answersform/block-questions/:blockId', authMiddleware, answersFormController.getQuestionsAndAnswersByBlockId);
 
 // Crear una nueva respuesta
-router.post('/answersform', answersFormController.saveMonitoringAndAnswers);
+router.post('/answersform', authMiddleware, answersFormController.saveMonitoringAndAnswers);
 
 // Actualizar una respuesta existente
-router.put('/answersform/:id', answersFormController.updateAnswer);
+router.put('/answersform/:id', authMiddleware, answersFormController.updateAnswer);
 
 // Eliminar una respuesta
-router.delete('/answersform/:id', answersFormController.deleteAnswer);
+router.delete('/answersform/:id', authMiddleware, answersFormController.deleteAnswer);
 
 module.exports = router;

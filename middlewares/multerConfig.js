@@ -2,24 +2,36 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Ruta absoluta 
-const uploadDir = process.env.FILE_DIR;
+// Ruta base fija para almacenar logos de clientes dentro del backend
+const baseClientsDir = path.join(__dirname, '..', 'public', 'clientes');
 
-// Ruta relativa dentro del proyecto para la carpeta imgClientes
-// const uploadDir = path.join(__dirname, '..', 'public', 'imgClientes'); // Esto genera la ruta 'miProyectoNodeJS/public/imgClientes'
+function ensureDirSync(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
 
-// // Asegúrate de que la carpeta exista, si no la crea
-// if (!fs.existsSync(uploadDir)) {
-//   fs.mkdirSync(uploadDir, { recursive: true });
-// }
+// Asegura la existencia de la base y del tmp
+ensureDirSync(baseClientsDir);
+const tmpDir = path.join(baseClientsDir, 'tmp');
+ensureDirSync(tmpDir);
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log('Ruta de destino para el archivo:', uploadDir);  // Esto es solo para depuración
-    cb(null, uploadDir);  // Guarda en la carpeta 'imgClientes'
+    // POST /clients -> subir a tmp (aún no hay id)
+    // PUT /clients/:id -> subir directo a /clientes/{id}
+    let targetDir = tmpDir;
+    const maybeId = req.params?.id;
+    if (req.method === 'PUT' && maybeId) {
+      targetDir = path.join(baseClientsDir, String(maybeId));
+    }
+    ensureDirSync(targetDir);
+    console.log('Ruta de destino para el archivo:', targetDir);
+    cb(null, targetDir);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));  // Usa un timestamp como nombre de archivo
+    // Nombre temporal; en el controlador se renombrará a foto{ext}
+    cb(null, Date.now() + path.extname(file.originalname));
   }
 });
 

@@ -5,7 +5,8 @@ class ClientsDTO {
         const allowedStates = [0, 1];
 
         // Verifico que todos los campos obligatorios estén presentes
-        if (!client || !state || !color_tag1 || !color_tag2 ) {
+        // Nota: state puede ser 0; por eso se verifica con comparaciones estrictas
+        if (!client || state === undefined || state === null || !color_tag1 || !color_tag2 ) {
             return {status : false, message : "Todos los campos son obligatorios"};
         }   
 

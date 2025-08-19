@@ -14,7 +14,8 @@ const User = {
         "email",
         "password",
         "state",
-        "type"
+        "type",
+        "user_red"
       )
       .first(); // Solo el primero que coincida
   },
@@ -40,7 +41,8 @@ const User = {
         "password",
         "state",
         "type",
-        "language"
+        "language",
+        "user_red"
       )
       .first();
   },
@@ -58,7 +60,8 @@ const User = {
       "type",
       "last_visit_date",
       "language",
-      "registration_date"
+      "registration_date",
+      "user_red"
     );
     const usersWithFormattedDate = users.map((user) => ({
       ...user,
@@ -127,6 +130,42 @@ const User = {
       throw error; // Lo relanzas para que el controlador lo capture
     }
   },
+
+  // Actualizar auth_provider para usuarios MSAL
+  updateAuthProvider: async (id, provider = 'microsoft') => {
+    try {
+        const update = await db("users")
+            .where({ id })
+            .update({ 
+                auth_provider: provider,
+                updated_at: getDateTimeForSQL()
+            });
+        return update;
+    } catch (error) {
+        console.error("Error actualizando auth_provider:", error);
+        throw error;
+    }
+  },
+
+  // Buscar usuario por email y provider
+  findByEmailAndProvider: async (email, provider = 'local') => {
+    return await db("users")
+        .where({ email, auth_provider: provider })
+        .select(
+            "id",
+            "firstname", 
+            "middlename",
+            "lastname",
+            "email",
+            "password",
+            "state",
+            "type",
+            "auth_provider",
+            "user_red"
+        )
+        .first();
+  },
+
 };
 
 module.exports = User;

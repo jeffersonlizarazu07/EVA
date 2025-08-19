@@ -11,15 +11,13 @@ router.post('/surveys',authMiddleware, surveySetController.postSurvey);
 router.put('/survey/:id?', authMiddleware,surveySetController.putSurvey);
 router.patch('/survey/:id?', authMiddleware,surveySetController.patchSurvey);
 router.delete('/survey/:id?',authMiddleware, surveySetController.deleteSurvey);
-router.get('/surveyByLink',surveySetController.surveyByLink);
-
-//ruta para obtener las preguntas de una encuesta y responder
+//ruta para obtener las preguntas de una encuesta y responder (sin autenticación para encuestas públicas)
 router.get('/surveyByLink', surveySetController.surveyByLink)
 
 //ruta para obtener las encuestas asociadas a un usuario
 router.get('/surveys-user/:id?', authMiddleware, surveySetController.surveysByUser); 
 
 //ruta para obtener las encuestas mas contestadas 
-router.get('/top-surveys/:userId?', surveySetController.topSurveys);
+router.get('/top-surveys/:userId?', authMiddleware, surveySetController.topSurveys);
 
 module.exports = router;
