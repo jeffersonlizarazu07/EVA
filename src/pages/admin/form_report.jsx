@@ -196,30 +196,67 @@ const FormReport = () => {
   //contar los errores individual 
 
   const obtenerErroresPorPregunta = (fullMonitoring, responseMulti) => {
+    // Indexar configs por pregunta
+    const configsByQ = responseMulti.reduce((acc, r) => {
+      (acc[r.question_id] ||= []).push(r);
+      return acc;
+    }, {});
+
     const conteo = {};
 
-    const esRespuestaIncorrecta = (pregunta) => {
-      const configMulti = responseMulti.find(r => r.question_id === pregunta.id_questions);
-
-      // Si no hay configuración de respuesta múltiple, no es error
-      if (!configMulti || !configMulti.selected_answer || !configMulti.select_option) return false;
-
-      // Si la respuesta está vacía, no se cuenta como error
-      if (!pregunta.respuesta) return false;
-
-      // Respuestas correctas y dadas como arrays de string
-      const respuestasCorrectas = (configMulti.selected_answer || "").split(",").map(r => r.trim()).sort();
-      const respuestasDadas = (pregunta.respuesta || "").split(",").map(r => r.trim()).sort();
-
-      // Deben coincidir exactamente todas las posiciones (mismo orden y cantidad)
-      if (respuestasDadas.length !== respuestasCorrectas.length) return true;
-
-      for (let i = 0; i < respuestasDadas.length; i++) {
-        if (respuestasDadas[i] !== respuestasCorrectas[i]) return true;
-      }
-      return false; // Solo si todas coinciden es correcto
+    // Utilidad: igualdad de conjuntos numéricos (ignora orden)
+    const sameSet = (a, b) => {
+      if (a.length !== b.length) return false;
+      const setB = new Set(b);
+      return a.every(x => setB.has(x));
     };
 
+    // Determinar si una respuesta es incorrecta
+    const esRespuestaIncorrecta = (pregunta) => {
+      const configs = configsByQ[pregunta.id_questions] || [];
+      if (configs.length === 0) return false; // sin config => no contamos como error
+
+      // Buscar una config con opciones (si ninguna tiene, es texto libre)
+      const cfgConOpciones = configs.find(c => c.select_option && c.select_option.trim() !== "");
+
+      //  Caso TEXTO LIBRE 
+      if (!cfgConOpciones) {
+        // si no hay opciones, mientras haya algo en la respuesta, es correcto
+        const hayRespuesta = pregunta.respuesta && String(pregunta.respuesta).trim() !== "";
+        return !hayRespuesta; // incorrecta solo si viene vacía
+      }
+
+      // Caso OPCIONES 
+      const opciones = cfgConOpciones.select_option.split(",").map(s => s.trim());
+
+      // Correctas: posiciones (asumimos base 0, p. ej. "2" = tercera opción)
+      const correctas = (cfgConOpciones.selected_answer || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(n => Number(n));
+
+      // Dadas: pueden venir como texto ("Opción 1") o como índices ("0,2")
+      const dadasRaw = String(pregunta.respuesta || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const dadas = dadasRaw.map(v => {
+        if (/^\d+$/.test(v)) return Number(v); // ya es índice
+        // convertir texto a índice (case-insensitive)
+        const idx = opciones.findIndex(o => o.toLowerCase() === v.toLowerCase());
+        return idx; // -1 si no existe => error
+      });
+
+      // Si alguna respuesta no mapeó a índice válido => incorrecta
+      if (dadas.some(i => i < 0)) return true;
+
+      // Comparar como conjuntos (mismo tamaño y mismos índices)
+      return !sameSet(dadas, correctas);
+    };
+
+    //Recorrer monitoreos/preguntas y contabilizar
     fullMonitoring.forEach((monitoreo) => {
       monitoreo.preguntas.forEach((pregunta) => {
         const key = `${pregunta.texto}|${pregunta.type_error}`;
@@ -235,16 +272,18 @@ const FormReport = () => {
 
         conteo[key].total_preguntas++;
 
-        // Solo cuenta como error si esRespuestaIncorrecta
         if (pregunta.type_error && esRespuestaIncorrecta(pregunta)) {
           conteo[key].cantidad_malas++;
         }
       });
     });
 
+    // Porcentajes
     return Object.values(conteo).map(item => ({
       ...item,
-      porcentaje: parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
+      porcentaje: item.total_preguntas
+        ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
+        : 0
     }));
   };
 
