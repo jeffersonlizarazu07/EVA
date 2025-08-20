@@ -6,24 +6,15 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useParams } from "react-router-dom";
 import {
-  Modal,
   Box,
   Paper,
   Typography,
   IconButton,
   Grid,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   TextField,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  FormControlLabel,
   Checkbox,
   CircularProgress,
-  Divider,
   Button,
   Autocomplete,
   Card,
@@ -33,8 +24,6 @@ import {
   Zoom,
   Slide,
   useTheme,
-  alpha,
-  Fab,
   Tooltip,
   Collapse,
   Stack,
@@ -44,54 +33,35 @@ import {
   Add,
   Edit,
   Delete,
-  DragIndicator,
   ExpandMore,
   ExpandLess,
-  TurnLeft,
-  ArrowBack,
   QuestionAnswer,
   Analytics,
   Schedule,
   Info,
-  CheckCircle,
   RadioButtonUnchecked,
   TextFields,
   ToggleOn,
   DragHandle,
-  MoreVert,
   CheckBox,
   Error as ErrorIcon
 } from '@mui/icons-material';
 import {
   smallAlertDelete,
-  loadingAlert,
-  Toast2,
   Toast,
 } from "../../assets/js/alertConfig";
 import {
-  sendData,
-  deleteQuestion,
-  getSurvey,
   getSurveyQuestions,
 } from "../../services/surveyRequest";
 import "../../assets/css/survey.css";
 import {
-  Yes_no,
-  Textfield_s,
-  SingleChoiceView,
-  MultipleChoiceView,
-} from "../survey/questions";
-import {
   createBlock,
-  getAllBlocks,
-  updateBlock,
   deleteBlock,
   getBlocksByFormId,
   getBlockById,
 } from "../../services/blockService";
 import {
   createQuestions,
-  getQuestionsByBlockId,
   updateQuestions,
 } from "../../services/questionsFormService";
 import AnswersFormService from "../../services/answersFormService";
