@@ -28,7 +28,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 
 const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, table3 }) => {
-  const heders2 = ["Pregunta", "Tipo de error","Respuestas", "Monitoreos", "Porcentaje"];
+  const heders2 = ["Pregunta", "Tipo de error","Respuestas Malas", "Monitoreos", "Porcentaje"];
   const heders4 = ["Tipo de error","Porcentaje"];
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -120,8 +120,7 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
       <FormControl fullWidth 
         sx={{ 
           mb: 3, 
-          borderColor: "#c65297",
-          color: "#c65297",
+          
           "& .MuiOutlinedInput-root": {
         
             "&.Mui-focused fieldset": {
@@ -133,11 +132,23 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
             color: "#c65297", // color del label al focus
           }, }}
         >
-        <InputLabel>Selecciona una tabla</InputLabel>
+        <InputLabel sx={{color: "#c65297",}}>Selecciona una tabla</InputLabel>
         <Select
           value={selectedTable}
           label="Selecciona una tabla"
           onChange={(e) => setSelectedTable(e.target.value)}
+           sx={{
+      
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#c65297", // borde normal
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#c65297", // borde al hover
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#c65297", // borde al focus
+              },
+            }}
         >
           <MenuItem value="table1">Tabla de Monitoreo</MenuItem>
           <MenuItem value="table2">Tabla de Errores por Pregunta</MenuItem>
