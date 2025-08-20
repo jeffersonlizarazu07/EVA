@@ -130,7 +130,7 @@ function Range_onetofive() {
 }
 
 function Range_zerototen (){
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const theme = useTheme();
 
   const [value, setValue] = React.useState('');  // Estado para manejar el valor seleccionado
@@ -247,7 +247,7 @@ function Range_zerototen (){
 }
 
 function Range_difficulty(){
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   const theme = useTheme();
   
   const [value, setValue] = React.useState(''); // Estado para manejar el valor seleccionado

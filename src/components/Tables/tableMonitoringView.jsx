@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslations } from "../hooks/useTranslations";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
@@ -41,10 +41,15 @@ const TableMonitoringView = ({
   fetchMonitoring,
   viewType,
   monitoringStats,
+  setMonitoringStats
 }) => {
   const nav = useNavigate();
+  const location = useLocation();
   // Traducción
   const { t } = useTranslations();
+  
+  // Verificar si estamos en la vista de agente (monitoring_view)
+  const isAgentView = location.pathname.includes('/monitoring_view/');
   // Paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
@@ -87,26 +92,29 @@ const TableMonitoringView = ({
 
         const matchesClient =
           !selectedClient || selectedClient === "none"
-            ? true // si no hay cliente seleccionado, no filtra por cliente
+            ? true
             : item.client_name?.toLowerCase() === selectedClient.toLowerCase();
 
         return matchesSearch && matchesClient;
       })
     : [];
 
-  const dataToCalculate =
-    !selectedClient || selectedClient === "" ? data : filteredData;
+  // Recalcular métricas cada vez que cambie filteredData
+  useEffect(() => {
+    const total = filteredData.length;
+    const avg =
+      total > 0
+        ? (
+            filteredData.reduce((sum, item) => sum + (item.score ?? 0), 0) /
+            total
+          ).toFixed(2)
+        : 0;
 
-  // Calcula métricas dinámicas
-  const totalMonitorings = dataToCalculate.length;
-
-  const averageScore =
-    totalMonitorings > 0
-      ? (
-          dataToCalculate.reduce((sum, item) => sum + (item.score ?? 0), 0) /
-          totalMonitorings
-        ).toFixed(2)
-      : 0;
+    setMonitoringStats({
+      total_monitorings: total,
+      average_score: avg,
+    });
+  }, [filteredData]); // Actualiza las formulas dependiendo del filtrado
 
   const currentRecords = filteredData.slice(
     page * rowsPerPage,
@@ -164,27 +172,30 @@ const TableMonitoringView = ({
               gap={1}
               sx={{ marginLeft: "12px" }}
             >
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  minWidth: 30,
-                  width: 30,
-                  height: 30,
-                  padding: 0,
-                  borderRadius: "50%",
-                  color: "#b62a8b",
-                  borderColor: "#b62a8b",
-                  "&:hover": {
+              {/* Solo mostrar el botón de devolver si NO estamos en la vista de agente */}
+              {!isAgentView && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    minWidth: 30,
+                    width: 30,
+                    height: 30,
+                    padding: 0,
+                    borderRadius: "50%",
+                    color: "#b62a8b",
                     borderColor: "#b62a8b",
-                    backgroundColor: "#b62a8b",
-                    color: "white",
-                  },
-                }}
-                onClick={() => nav("/agent_list")}
-              >
-                <TurnLeft />
-              </Button>
+                    "&:hover": {
+                      borderColor: "#b62a8b",
+                      backgroundColor: "#b62a8b",
+                      color: "white",
+                    },
+                  }}
+                  onClick={() => nav("/agent_list")}
+                >
+                  <TurnLeft />
+                </Button>
+              )}
 
               <TextField
                 size="small"
@@ -258,6 +269,7 @@ const TableMonitoringView = ({
                 value={selectedClient}
                 onChange={(e) => setSelectedClient(e.target.value)}
               >
+                <MenuItem sx={{ height: "30px" }}></MenuItem>
                 {clients.map((client, index) => (
                   <MenuItem key={index} value={client || "None"}>
                     {client}
@@ -412,7 +424,7 @@ const TableMonitoringView = ({
                   {key === "id" ? (
                     <>
                       <Box sx={{ fontWeight: "bold", color: "#b62a8b" }}>
-                        Total monitorizaciones
+                        Total
                       </Box>
                       <Typography sx={{ fontWeight: "bold" }}>
                         {monitoringStats.total_monitorings}
@@ -421,7 +433,7 @@ const TableMonitoringView = ({
                   ) : key === "score" ? (
                     <>
                       <Box sx={{ fontWeight: "bold", color: "#b62a8b" }}>
-                        Promedio Score
+                        Promedio
                       </Box>
                       <Typography sx={{ fontWeight: "bold" }}>
                         {monitoringStats.average_score}

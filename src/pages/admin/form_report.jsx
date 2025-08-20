@@ -91,7 +91,10 @@ const FormReport = () => {
 
   // Promedio del score 
   const [footerDatas, setFooterDatas]= useState([]);
-  //cantidad de preguntas
+  //cantidad de errores por pregunta
+  const [errorConteo, setErrorConteo] = useState([]);
+  //cantidad de errores general
+  const [errorGeneral, setErrorGeneral] = useState([]);
   
 
   
@@ -188,11 +191,136 @@ const FormReport = () => {
     }
   }, [reportesFiltrados]);
 
+  
+
+  //contar los errores individual 
+
+  const obtenerErroresPorPregunta = (fullMonitoring, responseMulti) => {
+    // Indexar configs por pregunta
+    const configsByQ = responseMulti.reduce((acc, r) => {
+      (acc[r.question_id] ||= []).push(r);
+      return acc;
+    }, {});
+
+    const conteo = {};
+
+    // Utilidad: igualdad de conjuntos numéricos (ignora orden)
+    const sameSet = (a, b) => {
+      if (a.length !== b.length) return false;
+      const setB = new Set(b);
+      return a.every(x => setB.has(x));
+    };
+
+    // Determinar si una respuesta es incorrecta
+    const esRespuestaIncorrecta = (pregunta) => {
+      const configs = configsByQ[pregunta.id_questions] || [];
+      if (configs.length === 0) return false; // sin config => no contamos como error
+
+      // Buscar una config con opciones (si ninguna tiene, es texto libre)
+      const cfgConOpciones = configs.find(c => c.select_option && c.select_option.trim() !== "");
+
+      //  Caso TEXTO LIBRE 
+      if (!cfgConOpciones) {
+        // si no hay opciones, mientras haya algo en la respuesta, es correcto
+        const hayRespuesta = pregunta.respuesta && String(pregunta.respuesta).trim() !== "";
+        return !hayRespuesta; // incorrecta solo si viene vacía
+      }
+
+      // Caso OPCIONES 
+      const opciones = cfgConOpciones.select_option.split(",").map(s => s.trim());
+
+      // Correctas: posiciones (asumimos base 0, p. ej. "2" = tercera opción)
+      const correctas = (cfgConOpciones.selected_answer || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(n => Number(n));
+
+      // Dadas: pueden venir como texto ("Opción 1") o como índices ("0,2")
+      const dadasRaw = String(pregunta.respuesta || "")
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const dadas = dadasRaw.map(v => {
+        if (/^\d+$/.test(v)) return Number(v); // ya es índice
+        // convertir texto a índice (case-insensitive)
+        const idx = opciones.findIndex(o => o.toLowerCase() === v.toLowerCase());
+        return idx; // -1 si no existe => error
+      });
+
+      // Si alguna respuesta no mapeó a índice válido => incorrecta
+      if (dadas.some(i => i < 0)) return true;
+
+      // Comparar como conjuntos (mismo tamaño y mismos índices)
+      return !sameSet(dadas, correctas);
+    };
+
+    //Recorrer monitoreos/preguntas y contabilizar
+    fullMonitoring.forEach((monitoreo) => {
+      monitoreo.preguntas.forEach((pregunta) => {
+        const key = `${pregunta.texto}|${pregunta.type_error}`;
+
+        if (!conteo[key]) {
+          conteo[key] = {
+            texto: pregunta.texto,
+            tipo_error: pregunta.type_error,
+            cantidad_malas: 0,
+            total_preguntas: 0
+          };
+        }
+
+        conteo[key].total_preguntas++;
+
+        if (pregunta.type_error && esRespuestaIncorrecta(pregunta)) {
+          conteo[key].cantidad_malas++;
+        }
+      });
+    });
+
+    // Porcentajes
+    return Object.values(conteo).map(item => ({
+      ...item,
+      porcentaje: item.total_preguntas
+        ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
+        : 0
+    }));
+  };
+
+  // contar los errores en general 
+  const conteoErrorGeneral = (general) => {
+    const datos = {}
+
+    general.forEach((i) => {
+      const key = i.tipo_error
+      if (!datos[key]) {
+        datos[key] = {
+          tipo_error: i.tipo_error,
+          cantidad_malas: 0,
+          total_preguntas: 0
+        }
+      }
+
+      // acumular totales
+      datos[key].cantidad_malas += i.cantidad_malas
+      datos[key].total_preguntas += i.total_preguntas
+    })
+
+    // calcular porcentaje
+    return Object.values(datos).map(item => ({
+      ...item,
+      porcentaje: item.total_preguntas > 0 
+        ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2)) 
+        : 0
+    }))
+  }
+
   // logica para hacer comparacion con answer
   const getRespuestaTransformada = (pregunta) => {
     // Se extrae la respuesta original y el id de la pregunta
     const respuestaOriginal = pregunta.respuesta;
     const idPregunta = pregunta.id_questions;
+    const type_error = pregunta.type_error
 
     // Se busca en la lista de respuestas múltiples la que corresponde a esta pregunta
     const respuestaMulti = responseMulti.find(
@@ -298,9 +426,10 @@ const FormReport = () => {
         respuesta: getRespuestaTransformada({
           respuesta: item.answer,
           id_questions: item.id,
+          type_error: item.type_error.split("_")[0],
         }),
         id_questions: item.id,         
-        type_error: item.type_error,
+        type_error: item.type_error.split("_")[0],
 
       });
     });
@@ -439,6 +568,13 @@ const FormReport = () => {
       
       //console.log("datos sin nada", data2);
       setFullMonitoring(datosAgrupados);
+      const erroresAgrupados = obtenerErroresPorPregunta(datosAgrupados, responseMulti);
+      setErrorConteo(erroresAgrupados);
+      console.log("conteo de errores",erroresAgrupados);
+      const erroresGeneral = conteoErrorGeneral(erroresAgrupados);
+      setErrorGeneral(erroresGeneral);
+      console.log("conteo de errores agrupados",erroresGeneral);
+      
       console.log("monitoreo", datosAgrupados)
     } catch (error) {
       console.error("error al obtener los monitoreos:", error);
@@ -704,6 +840,8 @@ const FormReport = () => {
               data={fullMonitoring}
               onSelectionChange={(rows) => setSeleccionados(rows)}
               footerData={footerDatas}
+              table2={errorConteo}
+              table3={errorGeneral}
             />
           )}
         </Box>

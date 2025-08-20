@@ -131,6 +131,7 @@ const AgentMonitoringView = () => {
     fetchMonitoring,
     viewType: getUserType,
     monitoringStats,
+    setMonitoringStats
   };
 
   return (
