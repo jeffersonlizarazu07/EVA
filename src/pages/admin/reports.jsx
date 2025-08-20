@@ -11,7 +11,6 @@ import Cookies from "js-cookie";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { Toast } from "../../assets/js/alertConfig";
-import { useTranslation } from "react-i18next";
 import {
   Box,
   Button,
@@ -38,9 +37,6 @@ import {
   Select,
   Typography,
   Alert,
-  List,
-  ListItem,
-  ListItemText,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
@@ -48,11 +44,6 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useTranslations } from "../../components/hooks/useTranslations";
-
-const ID_TIPO_1_5 = 2;
-const ID_TIPO_1_10 = 3;
-const ID_TIPO_YES_NO = 4;
-const ID_TIPO_CES = 5;
 
 const Reports = () => {
   const { t } = useTranslations();
@@ -65,10 +56,7 @@ const Reports = () => {
   const [endDate, setEndDate] = useState(null);
   const [clientIds, setClientIds] = useState([2, 3]);
   const [loading, setLoading] = useState(false);
-  //const [textData, setTextData] = useState([]); // Nuevo estado para datos de texto
   const responseRefs = useRef([]);
-  // const chartRefs = useRef([]);
-  // const tableRefs = useRef([]);
   const [answersStats, setAnswersStats] = useState([]);
 
   useEffect(() => {
@@ -253,16 +241,24 @@ const Reports = () => {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-      console.log("📊 Data global recibida:", response.data.data);
+      console.log("Data global recibida:", response.data.data);
       setAnswersStats(response.data.data);
     } catch (error) {
       console.error("Error obteniendo rangos", error);
     }
   };
 
+  // Diccionario para manejo de tipos de preguntas en header de la tabla
+  const typeLabels = {
+    range_onetofive: "CSAT",
+    range_zerototen: "NPS - Net Promoter Score",
+    yes_no: "FCR",
+    range_difficulty: "CES",
+  };
+
   // cada vez que cambia el filtro y hay preguntas visibles, llamamos al backend
   useEffect(() => {
-    console.log("🔍 allResponses:", allResponses);
+    console.log("allResponses:", allResponses);
 
     if (allResponses.length > 0) {
       const ids = allResponses
@@ -276,9 +272,9 @@ const Reports = () => {
         )
         .map((q) => q.id);
 
-      console.log("🆔 IDs encontrados (solo para debug):", ids);
+      console.log("IDs encontrados (solo para debug):", ids);
       console.log(
-        "📊 Preguntas filtradas:",
+        "Preguntas filtradas:",
         allResponses.filter((q) =>
           [
             "range_onetofive",
@@ -294,7 +290,7 @@ const Reports = () => {
   }, [allResponses]);
 
   useEffect(() => {
-    console.log("📈 answersStats actualizado:", answersStats);
+    console.log("answersStats actualizado:", answersStats);
   }, [answersStats]);
 
   const handleStartDateChange = (newValue) => {
@@ -746,7 +742,7 @@ const Reports = () => {
                         textAlign: "center",
                       }}
                     >
-                      {item.label}
+                      {typeLabels[item.type]}
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -760,7 +756,18 @@ const Reports = () => {
                               Top Box
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.rango_4_5 || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.rango_4_5 || 0}</Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.csat_rango_4_5}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -768,7 +775,18 @@ const Reports = () => {
                               Top Two Box
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.exact_5 || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.exact_5 || 0}</Typography>{" "}
+                                <Typography fontWeight="bold">
+                                  {stats.csat_exact_5}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -776,7 +794,18 @@ const Reports = () => {
                               Bottom Box
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.exact_1 || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.exact_1 || 0}</Typography>{" "}
+                                <Typography fontWeight="bold">
+                                  {stats.csat_exact_1}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -784,7 +813,18 @@ const Reports = () => {
                               Bottom Two Box
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.rango_1_2 || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.rango_1_2 || 0}</Typography>{" "}
+                                <Typography fontWeight="bold">
+                                  {stats.csat_rango_1_2}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         </>
@@ -797,7 +837,18 @@ const Reports = () => {
                               Promotores
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.rango_9_10 || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.rango_9_10 || 0}</Typography>{" "}
+                                <Typography fontWeight="bold">
+                                  {stats.nps_rango_9_10}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -805,7 +856,18 @@ const Reports = () => {
                               Neutros
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.rango_7_8 || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.rango_7_8 || 0}</Typography>{" "}
+                                <Typography fontWeight="bold">
+                                  {stats.nps_rango_7_8}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -813,7 +875,18 @@ const Reports = () => {
                               Detractores
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.rango_0_6 || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.rango_0_6 || 0}</Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.nps_rango_0_6}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         </>
@@ -826,7 +899,18 @@ const Reports = () => {
                               Sí
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.total_si || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.total_si || 0}</Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.fcr_si}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -834,7 +918,18 @@ const Reports = () => {
                               No
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.total_no || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.total_no || 0}</Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.fcr_no}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         </>
@@ -847,7 +942,20 @@ const Reports = () => {
                               Muy difícil
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.muy_dificil || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>
+                                  {stats.muy_dificil || 0}
+                                </Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.ces_muy_dificil}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -855,7 +963,18 @@ const Reports = () => {
                               Difícil
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.dificil || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.dificil || 0}</Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.ces_dificil}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -863,7 +982,18 @@ const Reports = () => {
                               Ni fácil/ni difícil
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.ni_facil || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.ni_facil || 0}</Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.ces_ni_facil}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -871,7 +1001,18 @@ const Reports = () => {
                               Fácil
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.facil || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.facil || 0}</Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.ces_facil}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                           <TableRow>
@@ -879,7 +1020,18 @@ const Reports = () => {
                               Muy fácil
                             </TableCell>
                             <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              {stats.muy_facil || 0}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <Typography>{stats.muy_facil || 0}</Typography>
+                                <Typography fontWeight="bold">
+                                  {stats.ces_muy_facil}
+                                  {"%"}
+                                </Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         </>
@@ -927,71 +1079,71 @@ const Reports = () => {
     );
   };
 
- return (
-  <Box className="App">
-    <Box id="body">
-      {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
+  return (
+    <Box className="App">
+      <Box id="body">
+        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
 
-      <Box m={0} p={0} sx={{ mt: { xs: 10, sm: 12, md: 14, lg: 16 } }}>
-        <Grid container spacing={0} sx={{ m: 0 }}>
-          <Grid
-            item
-            xs={12}
-            sx={{
-              px: 2,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Box
+        <Box m={0} p={0} sx={{ mt: { xs: 10, sm: 12, md: 14, lg: 16 } }}>
+          <Grid container spacing={0} sx={{ m: 0 }}>
+            <Grid
+              item
+              xs={12}
               sx={{
-                width: "100%",
-                px: 3,
-                maxWidth: "96%",
+                px: 2,
+                display: "flex",
+                justifyContent: "center",
               }}
             >
-              <Grid item xs={12} sx={{ mb: 4 }}>
-                <Card>
-                  <CardContent sx={{ borderRadius: "50px" }}>
-                    <Box
-                      display="flex"
-                      flexWrap="wrap"
-                      alignItems="center"
-                      justifyContent="center"
-                      gap={2}
-                      sx={{ mb: 2 }}
-                    >
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => nav("/satisfaction")}
-                        sx={{
-                          py: 2,
-                          minWidth: "2%",
-                          fontWeight: "bold",
-                          color: "#b62a8b",
-                          borderColor: "#b62a8b",
-                          borderTopLeftRadius: "20px",
-                          borderBottomLeftRadius: "20px",
-                          "&:hover": {
-                            borderColor: "#b62a8b",
-                            backgroundColor: "rgba(156, 39, 176, 0.04)",
-                          },
-                        }}
+              <Box
+                sx={{
+                  width: "100%",
+                  px: 3,
+                  maxWidth: "96%",
+                }}
+              >
+                <Grid item xs={12} sx={{ mb: 4 }}>
+                  <Card>
+                    <CardContent sx={{ borderRadius: "50px" }}>
+                      <Box
+                        display="flex"
+                        flexWrap="wrap"
+                        alignItems="center"
+                        justifyContent="center"
+                        gap={2}
+                        sx={{ mb: 2 }}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => nav("/satisfaction")}
+                          sx={{
+                            py: 2,
+                            minWidth: "2%",
+                            fontWeight: "bold",
+                            color: "#b62a8b",
+                            borderColor: "#b62a8b",
+                            borderTopLeftRadius: "20px",
+                            borderBottomLeftRadius: "20px",
+                            "&:hover": {
+                              borderColor: "#b62a8b",
+                              backgroundColor: "rgba(156, 39, 176, 0.04)",
+                            },
+                          }}
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
-                          />
-                        </svg>
-                      </Button>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
+                            />
+                          </svg>
+                        </Button>
 
                         <FormControl
                           required
