@@ -43,8 +43,6 @@ export default function Client_list() {
   const [colors1, setColors1] = useState("#FFFFFF"); // Color principal del cliente
   const [colors2, setColors2] = useState("#FFFFFF"); // Color secundario del cliente
   const [previewUrl, setPreviewUrl] = useState(null); // Vista previa del logo cargado
-  const [showColorPicker, setShowColorPicker] = useState(false); // Mostrar/Ocultar el color picker 1
-  const [showColorPicker2, setShowColorPicker2] = useState(false); // Mostrar/Ocultar el color picker 2
   const { t } = useTranslations(); // Hook para traducciones
   const url = "http://localhost:3000/api/clients"; // URL base de la API para clientes
   const CLIENTS_BASE_URL = "http://localhost:3000/clientes";

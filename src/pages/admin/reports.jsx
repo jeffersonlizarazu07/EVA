@@ -1007,7 +1007,7 @@ const Reports = () => {
   };
 
   return (
-    <Box className="App">
+    <Box>
       <Box id="body">
         {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
 
