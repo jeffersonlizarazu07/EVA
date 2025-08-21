@@ -203,57 +203,57 @@ class AnswerModel {
         // Rango 1-5
         // CSAT (1-5): conteos
         db.raw(`
-  SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (4,5) THEN 1 ELSE 0 END)
-  AS rango_4_5
-`),
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (4,5) THEN 1 ELSE 0 END)
+        AS rango_4_5
+        `),
         db.raw(`
-  SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 5 THEN 1 ELSE 0 END)
-  AS exact_5
-`),
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 5 THEN 1 ELSE 0 END)
+        AS exact_5
+        `),
         db.raw(`
-  SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 1 THEN 1 ELSE 0 END)
-  AS exact_1
-`),
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 1 THEN 1 ELSE 0 END)
+        AS exact_1
+        `),
         db.raw(`
-  SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (1,2) THEN 1 ELSE 0 END)
-  AS rango_1_2
-`),
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (1,2) THEN 1 ELSE 0 END)
+        AS rango_1_2
+        `),
 
         // --- CSAT (1-5): porcentajes (sobre COUNT(*) del mismo tipo)
         db.raw(`
-  ROUND(
-    SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (4,5) THEN 1 ELSE 0 END)
-    / NULLIF(COUNT(*),0) * 100, 2
-  ) AS csat_rango_4_5
-`),
+        ROUND(
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (4,5) THEN 1 ELSE 0 END)
+        / NULLIF(COUNT(*),0) * 100, 2
+        ) AS csat_rango_4_5
+        `),
         db.raw(`
-  ROUND(
-    SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 5 THEN 1 ELSE 0 END)
-    / NULLIF(COUNT(*),0) * 100, 2
-  ) AS csat_exact_5
-`),
+        ROUND(
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 5 THEN 1 ELSE 0 END)
+        / NULLIF(COUNT(*),0) * 100, 2
+        ) AS csat_exact_5
+        `),
         db.raw(`
-  ROUND(
-    SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 1 THEN 1 ELSE 0 END)
-    / NULLIF(COUNT(*),0) * 100, 2
-  ) AS csat_exact_1
-`),
+        ROUND(
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 1 THEN 1 ELSE 0 END)
+        / NULLIF(COUNT(*),0) * 100, 2
+        ) AS csat_exact_1
+        `),
         db.raw(`
-  ROUND(
-    SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (1,2) THEN 1 ELSE 0 END)
-    / NULLIF(COUNT(*),0) * 100, 2
-  ) AS csat_rango_1_2
-`),
+        ROUND(
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (1,2) THEN 1 ELSE 0 END)
+        / NULLIF(COUNT(*),0) * 100, 2
+        ) AS csat_rango_1_2
+        `),
 
         // --- Total SOLO para la tabla CSAT (suma de buckets, permite doble conteo)
         db.raw(`
-   (
-      SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (4,5) THEN 1 ELSE 0 END)
-    + SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 5 THEN 1 ELSE 0 END)
-    + SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 1 THEN 1 ELSE 0 END)
-    + SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (1,2) THEN 1 ELSE 0 END)
-   ) AS csat_total_buckets
-`),
+        (
+        SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (4,5) THEN 1 ELSE 0 END)
+      + SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 5 THEN 1 ELSE 0 END)
+      + SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) = 1 THEN 1 ELSE 0 END)
+      + SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(TRIM(a.answer) AS UNSIGNED) IN (1,2) THEN 1 ELSE 0 END)
+      ) AS csat_total_buckets
+      `),
 
         // Rango 1-10
         db.raw(`
