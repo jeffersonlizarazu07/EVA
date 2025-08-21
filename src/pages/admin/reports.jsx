@@ -725,6 +725,7 @@ const Reports = () => {
               <Table
                 size="small"
                 sx={{
+                  tableLayout: "fixed",
                   mt: 2,
                   border: "1px solid #ccc",
                   width: "100%",
@@ -733,9 +734,11 @@ const Reports = () => {
                 }}
               >
                 <TableHead>
+                  {/* Encabezado principal */}
                   <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
                     <TableCell
-                      colSpan={2}
+                      colSpan={3}
+                      align="center"
                       sx={{
                         color: "#b62a8b",
                         fontWeight: "bold",
@@ -745,325 +748,249 @@ const Reports = () => {
                       {typeLabels[item.type]}
                     </TableCell>
                   </TableRow>
+
+                  {/* Sub-heads por columna */}
+                  <TableRow>
+                    <TableCell
+                      align="center"
+                      sx={{ fontWeight: "bold", width: "200px" }}
+                    >
+                      Indicador
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ fontWeight: "bold", width: "100px" }}
+                    >
+                      Cantidad
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{ fontWeight: "bold", padding: 0 }}
+                    >
+                      Participación %
+                    </TableCell>
+                  </TableRow>
                 </TableHead>
                 <TableBody>
                   {stats ? (
                     <>
+                      {/* Tipo: range_onetofive */}
                       {item.type === "range_onetofive" && (
                         <>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Top Box
+                            <TableCell align="center">Top Box</TableCell>
+                            <TableCell align="center">
+                              {stats.exact_5 || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.rango_4_5 || 0}</Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.csat_rango_4_5}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold", minWidth: "250px" }}
+                            >
+                              {stats.csat_exact_5}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Top Two Box
+                            <TableCell align="center">Top Two Box</TableCell>
+                            <TableCell align="center">
+                              {stats.rango_4_5 || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.exact_5 || 0}</Typography>{" "}
-                                <Typography fontWeight="bold">
-                                  {stats.csat_exact_5}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.csat_rango_4_5}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Bottom Box
+                            <TableCell align="center">Bottom Box</TableCell>
+                            <TableCell align="center">
+                              {stats.exact_1 || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.exact_1 || 0}</Typography>{" "}
-                                <Typography fontWeight="bold">
-                                  {stats.csat_exact_1}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.csat_exact_1}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Bottom Two Box
+                            <TableCell align="center">Bottom Two Box</TableCell>
+                            <TableCell align="center">
+                              {stats.rango_1_2 || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.rango_1_2 || 0}</Typography>{" "}
-                                <Typography fontWeight="bold">
-                                  {stats.csat_rango_1_2}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.csat_rango_1_2}%
                             </TableCell>
                           </TableRow>
                         </>
                       )}
 
+                      {/* Tipo: range_zerototen */}
                       {item.type === "range_zerototen" && (
                         <>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Promotores
+                            <TableCell align="center">Promotores</TableCell>
+                            <TableCell align="center">
+                              {stats.rango_9_10 || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.rango_9_10 || 0}</Typography>{" "}
-                                <Typography fontWeight="bold">
-                                  {stats.nps_rango_9_10}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.nps_rango_9_10}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Neutros
+                            <TableCell align="center">Neutros</TableCell>
+                            <TableCell align="center">
+                              {stats.rango_7_8 || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.rango_7_8 || 0}</Typography>{" "}
-                                <Typography fontWeight="bold">
-                                  {stats.nps_rango_7_8}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.nps_rango_7_8}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Detractores
+                            <TableCell align="center">Detractores</TableCell>
+                            <TableCell align="center">
+                              {stats.rango_0_6 || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.rango_0_6 || 0}</Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.nps_rango_0_6}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.nps_rango_0_6}%
                             </TableCell>
                           </TableRow>
                         </>
                       )}
 
+                      {/* Tipo: yes_no */}
                       {item.type === "yes_no" && (
                         <>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Sí
+                            <TableCell align="center">Sí</TableCell>
+                            <TableCell align="center">
+                              {stats.total_si || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.total_si || 0}</Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.fcr_si}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.fcr_si}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              No
+                            <TableCell align="center">No</TableCell>
+                            <TableCell align="center">
+                              {stats.total_no || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.total_no || 0}</Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.fcr_no}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.fcr_no}%
                             </TableCell>
                           </TableRow>
                         </>
                       )}
 
+                      {/* Tipo: range_difficulty */}
                       {item.type === "range_difficulty" && (
                         <>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Muy difícil
+                            <TableCell align="center">Muy difícil</TableCell>
+                            <TableCell align="center">
+                              {stats.muy_dificil || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>
-                                  {stats.muy_dificil || 0}
-                                </Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.ces_muy_dificil}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.ces_muy_dificil}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Difícil
+                            <TableCell align="center">Difícil</TableCell>
+                            <TableCell align="center">
+                              {stats.dificil || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.dificil || 0}</Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.ces_dificil}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.ces_dificil}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                            <TableCell align="center">
                               Ni fácil/ni difícil
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.ni_facil || 0}</Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.ces_ni_facil}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell align="center">
+                              {stats.ni_facil || 0}
+                            </TableCell>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.ces_ni_facil}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Fácil
+                            <TableCell align="center">Fácil</TableCell>
+                            <TableCell align="center">
+                              {stats.facil || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.facil || 0}</Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.ces_facil}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.ces_facil}%
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell sx={{ width: "66%", py: 0.5 }}>
-                              Muy fácil
+                            <TableCell align="center">Muy fácil</TableCell>
+                            <TableCell align="center">
+                              {stats.muy_facil || 0}
                             </TableCell>
-                            <TableCell sx={{ width: "34%", py: 0.5 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Typography>{stats.muy_facil || 0}</Typography>
-                                <Typography fontWeight="bold">
-                                  {stats.ces_muy_facil}
-                                  {"%"}
-                                </Typography>
-                              </Box>
+                            <TableCell
+                              align="center"
+                              sx={{ fontWeight: "bold" }}
+                            >
+                              {stats.ces_muy_facil}%
                             </TableCell>
                           </TableRow>
                         </>
                       )}
 
+                      {/* Total */}
                       <TableRow>
                         <TableCell
-                          sx={{
-                            width: "66%",
-                            fontWeight: "bold",
-                            color: "#b62a8b",
-                            py: 0.5,
-                          }}
+                          align="center"
+                          sx={{ fontWeight: "bold", color: "#b62a8b" }}
                         >
                           Total
                         </TableCell>
                         <TableCell
-                          sx={{
-                            width: "34%",
-                            fontWeight: "bold",
-                            color: "#b62a8b",
-                            py: 0.5,
-                          }}
+                          align="center"
+                          sx={{ fontWeight: "bold", color: "#b62a8b" }}
                         >
-                          {stats.total_responses || 0}
+                          {item.type === "range_onetofive"
+                            ? stats.csat_total_buckets
+                            : stats.total_responses || 0}
                         </TableCell>
+                        <TableCell />
                       </TableRow>
                     </>
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={2}
+                        colSpan={3}
                         sx={{ py: 0.5, color: "text.secondary" }}
                       >
                         No hay datos para esta pregunta.
