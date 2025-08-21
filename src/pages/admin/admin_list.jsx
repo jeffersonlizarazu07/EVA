@@ -226,7 +226,7 @@ const AdminList = () => {
     }
 
     if (metodo.toUpperCase() === "POST") {
-      const duplicados = admins.find((u) => u.email === rest.email);
+      const duplicados = admins.find((u) => u.user_red === rest.user_red);
       if (duplicados) {
         Toast.fire({
           icon: "error",
@@ -324,6 +324,15 @@ const AdminList = () => {
     const id = admin.id;
     const name = admin.firstname;
 
+    // ❌ Evitar activar tu propio usuario
+    if (String(id) === String(userId)) {
+      Toast.fire({
+        icon: "warning",
+        title: t("alertDeactivate.CannotActivateYourself"), // Puedes agregar este texto a tus traducciones
+      });
+      return;
+    }
+
     // Estado a enviar: 0 = desactivado
     const parametros = { state: 0 };
 
@@ -379,6 +388,15 @@ const AdminList = () => {
     const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
+
+    // ❌ Evitar activar tu propio usuario
+    if (String(id) === String(userId)) {
+      Toast.fire({
+        icon: "warning",
+        title: t("alertActivate.CannotDeactivateYourself"), // Puedes agregar este texto a tus traducciones
+      });
+      return;
+    }
 
     // Estado a enviar: 1 = activo
     const parametros = { state: 1 };
@@ -697,6 +715,46 @@ const AdminList = () => {
                     sx={{ mb: 2 }}
                     className="readOnlyField"
                   />
+                </Grid>
+
+                {/* Columna derecha */}
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="subtitle1" sx={{ mb: 3 }} gutterBottom>
+                    {t("UserModal.AdminData")}
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    label={t("UserModal.NetworkUser")}
+                    value={userRed.input}
+                    onChange={(e) => userRed.handleChange(e.target.value)}
+                    error={!!errors.userRed}
+                    helperText={errors.userRed}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                    placeholder="Ej: apellidos.15"
+                  />
+
+                  <TextField
+                    select
+                    fullWidth
+                    label={t("UserModal.Type")}
+                    value={type.input || ""}
+                    onChange={(e) => type.handleChange(e.target.value)}
+                    error={!!errors.type}
+                    helperText={errors.type}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                  >
+                    <MenuItem value="0" disabled>
+                      {t("UserModal.SelectRole")}
+                    </MenuItem>
+                    <MenuItem value="1">{t("UserModal.SuperAdmin")}</MenuItem>
+                    <MenuItem value="2">{t("UserModal.Admin")}</MenuItem>
+                    <MenuItem value="3">{t("UserModal.Editor")}</MenuItem>
+                    <MenuItem value="4">{t("UserModal.Viwer")}</MenuItem>
+                  </TextField>
+
                   <Autocomplete
                     multiple
                     options={listClients}
@@ -727,45 +785,6 @@ const AdminList = () => {
                     sx={{ mb: 2 }}
                     className="readOnlyField"
                   />
-                </Grid>
-
-                {/* Columna derecha */}
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle1" sx={{ mb: 3 }} gutterBottom>
-                    {t("UserModal.AdminData")}
-                  </Typography>
-
-                  <TextField
-                    fullWidth
-                    label={t("UserModal.NetworkUser")}
-                    value={userRed.input}
-                    onChange={(e) => userRed.handleChange(e.target.value)}
-                    error={!!errors.userRed}
-                    helperText={errors.userRed}
-                    sx={{ mb: 2 }}
-                    className="readOnlyField"
-                    placeholder="Ej: apellidos.15"
-                  />
-
-                  <TextField
-                    select
-                    fullWidth
-                    label={t("UserModal.Type")}
-                    value={type.input}
-                    onChange={(e) => type.handleChange(e.target.value)}
-                    error={!!errors.type}
-                    helperText={errors.type}
-                    sx={{ mb: 2 }}
-                    className="readOnlyField"
-                  >
-                    <MenuItem value="0" disabled>
-                      {t("UserModal.SelectRole")}
-                    </MenuItem>
-                    <MenuItem value="1">{t("UserModal.SuperAdmin")}</MenuItem>
-                    <MenuItem value="2">{t("UserModal.Admin")}</MenuItem>
-                    <MenuItem value="3">{t("UserModal.Editor")}</MenuItem>
-                    <MenuItem value="4">{t("UserModal.Viwer")}</MenuItem>
-                  </TextField>
                 </Grid>
               </Grid>
             </Box>
@@ -844,15 +863,6 @@ const AdminList = () => {
                     value={`${firstName.input} ${middleName.input} ${lastName.input}`}
                     InputProps={{ readOnly: true }}
                     sx={{ mb: 2 }}
-                    className="readOnlyField readOnlyField_"
-                  />
-
-                  <TextField
-                    fullWidth
-                    label={t("viewUserModal.NetworkUser")}
-                    value={userRed.input || "No especificado"}
-                    InputProps={{ readOnly: true }}
-                    sx={{ mb: 2}}
                     className="readOnlyField readOnlyField_"
                   />
 
