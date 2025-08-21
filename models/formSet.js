@@ -24,23 +24,23 @@ const FormSet = {
           "clients.client as client_name", // Nombre del cliente
           // Concatenamos el primer nombre y apellido del creador
           db.raw(
-            'CONCAT(creator.firstname, " ", creator.lastname) as created_by_name'
+            "(creator.firstname + ' ' + creator.lastname) as created_by_name"
           ),
           // Concatenamos el primer nombre y apellido del editor si existe
           db.raw(
-            'IFNULL(DATE_FORMAT(updated_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as updated_date'
+            'ISNULL(FORMAT(updated_date, "yyyy-MM-dd HH:mm:ss"), "No actualizada") as updated_date'
           ),
           db.raw(
-            'IFNULL(DATE_FORMAT(creation_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as creation_date'
+            'ISNULL(FORMAT(creation_date, "yyyy-MM-dd HH:mm:ss"), "No actualizada") as creation_date'
           ),
           // Concatenamos el primer nombre y apellido del editor si existe
           db.raw(
-            `IFNULL(CONCAT(updater.firstname, " ", updater.lastname), "No actualizada") as updated_by_name`
+            `ISNULL((updater.firstname + ' ' + updater.lastname), "No actualizada") as updated_by_name`
           ),
           db.raw(`COUNT(monitoring.id) as monitorings_number`), // Contar el número de monitorizaciones de cada formulario
           db.raw(
             // Trae el promedio del score respecto al total de monitoreos con los que cuente el formulario
-            `IFNULL(CAST(AVG(monitoring.score) AS DECIMAL(10,2)), 0.00) as average_score` 
+            `ISNULL(CAST(AVG(monitoring.score) AS DECIMAL(10,2)), 0.00) as average_score` 
           )
         );
     } catch (error) {

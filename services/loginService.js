@@ -6,7 +6,7 @@ const authMsalService = async (userEmail) => {
         
         const user = await db("users")
             .where({ user_red: userRed })
-            .select("id", "firstname", "lastname", "email", "user_red", "type", "state")
+            .select("id", "firstname", "lastname", "user_red", "type", "state")
             .first();
 
         if (!user) {
@@ -23,7 +23,6 @@ const authMsalService = async (userEmail) => {
                 id_user: user.id,
                 userRed: user.user_red,
                 name: `${user.firstname} ${user.lastname}`,
-                email: user.email,
                 role: user.type,      // ✅ Este es el userType
                 state: user.state
             }
