@@ -3,7 +3,7 @@ const { getDateTimeForSQL } = require("../helpers/dateHelper");
 
 const User = {
   // Buscar usuario por su correo electrónico
-  findByEmail: async (email) => {
+  /*findByEmail: async (email) => {
     return await db("users")
       .where({ email })
       .select(
@@ -11,14 +11,12 @@ const User = {
         "firstname",
         "middlename",
         "lastname",
-        "email",
-        "password",
         "state",
         "type",
         "user_red"
       )
       .first(); // Solo el primero que coincida
-  },
+  },*/
 
   // Obtener los IDs de los clientes asociados a un usuario
   getClientIds: async (userId) => {
@@ -37,8 +35,6 @@ const User = {
         "firstname",
         "middlename",
         "lastname",
-        "email",
-        "password",
         "state",
         "type",
         "language",
@@ -49,13 +45,12 @@ const User = {
 
   // Obtener todos los usuarios del sistema
   getAllUsers: async () => {
-    // return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type', 'created_at', 'last_visit_date', 'language');
+    // return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'state', 'type', 'created_at', 'last_visit_date', 'language');
     const users = await db("users").select(
       "id",
       "firstname",
       "middlename",
       "lastname",
-      "email",
       "state",
       "type",
       "last_visit_date",
@@ -75,8 +70,14 @@ const User = {
 
   // Crear nuevo usuario
   createUser: async (userData) => {
-    const [newUserId] = await db("users").insert(userData); // Inserto y obtengo el ID del nuevo usuario
-    const newUser = await db("users").where({ id: newUserId }).first(); // Busco y retorno el nuevo usuario
+    // Inserta el nuevo usuario
+    await db("users").insert(userData);
+
+    // Recupera el usuario recién creado usando un campo único (user_red)
+    const newUser = await db("users")
+      .where({ user_red: userData.user_red })
+      .first();
+
     return newUser;
   },
 
@@ -148,7 +149,7 @@ const User = {
   },
 
   // Buscar usuario por email y provider
-  findByEmailAndProvider: async (email, provider = 'local') => {
+  /*findByEmailAndProvider: async (email, provider = 'local') => {
     return await db("users")
         .where({ email, auth_provider: provider })
         .select(
@@ -156,15 +157,13 @@ const User = {
             "firstname", 
             "middlename",
             "lastname",
-            "email",
-            "password",
             "state",
             "type",
             "auth_provider",
             "user_red"
         )
         .first();
-  },
+  },*/
 
 };
 

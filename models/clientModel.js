@@ -10,23 +10,25 @@ class ClientModel {
 
     // Método para crear un cliente
 async create(data) {
-    try {
-        // Insertamos el nuevo cliente en la base de datos
-        await this.knex(this.table).insert({
-            client: data.client,
-            state: data.state,
-            color_tag1: data.color_tag1,
-            color_tag2: data.color_tag2,
-            logo: data.logo,
-        });
+  try {
+    const [id] = await this.knex(this.table)
+      .insert({
+        client: data.client,
+        state: data.state,
+        color_tag1: data.color_tag1,
+        color_tag2: data.color_tag2,
+        logo: data.logo || null,
+      })
+      .returning('id');
 
-        // Obtenemos el id del último cliente insertado
-        const [id] = await this.knex.raw('SELECT LAST_INSERT_ID() as id');
+    // Normalizar id para que sea número o string simple
+    const clientId = typeof id === 'object' && id !== null && 'id' in id ? id.id : id;
 
-        return { id: id[0].id, ...data }; 
-    } catch (error) {
-        throw new Error(`Error al crear el cliente: ${error.message}`);
-    }
+    return { id: clientId, ...data };
+
+  } catch (error) {
+    throw new Error(`Error al crear el cliente: ${error.message}`);
+  }
 }
 
     // Método para obtener todos los clientes

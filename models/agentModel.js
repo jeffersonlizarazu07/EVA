@@ -17,7 +17,6 @@ const Agent = {
         "u.firstname",
         "u.middlename",
         "u.lastname",
-        "u.email",
         "u.state",
         "u.type",
         "u.last_visit_date",

@@ -22,10 +22,10 @@ const createClient = async (req, res) => {
   }
 
   try {
-    const { client, state, color_tag1, color_tag2 } = req.body;
+    const { client, state, color_tag1, color_tag2, logo } = req.body;
 
     // Si hay una imagen, obtenemos su nombre
-    let logo = null;
+    //let logo = null;
 
     // Crear cliente en la base de datos
     const newClient = await clientModel.create({

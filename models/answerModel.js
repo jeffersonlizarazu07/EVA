@@ -122,27 +122,28 @@ class AnswerModel {
   async getAnswersBySurvey(surveyId, startDate, endDate) {
     try {
       console.log("fecha fin: ", endDate);
-      // const answers = await db('answers')
-      //     .join('questions', 'answers.question_id', '=', 'questions.id')  // Hacemos el join con 'questions'
-      //     .where('answers.survey_id', surveyId)
-      //     .andWhere('answers.date', '>=', startDate)
-      //     .andWhere('answers.date', '<=', endDate)
-      //     .select('answers.question_id', 'questions.type', 'answers.answer');  // Seleccionamos 'type' de 'questions'
+
       const endDatePlusOneDay = new Date(endDate);
       endDatePlusOneDay.setDate(endDatePlusOneDay.getDate() + 1);
       const formattedEndDate = endDatePlusOneDay.toISOString().split("T")[0];
       console.log("fecha fin +1: ", formattedEndDate);
+
       const answers = await db("answers")
         .join("questions", "answers.question_id", "=", "questions.id")
         .where("questions.survey_id", surveyId)
-        .andWhere(db.raw("DATE(answers.date) >= ?", [startDate]))
-        .andWhere(db.raw("DATE(answers.date) <= ?", [endDate]))
+        .andWhere(
+          db.raw("CAST(answers.date AS DATE) >= ?", [startDate])
+        )
+        .andWhere(
+          db.raw("CAST(answers.date AS DATE) <= ?", [endDate])
+        )
         .select(
           "answers.question_id",
           "questions.type",
           "answers.answer",
           "questions.question"
         );
+
       return answers;
     } catch (error) {
       console.error("Error en getAnswersBySurvey:", error.message);
