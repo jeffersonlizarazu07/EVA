@@ -200,56 +200,193 @@ class AnswerModel {
       .select(
         "q.type as question_type",
 
-        // Rangos 1-5
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(a.answer AS UNSIGNED) IN (4,5) THEN 1 ELSE 0 END) AS rango_4_5"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(a.answer AS UNSIGNED) = 5 THEN 1 ELSE 0 END) AS exact_5"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(a.answer AS UNSIGNED) = 1 THEN 1 ELSE 0 END) AS exact_1"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_onetofive' AND CAST(a.answer AS UNSIGNED) IN (1,2) THEN 1 ELSE 0 END) AS rango_1_2"
-        ),
+        // ---- RANGE 1-5 ----
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_onetofive' 
+                 AND CAST(a.answer AS UNSIGNED) IN (4,5) 
+            THEN 1 ELSE 0 END) AS rango_4_5
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_onetofive' 
+                   AND CAST(a.answer AS UNSIGNED) IN (4,5) 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS csat_rango_4_5
+      `),
 
-        // Rangos 1-10
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_zerototen' AND CAST(a.answer AS UNSIGNED) BETWEEN 9 AND 10 THEN 1 ELSE 0 END) AS rango_9_10"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_zerototen' AND CAST(a.answer AS UNSIGNED) BETWEEN 7 AND 8 THEN 1 ELSE 0 END) AS rango_7_8"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_zerototen' AND CAST(a.answer AS UNSIGNED) BETWEEN 0 AND 6 THEN 1 ELSE 0 END) AS rango_0_6"
-        ),
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_onetofive' 
+                 AND CAST(a.answer AS UNSIGNED) = 5 
+            THEN 1 ELSE 0 END) AS exact_5
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_onetofive' 
+                   AND CAST(a.answer AS UNSIGNED) = 5 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS csat_exact_5
+      `),
 
-        // Sí / No
-        db.raw(
-          "SUM(CASE WHEN q.type = 'yes_no' AND UPPER(a.answer) IN ('SÍ','SI','YES','Y','1') THEN 1 ELSE 0 END) AS total_si"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'yes_no' AND UPPER(a.answer) IN ('NO','N','NOT','0') THEN 1 ELSE 0 END) AS total_no"
-        ),
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_onetofive' 
+                 AND CAST(a.answer AS UNSIGNED) = 1 
+            THEN 1 ELSE 0 END) AS exact_1
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_onetofive' 
+                   AND CAST(a.answer AS UNSIGNED) = 1 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS csat_exact_1
+      `),
 
-        // CES
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_difficulty' AND a.answer = 'Muy difícil' THEN 1 ELSE 0 END) AS muy_dificil"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_difficulty' AND a.answer = 'Difícil' THEN 1 ELSE 0 END) AS dificil"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_difficulty' AND a.answer = 'Ni fácil / ni difícil' THEN 1 ELSE 0 END) AS ni_facil"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_difficulty' AND a.answer = 'Fácil' THEN 1 ELSE 0 END) AS facil"
-        ),
-        db.raw(
-          "SUM(CASE WHEN q.type = 'range_difficulty' AND a.answer = 'Muy fácil' THEN 1 ELSE 0 END) AS muy_facil"
-        ),
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_onetofive' 
+                 AND CAST(a.answer AS UNSIGNED) IN (1,2) 
+            THEN 1 ELSE 0 END) AS rango_1_2
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_onetofive' 
+                   AND CAST(a.answer AS UNSIGNED) IN (1,2) 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS csat_rango_1_2
+      `),
 
+        // ---- RANGE 0-10 ----
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_zerototen' 
+                 AND CAST(a.answer AS UNSIGNED) BETWEEN 9 AND 10 
+            THEN 1 ELSE 0 END) AS rango_9_10
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_zerototen' 
+                   AND CAST(a.answer AS UNSIGNED) BETWEEN 9 AND 10 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS nps_rango_9_10
+      `),
+
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_zerototen' 
+                 AND CAST(a.answer AS UNSIGNED) BETWEEN 7 AND 8 
+            THEN 1 ELSE 0 END) AS rango_7_8
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_zerototen' 
+                   AND CAST(a.answer AS UNSIGNED) BETWEEN 7 AND 8 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS nps_rango_7_8
+      `),
+
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_zerototen' 
+                 AND CAST(a.answer AS UNSIGNED) BETWEEN 0 AND 6 
+            THEN 1 ELSE 0 END) AS rango_0_6
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_zerototen' 
+                   AND CAST(a.answer AS UNSIGNED) BETWEEN 0 AND 6 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS nps_rango_0_6
+      `),
+
+        // ---- YES / NO ----
+        db.raw(`
+        SUM(CASE WHEN q.type = 'yes_no' 
+                 AND UPPER(a.answer) IN ('SÍ','SI','YES','Y','1') 
+            THEN 1 ELSE 0 END) AS total_si
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'yes_no' 
+                   AND UPPER(a.answer) IN ('SÍ','SI','YES','Y','1') 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS fcr_si
+      `),
+
+        db.raw(`
+        SUM(CASE WHEN q.type = 'yes_no' 
+                 AND UPPER(a.answer) IN ('NO','N','NOT','0') 
+            THEN 1 ELSE 0 END) AS total_no
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'yes_no' 
+                   AND UPPER(a.answer) IN ('NO','N','NOT','0') 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS fcr_no
+      `),
+
+        // ---- DIFFICULTY ----
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_difficulty' 
+                 AND a.answer IN ('Muy difícil','5') 
+            THEN 1 ELSE 0 END) AS muy_dificil
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_difficulty' 
+                   AND a.answer IN ('Muy difícil','5') 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS ces_muy_dificil
+      `),
+
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_difficulty' 
+                 AND a.answer IN ('Difícil','4') 
+            THEN 1 ELSE 0 END) AS dificil
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_difficulty' 
+                   AND a.answer IN ('Difícil','4') 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS ces_dificil
+      `),
+
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_difficulty' 
+                 AND a.answer IN ('Ni fácil / ni difícil','3') 
+            THEN 1 ELSE 0 END) AS ni_facil
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_difficulty' 
+                   AND a.answer IN ('Ni fácil / ni difícil','3') 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS ces_ni_facil
+      `),
+
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_difficulty' 
+                 AND a.answer IN ('Fácil','2') 
+            THEN 1 ELSE 0 END) AS facil
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_difficulty' 
+                   AND a.answer IN ('Fácil','2') 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS ces_facil
+      `),
+
+        db.raw(`
+        SUM(CASE WHEN q.type = 'range_difficulty' 
+                 AND a.answer IN ('Muy fácil','1') 
+            THEN 1 ELSE 0 END) AS muy_facil
+      `),
+        db.raw(`
+        ROUND((
+          SUM(CASE WHEN q.type = 'range_difficulty' 
+                   AND a.answer IN ('Muy fácil','1') 
+              THEN 1 ELSE 0 END) 
+        / COUNT(*)) * 100, 2) AS ces_muy_facil
+      `),
+
+        // ---- TOTAL RESPONSES ----
         db.raw("COUNT(*) AS total_responses")
       )
       .whereIn("q.type", [
