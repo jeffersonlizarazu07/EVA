@@ -71,6 +71,7 @@ class questionsFormModel {
     }
   }
 
+  /*
   async updateQuestionsForBlock(blockId, questions) {
     const trx = await this.knex.transaction();
 
@@ -131,6 +132,92 @@ class questionsFormModel {
     } catch (error) {
       await trx.rollback();
       console.error("Error en la actualización, transacción revertida:", error);
+      throw error;
+    }
+  }*/
+
+  async updateQuestionsForBlock(blockId, questions) {
+    const trx = await this.knex.transaction();
+    try {
+      // ids existentes en el bloque
+      const existing = await trx(this.table).where({ block_id: blockId }).select("id");
+      const existingIds = existing.map(r => r.id);
+      const incomingIds = questions.map(q => q.id).filter(Boolean);
+
+      // borrar las que ya no vienen
+      const toDelete = existingIds.filter(id => !incomingIds.includes(id));
+      if (toDelete.length) {
+        await trx(this.table).whereIn("id", toDelete).del();
+      }
+
+      
+      const typeMap = {
+        check_opt: 1,
+        selector_opt: 2,
+        textfield_s: 3,
+      };
+
+      for (const q of questions) {
+        // --- selected_answer en índice(s) respecto a select_option ---
+        const options = typeof q.select_option === "string" ? q.select_option.split(",") : [];
+        const selected = q.selected_answer ?? "";
+        let selectedAnswerIndex = "";
+
+        if (Array.isArray(selected)) {
+          selectedAnswerIndex = selected
+            .map(ans => options.indexOf(ans))
+            .filter(i => i !== -1)
+            .join(",");
+        } else if (typeof selected === "string" && selected.length) {
+          selectedAnswerIndex = selected
+            .split(",")
+            .map(s => s.trim())
+            .map(ans => options.indexOf(ans))
+            .filter(i => i !== -1)
+            .join(",");
+        }
+
+        // --- resolver id_type_question ---
+        let idType = null;
+
+        // si viene numérico o string-numérico: úsalo
+        if (q.id_type_question != null && !Number.isNaN(Number(q.id_type_question))) {
+          idType = Number(q.id_type_question);
+        } else {
+          // si viene como clave string (selector_opt, etc): mapear
+          idType = typeMap[q.id_type_question] || typeMap[q.type] || null;
+        }
+
+        if (!idType) {
+          throw new Error(
+            `id_type_question inválido para la pregunta "${q.question_name}". Recibido: ${q.id_type_question}`
+          );
+        }
+
+        const data = {
+          question_name: q.question_name || q.text || "Sin texto",
+          type_error: q.type_error,                
+          id_type_question: idType,                 
+          select_option: q.select_option || "",
+          selected_answer: selectedAnswerIndex,
+          conditional: q.conditional || "NO",
+          id_conditional: q.id_conditional || null,
+          conditional_answer: q.conditional_answer ?? "",
+          block_id: blockId,
+        };
+
+        if (q.id && existingIds.includes(q.id)) {
+          await trx(this.table).where({ id: q.id }).update(data);
+        } else {
+          await trx(this.table).insert(data);
+        }
+      }
+
+      await trx.commit();
+      console.log("Preguntas actualizadas sin perder respuestas");
+    } catch (error) {
+      await trx.rollback();
+      console.error("Error en la actualización:", error);
       throw error;
     }
   }
