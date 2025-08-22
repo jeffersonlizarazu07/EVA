@@ -2,7 +2,7 @@ import { useEffect, useContext, useState } from "react";
 import "../../assets/css/calidad.css";
 import HeaderLT1 from "../header/headerLT1";
 import HeaderLT2 from "../header/headerLT2";
-import { useTranslations } from "../hooks/useTranslations"; 
+import { useTranslations } from "../hooks/useTranslations";
 import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -14,26 +14,19 @@ import {
   Typography,
   Card,
   CardContent,
-  IconButton,
   Grid,
 } from "@mui/material";
-import { TurnLeft } from "@mui/icons-material";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 const Quality = () => {
   const navigate = useNavigate();
   const { userType, clients } = useContext(UserContext);
   const { t } = useTranslations();
-  
-
   const [conteoDeAgentes, setConteoDeAgentes] = useState("0");
   const [conteoDeFormulario, setConteoDeFormulario] = useState("0");
-
   const [plantillaMonitor, setPlantillaMonitor] = useState([]);
-
   const [topMonitor, setTopMonitor] = useState([]);
   const [topAgentes, setTopAgentes] = useState([]);
-
   const [viewMode, setViewMode] = useState("grid"); // "grid" o "list"
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
@@ -59,7 +52,6 @@ const Quality = () => {
           "http://localhost:3000/api/forms",
           config
         );
-        console.log("Response de formularios:", response.data.data);
         setConteoDeFormulario(response.data.data.length);
 
         const tituloAgrupado = {};
@@ -83,7 +75,6 @@ const Quality = () => {
         });
 
         const preview = Object.values(tituloAgrupado);
-        console.log("Preview:", preview);
 
         const top5 = [...preview]
           .filter((i) => i.respuestas >= 0 && clients.includes(i.idClient))
@@ -106,10 +97,8 @@ const Quality = () => {
           .sort((a, b) => a.score - b.score)
           .slice(0, 3);
 
-        console.log("Top 3 Agentes:", top3);
         setTopAgentes(top3);
         setTopMonitor(top5);
-        console.log("Clientes:", clients);
       } catch (error) {
         console.error("Error al obtener formularios:", error);
       }
@@ -162,7 +151,6 @@ const Quality = () => {
   const listMonitoring = async () => {
     try {
       const data = await getMonitoring();
-      console.log("Datos de monitoreo:", data);
       agruparMonitoring(data);
     } catch (error) {
       console.error("Error al obtener los datos de monitoreo:", error);
@@ -189,7 +177,6 @@ const Quality = () => {
     });
 
     const agrupadoArray = Object.values(agrupado);
-    console.log("Agrupado Array:", agrupadoArray);
 
     // Generar plantillaMonitor aquí directamente basado en agrupadoArray
     const agrupadoListar = {};
@@ -212,23 +199,22 @@ const Quality = () => {
     });
 
     const plantilla = Object.values(agrupadoListar);
-    console.log("Plantilla Monitor:", plantilla);
     setPlantillaMonitor(plantilla);
   };
 
   return (
-    <Box className="App" sx={{ position: 'relative' }}>
-      <Box id="body" sx={{ position: 'relative', zIndex: 1 }}>
+    <Box sx={{ position: "relative" }}>
+      <Box sx={{ position: "relative", zIndex: 1 }}>
         {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
         <section>
           <Grid
-             container
-              sx={{
-                mt: { xs: 10, sm: 12, md: 14, lg: 16 },
-                ml: { xs: 0, sm: 0, md: 2, lg: 8 },
-                px: { xs: 0.5, sm: 2, md: 2, lg: 8 },
-                justifyContent: "center",
-              }}
+            container
+            sx={{
+              mt: { xs: 10, sm: 12, md: 14, lg: 16 },
+              ml: { xs: 0, sm: 0, md: 2, lg: 8 },
+              px: { xs: 0.5, sm: 2, md: 2, lg: 8 },
+              justifyContent: "center",
+            }}
           >
             <Grid container spacing={2}>
               {/* OPCION MODO GRID */}
@@ -244,7 +230,7 @@ const Quality = () => {
                   {/* Botón de regresar removido */}
                   <Grid spacing={2} m={3}>
                     <Grid container spacing={2} sx={{ display: "flex" }}>
-                      <Grid item xs={8}  sx={{ p: 0 }}>
+                      <Grid item xs={8} sx={{ p: 0 }}>
                         <Typography
                           sx={{
                             textAlign: "left",
@@ -263,7 +249,7 @@ const Quality = () => {
                           {t("qualitySite.Quality_system")}
                         </Typography>
                       </Grid>
-                      <Grid item xs={4} >
+                      <Grid item xs={4}>
                         <Typography
                           sx={{
                             mt: { xs: 2, md: 2, lg: 4 },
@@ -280,7 +266,6 @@ const Quality = () => {
                       <Grid
                         item
                         xs={12}
-                        
                         sx={{
                           mb: 2,
                           textAlign: "right",
@@ -307,13 +292,7 @@ const Quality = () => {
                       </Grid>
                     </Grid>
                     <Grid container spacing={2} sx={{ display: "flex" }}>
-                      <Grid
-                        item
-                        xs={2}
-                        md={2}
-                        
-                        sx={{ textAlign: "center" }}
-                      >
+                      <Grid item xs={2} md={2} sx={{ textAlign: "center" }}>
                         <Typography className="cardElement" variant="h4">
                           {conteoDeAgentes}
                         </Typography>
@@ -1013,15 +992,20 @@ const Quality = () => {
               {/* Cards laterales */}
 
               <Grid item xs={12} md={4} lg={4}>
-                <Box sx={{
-                        mt: { xs: 3, md: 0 }, 
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: { xs: 2, md: 3 }, 
-                      }}>
+                <Box
+                  sx={{
+                    mt: { xs: 3, md: 0 },
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: { xs: 2, md: 3 },
+                  }}
+                >
                   {/* Card de formularios */}
-                  
-                  <Card className="outstanding-card extern"  sx={{ mb: 2 , overflowX: 'hidden' }}>
+
+                  <Card
+                    className="outstanding-card extern"
+                    sx={{ mb: 2, overflowX: "hidden" }}
+                  >
                     <CardContent className="card-body div-title">
                       <Typography variant="h5">
                         {t("qualitySite.Monitoring_forms")}
@@ -1140,7 +1124,7 @@ const Quality = () => {
                         </Grid>
                       </Box>
                       <Grid container spacing={2}>
-                        <Typography sx={{ textAlign: "center" , mt:2}}>
+                        <Typography sx={{ textAlign: "center", mt: 2 }}>
                           {t(
                             "qualitySite.Rate_the_quality_of_customer_service_being_provided_by_the_agent"
                           )}

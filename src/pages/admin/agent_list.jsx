@@ -6,7 +6,7 @@ import HeaderLT2 from "../../components/header/headerLT2";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
-import { useTranslations } from "../../components/hooks/useTranslations"; 
+import { useTranslations } from "../../components/hooks/useTranslations";
 import {
   getAdmins,
   getClients,
@@ -36,8 +36,7 @@ const AdminList = () => {
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
   const { t } = useTranslations(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, clients, userInfo } =
-    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
+  const { accessToken, clients, userInfo } = useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
@@ -46,17 +45,14 @@ const AdminList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
   const [feedback, setFeedback] = React.useState("");
   const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
-
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
-
   // Validaciones de la primer vista del modal
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
   const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
   const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
   const [feedbackError, setFeedbackError] = useState(false);
   const [erroresPorPregunta, setErroresPorPregunta] = useState({});
-
   const [conteoDeAgentes, setConteoDeAgentes] = useState("0");
   useEffect(() => {
     console.log("Nuevo conteo desde useEffect:", conteoDeAgentes);
@@ -113,7 +109,6 @@ const AdminList = () => {
     validate: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
   });
 
-  //REQUEST//
   // Obtener todos los administradores (agentes) desde el backend
   const loadAdmins = async () => {
     try {
@@ -378,7 +373,7 @@ const AdminList = () => {
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
 
-  /* SCORE */
+  // Score
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
       const initBlockPer = block.percentage;
@@ -458,15 +453,6 @@ const AdminList = () => {
           const preguntaActualizada = { ...preg, [campo]: valor };
 
           const esCorrecta = validarRespuesta(preguntaActualizada);
-
-          // 🔍 ver si respondió bien o no
-          /*console.log(`Pregunta ID: ${preg.id}`);
-          console.log(`Campo actualizado: ${campo}`);
-          console.log(`Valor ingresado:`, valor);
-          console.log(`¿Respuesta correcta?:`, esCorrecta ? "✅ SÍ" : "❌ NO");
-          console.log(`Respuesta esperada:`, preguntaActualizada.selected_answer);
-          console.log(`Respuesta del usuario:`, preguntaActualizada);*/
-
           return {
             ...preguntaActualizada,
             evaluacion: esCorrecta ? "0" : "1",
@@ -494,15 +480,6 @@ const AdminList = () => {
       setClientError(!isClientValid);
       setFormError(!isFormValid);
       setDateError(!isDateValid);
-
-      if (!isClientValid || !isFormValid || !isDateValid) {
-        Toast.fire({
-          icon: "error",
-          title: t("monitoringModal.AlertData"),
-          //'<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-        });
-        return;
-      }
 
       setMonitoringStep(2);
     } else if (monitoringStep === 2) {
@@ -544,17 +521,6 @@ const AdminList = () => {
       }
       setMonitoringStep(3);
     } else if (monitoringStep === 3) {
-      /*if (!feedback || feedback.trim() === "") {
-        setFeedbackError(true); // activa el borde rojo
-        Toast.fire({
-          icon: "error",
-          title: t("monitoringModal.AlertFeedback") //"El campo de feedback es obligatorio.",
-        });
-        return;
-      } else {
-        setFeedbackError(false); // limpia el error si todo está bien
-      }*/
-
       const payload = {
         monitoringDate,
         id_user_monitor: userInfo.id,
