@@ -6,7 +6,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 router.get('/surveys',authMiddleware, surveySetController.surveys);
 router.get('/survey/:id',authMiddleware, surveySetController.surveyByID);
-router.get('/clients/surveys', surveySetController.surveysxClients);
+router.get('/clients/surveys',authMiddleware, surveySetController.surveysxClients);
 router.post('/surveys',authMiddleware, surveySetController.postSurvey);
 router.put('/survey/:id?', authMiddleware,surveySetController.putSurvey);
 router.patch('/survey/:id?', authMiddleware,surveySetController.patchSurvey);

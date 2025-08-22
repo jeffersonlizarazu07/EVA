@@ -123,6 +123,7 @@ const surveySetController = {
 
     async surveysxClients(req, res) {
         try {
+            console.log("clientIds recibido:", req.query.clientIds);
             const clientIds = req.query.clientIds ? req.query.clientIds.split(',').map(Number) : [];
             if (!clientIds.length) {
                 return res.status(400).json({ status: '400', message: 'Parámetro clientIds es requerido.' });
