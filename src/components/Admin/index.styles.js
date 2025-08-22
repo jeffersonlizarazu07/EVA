@@ -236,7 +236,10 @@ export const darkTheme = createTheme({
         '.redIncorrect':{
           color : 'rgb(201, 23, 23) !important',
         },
-
+        //
+        '.css-t3531l-MuiTableCell-root':{
+          color: commonDarkBackground,
+        },
 
 
         '.swal2-popup.swal2-toast': {

@@ -265,8 +265,9 @@ const FormReport = () => {
           conteo[key] = {
             texto: pregunta.texto,
             tipo_error: pregunta.type_error,
-            cantidad_malas: 0,
-            total_preguntas: 0
+            total_preguntas: 0,
+            cantidad_malas: 0
+            
           };
         }
 
@@ -282,7 +283,7 @@ const FormReport = () => {
     return Object.values(conteo).map(item => ({
       ...item,
       porcentaje: item.total_preguntas
-        ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
+        ? parseFloat((100-(item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
         : 0
     }));
   };
@@ -297,20 +298,25 @@ const FormReport = () => {
         datos[key] = {
           tipo_error: i.tipo_error,
           cantidad_malas: 0,
-          total_preguntas: 0
+          total_preguntas: 0,
+          porcentajeAcumulado: 0,
+          monitoreo: i.total_preguntas
         }
       }
 
       // acumular totales
       datos[key].cantidad_malas += i.cantidad_malas
       datos[key].total_preguntas += i.total_preguntas
+      datos[key].porcentajeAcumulado += i.porcentaje
     })
 
     // calcular porcentaje
     return Object.values(datos).map(item => ({
       ...item,
       porcentaje: item.total_preguntas > 0 
-        ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2)) 
+        // ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
+        //parseFloat(((item.cantidad_malas / item.total_preguntas) * 100).toFixed(2))  
+        ? parseFloat(((item.cantidad_malas / item.total_preguntas) * 100).toFixed(2)) 
         : 0
     }))
   }
@@ -686,7 +692,7 @@ const FormReport = () => {
                           </MenuItem>
                         ))
                       ) : (
-                        <MenuItem disabled>Cargando Clientes ...</MenuItem>
+                        <MenuItem disabled>{t("clientTable.cargando_clientes")}</MenuItem>
                       )}
                     </Select>
                   </FormControl>
@@ -749,7 +755,7 @@ const FormReport = () => {
                           </MenuItem>
                         ))
                       ) : (
-                        <MenuItem disabled>Cargando Clientes ...</MenuItem>
+                        <MenuItem disabled>{t("clientTable.cargando_clientes")}</MenuItem>
                       )}
                     </Select>
                   </FormControl>
@@ -780,7 +786,7 @@ const FormReport = () => {
                           </MenuItem>
                         ))
                       ) : (
-                        <MenuItem disabled>Cargando Clientes ...</MenuItem>
+                        <MenuItem disabled>{t("clientTable.cargando_clientes")}</MenuItem>
                       )}
                     </Select>
                   </FormControl>
