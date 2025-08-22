@@ -903,15 +903,6 @@ const AdminList = () => {
 
                   <TextField
                     fullWidth
-                    label={t("viewUserModal.NetworkUser")}
-                    value={userRed.input || "No especificado"}
-                    InputProps={{ readOnly: true }}
-                    sx={{ mb: 2 }}
-                    className="readOnlyField readOnlyField_"
-                  />
-
-                  <TextField
-                    fullWidth
                     label={t("viewUserModal.State")}
                     value={
                       state.input === 1

@@ -224,51 +224,61 @@ const FormList = () => {
   };
   return (
     <>
-      <Box sx={{ bgcolor: "#fafafa", minHeight: "100vh" }}>
-        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
-
-        <Box sx={{ px: 3, py: 4, mt: { xs: 2, sm: 3, md: 4, lg: 5 } }}>
-          <Paper elevation={2} sx={{ borderRadius: 3, px: 3, py: 4 }}>
-            {loading ? (
-              <Box textAlign="center" py={4}>
-                <CircularProgress sx={{ color: "#b62a8b" }} />
-                <Typography mt={2}>Cargando formularios...</Typography>
-              </Box>
-            ) : forms.length > 0 ? (
-              <TableForms
-                header={headersArray}
-                data={forms.map((form) => ({
-                  ...form,
-                  creation_date: formatDateTime(form.creation_date),
-                  updated_date: formatDateTime(form.updated_date),
-                }))}
-                onView={openForm}
-                onActive={activateForm}
-                onRemove={deactivateForm}
-                onCreate={() => openModal("create")}
-                onUpdate={(form) => openModal("edit", form)}
-              />
-            ) : (
-              <Box textAlign="center" py={5}>
-                <Typography variant="body2" color="text.secondary" mb={2}>
-                  No existen formularios disponibles.
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#b62a8b",
-                    color: "#fff",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                    "&:hover": { backgroundColor: "#a02179" },
-                  }}
-                  onClick={() => openModal("create")}
-                >
-                  Crear nuevo formulario
-                </Button>
-              </Box>
-            )}
-          </Paper>
+      <Box className="App" sx={{ overflow: "hidden" }}>
+        <Box id="body">
+          {loading && <p>Cargando...</p>}
+          <HeaderLT1 />
+          <Box
+            sx={{
+              alignItems: "stretch",
+              flexWrap: "nowrap",
+              padding: 0,
+              display: "flex",
+            }}
+          >
+            {/* <SidebarLT1 /> */}
+            <Box className="container" mt={0}>
+              {loading ? (
+                <Box textAlign="center" py={4}>
+                  <CircularProgress sx={{ color: "#b62a8b" }} />
+                  <Typography mt={2}>Cargando formularios...</Typography>
+                </Box>
+              ) : forms.length > 0 ? (
+                <TableForms
+                  header={headersArray}
+                  data={forms.map((form) => ({
+                    ...form,
+                    creation_date: formatDateTime(form.creation_date),
+                    updated_date: formatDateTime(form.updated_date),
+                  }))}
+                  onView={openForm}
+                  onActive={activateForm}
+                  onRemove={deactivateForm}
+                  onCreate={() => openModal("create")}
+                  onUpdate={(form) => openModal("edit", form)}
+                />
+              ) : (
+                <Box textAlign="center" py={5}>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    No existen formularios disponibles.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: "#b62a8b",
+                      color: "#fff",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      "&:hover": { backgroundColor: "#a02179" },
+                    }}
+                    onClick={() => openModal("create")}
+                  >
+                    Crear nuevo formulario
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </Box>
         </Box>
       </Box>
 
