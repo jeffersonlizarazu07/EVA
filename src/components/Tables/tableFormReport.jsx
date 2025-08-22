@@ -18,7 +18,8 @@ import {
   FormControl,
   Select,
   MenuItem,
-  InputLabel
+  InputLabel,
+  Button
 } from "@mui/material";
 import {
   Search
@@ -28,9 +29,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 
 const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, table3 }) => {
-  const heders2 = ["Pregunta", "Tipo de error","Respuestas Malas", "Monitoreos", "Porcentaje"];
-  const heders4 = ["Tipo de error","Porcentaje"];
-
+  const { t } = useTranslations();
+  const heders2 = [t("clientTable.preguntas"),t("clientTable.tipo_de_error"), t("clientTable.monitoreos"),t("clientTable.respuestas_Erróneas"),  t("clientTable.porcentaje")];
+  //const heders4 = ["Tipo de error","Porcentaje"];
+  const heders4 = [t("clientTable.tipo_de_error"), t("clientTable.porcentaje")];
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedTable, setSelectedTable] = useState("table1"); // controlar qué tabla mostrar
 
@@ -47,7 +49,7 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
     });
   };
 
-  const { t } = useTranslations();
+ 
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
@@ -115,254 +117,290 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
   };
 
   return (
-    <Box className="table-container">
-      {/*SELECT PARA ELEGIR TABLA */}
-      <FormControl fullWidth 
-        sx={{ 
-          mb: 3, 
+    <Box >
+
+      {/* Botones para elegir tabla */}
+      <Box sx={{ display: "flex",  gap: 1, minWidth: "200px", justifyContent:"center", mb:3 }}>
+        <Button 
+          variant={selectedTable === "table1" ? "contained" : "outlined"} 
+          onClick={() => setSelectedTable("table1")}
+          sx={{
+           
+            
+            borderColor: "#c65297",
+            color: selectedTable === "table1" ? "#fff" : "#c65297",
+            backgroundColor: selectedTable === "table1" ? "#c65297" : "transparent",
+            "&:hover": {
+              borderColor: "#c65297", 
+              backgroundColor: selectedTable === "table1" ? "#a13f7e" : "rgba(198,82,151,0.1)",
+            }
+          }}
+        >
+          {t("clientTable.tabla_de_monitoreo")}
+        </Button>
+
+        <Button 
+          variant={selectedTable === "table2" ? "contained" : "outlined"} 
+          onClick={() => setSelectedTable("table2")}
+          sx={{
+            borderColor: "#c65297",
+            color: selectedTable === "table2" ? "#fff" : "#c65297",
+            backgroundColor: selectedTable === "table2" ? "#c65297" : "transparent",
+            "&:hover": {
+              borderColor: "#c65297", 
+              backgroundColor: selectedTable === "table2" ? "#a13f7e" : "rgba(198,82,151,0.1)",
+            }
+          }}
+        >
+          {t("clientTable.tabla_de_errores")}
+        </Button>
+
+        <Button 
+          variant={selectedTable === "table3" ? "contained" : "outlined"} 
+          onClick={() => setSelectedTable("table3")}
+          sx={{
+            borderColor: "#c65297",
+            color: selectedTable === "table3" ? "#fff" : "#c65297",
+            backgroundColor: selectedTable === "table3" ? "#c65297" : "transparent",
+            "&:hover": {
+              borderColor: "#c65297", 
+              backgroundColor: selectedTable === "table3" ? "#a13f7e" : "rgba(198,82,151,0.1)",
+            }
+          }}
+        >
+          {t("clientTable.tabla_de_errores_Totales")}
+        </Button>
+      </Box>
+    
+      <Box className="table-container"  
           
-          "& .MuiOutlinedInput-root": {
         
-            "&.Mui-focused fieldset": {
-              borderColor: "#c65297", // borde al focus
-            },
-          },
-      
-          "& .MuiInputLabel-root.Mui-focused": {
-            color: "#c65297", // color del label al focus
-          }, }}
-        >
-        <InputLabel sx={{color: "#c65297",}}>Selecciona una tabla</InputLabel>
-        <Select
-          value={selectedTable}
-          label="Selecciona una tabla"
-          onChange={(e) => setSelectedTable(e.target.value)}
-           sx={{
-      
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#c65297", // borde normal
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#c65297", // borde al hover
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#c65297", // borde al focus
-              },
-            }}
-        >
-          <MenuItem value="table1">Tabla de Monitoreo</MenuItem>
-          <MenuItem value="table2">Tabla de Errores por Pregunta</MenuItem>
-          <MenuItem value="table3">Tabla de Errores Totales</MenuItem>
-        </Select>
-      </FormControl>
+      >
+        
 
-      {/* --- TABLA 1 --- */}
-      {selectedTable === "table1" && (
-        <>
-          {/* Buscador */}
-          <Grid container spacing={2} mb={2}>
-            <Grid item xs={12} sm={6}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <TextField
-                  size="small"
-                  placeholder={t("userTable.Search")}
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className="inp-search"
-                  variant="outlined"
-                  sx={{ width: "100%" }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search sx={{ color: "#888" }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-            </Grid>
-          </Grid>
-
-          {/* Tabla 1 */}
-          <TableContainer component={Paper} elevation={0} sx={{ width:"100%", overflowY: "auto" }}>
-            <Table size="small">
-              <TableHead> 
-                <TableRow> 
-                  <TableCell 
-                    sx={{ 
-                      fontSize: "1rem",
-                      textAlign: "center",
-                      fontWeight: "bold" 
-                      }}
-                    >
-                    {t("clientTable.seleccionar_para_descargar")} 
-                  </TableCell> 
-                  {header.map((item, i) => ( 
-                    <TableCell key={i} align="center" 
-                      sx={{ fontWeight: "bold",
-                        whiteSpace: "normal",
-                        minWidth: item.key === "feedback" ? 250 : 300,
-                        maxWidth: item.key === "feedback" ? "none" : 300, wordWrap: "break-word",
-                      }}> 
-                      {item.label} 
-                    </TableCell> ))} 
-                </TableRow> 
-              </TableHead>
-              <TableBody>
-                {data
-                  .slice(page1 * rowsPerPage1, page1 * rowsPerPage1 + rowsPerPage1) // 👈 paginación en filas
-                  .map((row, idx) => {
-                    const selected = selectedRows.some(r => r.id_monitoreo === row.id_monitoreo);
-                    return (
-                      <TableRow key={idx}>
-                        <TableCell align="center">
-                          <IconButton
-                            onClick={() => handleCheckboxChange(row)}
-                            sx={{
-                              color: selected ? "#b62a8b" : "#ccc",
-                              "&:hover": { color: "#b62a8b" },
-                            }}
-                          >
-                            {selected ? <CheckCircleIcon /> : <CheckCircleOutlineIcon />}
-                          </IconButton>
-                        </TableCell>
-                        {header.map((col, i) => ( // 👈 columnas completas
-                          <TableCell key={i} align="center">
-                            {col.key.startsWith("Pregunta")
-                              ? row.preguntas?.[i - indexOffset]?.respuesta || ""
-                              : row[col.key]}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    );
-                  })}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell
+        {/* --- TABLA 1 --- */}
+        {selectedTable === "table1" && (
+          <>
+            {/* Buscador */}
+            <Grid container spacing={2} mb={2}>
+              <Grid item xs={12} >
+                <Box display="flex" alignItems="center" gap={1} 
+                  
+                >
+                  <TextField
+                    size="small"
+                    placeholder={t("userTable.Search")}
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="inp-search"
+                    variant="outlined"
                     sx={{
-                      backgroundColor: "#f5f5f5",
-                      color: "#fff",
-                      fontWeight: "bold",
+                      width: "100%",
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": {
+                          borderColor: "#ccc", // color por defecto
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "#c65297", // hover rosado
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#c65297", //  focus rosado
+                        },
+                      },
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: "#888" }} />
+                        </InputAdornment>
+                      ),
                     }}
                   />
-                  {header.map((col, idx) => (
+                </Box>
+              </Grid>
+            </Grid>
+
+            {/* Tabla 1 */}
+            <TableContainer component={Paper} elevation={0} sx={{ width:"100%", overflowY: "auto" }}>
+              <Table size="small">
+                <TableHead> 
+                  <TableRow> 
+                    <TableCell 
+                      sx={{ 
+                        fontSize: "1rem",
+                        textAlign: "center",
+                        fontWeight: "bold" 
+                        }}
+                      >
+                      {t("clientTable.seleccionar_para_descargar")} 
+                    </TableCell> 
+                    {header.map((item, i) => ( 
+                      <TableCell key={i} align="center" 
+                        sx={{ fontWeight: "bold",
+                          whiteSpace: "normal",
+                          minWidth: item.key === "feedback" ? 250 : 300,
+                          maxWidth: item.key === "feedback" ? "none" : 300, wordWrap: "break-word",
+                        }}> 
+                        {item.label} 
+                      </TableCell> ))} 
+                  </TableRow> 
+                </TableHead>
+                <TableBody>
+                  {filteredData
+                    .slice(page1 * rowsPerPage1, page1 * rowsPerPage1 + rowsPerPage1) // paginación en filas
+                    .map((row, idx) => {
+                      const selected = selectedRows.some(r => r.id_monitoreo === row.id_monitoreo);
+                      return (
+                        <TableRow key={idx}>
+                          <TableCell align="center">
+                            <IconButton
+                              onClick={() => handleCheckboxChange(row)}
+                              sx={{
+                                color: selected ? "#b62a8b" : "#ccc",
+                                "&:hover": { color: "#b62a8b" },
+                              }}
+                            >
+                              {selected ? <CheckCircleIcon /> : <CheckCircleOutlineIcon />}
+                            </IconButton>
+                          </TableCell>
+                          {header.map((col, i) => ( // 👈 columnas completas
+                            <TableCell key={i} align="center">
+                              {col.key.startsWith("Pregunta")
+                                ? row.preguntas?.[i - indexOffset]?.respuesta || ""
+                                : row[col.key]}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
                     <TableCell
-                      key={idx}
-                      align="center"
                       sx={{
                         backgroundColor: "#f5f5f5",
-                        color: "#c70e8f",
+                        color: "#fff",
                         fontWeight: "bold",
                       }}
-                    >
-                      {col.key === "nombre_agente"
-                        ? "Datos de Monitoreo"
-                        : col.key === "score"
-                        ? `Promedio: ${footerData[0]?.promedio}`
-                        : col.key === "nombre_form"
-                        ? `Monitorizaciones: ${footerData[0]?.preguntas}`
-                        : ""}
+                    />
+                    {header.map((col, idx) => (
+                      <TableCell
+                        key={idx}
+                        align="center"
+                        sx={{
+                          backgroundColor: "#f5f5f5",
+                          color: "#c70e8f",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {col.key === "nombre_agente"
+                          ? "Datos de Monitoreo"
+                          : col.key === "score"
+                          ? `Promedio: ${footerData[0]?.promedio}`
+                          : col.key === "nombre_form"
+                          ? `Monitorizaciones: ${footerData[0]?.preguntas}`
+                          : ""}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableFooter>
+                
+              </Table>
+              
+            </TableContainer>
+            <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={filteredData.length}
+                  rowsPerPage={rowsPerPage1}
+                  page={page1}
+                  onPageChange={handleChangePage1}
+                  onRowsPerPageChange={handleChangeRowsPerPage1}
+                />
+            
+          </>
+        )}
+
+        {/* --- TABLA 2 --- */}
+        
+        {selectedTable === "table2" && (
+          <>
+          <TableContainer component={Paper} elevation={0}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  {heders2.map((item, i) => (
+                    <TableCell key={i} align="center" sx={{ fontWeight: "bold" }}>
+                      {item}
                     </TableCell>
                   ))}
                 </TableRow>
-              </TableFooter>
-              
+              </TableHead>
+              <TableBody>
+                {table2
+                .slice(page2 * rowsPerPage2, page2 * rowsPerPage2 + rowsPerPage2)
+                .map((row, idx) => (
+                  <TableRow key={idx}>
+                    {Object.values(row).map((value, i) => (
+                      <TableCell key={i} align="center">{value}</TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
-            
+          </TableContainer>
+        <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={table2.length}
+            rowsPerPage={rowsPerPage2}
+            page={page2}
+            onPageChange={handleChangePage2}
+            onRowsPerPageChange={handleChangeRowsPerPage2}
+          />
+          </>
+        )}
+
+        {/* --- TABLA 3 --- */}
+        {selectedTable === "table3" && (
+          <>
+          <TableContainer component={Paper} elevation={0}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  {heders4.map((item, i) => (
+                    <TableCell key={i} align="center" sx={{ fontWeight: "bold" }}>
+                      {item}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {table3
+                .slice(page3 * rowsPerPage3, page3 * rowsPerPage3 + rowsPerPage3)
+                .map((row, idx) => (
+                  <TableRow key={idx}>
+                    {["tipo_error", "porcentaje"].map((key) => (
+                      <TableCell key={key} align="center">{row[key]}</TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </TableContainer>
           <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={data.length}
-                rowsPerPage={rowsPerPage1}
-                page={page1}
-                onPageChange={handleChangePage1}
-                onRowsPerPageChange={handleChangeRowsPerPage1}
-              />
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={table3.length}
+            rowsPerPage={rowsPerPage3}
+            page={page3}
+            onPageChange={handleChangePage3}
+            onRowsPerPageChange={handleChangeRowsPerPage3}
+          />
           
-        </>
-      )}
-
-      {/* --- TABLA 2 --- */}
-      
-      {selectedTable === "table2" && (
-        <>
-        <TableContainer component={Paper} elevation={0}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                {heders2.map((item, i) => (
-                  <TableCell key={i} align="center" sx={{ fontWeight: "bold" }}>
-                    {item}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {table2
-              .slice(page2 * rowsPerPage2, page2 * rowsPerPage2 + rowsPerPage2)
-              .map((row, idx) => (
-                <TableRow key={idx}>
-                  {Object.values(row).map((value, i) => (
-                    <TableCell key={i} align="center">{value}</TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-       <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={table2.length}
-          rowsPerPage={rowsPerPage2}
-          page={page2}
-          onPageChange={handleChangePage2}
-          onRowsPerPageChange={handleChangeRowsPerPage2}
-        />
-        </>
-      )}
-
-      {/* --- TABLA 3 --- */}
-      {selectedTable === "table3" && (
-        <>
-        <TableContainer component={Paper} elevation={0}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                {heders4.map((item, i) => (
-                  <TableCell key={i} align="center" sx={{ fontWeight: "bold" }}>
-                    {item}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {table3
-              .slice(page3 * rowsPerPage3, page3 * rowsPerPage3 + rowsPerPage3)
-              .map((row, idx) => (
-                <TableRow key={idx}>
-                  {["tipo_error", "porcentaje"].map((key) => (
-                    <TableCell key={key} align="center">{row[key]}</TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={table3.length}
-          rowsPerPage={rowsPerPage3}
-          page={page3}
-          onPageChange={handleChangePage3}
-          onRowsPerPageChange={handleChangeRowsPerPage3}
-        />
-        
-        </>
-      )}
+          </>
+        )}
+      </Box>
     </Box>
   );
 };

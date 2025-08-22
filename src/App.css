@@ -179,3 +179,21 @@ body {
   font-size: 1.5rem !important;   /* o usa 0.875rem para aún más pequeño */
   margin-bottom: -0.5rem !important;
 }
+
+@media (min-width: 1400px) {
+  .container,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    max-width: 1420px !important;
+  }
+}
+
+@media (min-width: 1700px) {
+  .container,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    max-width: 1720px !important;
+  }
+}
