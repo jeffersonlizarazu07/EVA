@@ -107,15 +107,6 @@ const ModalViewAdmin = ({
 
                 <TextField
                   fullWidth
-                  label={t("viewUserModal.Email")}
-                  value={email.input}
-                  InputProps={{ readOnly: true }}
-                  sx={{ mb: 2 }}
-                  className="readOnlyField readOnlyField_"
-                />
-
-                <TextField
-                  fullWidth
                   label={t("viewUserModal.Role")}
                   value={
                     type.input === 1
