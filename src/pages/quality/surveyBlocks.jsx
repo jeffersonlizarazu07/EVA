@@ -6,24 +6,15 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useParams } from "react-router-dom";
 import {
-  Modal,
   Box,
   Paper,
   Typography,
   IconButton,
   Grid,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   TextField,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  FormControlLabel,
   Checkbox,
   CircularProgress,
-  Divider,
   Button,
   Autocomplete,
   Card,
@@ -33,8 +24,6 @@ import {
   Zoom,
   Slide,
   useTheme,
-  alpha,
-  Fab,
   Tooltip,
   Collapse,
   Stack,
@@ -44,54 +33,35 @@ import {
   Add,
   Edit,
   Delete,
-  DragIndicator,
   ExpandMore,
   ExpandLess,
-  TurnLeft,
-  ArrowBack,
   QuestionAnswer,
   Analytics,
   Schedule,
   Info,
-  CheckCircle,
   RadioButtonUnchecked,
   TextFields,
   ToggleOn,
   DragHandle,
-  MoreVert,
   CheckBox,
   Error as ErrorIcon
 } from '@mui/icons-material';
 import {
   smallAlertDelete,
-  loadingAlert,
-  Toast2,
   Toast,
 } from "../../assets/js/alertConfig";
 import {
-  sendData,
-  deleteQuestion,
-  getSurvey,
   getSurveyQuestions,
 } from "../../services/surveyRequest";
 import "../../assets/css/survey.css";
 import {
-  Yes_no,
-  Textfield_s,
-  SingleChoiceView,
-  MultipleChoiceView,
-} from "../survey/questions";
-import {
   createBlock,
-  getAllBlocks,
-  updateBlock,
   deleteBlock,
   getBlocksByFormId,
   getBlockById,
 } from "../../services/blockService";
 import {
   createQuestions,
-  getQuestionsByBlockId,
   updateQuestions,
 } from "../../services/questionsFormService";
 import AnswersFormService from "../../services/answersFormService";
@@ -168,6 +138,7 @@ export default function SurveyBlocks({}) {
   /* Estado de listas de preguntas del botón + Pregunta */
   const [questionsList, setQuestionsList] = useState([
     {
+      id: null,
       text: "",
       type: "",
       error: "",
@@ -175,6 +146,7 @@ export default function SurveyBlocks({}) {
       correctAnswers: [],
     },
   ]);
+  console.log("yyyyyyyyyy", questionsList)
 
   /* Contador de número de encuestas segun input */
   const [questionCountInput, setQuestionCountInput] = useState("");
@@ -350,6 +322,7 @@ export default function SurveyBlocks({}) {
           const tipo = p.type || typeMap[p.id_type_question] || "";
 
           const preguntaBase = {
+            id: p.id || null, 
             text: p.text || p.question_name || "",
             error: p.type_error,
             type: tipo,
@@ -539,6 +512,7 @@ export default function SurveyBlocks({}) {
         }
 
         return {
+          id: q.id ?? q.question?.id ?? null,
           question_name: q.text || q.question || "Sin texto",
           type_error: q.error,
           id_type_question: q.type || typeMap[q.type] || null,
@@ -627,7 +601,7 @@ export default function SurveyBlocks({}) {
             // Actualizar metadatos del formulario
             const updatedForm = await updateFormMetadata(id_form, userId);
             if (updatedForm) {
-              setFormData(updatedForm); // 👈 Esto actualizará la fecha en tu UI
+              setFormData(updatedForm); // Esto actualizará la fecha en tu UI
             }
             await fetchFormData();
 
@@ -794,6 +768,7 @@ export default function SurveyBlocks({}) {
     }
 
     const newQuestions = Array.from({ length: count }, () => ({
+      id: null,
       text: "",
       error: "",
       type: "",
@@ -1086,6 +1061,7 @@ export default function SurveyBlocks({}) {
     try {
       setLoadingBlocks(true);
       const res = await getBlocksByFormId(id_form);
+      console.log("xxxxxxxx", res.data.data)
 
       // Verificar que la respuesta tenga la estructura esperada
       const blocksData = res.data?.data || res.data || [];

@@ -1,7 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import "../../assets/css/newUser.css";
 import TableAdmin from "../../components/Tables/tableAdmin";
-import Swal from "sweetalert2";
 import axios from "axios";
 import HeaderLT1 from "../../components/header/headerLT1";
 import useInput from "../../components/hooks/useInput";
@@ -55,7 +54,7 @@ const AdminList = () => {
     lastName: "",
     userRed: "",
     type: "",
-    clients: ""
+    clients: "",
   });
 
   // exportar solo agente
@@ -63,7 +62,8 @@ const AdminList = () => {
 
   // Traducción e idioma desde el contexto global del usuario
   const { t } = useTranslations();
-  const { accessToken, setClients, userId, clients, languageUser } = useContext(UserContext);
+  const { accessToken, setClients, userId, clients, languageUser } =
+    useContext(UserContext);
 
   // Se ejecuta cuando cambia el idioma del usuario o se monta el componente
 
@@ -83,19 +83,17 @@ const AdminList = () => {
 
     // Cambio el idioma actual del usuario
     i18n.changeLanguage(languageUser);
-      getClients();
-    }, [languageUser]);
-    const config = {
-      withCredentials: true,
-    };
-    // Llaves para campos específicos al mostrar data
-    const selectedKeys = ["firstname", "lastname", "type", "state", "user_red"];
-    const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-    const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-    const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
-    const userRed = useInput({ defaultValue: "", validate: /^[A-Za-z0-9._-]*$/ });
-
-
+    getClients();
+  }, [languageUser]);
+  const config = {
+    withCredentials: true,
+  };
+  // Llaves para campos específicos al mostrar data
+  const selectedKeys = ["firstname", "lastname", "type", "state", "user_red"];
+  const lastName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const firstName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const middleName = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
+  const userRed = useInput({ defaultValue: "", validate: /^[A-Za-z0-9._-]*$/ });
   const type = useInput({ defaultValue: "", validate: /^[1-4]+$/ });
 
   useEffect(() => {
@@ -118,7 +116,6 @@ const AdminList = () => {
     validate: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
   });
 
-  // ----------- PETICIONES A LA API ----------- //
   // Obtener todos los admins
   const getAdmins = async () => {
     try {
@@ -172,7 +169,6 @@ const AdminList = () => {
     const nombre = rest.firstname;
 
     if (metodo.toUpperCase() === "PUT") {
-
       try {
         const respuesta = await axios.put(
           `${urlUsers}/${idToEdit}`,
@@ -528,14 +524,14 @@ const AdminList = () => {
   const validar = () => {
     var parametros;
     var metodo;
-    
+
     // Limpiar errores previos
     setErrors({
       firstName: "",
       lastName: "",
       userRed: "",
       type: "",
-      clients: ""
+      clients: "",
     });
 
     // Imprime los valores para depurar
@@ -543,7 +539,7 @@ const AdminList = () => {
     console.log("firstName:", firstName.input);
     console.log("type:", type.input);
     console.log("registration_date:", registration_date.input);
-  
+
     // Validación de campos
     let hasErrors = false;
     const newErrors = {
@@ -551,7 +547,7 @@ const AdminList = () => {
       lastName: "",
       userRed: "",
       type: "",
-      clients: ""
+      clients: "",
     };
 
     // Validar nombre
@@ -871,7 +867,7 @@ const AdminList = () => {
                     label={t("viewUserModal.NetworkUser")}
                     value={userRed.input || "No especificado"}
                     InputProps={{ readOnly: true }}
-                    sx={{ mb: 2}}
+                    sx={{ mb: 2 }}
                     className="readOnlyField readOnlyField_"
                   />
 
@@ -917,9 +913,6 @@ const AdminList = () => {
 
                 {/* Right column */}
                 <Grid item xs={12} sm={6}>
-
-
-
                   <TextField
                     fullWidth
                     label={t("viewUserModal.Role")}

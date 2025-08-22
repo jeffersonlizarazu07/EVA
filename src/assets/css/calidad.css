@@ -43,36 +43,36 @@ section .container {
 }
 .card1 {
   background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
-    url("../img/imagen4slide3.jpg");
+    url("../img/imagen4slide3.jpg") !important;
   background-size: 100% 100%;
   background-size: cover;
 }
 .card1:hover {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("../img/imagen4slide3.jpg");
+    url("../img/imagen4slide3.jpg") !important;
   border: none !important;
   box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
 }
 .card2 {
   background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
-    url("../img/imagen5 slide 3.jpg");
+    url("../img/imagen5 slide 3.jpg") !important;
   background-size: 100% 100%;
   background-size: cover;
 }
 .card2:hover {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("../img/imagen5 slide 3.jpg");
+    url("../img/imagen5 slide 3.jpg") !important;
   border: none !important;
   box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
 }
 .card3 {
   background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
-    url("../img/imagen6 slide 3.jpg");
+    url("../img/imagen6 slide 3.jpg") !important;
   background-size: 100% 100%;
 }
 .card3:hover {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("../img/imagen6 slide 3.jpg");
+    url("../img/imagen6 slide 3.jpg") !important;
   background-size: 100% 100%;
   border: none !important;
   box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
@@ -80,7 +80,7 @@ section .container {
 .outstanding-card,
 .outstanding-card-black {
   background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
-    url("../img/imagen3 slide 3.jpeg");
+    url("../img/imagen3 slide 3.jpeg") !important;
   background-size: cover;
   background-repeat: no-repeat;
   border-radius: 35px !important;
@@ -95,7 +95,7 @@ section .container {
 .outstanding-card77,
 .outstanding-card77-black {
   background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
-    url("/src/assets/img/imagen7 slide4.jpg");
+    url("/src/assets/img/imagen7 slide4.jpg") !important;
   background-size: cover;
   background-repeat: no-repeat;
   border-radius: 35px !important;
@@ -109,27 +109,27 @@ section .container {
 
 .outstanding-card77:hover {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("/src/assets/img/imagen7 slide4.jpg");
+    url("/src/assets/img/imagen7 slide4.jpg") !important;
   border: none !important;
   box-shadow: rgba(0, 0, 0, 0.705) 0px 5px 25px;
 }
 
 .outstanding-card77:hover {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("/src/assets/img/imagen7 slide4.jpg");
+    url("/src/assets/img/imagen7 slide4.jpg") !important;
   border: none !important;
   box-shadow: rgba(255, 255, 255, 0.808) 0px 5px 25px;
 }
 .outstanding-card:hover {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("../img/imagen3 slide 3.jpeg");
+    url("../img/imagen3 slide 3.jpeg") !important;
   border: none !important;
   box-shadow: rgba(0, 0, 0, 0.705) 0px 5px 25px;
 }
 
 .outstanding-card-black:hover {
   background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("../img/imagen3 slide 3.jpeg");
+    url("../img/imagen3 slide 3.jpeg") !important;
   border: none !important;
   box-shadow: rgba(255, 255, 255, 0.808) 0px 5px 25px;
 }

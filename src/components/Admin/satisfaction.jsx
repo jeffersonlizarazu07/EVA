@@ -5,11 +5,9 @@ import {
   toggleGridMode,
   toggleListMode,
 } from "../../assets/js/toggleListGridMode";
-import SidebarLT1 from "../aside/sidebarLT1";
 import HeaderLT1 from "../header/headerLT1";
-import SidebarLT2 from "../aside/sidebarLT2";
 import HeaderLT2 from "../header/headerLT2";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from "../hooks/useTranslations";
 import { getSurveys } from "../../services/surveyRequest";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -21,25 +19,20 @@ import {
   CardContent,
   Typography,
   Button,
-  IconButton,
   List,
   ListItem,
-  ListItemText,
-  Paper,
-  Divider,
-  Stack,
   Link,
 } from "@mui/material";
 
 const Satisfaction = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslations();
   const { userType, languageUser, clients, userId } = useContext(UserContext);
   const { accessToken } = useContext(UserContext);
   const urlSurveys = `http://localhost:3000/api/clients/surveys?clientIds=${clients}`;
   const [surveys, setSurveys] = useState("");
   const [topSurveys, setTopSurveys] = useState([]);
-  const [topForm, setTopForm]= useState([]);
+  const [topForm, setTopForm] = useState([]);
 
   useEffect(() => {
     const fetchTopSurveys = async () => {
@@ -49,19 +42,16 @@ const Satisfaction = () => {
           config
         );
         setTopSurveys(response.data.data);
-        console.log("Top Surveys:", response.data.data);        
       } catch (error) {
         console.error("Error fetching top surveys:", error);
       }
     };
-
     fetchTopSurveys();
   }, []);
 
   useEffect(() => {
     scoreXSurvey();
     cSurveys();
-    i18n.changeLanguage(languageUser);
   }, []);
 
   useEffect(() => {
@@ -74,9 +64,6 @@ const Satisfaction = () => {
   };
 
   const cSurveys = function () {
-    console.log("--urlSurveys", urlSurveys);
-    console.log("--clientes", clients);
-    console.log("--userId", userId);
     getSurveys(urlSurveys, config)
       .then(setSurveys)
       .catch((error) => {
@@ -85,39 +72,34 @@ const Satisfaction = () => {
   };
 
   // traer data con puntages
-  const scoreXSurvey = async ()=>{
+  const scoreXSurvey = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/answers/survey/score',config)
-      console.log("Puntajes por encuesta:", response.data);
+      const response = await axios.get(
+        "http://localhost:3000/api/answers/survey/score",
+        config
+      );
       const data = {};
-      
+
       if (response.data && response.data.length > 0) {
         response.data.forEach((i) => {
           const key = `${i.title}`;
-          if(!data[key]){
-            data[key]={
-              link:i.link,
-              formulario:i.title,
-              puntaje:i.final_score,
-            }
+          if (!data[key]) {
+            data[key] = {
+              link: i.link,
+              formulario: i.title,
+              puntaje: i.final_score,
+            };
           }
-          
-        })
+        });
         const TopForm = Object.values(data)
-            .sort((a,b)=> b.puntaje - a.puntaje)
-            .slice(0, 5)
-
+          .sort((a, b) => b.puntaje - a.puntaje)
+          .slice(0, 5);
         setTopForm(TopForm);
-        console.log("Top 5:", TopForm);
-
         return TopForm;
       }
-      
       return [];
-    } catch (error) {
-      
-    }
-  }
+    } catch (error) {}
+  };
 
   const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, "0");
@@ -128,19 +110,19 @@ const Satisfaction = () => {
   const currentDate = new Date();
 
   return (
-    <Box className="App" sx={{ overflow: "hidden" }}>
-      <Box id="body">
+    <Box sx={{ overflow: "hidden" }}>
+      <Box>
         {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
-                 <Box>
-           <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
-             <Grid container sx={{ mt: 6 }} justifyContent="center">
+        <Box>
+          <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+            <Grid container sx={{ mt: 6 }} justifyContent="center">
               {/* <!-- OPCION  MODO GRID  --> */}
-                             <Box
-                 className="cards-group text-center"
-                 id="grid-mode"
-                 style={{ display: "block" }}
-                 sx={{ width: { xs: "100%", md: "70%", lg: "60%" } }}
-               >
+              <Box
+                className="cards-group text-center"
+                id="grid-mode"
+                style={{ display: "block" }}
+                sx={{ width: { xs: "100%", md: "70%", lg: "60%" } }}
+              >
                 <Grid margin={3}>
                   <Typography
                     variant="h4"
@@ -206,8 +188,13 @@ const Satisfaction = () => {
                   </Grid>
                 </Grid>
 
-                                 <Grid container sx={{ textAlign: "center" }} spacing={3} justifyContent="center">
-                   <Grid item xs={12} md={5} lg={5}>
+                <Grid
+                  container
+                  sx={{ textAlign: "center" }}
+                  spacing={3}
+                  justifyContent="center"
+                >
+                  <Grid item xs={12} md={5} lg={5}>
                     <Card className="card card4">
                       <CardContent sx={{ display: "grid" }}>
                         <Grid container>
@@ -262,7 +249,7 @@ const Satisfaction = () => {
                       </CardContent>
                     </Card>
                   </Grid>
-                                     <Grid item xs={12} md={5} lg={5}>
+                  <Grid item xs={12} md={5} lg={5}>
                     <Card className="card card5">
                       <CardContent sx={{ display: "grid" }}>
                         <Grid container>
@@ -328,12 +315,12 @@ const Satisfaction = () => {
               {/* <!-- OPCION  MODO GRID  --> */}
 
               {/* <!-- OPCION MODO LISTA --> */}
-                             <Box
-                 className="cards-group text-center"
-                 id="list-mode"
-                 style={{ display: "none" }}
-                 sx={{ width: { xs: "100%", md: "70%", lg: "60%" } }}
-               >
+              <Box
+                className="cards-group text-center"
+                id="list-mode"
+                style={{ display: "none" }}
+                sx={{ width: { xs: "100%", md: "70%", lg: "60%" } }}
+              >
                 <Grid margin={3}>
                   <Typography
                     variant="h4"
@@ -530,7 +517,7 @@ const Satisfaction = () => {
               </Box>
 
               {/* <!-- OPCION MODO LISTA  --> */}
-                             <Grid item xs={12} md={4} lg={3}>
+              <Grid item xs={12} md={4} lg={3}>
                 <Card className="outstanding-card2 extern">
                   <CardContent className="div-title">
                     <Typography variant="h6" mt={3}>
@@ -585,7 +572,6 @@ const Satisfaction = () => {
                                   {survey.title}{" "}
                                   {/* : {survey.encuestas_enviadas} */}
                                 </Typography>
-
                               </Link>
                             </ListItem>
                           ))}
