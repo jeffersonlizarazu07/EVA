@@ -12,7 +12,7 @@ const Agent = {
       // Filtramos solo los que estén asociados con los IDs de clientes recibidos como parámetro
       .whereIn("uc.idClient", clientIds)
       // Seleccionamos los campos relevantes del usuario
-      .select(
+      .distinct(
         "u.id",
         "u.firstname",
         "u.middlename",
@@ -24,14 +24,12 @@ const Agent = {
         "u.registration_date"
       )
 
-      // Agrupamos por ID para evitar duplicados si un usuario está asociado a varios clientes
-      .groupBy("u.id");
-      registration_date:
-      return agentes.map(agent => ({
+    return agentes.map(agent => ({
       ...agent,
-      registration_date:  new Date(agent.registration_date).toLocaleDateString()  // "YYYY-MM-DD"
-      })); // Formateo la fecha de registro a un formato legible
+      registration_date: new Date(agent.registration_date).toLocaleDateString()  // "YYYY-MM-DD" Formateo la fecha de registro a un formato legible
+    }));
   },
+
   // Buscar un agente específico por ID
   getAgentById: async (id) => {
     return await db("users")

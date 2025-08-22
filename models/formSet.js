@@ -5,49 +5,28 @@ const FormSet = {
   getAll: () => {
     try {
       return db("form_set")
-        .join("clients", "form_set.idClient", "=", "clients.id") // Relacionamos con la tabla de clientes
-        .join("users as creator", "form_set.created_by", "=", "creator.id") // Relacionamos con el creador
-        .leftJoin("users as updater", "form_set.updated_by", "=", "updater.id") // Relacionamos con el editor
-        .leftJoin("monitoring", "monitoring.id_form", "=", "form_set.id")
-        .groupBy("form_set.id")
+        .join("clients", "form_set.idClient", "clients.id")
+        .join("users as creator", "form_set.created_by", "creator.id")
+        .leftJoin("users as updater", "form_set.updated_by", "updater.id")
+        .leftJoin("monitoring", "monitoring.id_form", "form_set.id")
         .select(
-          "form_set.id", // Usamos 'id' en lugar de 'form_id'
-          "form_set.idClient", // Usamos 'idClient' en lugar de 'client_id'
-          "form_set.title", // Usamos 'title' en lugar de 'form_name'
-          "form_set.description", // Usamos 'description'
-          "form_set.creation_date", // Usamos 'creation_date'
-          "form_set.updated_date", // Usamos 'updated_date'
-          // Usamos la expresión CASE para transformar el valor de 'state' en texto
-          db.raw(
-            `CASE WHEN form_set.state = 1 THEN 'Activo' WHEN form_set.state = 0 THEN 'Inactivo' ELSE 'Desconocido' END as state`
-          ),
-          "clients.client as client_name", // Nombre del cliente
-          // Concatenamos el primer nombre y apellido del creador
-          db.raw(
-            "(creator.firstname + ' ' + creator.lastname) as created_by_name"
-          ),
-          // Concatenamos el primer nombre y apellido del editor si existe
-          db.raw(
-            'ISNULL(FORMAT(updated_date, "yyyy-MM-dd HH:mm:ss"), "No actualizada") as updated_date'
-          ),
-          db.raw(
-            'ISNULL(FORMAT(creation_date, "yyyy-MM-dd HH:mm:ss"), "No actualizada") as creation_date'
-          ),
-          // Concatenamos el primer nombre y apellido del editor si existe
-          db.raw(
-            `ISNULL((updater.firstname + ' ' + updater.lastname), "No actualizada") as updated_by_name`
-          ),
-          db.raw(`COUNT(monitoring.id) as monitorings_number`), // Contar el número de monitorizaciones de cada formulario
-          db.raw(
-            // Trae el promedio del score respecto al total de monitoreos con los que cuente el formulario
-            `ISNULL(CAST(AVG(monitoring.score) AS DECIMAL(10,2)), 0.00) as average_score` 
-          )
+          "form_set.id",
+          "form_set.idClient",
+          "form_set.title",
+          "form_set.description",
+          "form_set.creation_date",
+          "form_set.updated_date",
+          db.raw(`CASE WHEN form_set.state = 1 THEN 'Activo' WHEN form_set.state = 0 THEN 'Inactivo' ELSE 'Desconocido' END as state`),
+          "clients.client as client_name",
+          db.raw(`(creator.firstname + ' ' + creator.lastname) as created_by_name`),
+          db.raw(`ISNULL(FORMAT(form_set.updated_date, 'yyyy-MM-dd HH:mm:ss'), 'No actualizada') as formatted_updated_date`),
+          db.raw(`ISNULL(FORMAT(form_set.creation_date, 'yyyy-MM-dd HH:mm:ss'), 'No actualizada') as formatted_creation_date`),
+          db.raw(`ISNULL((updater.firstname + ' ' + updater.lastname), 'No actualizada') as updated_by_name`)
         );
     } catch (error) {
       console.error("Error al crear la respuesta:", error);
       throw new Error(
-        "No se pudo crear la respuesta debido a un error en el servidor." +
-          error.message
+        "No se pudo crear la respuesta debido a un error en el servidor." + error.message
       );
     }
   },

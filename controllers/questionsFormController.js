@@ -47,7 +47,7 @@ const updateQuestionsForBlock = async (req, res) => {
   const { blockId } = req.params;
   const { preguntas } = req.body;
 
-/*   console.log("Datos recibidos para actualizar preguntas:", {
+  /*   console.log("Datos recibidos para actualizar preguntas:", {
     blockId,
     preguntas
   }); */
