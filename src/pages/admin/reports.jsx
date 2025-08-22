@@ -11,6 +11,7 @@ import Cookies from "js-cookie";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { Toast } from "../../assets/js/alertConfig";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Button,
@@ -37,6 +38,9 @@ import {
   Select,
   Typography,
   Alert,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
@@ -44,6 +48,11 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useTranslations } from "../../components/hooks/useTranslations";
+
+const ID_TIPO_1_5 = 2;
+const ID_TIPO_1_10 = 3;
+const ID_TIPO_YES_NO = 4;
+const ID_TIPO_CES = 5;
 
 const Reports = () => {
   const { t } = useTranslations();
@@ -56,7 +65,10 @@ const Reports = () => {
   const [endDate, setEndDate] = useState(null);
   const [clientIds, setClientIds] = useState([2, 3]);
   const [loading, setLoading] = useState(false);
+  //const [textData, setTextData] = useState([]); // Nuevo estado para datos de texto
   const responseRefs = useRef([]);
+  // const chartRefs = useRef([]);
+  // const tableRefs = useRef([]);
   const [answersStats, setAnswersStats] = useState([]);
 
   useEffect(() => {
@@ -248,17 +260,9 @@ const Reports = () => {
     }
   };
 
-  // Diccionario para manejo de tipos de preguntas en header de la tabla
-  const typeLabels = {
-    range_onetofive: "CSAT",
-    range_zerototen: "NPS - Net Promoter Score",
-    yes_no: "FCR",
-    range_difficulty: "CES",
-  };
-
   // cada vez que cambia el filtro y hay preguntas visibles, llamamos al backend
   useEffect(() => {
-    console.log("allResponses:", allResponses);
+    console.log("🔍 allResponses:", allResponses);
 
     if (allResponses.length > 0) {
       const ids = allResponses
@@ -272,9 +276,9 @@ const Reports = () => {
         )
         .map((q) => q.id);
 
-      console.log("IDs encontrados (solo para debug):", ids);
+      console.log("🆔 IDs encontrados (solo para debug):", ids);
       console.log(
-        "Preguntas filtradas:",
+        "📊 Preguntas filtradas:",
         allResponses.filter((q) =>
           [
             "range_onetofive",
@@ -290,7 +294,7 @@ const Reports = () => {
   }, [allResponses]);
 
   useEffect(() => {
-    console.log("answersStats actualizado:", answersStats);
+    console.log("📈 answersStats actualizado:", answersStats);
   }, [answersStats]);
 
   const handleStartDateChange = (newValue) => {
@@ -725,7 +729,6 @@ const Reports = () => {
               <Table
                 size="small"
                 sx={{
-                  tableLayout: "fixed",
                   mt: 2,
                   border: "1px solid #ccc",
                   width: "100%",
@@ -734,263 +737,181 @@ const Reports = () => {
                 }}
               >
                 <TableHead>
-                  {/* Encabezado principal */}
                   <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
                     <TableCell
-                      colSpan={3}
-                      align="center"
+                      colSpan={2}
                       sx={{
                         color: "#b62a8b",
                         fontWeight: "bold",
                         textAlign: "center",
                       }}
                     >
-                      {typeLabels[item.type]}
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Sub-heads por columna */}
-                  <TableRow>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", width: "200px" }}
-                    >
-                      Indicador
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", width: "100px" }}
-                    >
-                      Cantidad
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{ fontWeight: "bold", padding: 0 }}
-                    >
-                      Participación %
+                      {item.label}
                     </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {stats ? (
                     <>
-                      {/* Tipo: range_onetofive */}
                       {item.type === "range_onetofive" && (
                         <>
                           <TableRow>
-                            <TableCell align="center">Top Box</TableCell>
-                            <TableCell align="center">
-                              {stats.exact_5 || 0}
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Top Box
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold", minWidth: "250px" }}
-                            >
-                              {stats.csat_exact_5}%
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell align="center">Top Two Box</TableCell>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
                               {stats.rango_4_5 || 0}
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.csat_rango_4_5}%
+                          </TableRow>
+                          <TableRow>
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Top Two Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.exact_5 || 0}
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">Bottom Box</TableCell>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Bottom Box
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
                               {stats.exact_1 || 0}
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.csat_exact_1}%
-                            </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">Bottom Two Box</TableCell>
-                            <TableCell align="center">
-                              {stats.rango_1_2 || 0}
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Bottom Two Box
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.csat_rango_1_2}%
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_1_2 || 0}
                             </TableCell>
                           </TableRow>
                         </>
                       )}
 
-                      {/* Tipo: range_zerototen */}
                       {item.type === "range_zerototen" && (
                         <>
                           <TableRow>
-                            <TableCell align="center">Promotores</TableCell>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Promotores
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
                               {stats.rango_9_10 || 0}
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.nps_rango_9_10}%
-                            </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">Neutros</TableCell>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Neutros
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
                               {stats.rango_7_8 || 0}
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.nps_rango_7_8}%
-                            </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">Detractores</TableCell>
-                            <TableCell align="center">
-                              {stats.rango_0_6 || 0}
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Detractores
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.nps_rango_0_6}%
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.rango_0_6 || 0}
                             </TableCell>
                           </TableRow>
                         </>
                       )}
 
-                      {/* Tipo: yes_no */}
                       {item.type === "yes_no" && (
                         <>
                           <TableRow>
-                            <TableCell align="center">Sí</TableCell>
-                            <TableCell align="center">
-                              {stats.total_si || 0}
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Sí
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.fcr_si}%
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.total_si || 0}
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">No</TableCell>
-                            <TableCell align="center">
-                              {stats.total_no || 0}
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              No
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.fcr_no}%
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.total_no || 0}
                             </TableCell>
                           </TableRow>
                         </>
                       )}
 
-                      {/* Tipo: range_difficulty */}
                       {item.type === "range_difficulty" && (
                         <>
                           <TableRow>
-                            <TableCell align="center">Muy difícil</TableCell>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Muy difícil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
                               {stats.muy_dificil || 0}
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.ces_muy_dificil}%
-                            </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">Difícil</TableCell>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Difícil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
                               {stats.dificil || 0}
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.ces_dificil}%
-                            </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
                               Ni fácil/ni difícil
                             </TableCell>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
                               {stats.ni_facil || 0}
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.ces_ni_facil}%
-                            </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">Fácil</TableCell>
-                            <TableCell align="center">
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Fácil
+                            </TableCell>
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
                               {stats.facil || 0}
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.ces_facil}%
-                            </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell align="center">Muy fácil</TableCell>
-                            <TableCell align="center">
-                              {stats.muy_facil || 0}
+                            <TableCell sx={{ width: "66%", py: 0.5 }}>
+                              Muy fácil
                             </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontWeight: "bold" }}
-                            >
-                              {stats.ces_muy_facil}%
+                            <TableCell sx={{ width: "34%", py: 0.5 }}>
+                              {stats.muy_facil || 0}
                             </TableCell>
                           </TableRow>
                         </>
                       )}
 
-                      {/* Total */}
                       <TableRow>
                         <TableCell
-                          align="center"
-                          sx={{ fontWeight: "bold", color: "#b62a8b" }}
+                          sx={{
+                            width: "66%",
+                            fontWeight: "bold",
+                            color: "#b62a8b",
+                            py: 0.5,
+                          }}
                         >
                           Total
                         </TableCell>
                         <TableCell
-                          align="center"
-                          sx={{ fontWeight: "bold", color: "#b62a8b" }}
+                          sx={{
+                            width: "34%",
+                            fontWeight: "bold",
+                            color: "#b62a8b",
+                            py: 0.5,
+                          }}
                         >
-                          {item.type === "range_onetofive"
-                            ? stats.csat_total_buckets
-                            : stats.total_responses || 0}
+                          {stats.total_responses || 0}
                         </TableCell>
-                        <TableCell />
                       </TableRow>
                     </>
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={3}
+                        colSpan={2}
                         sx={{ py: 0.5, color: "text.secondary" }}
                       >
                         No hay datos para esta pregunta.
@@ -1006,71 +927,71 @@ const Reports = () => {
     );
   };
 
-  return (
-    <Box>
-      <Box id="body">
-        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
+ return (
+  <Box className="App">
+    <Box id="body">
+      {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
 
-        <Box m={0} p={0} sx={{ mt: { xs: 10, sm: 12, md: 14, lg: 16 } }}>
-          <Grid container spacing={0} sx={{ m: 0 }}>
-            <Grid
-              item
-              xs={12}
+      <Box m={0} p={0} sx={{ mt: { xs: 10, sm: 12, md: 14, lg: 16 } }}>
+        <Grid container spacing={0} sx={{ m: 0 }}>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              px: 2,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Box
               sx={{
-                px: 2,
-                display: "flex",
-                justifyContent: "center",
+                width: "100%",
+                px: 3,
+                maxWidth: "96%",
               }}
             >
-              <Box
-                sx={{
-                  width: "100%",
-                  px: 3,
-                  maxWidth: "96%",
-                }}
-              >
-                <Grid item xs={12} sx={{ mb: 4 }}>
-                  <Card>
-                    <CardContent sx={{ borderRadius: "50px" }}>
-                      <Box
-                        display="flex"
-                        flexWrap="wrap"
-                        alignItems="center"
-                        justifyContent="center"
-                        gap={2}
-                        sx={{ mb: 2 }}
-                      >
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => nav("/satisfaction")}
-                          sx={{
-                            py: 2,
-                            minWidth: "2%",
-                            fontWeight: "bold",
-                            color: "#b62a8b",
+              <Grid item xs={12} sx={{ mb: 4 }}>
+                <Card>
+                  <CardContent sx={{ borderRadius: "50px" }}>
+                    <Box
+                      display="flex"
+                      flexWrap="wrap"
+                      alignItems="center"
+                      justifyContent="center"
+                      gap={2}
+                      sx={{ mb: 2 }}
+                    >
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => nav("/satisfaction")}
+                        sx={{
+                          py: 2,
+                          minWidth: "2%",
+                          fontWeight: "bold",
+                          color: "#b62a8b",
+                          borderColor: "#b62a8b",
+                          borderTopLeftRadius: "20px",
+                          borderBottomLeftRadius: "20px",
+                          "&:hover": {
                             borderColor: "#b62a8b",
-                            borderTopLeftRadius: "20px",
-                            borderBottomLeftRadius: "20px",
-                            "&:hover": {
-                              borderColor: "#b62a8b",
-                              backgroundColor: "rgba(156, 39, 176, 0.04)",
-                            },
-                          }}
+                            backgroundColor: "rgba(156, 39, 176, 0.04)",
+                          },
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          viewBox="0 0 16 16"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
-                            />
-                          </svg>
-                        </Button>
+                          <path
+                            fillRule="evenodd"
+                            d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"
+                          />
+                        </svg>
+                      </Button>
 
                         <FormControl
                           required
