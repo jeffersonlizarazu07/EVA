@@ -68,9 +68,8 @@ export default function Client_list() {
   const { accessToken } = useContext(UserContext); // Trae el token y el idioma desde el contexto del usuario logueado
 
   useEffect(() => {
-    // Efecto que se ejecuta al montar o cuando cambia el idioma del usuario
-    fetchData(); // Trae todos los clientes
-  });
+    fetchData(); // Trae todos los clientes una sola vez
+  }, []); // <-- arreglo vacío para que se ejecute solo una vez
 
   // Función para manejar el cierre del modal MUI
   const handleModalClose = () => {

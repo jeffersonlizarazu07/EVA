@@ -222,7 +222,7 @@ const AdminList = () => {
     }
 
     if (metodo.toUpperCase() === "POST") {
-      const duplicados = admins.find((u) => u.email === rest.email);
+      const duplicados = admins.find((u) => u.user_red === rest.user_red);
       if (duplicados) {
         Toast.fire({
           icon: "error",
@@ -320,6 +320,15 @@ const AdminList = () => {
     const id = admin.id;
     const name = admin.firstname;
 
+    // ❌ Evitar activar tu propio usuario
+    if (String(id) === String(userId)) {
+      Toast.fire({
+        icon: "warning",
+        title: t("alertDeactivate.CannotActivateYourself"), // Puedes agregar este texto a tus traducciones
+      });
+      return;
+    }
+
     // Estado a enviar: 0 = desactivado
     const parametros = { state: 0 };
 
@@ -375,6 +384,15 @@ const AdminList = () => {
     const url = `http://localhost:3000/api/users`;
     const id = admin.id;
     const name = admin.firstname;
+
+    // ❌ Evitar activar tu propio usuario
+    if (String(id) === String(userId)) {
+      Toast.fire({
+        icon: "warning",
+        title: t("alertActivate.CannotDeactivateYourself"), // Puedes agregar este texto a tus traducciones
+      });
+      return;
+    }
 
     // Estado a enviar: 1 = activo
     const parametros = { state: 1 };
@@ -747,7 +765,7 @@ const AdminList = () => {
                     select
                     fullWidth
                     label={t("UserModal.Type")}
-                    value={type.input}
+                    value={type.input || ""}
                     onChange={(e) => type.handleChange(e.target.value)}
                     error={!!errors.type}
                     helperText={errors.type}
@@ -762,6 +780,37 @@ const AdminList = () => {
                     <MenuItem value="3">{t("UserModal.Editor")}</MenuItem>
                     <MenuItem value="4">{t("UserModal.Viwer")}</MenuItem>
                   </TextField>
+
+                  <Autocomplete
+                    multiple
+                    options={listClients}
+                    disableCloseOnSelect
+                    getOptionLabel={(option) => option.client}
+                    onChange={onChange}
+                    value={listClients.filter((client) =>
+                      selectedClients.includes(client.id)
+                    )}
+                    renderOption={(props, option, { selected }) => (
+                      <li {...props} key={option.id}>
+                        <Checkbox
+                          checked={selected}
+                          style={{ marginRight: 8 }}
+                        />
+                        {option.client}
+                      </li>
+                    )}
+                    renderInput={(params) => (
+                      <TextField 
+                        {...params} 
+                        label={t("viewUserModal.Clients")} 
+                        placeholder={t("viewUserModal.Clients")}
+                        error={!!errors.clients}
+                        helperText={errors.clients}
+                      />
+                    )}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                  />
                 </Grid>
               </Grid>
             </Box>
