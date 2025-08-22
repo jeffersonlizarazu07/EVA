@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs'); // Para comparar contraseñas encriptadas
+/*const bcrypt = require('bcryptjs'); // Para comparar contraseñas encriptadas
 const jwt = require('jsonwebtoken'); // Para generar tokens de autenticación
 const User = require('../models/user'); // Modelo de usuario para manejar la BD
 
@@ -108,4 +108,4 @@ const logout = async (req, res) => {
 };
 
 // Exporto las funciones para usarlas en rutas
-module.exports = { authenticate, checkToken, extendToken, logout };
+module.exports = { authenticate, checkToken, extendToken, logout };*/

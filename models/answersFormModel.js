@@ -61,8 +61,8 @@ class AnswersFormModel {
         if (evaluador === 'null') evaluador = '';
         const query =  this.knex(`${this.table_} as m`)
         .select(
-          this.knex.raw(`CONCAT(a.firstname, " ", a.lastname) as nombre_agente`),
-          this.knex.raw(`CONCAT(mo.firstname, " ", mo.lastname) as nombre_monitor`),
+          this.knex.raw(`(a.firstname + ' ' + a.lastname) as nombre_agente`),
+          this.knex.raw(`(mo.firstname + ' ' + mo.lastname) as nombre_monitor`),
           'f.title as nombre_form',
           'q.question_name',
           'af.answer',
@@ -92,11 +92,11 @@ class AnswersFormModel {
 
         // Agregar filtro de agente solo si no está vacío
         if (agente && agente.trim() !== '' && agente !== '""') {
-          query.andWhere(this.knex.raw(`CONCAT(a.firstname, " ", a.lastname) = ?`, [agente]));
+          query.andWhere(this.knex.raw(`(a.firstname + ' ' + a.lastname) = ?`, [agente]));
         }
 
         if (evaluador && evaluador.trim() !== '' && evaluador !== '""') {
-          query.andWhere(this.knex.raw(`CONCAT(mo.firstname, " ", mo.lastname) = ?`, [evaluador]));
+          query.andWhere(this.knex.raw(`(mo.firstname + ' ' + mo.lastname) = ?`, [evaluador]));
         }
 
        return await query;
@@ -132,8 +132,8 @@ class AnswersFormModel {
     try {
       return await this.knex(`${this.table_} as m`)
         .select(
-          this.knex.raw(`CONCAT(a.firstname, " ", a.lastname) as nombre_agente`),
-          this.knex.raw(`CONCAT(mo.firstname, " ", mo.lastname) as nombre_monitor`),
+          this.knex.raw(`(a.firstname + ' ' + a.lastname) as nombre_agente`),
+          this.knex.raw(`(mo.firstname + ' ' + mo.lastname) as nombre_monitor`),
           'f.title as nombre_form',
           'q.question_name',
           'af.answer',

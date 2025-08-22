@@ -62,9 +62,9 @@ const MonitoringModel = {
         "form_set.title as form_title",
         "clients.client as client_name",
         knex.raw(
-          "CONCAT(users.firstname, ' ', users.lastname) as evaluator_name"
+          "(users.firstname + ' ' + users.lastname) as evaluator_name"
         ),
-        knex.raw("CONCAT(agent.firstname, ' ', agent.lastname) as agent_name")
+        knex.raw("(agent.firstname + ' ' + agent.lastname) as agent_name")
       )
       .where("monitoring.id_user_agent", userId);
 
@@ -72,7 +72,7 @@ const MonitoringModel = {
       .where("id_user_agent", userId)
       .select(
         knex.raw("COUNT(*) as total_monitorings"),
-        knex.raw("FORMAT(IFNULL(AVG(score), 0), 2) as average_score")
+        knex.raw("FORMAT(ISNULL(AVG(score), 0), 2) as average_score")
       )
       .first();
 
