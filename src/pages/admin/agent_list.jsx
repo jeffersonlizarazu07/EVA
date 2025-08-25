@@ -60,10 +60,17 @@ const AdminList = () => {
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
-    setFormattedDate(formatDate(new Date())); // Actualizo el estado con la fecha
-    loadAdmins(); // Llamo a la función para obtener los administradores
-    loadClients(); // Llamo a la función para obtener los clientes
-  }, []); // Solo al montar
+    setFormattedDate(formatDate(new Date()));
+
+    if (clients && clients.length > 0) {
+      console.log("✅ Clients listos:", clients);
+      loadAdmins(); // <- solo ahora sí llamamos
+    } else {
+      console.log("⚠️ Clients aún vacíos en el contexto");
+    }
+
+    loadClients(); // esto puede ir siempre
+  }, [clients]);
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
   const config = {
@@ -115,12 +122,11 @@ const AdminList = () => {
       setLoading(true);
       const data = await getAdmins(clients);
 
-      if (!data && data.length === 0) {
+      if (!data || data.length === 0) {
         setConteoDeAgentes(0);
       } else {
-        const conteo = data.length;
-        setConteoDeAgentes(conteo);
-        console.log("Administradores cargados:", conteoDeAgentes);
+        setConteoDeAgentes(data.length);
+        console.log("Administradores cargados:", data.length);
       }
 
       setAdmins(data);
@@ -186,30 +192,32 @@ const AdminList = () => {
     }
 
     // Obtener formularios
-const forms = await getFormsByClient(numericId);
+    const forms = await getFormsByClient(numericId);
 
-  if (forms && Array.isArray(forms) && forms.length > 0) {
-    setFormOptions(forms);
-  } else {
-    setFormOptions([]);
-
-    // Mostrar mensaje informativo al usuario
-    if (forms === null) {
-      // Error en la petición - ya se mostró el error en consola, no mostramos alerta
-      return;
-    } else if (forms?.error === "No se encontraron formularios para este cliente") {
-      Toast.fire({
-        icon: "info",
-        title: t("monitoringModal.ErrorForms"), // Aquí usas la traducción para ese mensaje
-      });
+    if (forms && Array.isArray(forms) && forms.length > 0) {
+      setFormOptions(forms);
     } else {
-      // Otros casos sin formularios
-      Toast.fire({
-        icon: "info",
-        title: t("monitoringModal.ErrorForms"),
-      });
+      setFormOptions([]);
+
+      // Mostrar mensaje informativo al usuario
+      if (forms === null) {
+        // Error en la petición - ya se mostró el error en consola, no mostramos alerta
+        return;
+      } else if (
+        forms?.error === "No se encontraron formularios para este cliente"
+      ) {
+        Toast.fire({
+          icon: "info",
+          title: t("monitoringModal.ErrorForms"), // Aquí usas la traducción para ese mensaje
+        });
+      } else {
+        // Otros casos sin formularios
+        Toast.fire({
+          icon: "info",
+          title: t("monitoringModal.ErrorForms"),
+        });
+      }
     }
-  }
   };
 
   // Cargar los bloques asociados al formulario seleccionado
@@ -668,6 +676,8 @@ const forms = await getFormsByClient(numericId);
     userClients,
     t,
   };
+
+  console.log("👀 Estado admins en render:", admins);
 
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
