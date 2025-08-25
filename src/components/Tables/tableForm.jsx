@@ -115,7 +115,7 @@ const TableForms = ({
                   color: "white",
                 },
               }}
-              onClick={() => nav("/admin")}
+              onClick={() => nav("/quality")}
             >
               <TurnLeft />
             </Button>
@@ -180,23 +180,19 @@ const TableForms = ({
       </Grid>
 
       {/* Tabla de formularios */}
-      <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 450 }}>
+      <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 450, overflowY: "auto" }}>
         <Table size="small">
           <TableHead>
             <TableRow>
               {filteredHeader.map((item, i) => (
                 <TableCell
                   key={i}
-                  align="center"
-                  sx={{ fontWeight: "bold", color: "#b62a8b" }}
+                  sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}
                 >
                   {t(`formTable.${item}`)}
                 </TableCell>
               ))}
-              <TableCell
-                align="center"
-                sx={{ fontWeight: "bold", color: "#b62a8b" }}
-              >
+              <TableCell sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}>
                 {t("formTable.Actions")}
               </TableCell>
             </TableRow>

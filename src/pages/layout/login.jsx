@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import LogoEVA from "../../assets/img/logo EVA2.0.png";
+import contenedor from "../../assets/img/contenedor.png";
+import botonIniciarSesion from "../../assets/img/iniciarsesion.png";
 import "../../assets/css/login.css";
+import { Box, Container, Typography, Button, CircularProgress } from '@mui/material';
+import MicrosoftIcon from '@mui/icons-material/Microsoft';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -38,52 +42,114 @@ const Login = () => {
   };
 
   return (
-    <div className="App">
-      <div id="login-body" className="bodyLogin">
-        <div className="col container-img">
-          <img src={LogoEVA} className="d-sm-block d-lg-none" alt="Logo EVA" />
-        </div>
-        <div className="login-container container col-sm-12">
-          <h2 className="text-start tittle-session">Iniciar Sesión</h2>
-          <form id="login-form" onSubmit={handleMicrosoftLogin}>
-            
-            {error && <p className="text-danger text-center">{error}</p>}
+     <Box className="App">
+      <Box id="login-body" className="bodyLogin" sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, minHeight: '100vh' }}>
+        <Box
+          className="container-img"
+          sx={{ flex: 1, display: { xs: 'block', lg: 'none' }, textAlign: 'center', mb: 2 }}
+        >
+          <img src={LogoEVA} alt="Logo EVA" style={{ maxWidth: '100%', height: 'auto' }} />
+        </Box>
 
-            <button 
-              className="btn access-button" 
-              id="bot" 
-              type="submit"
-              disabled={loading}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                minHeight: '48px'
+        <Container
+          className="login-container"
+          sx={{
+            flex: 1,
+            maxWidth: 'sm',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'flex-start', // para centrar las imágenes horizontalmente
+            gap: 3,
+          }}
+        >
+
+          {/* Imagen contenedora */}
+          <Box
+            sx={{
+              position: 'relative',
+              width: '40%',
+              height: 'auto',
+            }}
+          >
+            <img
+              src={contenedor}
+              alt="Contenedor"
+              style={{ width: '100%', display: 'block' }}
+            />
+
+            {/* Botón con imagen dentro del contenedor */}
+            <Box
+              component="form"
+              id="login-form"
+              onSubmit={handleMicrosoftLogin}
+              sx={{
+                position: 'absolute',
+                top: '60%', // Ajusta según dónde quieras que esté el botón
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: 'auto',
+                height: 'auto',
+                textAlign: 'center',
               }}
             >
-              {loading ? (
-                <>
-                  <div 
-                    className="spinner-border spinner-border-sm" 
-                    role="status"
-                    style={{ width: '16px', height: '16px' }}
-                  />
-                  Iniciando sesión...
-                </>
-              ) : (
-                <>
-                <div className="d-flex align-items-center gap-2" style={{color: 'white'}}>
-                  <i className="fa-brands fa-microsoft" style={{ fontSize: '18px' }}></i>
-                  Iniciar sesión con Microsoft
-                </div>
-                </>
+              {error && (
+                <Typography color="error" align="center" sx={{ mb: 2 }}>
+                  {error}
+                </Typography>
               )}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                sx={{
+                  p: 0,
+                  minWidth: 'auto',
+                  minHeight: 'auto',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 1,
+                  textTransform: 'none',
+                  transition: 'transform 0.3s ease, filter 0.3s ease',
+                  cursor: loading ? 'default' : 'pointer',
+                  '&:hover': {
+                    filter: 'brightness(0.90) saturate(0.90)',   // brillo más intenso y saturación
+                    transform: 'scale(1.07)',                   // zoom un poco más grande
+                    '& img': {
+                      filter: 'brightness(1.3) saturate(1.2)', // imagen más brillante y saturada
+                    },
+                  },
+                  '&:disabled': {
+                    cursor: 'not-allowed',
+                    filter: 'grayscale(1) opacity(0.6)',
+                    transform: 'none',
+                    backgroundColor: 'transparent',
+                  },
+                }}
+              >
+                {loading ? (
+                  <>
+                    <CircularProgress size={24} />
+                    <Typography ml={1} color="text.primary">
+                      Iniciando sesión...
+                    </Typography>
+                  </>
+                ) : (
+                  <img
+                    src={botonIniciarSesion}
+                    alt="Botón Iniciar Sesión"
+                    style={{ width: '300px', cursor: 'pointer' }}
+                  />
+                )}
+              </Button>
+
+
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+    </Box>
   );
 };
 

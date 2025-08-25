@@ -280,6 +280,7 @@ return (
                       <MenuItem value="ecc_opt" title="Error crítico de cumplimiento">ECC</MenuItem>
                       <MenuItem value="ecuf_opt" title="Error crítico de usuario final">ECUF</MenuItem>
                       <MenuItem value="ecn_opt" title="Error crítico de negocio">ECN</MenuItem>
+                      <MenuItem value="enc_opt" title="Error no crítico">ENC</MenuItem>
                     </TextField>
 
                     {/* Tipo de pregunta */}
