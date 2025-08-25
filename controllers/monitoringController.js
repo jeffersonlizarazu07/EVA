@@ -57,26 +57,27 @@ exports.getById = async (req, res) => {
 };
 
 exports.getByUserId = async (req, res) => {
+  console.log("🚀 Entró al controlador getByUserId");
   const { userId } = req.params;
   console.log("📥 Backend recibió userId:", userId);
 
   try {
-    const { monitorings, stats } = await Monitoring.getByUserId(userId);
+    const result = await Monitoring.getByUserId(userId);
 
-    // Si no hay monitorings, se devuelve un array vacío pero con stats aparte
-    if (!monitorings || monitorings.length === 0) {
-      return res.status(200).json({
-        data: [], 
-        stats: {
-          total_monitorings: 0,
-          average_score: 0,
-        },
-      });
-    }
+    console.log("📊 Resultado completo de getByUserId:", result);
+
+    const monitorings = result?.monitorings || [];
+    const stats = result?.stats || {};
+
+    const total_monitorings = stats?.total_monitorings ?? 0;
+    const average_score = Number(stats?.average_score ?? 0);
 
     return res.status(200).json({
-      data: monitorings, // Datos de la monitorización
-      stats, // Cantidad de monitoreos y promedio de score
+      data: monitorings,
+      stats: {
+        total_monitorings,
+        average_score,
+      },
     });
   } catch (error) {
     console.error("Error al obtener monitorizaciones del agente:", error);
