@@ -135,20 +135,22 @@ const AgentMonitoringView = () => {
   };
 
   return (
-    <Box sx={{ overflow: "hidden" }}>
-      <Box>
+    <Box className="App" sx={{ overflow: "hidden" }}>
+      <Box id="body">
         <HeaderLT1 />
-      </Box>
 
-      <Box
-        sx={{
-          maxWidth: "1200px",
-          mx: "auto",
-          px: 2,
-          mt: 0,
-        }}
-      >
-        <TableMonitoringView {...monitoringViewProps} />
+        <Box
+          sx={{
+            alignItems: "stretch",
+            flexWrap: "nowrap",
+            padding: 0,
+            display: "flex",
+          }}
+        >
+          <Box className="container" mt={0}>
+            <TableMonitoringView {...monitoringViewProps} />
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

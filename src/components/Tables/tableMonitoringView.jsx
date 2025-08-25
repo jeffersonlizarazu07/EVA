@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { UserContext } from "../../context/UserContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslations } from "../hooks/useTranslations";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -47,6 +48,7 @@ const TableMonitoringView = ({
   const location = useLocation();
   // Traducción
   const { t } = useTranslations();
+  const { userInfo } = useContext(UserContext);
 
   // Verificar si estamos en la vista de agente (monitoring_view)
   const isAgentView = location.pathname.includes("/monitoring_view/");
@@ -155,112 +157,69 @@ const TableMonitoringView = ({
   return (
     <Box className="table-container">
       {/* Buscador */}
-      <Grid container spacing={2} mb={2}>
-        <Grid item xs={12} sm={6} md={6} lg={12}>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            width="100%"
-            flexWrap="wrap"
-            gap={2}
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12}>
+          <Box display="flex" alignItems="center" gap={2}
+            sx={{ width: '100%', flexWrap: 'nowrap', mb: 2 }}
           >
-            {/* Izquierda: botón y búsqueda */}
-            <Box
-              display="flex"
-              alignItems="center"
-              gap={1}
-              sx={{ marginLeft: "12px" }}
-            >
-              {/* Solo mostrar el botón de devolver si NO estamos en la vista de agente */}
-              {!isAgentView && (
-                <Button
-                  variant="outlined"
-                  size="large"
-                  sx={{
-                    minWidth: 30,
-                    width: 30,
-                    height: 30,
-                    padding: 0,
-                    borderRadius: "50%",
-                    color: "#b62a8b",
-                    borderColor: "#b62a8b",
-                    "&:hover": {
-                      borderColor: "#b62a8b",
-                      backgroundColor: "#b62a8b",
-                      color: "white",
-                    },
-                  }}
-                  onClick={() => nav("/agent_list")}
-                >
-                  <TurnLeft />
-                </Button>
-              )}
-
-              <TextField
-                size="small"
-                placeholder={t("userTable.Search")}
-                value={searchTerm}
-                onChange={handleSearch}
-                className="inp-search"
+            {/* Botón volver */}
+            {userInfo?.type !== 4 && (
+              <Button
                 variant="outlined"
+                size="small"
                 sx={{
-                  width: "250px",
-                  "& .MuiOutlinedInput-root": {
-                    height: "4vh",
-                    "&.Mui-focused fieldset": {
-                      borderColor: "transparent",
-                    },
-                    "&.Mui-focused": {
-                      boxShadow: "none",
-                    },
+                  minWidth: 0,
+                  width: 30,
+                  height: 30,
+                  padding: 0,
+                  borderRadius: "50%",
+                  color: "#b62a8b",
+                  borderColor: "#b62a8b",
+                  "&:hover": {
+                    borderColor: "#b62a8b",
+                    backgroundColor: "#b62a8b",
+                    color: "white",
                   },
                 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: "#888" }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
-            {/*Filtro evaluador */}
-            <FormControl
+                onClick={() => nav("/agent_list")}
+              >
+                <TurnLeft />
+              </Button>
+            )}
+
+            {/* Campo búsqueda */}
+            <TextField
+              size="small"
+              placeholder={t("userTable.Search")}
+              value={searchTerm}
+              onChange={handleSearch}
+              variant="outlined"
+              className="inp-search"
               sx={{
-                width: "14rem",
+                flex: 2,
+                "& .MuiOutlinedInput-root": {
+                  height: "35px",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: "#888" }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {/* Filtro evaluador */}
+            <FormControl
+              className="readOnlyField"
+              size="small"
+              sx={{
+                flex: 1,
                 "& .MuiInputBase-root": {
                   height: "40px",
                 },
-                "& .MuiSelect-select": {
-                  padding: "8px 14px",
-                  display: "flex",
-                  alignItems: "center",
-                },
-                // Borde fucsia en todos los estados
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#b62a8b",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#b62a8b",
-                },
-                "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#b62a8b !important",
-                },
-                // Label fucsia en focus
-                "& .Mui-focused": {
-                  color: "#b62a8b !important",
-                },
-                // Fondo y texto fucsia en el item seleccionado
-                "& .MuiMenuItem-root.Mui-selected": {
-                  backgroundColor: "rgba(182, 42, 139, 0.1) !important",
-                  color: "#b62a8b",
-                },
-                "& .MuiMenuItem-root.Mui-selected:hover": {
-                  backgroundColor: "rgba(182, 42, 139, 0.2) !important",
-                },
               }}
-              size="small"
             >
               <InputLabel sx={{ color: "#b62a8b" }}>
                 Seleccione un evaluador
@@ -269,82 +228,58 @@ const TableMonitoringView = ({
                 value={selectedClient}
                 onChange={(e) => setSelectedClient(e.target.value)}
               >
-                <MenuItem sx={{ height: "30px" }}></MenuItem>
+                <MenuItem value=""></MenuItem>
                 {clients.map((client, index) => (
-                  <MenuItem key={index} value={client || "None"}>
+                  <MenuItem key={index} value={client}>
                     {client}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
 
-            {/* DATEPICKERS */}
+            {/* Datepickers */}
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <Box
-                display="flex"
-                alignItems="center"
-                gap={2}
-                sx={{ marginRight: "12px" }}
-              >
-                <DatePicker
-                  className="readOnlyField"
-                  label={t("reports.fecha_inicio")}
-                  format="DD/MM/YYYY"
-                  value={startDate}
-                  onChange={setStartDate}
-                  sx={{ width: "20rem" }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                      sx: {
-                        "& .MuiInputBase-root": {
-                          height: "40px",
-                        },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#b62a8b",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#b62a8b",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#b62a8b",
-                        },
+              <DatePicker
+                className="readOnlyField"
+                label={t("reports.fecha_inicio")}
+                format="DD/MM/YYYY"
+                value={startDate}
+                onChange={setStartDate}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                    sx: {
+                      flex: 1,
+                      "& .MuiInputBase-root": {
+                        height: "40px",
                       },
                     },
-                  }}
-                />
-                <DatePicker
-                  className="readOnlyField"
-                  label={t("reports.fecha_fin")}
-                  format="DD/MM/YYYY"
-                  value={endDate}
-                  onChange={setEndDate}
-                  sx={{ width: "20rem" }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                      sx: {
-                        "& .MuiInputBase-root": {
-                          height: "40px",
-                        },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#b62a8b",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#b62a8b",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#b62a8b",
-                        },
+                  },
+                }}
+              />
+              <DatePicker
+                className="readOnlyField"
+                label={t("reports.fecha_fin")}
+                format="DD/MM/YYYY"
+                value={endDate}
+                onChange={setEndDate}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                    sx: {
+                      flex: 1,
+                      "& .MuiInputBase-root": {
+                        height: "40px",
                       },
                     },
-                  }}
-                />
-              </Box>
+                  },
+                }}
+              />
             </LocalizationProvider>
           </Box>
         </Grid>
       </Grid>
+
 
       {/* Traer el nombre del agente al que pertenecen las monitorizaciones */}
       {data.length > 0 && (
@@ -369,7 +304,7 @@ const TableMonitoringView = ({
       <TableContainer
         component={Paper}
         elevation={0}
-        sx={{ maxHeight: 450, overflowY: "auto", marginBottom: "3rem" }}
+        sx={{ maxHeight: 450, overflowY: "auto" }}
       >
         <Table size="small">
           <TableHead>
@@ -381,7 +316,6 @@ const TableMonitoringView = ({
                     fontSize: "1rem",
                     textAlign: "center",
                     fontWeight: "bold",
-                    color: "#b62a8b",
                   }}
                 >
                   {getHeaderLabel(item)}
