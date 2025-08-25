@@ -5,7 +5,7 @@ class QuestionFormsDTO {
     const { block_id, preguntas } = data;
     const allowedTypes = ["check_opt", "textfield_s", "selector_opt"];
     const allowedConditional = ["SI", "NO"];
-    const allowedError = ["ecc_opt", "ecuf_opt", "ecn_opt"];
+    const allowedError = ["ecc_opt", "ecuf_opt", "ecn_opt", "enc_opt"];
 
     //valida que todos los campos sean obligatorios
     if (!block_id) {
@@ -109,7 +109,7 @@ class QuestionFormsDTO {
     const { preguntas } = data;
     const allowedTypes = ["check_opt", "textfield_s", "selector_opt"];
     const allowedConditional = ["SI", "NO"];
-    const allowedError = ["ecc_opt", "ecuf_opt", "ecn_opt"];
+    const allowedError = ["ecc_opt", "ecuf_opt", "ecn_opt", "enc_opt"];
 
     //valida que todos los campos sean obligatorios
 

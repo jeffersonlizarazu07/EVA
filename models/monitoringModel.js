@@ -53,10 +53,10 @@ const MonitoringModel = {
       .join("users as agent", "monitoring.id_user_agent", "agent.id")
       .select(
         knex.raw(
-          "DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_date"
+          "FORMAT(monitoring.date, 'yyyy-MM-dd HH:mm:ss') as monitoring_date"
         ),
         knex.raw(
-          "DATE_FORMAT(monitoring.check_date, '%d/%m/%Y %H:%i:%s') as check_date_formatted"
+          "FORMAT(monitoring.check_date, 'yyyy-MM-dd HH:mm:ss') as check_FORMATted"
         ),
         "monitoring.*",
         "form_set.title as form_title",

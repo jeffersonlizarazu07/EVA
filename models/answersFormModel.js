@@ -85,8 +85,8 @@ class AnswersFormModel {
         .andWhere('f.id', '=' , fromId)
         
         .andWhereRaw('m.date  = af.date')
-        .andWhere(this.knex.raw('DATE(m.date) >=?' , [starDate] ))
-        .andWhere(this.knex.raw('DATE(m.date) <=?' , [endDate] ));
+        .andWhere(this.knex.raw('CAST(m.date AS DATE) >=?' , [starDate] ))
+        .andWhere(this.knex.raw('CAST(m.date AS DATE) <=?' , [endDate] ));
         
         // ...
 
@@ -173,7 +173,8 @@ class AnswersFormModel {
       answers,
     } = data;
 
-    const fecha = monitoringDate || getDateTimeForSQL();
+     // Convierte monitoringDate a Date o usa fecha actual
+    const fecha = monitoringDate ? new Date(monitoringDate) : new Date();
 
     // Transacción para que todo se guarde o nada
     return await this.knex.transaction(async (trx) => {
