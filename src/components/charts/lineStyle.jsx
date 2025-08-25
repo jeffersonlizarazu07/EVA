@@ -40,8 +40,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 // temas
-import { ThemeContext } from '../../assets/js/ThemeContext';
-
+import { ThemeContext } from "../../assets/js/ThemeContext";
 
 Chart.register(
   BarController,
@@ -64,11 +63,12 @@ import { useTranslation } from "react-i18next";
 import { themeColors } from "../../style/ThemeColors";
 import { useContext } from "react";
 
-
-
 const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
-  const { theme, toggleTheme } = useContext(ThemeContext) || { theme: 'light', toggleTheme: () => {} };
-  const {t} = useTranslation();
+  const { theme, toggleTheme } = useContext(ThemeContext) || {
+    theme: "light",
+    toggleTheme: () => {},
+  };
+  const { t } = useTranslation();
 
   console.log("Componente LineStyleCharts renderizado");
   console.log("Datos recibidos por LineStyleCharts:", dataChart);
@@ -124,17 +124,16 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
       case "yes_no":
         return ["No", "Sí"];
       default:
-        return dataChart.map(item => item.name || "Sin etiqueta");
-          //       return dataChart.map(item => {
-  //   const name = item.name || "Sin etiqueta";
-  //   const words = name.split(" ");
-  //   const grouped = [];
-  //   for (let i = 0; i < words.length; i += 6) {
-  //     grouped.push(words.slice(i, i + 6).join(" "));
-  //   }
-  //   return grouped; // Chart.js mostrará esto como multilínea
-  // });
-
+        return dataChart.map((item) => item.name || "Sin etiqueta");
+      //       return dataChart.map(item => {
+      //   const name = item.name || "Sin etiqueta";
+      //   const words = name.split(" ");
+      //   const grouped = [];
+      //   for (let i = 0; i < words.length; i += 6) {
+      //     grouped.push(words.slice(i, i + 6).join(" "));
+      //   }
+      //   return grouped; // Chart.js mostrará esto como multilínea
+      // });
     }
   };
 
@@ -142,24 +141,32 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
   const applyFilters = (data) => {
     // crear un array vacío para almacenar los datos procesados
     const processedData = [];
-    
+
     // obtener etiquetas para el tipo de gráfico
     const typeLabels = getLabelsForType(type);
-    
+
     //for cada elemento en dataChart
-    data.forEach(item => {
+    data.forEach((item) => {
       let key = item.key;
       let value = parseFloat(item.value);
-      
+
       // saltar si el valor no es un número
       if (isNaN(value)) {
         return;
       }
-      
+
       // comprobar si el valor está dentro del rango de filtros
       if (value >= filters.minValue && value <= filters.maxValue) {
         // para los tipos de gráfico específicos, asignar el valor a la posición correspondiente
-        if (["range_zerototen", "range_onetofive", "range_difficulty", "range_emoji", "yes_no"].includes(type)) {
+        if (
+          [
+            "range_zerototen",
+            "range_onetofive",
+            "range_difficulty",
+            "range_emoji",
+            "yes_no",
+          ].includes(type)
+        ) {
           // para los tipos de gráfico específicos, asignar el valor a la posición correspondiente
           if (type === "yes_no") {
             const index = parseInt(key);
@@ -177,15 +184,13 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
         }
       }
     });
-    
+
     return processedData;
   };
 
   // determinar el tipo de escala
-  const scale = 
-    type === "range_zerototen" ? "0-10" : 
-    type === "yes_no" ? "0-1" : 
-    "1-5";
+  const scale =
+    type === "range_zerototen" ? "0-10" : type === "yes_no" ? "0-1" : "1-5";
 
   // definir los colores de fondo y borde según la escala
   const backgrounds =
@@ -215,7 +220,7 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
           "rgba(255, 0, 255, 0.6)", // 0: Fucsia oscuro
           "rgba(255, 105, 180, 0.6)", // 1: Rosa fuerte
         ];
-  
+
   const borders =
     scale === "0-10"
       ? [
@@ -250,13 +255,13 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
     const allLabels = getLabelsForType(type);
     // Procesar los datos
     const processedData = applyFilters(dataChart);
-    
+
     // Crear arrays para los labels y datos filtrados
     const filteredLabels = [];
     const filteredData = [];
     const filteredBackgrounds = [];
     const filteredBorders = [];
-    
+
     // Iterar por todos los datos y solo incluir los que tienen valores
     processedData.forEach((value, index) => {
       // Solo incluir si el valor existe y no es 0
@@ -267,12 +272,12 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
         filteredBorders.push(borders[index]);
       }
     });
-    
+
     return {
       labels: filteredLabels,
       data: filteredData,
       backgrounds: filteredBackgrounds,
-      borders: filteredBorders
+      borders: filteredBorders,
     };
   };
 
@@ -284,7 +289,7 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
     labels: filteredElements.labels,
     datasets: [
       {
-        label: t("reports.datos"),  // Cambiado a español
+        label: t("reports.datos"), // Cambiado a español
         data: filteredElements.data,
         borderColor: filteredElements.borders,
         backgroundColor: filteredElements.backgrounds,
@@ -309,9 +314,9 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
 
   useEffect(() => {
     if (!chartRef.current) return;
-    
+
     const ctx = chartRef.current.getContext("2d");
-    
+
     // destruir el gráfico existente si existe
     if (chartRef.current.chartInstance) {
       chartRef.current.chartInstance.destroy();
@@ -322,17 +327,19 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
       data: filteredData,
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: true,
             position: "bottom",
             labels: {
-              color: theme === "dark"?  themeColors.dark.legend.color : themeColors.light.legend.color ,
-            }  
+              color:
+                theme === "dark"
+                  ? themeColors.dark.legend.color
+                  : themeColors.light.legend.color,
+            },
           },
           title: {
-            
             display: true,
             text: label,
             position: "top",
@@ -341,7 +348,10 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
               style: "italic",
               weight: "bold",
             },
-             color: theme === "dark"?  themeColors.dark.legend.color : themeColors.light.legend.color ,
+            color:
+              theme === "dark"
+                ? themeColors.dark.legend.color
+                : themeColors.light.legend.color,
           },
           datalabels: {
             display: true,
@@ -351,7 +361,9 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             borderRadius: 3,
             formatter: (value) =>
-              value !== null && value !== undefined ? `${value.toFixed(0)}%` : "",
+              value !== null && value !== undefined
+                ? `${value.toFixed(0)}%`
+                : "",
           },
           zoom: {
             pan: {
@@ -375,14 +387,14 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
                 x: {
                   title: {
                     display: true,
-                    text: t("reports.categorias"),  // Ya en español
+                    text: t("reports.categorias"), // Ya en español
                   },
                 },
                 y: {
                   beginAtZero: true,
                   title: {
                     display: true,
-                    text: t("reports.valores"),  // Ya en español
+                    text: t("reports.valores"), // Ya en español
                   },
                 },
               }
@@ -400,118 +412,124 @@ const LineStyleCharts = ({ label, dataChart, type, initialType }) => {
     };
   }, [chartType, filteredData, label]);
 
-  
-return (
-  <Box
-    sx={{
-      width: "100%",
-      maxWidth: 900,
-      mx: "auto",
-      mt: 2,
-    }}
-  >
-    <Grid container spacing={2} justifyContent="center" mb={1}>
-      <Grid item>
-        <Typography variant="subtitle2" fontStyle="italic" fontWeight="bold">
-          {t("reports.porcentaje_minimo")}
-        </Typography>
-      </Grid>
-      <Grid item>
-        <Typography variant="subtitle2" fontStyle="italic" fontWeight="bold">
-          {t("reports.porcentaje_maximo")}
-        </Typography>
-      </Grid>
-    </Grid>
-
-    <Grid container spacing={2} justifyContent="center" mb={2}>
-      <Grid item>
-        <TextField
-          label="Min"
-          type="number"
-          name="minValue"
-          value={filters.minValue}
-          onChange={handleFilterChange}
-          size="small"
-          sx={{ width: 100 }}
-          inputProps={{ min: 0, max: 100 }}
-        />
-      </Grid>
-      <Grid item>
-        <TextField
-          label="Max"
-          type="number"
-          name="maxValue"
-          value={filters.maxValue}
-          onChange={handleFilterChange}
-          size="small"
-          sx={{ width: 100 }}
-          inputProps={{ min: 0, max: 100 }}
-        />
-      </Grid>
-    </Grid>
-
-    <Grid container spacing={2} alignItems="center" justifyContent="center">
-      <Grid item>
-        <ToggleButtonGroup
-          value={chartType}
-          exclusive
-          onChange={(e, value) => value && setChartType(value)}
-          aria-label="Tipo de gráfico"
-          size="small"
-        >
-          {[
-            { type: "pie", icon: faPieChart, label: "Circular" },
-            { type: "bar", icon: faBarChart, label: "Barras" },
-            { type: "line", icon: faLineChart, label: "Línea" },
-          ].map(({ type, icon, label }) => (
-            <MUITextTooltip key={type} title={label}>
-              <ToggleButton
-                value={type}
-                aria-label={type}
-                sx={{
-                  color: "white",
-                  fontSize: "1.4rem",
-                  padding: "12px 24px",
-                  backgroundColor: chartType === type ? "#0d6efd" : "#6c757d",
-                  borderRadius: 1,
-                  mx: 1.5,
-                  "&:hover": {
-                    backgroundColor:
-                      chartType === type ? "#0b5ed7" : "#5a6268",
-                  },
-                }}
-              >
-                <FontAwesomeIcon icon={icon} />
-              </ToggleButton>
-            </MUITextTooltip>
-          ))}
-        </ToggleButtonGroup>
-      </Grid>
-
-      <Grid item>
-        <MUITextTooltip title="Reiniciar Zoom">
-          <IconButton onClick={resetZoom} size="large">
-            <ZoomInMapIcon />
-          </IconButton>
-        </MUITextTooltip>
-      </Grid>
-    </Grid>
-
+  return (
     <Box
-      mt={3}
       sx={{
-        display: "flex",
-        justifyContent: "center",
-        mx: 2,
-        transform: "scale(0.95)",
-        transformOrigin: "top center",
+        width: "100%",
+        maxWidth: 900,
+        mx: "auto",
+        mt: 2,
       }}
     >
-      <canvas ref={chartRef} width="475" height="475" />
-    </Box>
-  </Box>
-);
+      <Grid container spacing={2} justifyContent="center" mb={1}>
+        <Grid item>
+          <Typography variant="subtitle2" fontStyle="italic" fontWeight="bold">
+            {t("reports.porcentaje_minimo")}
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Typography variant="subtitle2" fontStyle="italic" fontWeight="bold">
+            {t("reports.porcentaje_maximo")}
+          </Typography>
+        </Grid>
+      </Grid>
 
+      <Grid container spacing={2} justifyContent="center" mb={2}>
+        <Grid item>
+          <TextField
+            label="Min"
+            type="number"
+            name="minValue"
+            value={filters.minValue}
+            onChange={handleFilterChange}
+            size="small"
+            sx={{ width: 100 }}
+            inputProps={{ min: 0, max: 100 }}
+          />
+        </Grid>
+        <Grid item>
+          <TextField
+            label="Max"
+            type="number"
+            name="maxValue"
+            value={filters.maxValue}
+            onChange={handleFilterChange}
+            size="small"
+            sx={{ width: 100 }}
+            inputProps={{ min: 0, max: 100 }}
+          />
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={2} alignItems="center" justifyContent="center">
+        <Grid item>
+          <ToggleButtonGroup
+            value={chartType}
+            exclusive
+            onChange={(e, value) => value && setChartType(value)}
+            aria-label="Tipo de gráfico"
+            size="small"
+          >
+            {[
+              { type: "pie", icon: faPieChart, label: "Circular" },
+              { type: "bar", icon: faBarChart, label: "Barras" },
+              { type: "line", icon: faLineChart, label: "Línea" },
+            ].map(({ type, icon, label }) => (
+              <MUITextTooltip key={type} title={label}>
+                <ToggleButton
+                  value={type}
+                  aria-label={type}
+                  sx={{
+                    color: "white",
+                    fontSize: "1.4rem",
+                    padding: "12px 24px",
+                    backgroundColor: chartType === type ? "#0d6efd" : "#6c757d",
+                    borderRadius: 1,
+                    mx: 1.5,
+                    "&:hover": {
+                      backgroundColor:
+                        chartType === type ? "#0b5ed7" : "#5a6268",
+                    },
+                  }}
+                >
+                  <FontAwesomeIcon icon={icon} />
+                </ToggleButton>
+              </MUITextTooltip>
+            ))}
+          </ToggleButtonGroup>
+        </Grid>
+
+        <Grid item>
+          <MUITextTooltip title="Reiniciar Zoom">
+            <IconButton onClick={resetZoom} size="large">
+              <ZoomInMapIcon />
+            </IconButton>
+          </MUITextTooltip>
+        </Grid>
+      </Grid>
+
+      <Box
+        mt={3}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          mx: "auto",
+          width: "400px", // ancho fijo
+          height: "450px", // alto fijo
+          transform: "scale(0.95)",
+          transformOrigin: "top center",
+        }}
+      >
+        <canvas
+          ref={chartRef}
+          width="475"
+          height="475"
+          style={{ display: "block", margin: "0 auto" }}
+        />
+      </Box>
+    </Box>
+  );
 };
 
 export default LineStyleCharts;

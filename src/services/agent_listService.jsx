@@ -75,6 +75,7 @@ export const getAdmins = async (clients) => {
       { clients: clientsCsv },
       config
     );
+    
     return response.data.data;
   } catch (error) {
     console.error("Error fetching admins:", error.response?.data || error.message);

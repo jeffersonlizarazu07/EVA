@@ -711,6 +711,36 @@ const AdminList = () => {
                     sx={{ mb: 2 }}
                     className="readOnlyField"
                   />
+                  <Autocomplete
+                    multiple
+                    options={listClients}
+                    disableCloseOnSelect
+                    getOptionLabel={(option) => option.client}
+                    onChange={onChange}
+                    value={listClients.filter((client) =>
+                      selectedClients.includes(client.id)
+                    )}
+                    renderOption={(props, option, { selected }) => (
+                      <li {...props} key={option.id}>
+                        <Checkbox
+                          checked={selected}
+                          style={{ marginRight: 8 }}
+                        />
+                        {option.client}
+                      </li>
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={t("viewUserModal.Clients")}
+                        placeholder={t("viewUserModal.Clients")}
+                        error={!!errors.clients}
+                        helperText={errors.clients}
+                      />
+                    )}
+                    sx={{ mb: 2 }}
+                    className="readOnlyField"
+                  />
                 </Grid>
 
                 {/* Columna derecha */}

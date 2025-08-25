@@ -41,15 +41,15 @@ const TableMonitoringView = ({
   fetchMonitoring,
   viewType,
   monitoringStats,
-  setMonitoringStats
+  setMonitoringStats,
 }) => {
   const nav = useNavigate();
   const location = useLocation();
   // Traducción
   const { t } = useTranslations();
-  
+
   // Verificar si estamos en la vista de agente (monitoring_view)
-  const isAgentView = location.pathname.includes('/monitoring_view/');
+  const isAgentView = location.pathname.includes("/monitoring_view/");
   // Paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
@@ -427,7 +427,7 @@ const TableMonitoringView = ({
                         Total
                       </Box>
                       <Typography sx={{ fontWeight: "bold" }}>
-                        {monitoringStats.total_monitorings}
+                        {monitoringStats.total_monitorings ?? 0}
                       </Typography>
                     </>
                   ) : key === "score" ? (
@@ -436,7 +436,7 @@ const TableMonitoringView = ({
                         Promedio
                       </Box>
                       <Typography sx={{ fontWeight: "bold" }}>
-                        {monitoringStats.average_score}
+                        {monitoringStats.average_score ?? 0}
                       </Typography>
                     </>
                   ) : null}

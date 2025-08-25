@@ -59,12 +59,11 @@ const Reports = () => {
   const responseRefs = useRef([]);
   const [answersStats, setAnswersStats] = useState([]);
 
-useEffect(() => {
-  if (clients && clients.length > 0) {
-    getSurveys();
-  }
-}, [clients]);
-
+  useEffect(() => {
+    if (clients && clients.length > 0) {
+      getSurveys();
+    }
+  }, [clients]);
 
   const handleChange = (event) => {
     setSurveyId(Number(event.target.value) || "");
@@ -221,47 +220,47 @@ useEffect(() => {
     }
   };
 
-const getSurveys = async () => {
-  try {
-    console.log("LOS CLIENTES:", clients);
+  // const getSurveys = async () => {
+  //   try {
+  //     console.log(clients);
+  //     const response = await axios.get(
+  //       `http://localhost:3000/api/clients/surveys?clientIds=${clients}`,
+  //       config
+  //     );
+  //     console.log("Datos de Encuestas aqui:", response.data.data);
+  //     setSurveys(response.data.data);
+  //   } catch (error) {
+  //     console.error("Error fetching data", error);
+  //   }
+  // };
 
-    // Validar que clients tenga al menos un elemento válido
-    if (!clients || (Array.isArray(clients) && clients.length === 0)) {
-      console.warn("No hay clientes para consultar encuestas");
-      setSurveys([]); // O manejar como prefieras cuando no hay datos
-      return; // Salimos sin hacer la petición
-    }
-
-    // Convertir clients a string con IDs separados por comas
-    const clientIds = Array.isArray(clients) ? clients.join(',') : clients;
-
-    // Construir URL con encodeURIComponent
-    const url = `http://localhost:3000/api/clients/surveys?clientIds=${encodeURIComponent(clientIds)}`;
-
-    const response = await axios.get(url, config);
-    console.log("Datos de Encuestas aqui:", response.data.data);
-    setSurveys(response.data.data);
-  } catch (error) {
-    console.error("Error fetching data", error);
-    setSurveys([]); // Opcional: limpiar encuestas en caso de error
-  }
-};
-
-
-
-  /*const getSurveys = async () => {
+  const getSurveys = async () => {
     try {
       console.log("LOS CLIENTES:", clients);
-      const response = await axios.get(
-        `http://localhost:3000/api/clients/surveys?clientIds=${clients}`,
-        config
-      );
+
+      // Validar que clients tenga al menos un elemento válido
+      if (!clients || (Array.isArray(clients) && clients.length === 0)) {
+        console.warn("No hay clientes para consultar encuestas");
+        setSurveys([]); // O manejar como prefieras cuando no hay datos
+        return; // Salimos sin hacer la petición
+      }
+
+      // Convertir clients a string con IDs separados por comas
+      const clientIds = Array.isArray(clients) ? clients.join(",") : clients;
+
+      // Construir URL con encodeURIComponent
+      const url = `http://localhost:3000/api/clients/surveys?clientIds=${encodeURIComponent(
+        clientIds
+      )}`;
+
+      const response = await axios.get(url, config);
       console.log("Datos de Encuestas aqui:", response.data.data);
       setSurveys(response.data.data);
     } catch (error) {
       console.error("Error fetching data", error);
+      setSurveys([]); // Opcional: limpiar encuestas en caso de error
     }
-  };*/
+  };
 
   // llamada al backend
   const getAnswersByRanges = async () => {
@@ -760,6 +759,7 @@ const getSurveys = async () => {
                   mt: 2,
                   border: "1px solid #ccc",
                   width: "100%",
+                  tableLayout: "fixed",
                   fontSize: "0.85rem",
                 }}
               >
