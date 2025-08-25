@@ -48,7 +48,7 @@ import { useTranslations } from "../../components/hooks/useTranslations";
 const Reports = () => {
   const { t } = useTranslations();
   const nav = useNavigate();
-  const { accessToken, userType, clients } = useContext(UserContext);
+  const { accessToken, userInfo, clients } = useContext(UserContext);
   const [allResponses, setAllResponses] = useState([]); // Nueva estructura para contener todas las respuestas en orden
   const [surveys, setSurveys] = useState([]);
   const [surveyId, setSurveyId] = useState("");
@@ -1037,11 +1037,15 @@ const Reports = () => {
   };
 
   return (
-    <Box>
+    <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
-        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
+        {userInfo?.type === 3 || userInfo?.type === 2 ? (
+          <HeaderLT2 />
+        ) : (
+          <HeaderLT1 />
+        )}
 
-        <Box m={0} p={0} sx={{ mt: { xs: 10, sm: 12, md: 14, lg: 16 } }}>
+        <Box sx={{ m: 0, p: 0, display: "flex", justifyContent: "center", alignItems: "center"}}>
           <Grid container spacing={0} sx={{ m: 0 }}>
             <Grid
               item

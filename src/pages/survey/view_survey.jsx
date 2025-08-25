@@ -658,26 +658,55 @@ const config = {
               }}
             >
               <CardContent sx={{ p: 5 }}>
-                <Box textAlign="center" mb={4}>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      fontWeight: 600,
-                      color: '#b62a8b',
-                      mb: 1.5,
-                      letterSpacing: '-0.2px'
-                    }}
-                  >
-                    <Info sx={{ fontSize: 40, mr: 2, verticalAlign: 'middle', color: '#b62a8b' }} />
-                    {t("vistaEncuestas.informacion_encuesta")}
-                  </Typography>
-                  <Box sx={{
-                    width: '80px',
-                    height: '4px',
-                    background: '#b62a8b',
-                    borderRadius: '2px',
-                    margin: '0 auto'
-                  }} />
+
+                <Box sx={{ position: "relative", mb: 4 }}>
+                  {/* Botón para volver */}
+                  <Box sx={{ position: "absolute", left: 0, top: 0 }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 0,
+                        width: 30,
+                        height: 30,
+                        padding: 0,
+                        borderRadius: "50%",
+                        color: "#b62a8b",
+                        borderColor: "#b62a8b",
+                        "&:hover": {
+                          borderColor: "#b62a8b",
+                          backgroundColor: "#b62a8b",
+                          color: "white",
+                        },
+                      }}
+                      onClick={() => nav("/survey_list")}
+                    >
+                      <TurnLeft />
+                    </Button>
+                  </Box>
+
+                  {/* Título centrado */}
+                  <Box textAlign="center">
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 600,
+                        color: '#b62a8b',
+                        mb: 1.5,
+                        letterSpacing: '-0.2px'
+                      }}
+                    >
+                      <Info sx={{ fontSize: 40, mr: 2, verticalAlign: 'middle', color: '#b62a8b' }} />
+                      {t("vistaEncuestas.informacion_encuesta")}
+                    </Typography>
+                    <Box sx={{
+                      width: '80px',
+                      height: '4px',
+                      background: '#b62a8b',
+                      borderRadius: '2px',
+                      margin: '0 auto'
+                    }} />
+                  </Box>
                 </Box>
                 
                 <Grid container spacing={4} alignItems="center">

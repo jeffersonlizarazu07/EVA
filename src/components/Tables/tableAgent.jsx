@@ -104,7 +104,7 @@ const TableAdmin = ({
     <Box className="table-container">
       <Grid container spacing={2} mb={2}>
         <Grid item xs={12} sm={6} md={6} lg={6}>
-          <Box display="flex" alignItems="center" gap={1}>
+          <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
             <Button
               variant="outlined"
               size="small"

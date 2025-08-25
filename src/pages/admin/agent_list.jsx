@@ -24,7 +24,7 @@ import { Box, Typography } from "@mui/material";
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
-  const [listClientes, setListClients] = useState([]); // Clientes disponibles en el sistema
+  const [listClients, setListClients] = useState([]); // Clientes disponibles en el sistema
   const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
   const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
   const [title, setTitle] = useState(); // Estado para el título del formulario/modal
@@ -116,6 +116,16 @@ const AdminList = () => {
     validate: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
   });
 
+  // Función para obtener la lista de clientes registrados
+  const loadClients = async () => {
+    try {
+      const data = await getClients();
+      setListClients(data);
+    } catch (error) {
+      console.error("Error loading clients:", error);
+    }
+  };
+
   // Obtener todos los administradores (agentes) desde el backend
   const loadAdmins = async () => {
     try {
@@ -138,16 +148,6 @@ const AdminList = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Función para obtener la lista de clientes registrados
-  const loadClients = async () => {
-    try {
-      const data = await getClients();
-      setListClients(data);
-    } catch (error) {
-      console.error("Error loading clients:", error);
     }
   };
 
@@ -693,7 +693,11 @@ const AdminList = () => {
           }}
         >
           <Box className="container" mt={0}>
-            {admins.length > 0 ? (
+            {loading ? (
+              <Typography variant="h6" sx={{ textAlign: "center", py: 5 }}>
+                Cargando agentes...
+              </Typography>
+            ) : admins.length > 0 ? (
               <TableAdmin
                 header={selectedKeys}
                 data={admins}
@@ -702,9 +706,7 @@ const AdminList = () => {
               />
             ) : (
               <Box sx={{ textAlign: "center", py: 5 }}>
-                <Typography variant="h6">
-                  No existen agentes registrados
-                </Typography>
+                <Typography variant="h6">No existen agentes registrados</Typography>
               </Box>
             )}
           </Box>
