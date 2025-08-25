@@ -341,7 +341,7 @@ const ModalMonitoringView = ({
             variant="caption"
             sx={{ display: "block", lineHeight: 1.2 }}
           >
-            Enviado acuse de recibo {data.check_date_formatted}
+            Enviado acuse de recibo {data.check_formatted}
           </Typography>
         </Box>
 
