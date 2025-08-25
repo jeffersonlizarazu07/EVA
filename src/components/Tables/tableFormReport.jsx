@@ -172,17 +172,14 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
         </Button>
       </Box>
     
-      <Box className="table-container"  
-          
-        
-      >
+      <Box className="table-container" mb={6}>
         
 
         {/* --- TABLA 1 --- */}
         {selectedTable === "table1" && (
           <>
             {/* Buscador */}
-            <Grid container spacing={2} mb={2}>
+            <Grid container spacing={2} mb={3}>
               <Grid item xs={12} >
                 <Box display="flex" alignItems="center" gap={1} 
                   
@@ -221,17 +218,13 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
             </Grid>
 
             {/* Tabla 1 */}
-            <TableContainer component={Paper} elevation={0} sx={{ width:"100%", overflowY: "auto" }}>
+            <TableContainer component={Paper} elevation={0} sx={{ width: "100%", maxHeight: 450, overflowY: "auto" }}>
               <Table size="small">
                 <TableHead> 
                   <TableRow> 
                     <TableCell 
-                      sx={{ 
-                        fontSize: "1rem",
-                        textAlign: "center",
-                        fontWeight: "bold" 
-                        }}
-                      >
+                      sx={{ fontSize: "1rem", textAlign: "center", fontWeight: "bold" }}
+                    >
                       {t("clientTable.seleccionar_para_descargar")} 
                     </TableCell> 
                     {header.map((item, i) => ( 
@@ -308,21 +301,50 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
               </Table>
               
             </TableContainer>
-            <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={filteredData.length}
-                  rowsPerPage={rowsPerPage1}
-                  page={page1}
-                  onPageChange={handleChangePage1}
-                  onRowsPerPageChange={handleChangeRowsPerPage1}
-                />
+            <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]} // Mantienes tus opciones de filas por página
+                component="div"
+                count={filteredData.length}
+                rowsPerPage={rowsPerPage1}
+                page={page1}
+                onPageChange={handleChangePage1}
+                onRowsPerPageChange={handleChangeRowsPerPage1}
+                // Puedes agregar traducciones si tienes, ejemplo:
+                // labelRowsPerPage={t("userTable.Show")}
+                // labelDisplayedRows={({ from, to, count }) =>
+                //   `${from}-${to} ${t("userTable.Registered")} ${count !== -1 ? count : `more than ${to}`}`
+                // }
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  ".MuiTablePagination-toolbar": {
+                    alignItems: "center",
+                  },
+                  ".MuiTablePagination-selectLabel": {
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: 0,
+                  },
+                  ".MuiTablePagination-displayedRows": {
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: 0,
+                  },
+                  ".MuiInputBase-root": {
+                    backgroundColor: "#b62a8b",
+                    color: "white",
+                    borderRadius: "4px",
+                  },
+                }}
+              />
+            </Box>
+
             
           </>
         )}
 
         {/* --- TABLA 2 --- */}
-        
         {selectedTable === "table2" && (
           <>
           <TableContainer component={Paper} elevation={0}>
@@ -349,15 +371,40 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
               </TableBody>
             </Table>
           </TableContainer>
-        <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={table2.length}
-            rowsPerPage={rowsPerPage2}
-            page={page2}
-            onPageChange={handleChangePage2}
-            onRowsPerPageChange={handleChangeRowsPerPage2}
-          />
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={table2.length}
+              rowsPerPage={rowsPerPage2}
+              page={page2}
+              onPageChange={handleChangePage2}
+              onRowsPerPageChange={handleChangeRowsPerPage2}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                ".MuiTablePagination-toolbar": {
+                  alignItems: "center",
+                },
+                ".MuiTablePagination-selectLabel": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiTablePagination-displayedRows": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiInputBase-root": {
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                  borderRadius: "4px",
+                },
+              }}
+            />
+          </Box>
+
           </>
         )}
 
@@ -388,15 +435,40 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
               </TableBody>
             </Table>
           </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={table3.length}
-            rowsPerPage={rowsPerPage3}
-            page={page3}
-            onPageChange={handleChangePage3}
-            onRowsPerPageChange={handleChangeRowsPerPage3}
-          />
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={table3.length}
+              rowsPerPage={rowsPerPage3}
+              page={page3}
+              onPageChange={handleChangePage3}
+              onRowsPerPageChange={handleChangeRowsPerPage3}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                ".MuiTablePagination-toolbar": {
+                  alignItems: "center",
+                },
+                ".MuiTablePagination-selectLabel": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiTablePagination-displayedRows": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiInputBase-root": {
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                  borderRadius: "4px",
+                },
+              }}
+            />
+          </Box>
+
           
           </>
         )}
