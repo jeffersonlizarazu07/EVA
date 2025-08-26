@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { UserContext } from "../../context/UserContext";
+import Swal from "sweetalert2";
 import { useTranslations } from "../hooks/useTranslations";
 import {
   Dialog,
@@ -69,18 +70,42 @@ const ModalMonitoringView = ({
   const handleSaveFeedback = async () => {
     try {
       if (feedback.trim() === "") {
-        alert("No es posible guardar el comentario vacío"); // Validación del feedback al guardar vacío
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "warning",
+          title: "No es posible guardar el comentario vacío",
+          showConfirmButton: false,
+          timer: 3000,
+        });
         return;
       }
+
       await saveFeedback(data.id, feedback);
-      await fetchMonitoring(); // Actualiza la tabla
-      alert("Comentario guardado correctamente");
-      updateSelectedRow(data.id, feedback); // Actualiza el feedback en el modal
+      await fetchMonitoring();
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Comentario guardado correctamente",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+
+      updateSelectedRow(data.id, feedback);
       closeModalFeedback();
       buttonsValidationState(feedback);
     } catch (err) {
-      console.error("Error al guardar comentario");
-      throw err;
+      console.error("Error al guardar comentario:", err);
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al guardar el comentario",
+        showConfirmButton: false,
+        timer: 3000,
+      });
     }
   };
 
@@ -118,9 +143,25 @@ const ModalMonitoringView = ({
       await updateCheck(data.id, checkStatus ? 1 : 0);
       setChecked(true);
       setCheckDisabled(true);
-      alert("El check se actualizó");
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "El check se actualizó",
+        showConfirmButton: false,
+        timer: 3000,
+      });
     } catch (error) {
       console.error("Error al actualizar el check:", error);
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "No se pudo actualizar el check",
+        showConfirmButton: false,
+        timer: 3000,
+      });
     }
   };
 
@@ -415,7 +456,8 @@ const ModalMonitoringView = ({
                       color="text.secondary"
                       sx={{ mr: 1 }}
                     >
-                      {block.percentage}{"%"} | Media ponderada: 100.00
+                      {block.percentage}
+                      {"%"} | Media ponderada: 100.00
                     </Typography>
                   </Grid>
                 </Grid>
