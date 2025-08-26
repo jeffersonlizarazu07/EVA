@@ -70,7 +70,7 @@ import { initReactI18next } from "react-i18next";
               "porcentaje":"Porcentaje",
               "preguntas":"Preguntas",
               "monitoreos":"Monitoreos",
-              "respuestas_Erróneas":"Respuestas Erróneas",
+              "respuestas_Erróneas":"Errores",
               
             },
             formTable: {
@@ -554,7 +554,7 @@ import { initReactI18next } from "react-i18next";
               "porcentaje": "Percentage",
               "preguntas": "Questions",
               "monitoreos": "Monitorings",
-              "respuestas_Erróneas": "Wrong Answers",
+              "respuestas_Erróneas": "Errors",
             },
             formTable: {
               "id": "ID",
@@ -1009,7 +1009,7 @@ import { initReactI18next } from "react-i18next";
               "porcentaje": "Percentuale",
               "preguntas": "Domande",
               "monitoreos": "Monitoraggi",
-              "respuestas_Erróneas": "Risposte Errate",
+              "respuestas_Erróneas": "Errori",
             },
             formTable: {
               "id": "ID",
@@ -1444,7 +1444,7 @@ import { initReactI18next } from "react-i18next";
               "porcentaje": "Porcentagem",
               "preguntas": "Perguntas",
               "monitoreos": "Monitoramentos",
-              "respuestas_Erróneas": "Respostas Erradas",
+              "respuestas_Erróneas": "Erros",
             },
             formTable: {
               "id": "ID",

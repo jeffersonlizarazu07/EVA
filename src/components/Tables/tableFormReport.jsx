@@ -32,7 +32,7 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
   const { t } = useTranslations();
   const heders2 = [t("clientTable.preguntas"),t("clientTable.tipo_de_error"), t("clientTable.monitoreos"),t("clientTable.respuestas_Erróneas"),  t("clientTable.porcentaje")];
   //const heders4 = ["Tipo de error","Porcentaje"];
-  const heders4 = [t("clientTable.tipo_de_error"), t("clientTable.porcentaje")];
+  const heders4 = [t("clientTable.tipo_de_error"),t("clientTable.monitoreos"),t("clientTable.respuestas_Erróneas"), t("clientTable.porcentaje")];
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedTable, setSelectedTable] = useState("table1"); // controlar qué tabla mostrar
 
@@ -380,8 +380,10 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
                 .slice(page3 * rowsPerPage3, page3 * rowsPerPage3 + rowsPerPage3)
                 .map((row, idx) => (
                   <TableRow key={idx}>
-                    {["tipo_error", "porcentaje"].map((key) => (
-                      <TableCell key={key} align="center">{row[key]}</TableCell>
+                    {["tipo_error","total_preguntas","cantidad_malas", "porcentaje"].map((key) => (
+                      <TableCell key={key} align="center">
+                        {row[key]} 
+                      </TableCell>
                     ))}
                   </TableRow>
                 ))}

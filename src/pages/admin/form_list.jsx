@@ -15,7 +15,18 @@ import {
   MenuItem,
   IconButton,
   CircularProgress,
+
+  
+  
+  
+  DialogContentText,
+  Fade,
+  Alert,
+  
 } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { keyframes } from "@emotion/react";
+
 import { Close } from "@mui/icons-material";
 import HeaderLT1 from "../../components/header/headerLT1";
 import HeaderLT2 from "../../components/header/headerLT2";
@@ -70,6 +81,7 @@ const FormList = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [idToEdit, setIdToEdit] = useState(null);
   const [clients, setClients] = useState([]);
+  
 
   const title = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -80,6 +92,7 @@ const FormList = () => {
     getForms();
     getClients();
   }, []);
+  
 
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -222,13 +235,22 @@ const FormList = () => {
       Toast.fire({ icon: "error", title: t("alertCreateEdit.ErrorAlert") });
     }
   };
+  // animacion alerta
+      const shake = keyframes`
+                    0% { transform: translateX(0); }
+                    20% { transform: translateX(-6px); }
+                    40% { transform: translateX(6px); }
+                    60% { transform: translateX(-4px); }
+                    80% { transform: translateX(4px); }
+                    100% { transform: translateX(0); }
+                  `;
   return (
     <>
       <Box sx={{ bgcolor: "#fafafa", minHeight: "100vh" }}>
         {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
 
         <Box sx={{ px: 3, py: 4, mt: { xs: 2, sm: 3, md: 4, lg: 5 } }}>
-          <Paper elevation={2} sx={{ borderRadius: 3, px: 3, py: 4 }}>
+          
             {loading ? (
               <Box textAlign="center" py={4}>
                 <CircularProgress sx={{ color: "#b62a8b" }} />
@@ -249,26 +271,81 @@ const FormList = () => {
                 onUpdate={(form) => openModal("edit", form)}
               />
             ) : (
-              <Box textAlign="center" py={5}>
-                <Typography variant="body2" color="text.secondary" mb={2}>
-                  No existen formularios disponibles.
-                </Typography>
+              <>
+                            
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                  m: 10,
+                                  mt: 2,
+                                  mb:0,
+                                  borderRadius: "12px",
+                      
+                                  border: "1px dashed #b0bec5",
+                                  minHeight: "150px",
+                                  position: "relative",
+                                }}
+                              >
+                                
+                                  <Fade in={true} timeout={500}>
+                                    <Box
+                                      sx={{
+                                        animation: `${shake} 0.5s`,
+                                        
+                                        
+                                      }}
+                                    >
+                                      <Alert
+                                        icon={<InfoOutlinedIcon fontSize="large" />}
+                                        severity="info"
+                                        color="#c70e8f"
+                                        sx={{
+                                          
+                                          textAlign: "center",
+                                          fontSize: "1.5rem",
+                                          backgroundColor: "transparent",
+                                          border: "1px solid #c70e8f",
+                                          color: "#c70e8f",
+                                          borderRadius: "8px",
+                                        }}
+                                      >
+                                        {("Aún no has creado formularios.")}
+                                      </Alert>
+                                    </Box>
+                                  </Fade>
+                                
+                              </Box>
+                  
+              <Box 
+                sx={{
+                  minHeight: 150,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  m: 5,
+                  mb:0,
+                  
+                  
+                  
+                  position: "relative",
+                }}
+              >
+                
                 <Button
                   variant="contained"
-                  sx={{
-                    backgroundColor: "#b62a8b",
-                    color: "#fff",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                    "&:hover": { backgroundColor: "#a02179" },
-                  }}
+                  sx={{mt:1,color:"#b62a8b", border:"1px solid #b62a8b ",borderRadius: "12px", backgroundColor:"transparent", "&:hover":{color:"#fff", backgroundColor:" #b62a8b ",}}}
+
                   onClick={() => openModal("create")}
                 >
                   Crear nuevo formulario
                 </Button>
               </Box>
+              </>
             )}
-          </Paper>
+          
         </Box>
       </Box>
 
@@ -422,6 +499,8 @@ const FormList = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      
+          
     </>
   );
 };

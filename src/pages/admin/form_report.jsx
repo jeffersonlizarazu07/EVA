@@ -283,8 +283,8 @@ const FormReport = () => {
     return Object.values(conteo).map(item => ({
       ...item,
       porcentaje: item.total_preguntas
-        ? parseFloat((100-(item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
-        : 0
+        ? `${parseFloat((100-(item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))} %`
+        : `${0} %`
     }));
   };
 
@@ -299,15 +299,15 @@ const FormReport = () => {
           tipo_error: i.tipo_error,
           cantidad_malas: 0,
           total_preguntas: 0,
-          porcentajeAcumulado: 0,
-          monitoreo: i.total_preguntas
+          //porcentajeAcumulado: 0,
+          //monitoreo: i.total_preguntas
         }
       }
 
       // acumular totales
       datos[key].cantidad_malas += i.cantidad_malas
       datos[key].total_preguntas += i.total_preguntas
-      datos[key].porcentajeAcumulado += i.porcentaje
+      //datos[key].porcentajeAcumulado += i.porcentaje
     })
 
     // calcular porcentaje
@@ -316,8 +316,8 @@ const FormReport = () => {
       porcentaje: item.total_preguntas > 0 
         // ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
         //parseFloat(((item.cantidad_malas / item.total_preguntas) * 100).toFixed(2))  
-        ? parseFloat(((item.cantidad_malas / item.total_preguntas) * 100).toFixed(2)) 
-        : 0
+        ? `${parseFloat(((item.cantidad_malas / item.total_preguntas) * 100).toFixed(2))} % `
+        : `${0} %`
     }))
   }
 
@@ -464,47 +464,46 @@ const FormReport = () => {
   // tarer reportes filtrados
 
   const getFilterReports = async () => {
-    try {
-      const agenteParam = String(agenteFilter || '').trim() || "null";
-      const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
-      // formateo de fecha sin horas
-      const formattedStartDate = startDate
-        ? dayjs(startDate).format("YYYY-MM-DD")
-        : "";
-      const formattedEndDate = endDate
-        ? dayjs(endDate).format("YYYY-MM-DD")
-        : "";
+      try {
+        const agenteParam = String(agenteFilter || '').trim() || "null";
+        const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
+        // formateo de fecha sin horas
+        const formattedStartDate = startDate
+          ? dayjs(startDate).format("YYYY-MM-DD")
+          : "";
+        const formattedEndDate = endDate
+          ? dayjs(endDate).format("YYYY-MM-DD")
+          : "";
 
-      const filtro = await axios.get(
-        `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}/${agenteParam}/${evaluadorParam}`,
-        config
-      );
+        const filtro = await axios.get(
+          `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}/${agenteParam}/${evaluadorParam}`,
+          config
+        );
 
-      if (!filtro.data || filtro.data.length === 0) {
-        Swal.fire({
-          title: t("reports.sin_datos"),
-          text: t("reports.texto_sin_datos"),
-          icon: "info",
-          confirmButtonText: t("buttons.aceptar"),
-          confirmButtonColor: "#FF66B2",
-        });
+        if (!filtro.data || filtro.data.length === 0) {
+          Swal.fire({
+            title: t("reports.sin_datos"),
+            text: t("reports.texto_sin_datos"),
+            icon: "info",
+            confirmButtonText: t("buttons.aceptar"),
+            confirmButtonColor: "#FF66B2",
+          });
+        }
+        //console.log("aki:",filtro.data)
+        setReportesFiltrados(filtro.data);
+      } catch (error) {
+        console.log("Error al consumir la api", error);
       }
-      //console.log("aki:",filtro.data)
-      setReportesFiltrados(filtro.data);
-    } catch (error) {
-      console.log("Error al consumir la api", error);
-    }
-  };
+    };
 
-  // descargar lo filtrado en exel
+    // descargar lo filtrado en exel
 
-  const exportExel = () => {
+    const exportExel = () => {
     // filtro entre exportacion total y seleccionados
     const dataCargada = seleccionados.length ? seleccionados : formatExel;
 
     if (
       !dataCargada ||
-      dataCargada.length === 0 ||
       Object.keys(dataCargada).length === 0
     ) {
       Swal.fire({
@@ -519,50 +518,46 @@ const FormReport = () => {
       return;
     }
 
-    // para todos con formatExel
-
+    // 1. Hoja principal: Monitoreos agrupados
     const data = Object.values(dataCargada).map((item) => {
-      // Se convierten las preguntas (que son un array de objetos) en un solo objeto plano
-      // donde cada clave es el texto de la pregunta y el valor es la respuesta
-      const preguntasPlanas = item.preguntas?.reduce((acc, p, i) => {
+      const preguntasPlanas = item.preguntas?.reduce((acc, p) => {
         acc[` ${p.texto}`] = p.respuesta;
         return acc;
       }, {});
-
-      // Se devuelve un objeto que representa una fila del Excel,
-      // incluyendo campos generales + preguntas planas + feedback
       return {
         Agente: item.nombre_agente,
         Evaluador: item.nombre_monitor,
         Fecha_de_Monitoreo: item.fecha_monitoreo,
         Score: item.score,
         Formulario: item.nombre_form,
-        ...preguntasPlanas, // Se agregan dinámicamente todas las preguntas y respuestas
+        ...preguntasPlanas,
         Feedback: item.feedback,
       };
     });
+    const worksheet1 = XLSX.utils.json_to_sheet(data);
 
-    // Se convierte el array de objetos en una hoja de cálculo de Excel
-    const worksheet = XLSX.utils.json_to_sheet(data);
+    // 2. Hoja de errores por pregunta
+    const worksheet2 = XLSX.utils.json_to_sheet(errorConteo);
 
-    // Se crea un nuevo libro de Excel
+    // 3. Hoja de errores generales
+    const worksheet3 = XLSX.utils.json_to_sheet(errorGeneral);
+
+    // Crear libro y agregar hojas
     const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet1, "Reportes");
+    XLSX.utils.book_append_sheet(workbook, worksheet2, "Errores por Pregunta");
+    XLSX.utils.book_append_sheet(workbook, worksheet3, "Errores Generales");
 
-    // Se agrega la hoja al libro con el nombre "Reportes"
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Reportes");
-
-    // Se genera el archivo Excel en un formato binario (array buffer)
+    // Exportar
     const exelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
       type: "array",
     });
 
-    // Se crea un objeto Blob con el contenido del archivo Excel
     const blob = new Blob([exelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
     });
 
-    // Se dispara la descarga del archivo Excel en el navegador con nombre "reportes_filtrados.xlsx"
     saveAs(blob, "reportes_filtrados.xlsx");
   };
 
