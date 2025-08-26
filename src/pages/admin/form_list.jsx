@@ -246,106 +246,61 @@ const FormList = () => {
                   `;
   return (
     <>
-      <Box sx={{ bgcolor: "#fafafa", minHeight: "100vh" }}>
-        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
-
-        <Box sx={{ px: 3, py: 4, mt: { xs: 2, sm: 3, md: 4, lg: 5 } }}>
-          
-            {loading ? (
-              <Box textAlign="center" py={4}>
-                <CircularProgress sx={{ color: "#b62a8b" }} />
-                <Typography mt={2}>Cargando formularios...</Typography>
-              </Box>
-            ) : forms.length > 0 ? (
-              <TableForms
-                header={headersArray}
-                data={forms.map((form) => ({
-                  ...form,
-                  creation_date: formatDateTime(form.creation_date),
-                  updated_date: formatDateTime(form.updated_date),
-                }))}
-                onView={openForm}
-                onActive={activateForm}
-                onRemove={deactivateForm}
-                onCreate={() => openModal("create")}
-                onUpdate={(form) => openModal("edit", form)}
-              />
-            ) : (
-              <>
-                            
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                  m: 10,
-                                  mt: 2,
-                                  mb:0,
-                                  borderRadius: "12px",
-                      
-                                  border: "1px dashed #b0bec5",
-                                  minHeight: "150px",
-                                  position: "relative",
-                                }}
-                              >
-                                
-                                  <Fade in={true} timeout={500}>
-                                    <Box
-                                      sx={{
-                                        animation: `${shake} 0.5s`,
-                                        
-                                        
-                                      }}
-                                    >
-                                      <Alert
-                                        icon={<InfoOutlinedIcon fontSize="large" />}
-                                        severity="info"
-                                        color="#c70e8f"
-                                        sx={{
-                                          
-                                          textAlign: "center",
-                                          fontSize: "1.5rem",
-                                          backgroundColor: "transparent",
-                                          border: "1px solid #c70e8f",
-                                          color: "#c70e8f",
-                                          borderRadius: "8px",
-                                        }}
-                                      >
-                                        {("Aún no has creado formularios.")}
-                                      </Alert>
-                                    </Box>
-                                  </Fade>
-                                
-                              </Box>
-                  
-              <Box 
-                sx={{
-                  minHeight: 150,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  m: 5,
-                  mb:0,
-                  
-                  
-                  
-                  position: "relative",
-                }}
-              >
-                
-                <Button
-                  variant="contained"
-                  sx={{mt:1,color:"#b62a8b", border:"1px solid #b62a8b ",borderRadius: "12px", backgroundColor:"transparent", "&:hover":{color:"#fff", backgroundColor:" #b62a8b ",}}}
-
-                  onClick={() => openModal("create")}
-                >
-                  Crear nuevo formulario
-                </Button>
-              </Box>
-              </>
-            )}
-          
+      <Box className="App" sx={{ overflow: "hidden" }}>
+        <Box id="body">
+          {loading && <p>Cargando...</p>}
+          <HeaderLT1 />
+          <Box
+            sx={{
+              alignItems: "stretch",
+              flexWrap: "nowrap",
+              padding: 0,
+              display: "flex",
+            }}
+          >
+            {/* <SidebarLT1 /> */}
+            <Box className="container" mt={0}>
+              {loading ? (
+                <Box textAlign="center" py={4}>
+                  <CircularProgress sx={{ color: "#b62a8b" }} />
+                  <Typography mt={2}>Cargando formularios...</Typography>
+                </Box>
+              ) : forms.length > 0 ? (
+                <TableForms
+                  header={headersArray}
+                  data={forms.map((form) => ({
+                    ...form,
+                    creation_date: formatDateTime(form.creation_date),
+                    updated_date: formatDateTime(form.updated_date),
+                  }))}
+                  onView={openForm}
+                  onActive={activateForm}
+                  onRemove={deactivateForm}
+                  onCreate={() => openModal("create")}
+                  onUpdate={(form) => openModal("edit", form)}
+                />
+              ) : (
+                <Box textAlign="center" py={5}>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    No existen formularios disponibles.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: "#b62a8b",
+                      color: "#fff",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      "&:hover": { backgroundColor: "#a02179" },
+                    }}
+                    onClick={() => openModal("create")}
+                  >
+                    Crear nuevo formulario
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </Box>
         </Box>
       </Box>
 

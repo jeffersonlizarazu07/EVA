@@ -6,7 +6,7 @@ import HeaderLT2 from "../../components/header/headerLT2";
 import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
-import { useTranslations } from "../../components/hooks/useTranslations"; 
+import { useTranslations } from "../../components/hooks/useTranslations";
 import {
   getAdmins,
   getClients,
@@ -51,7 +51,7 @@ import { Box,
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
-  const [listClientes, setListClients] = useState([]); // Clientes disponibles en el sistema
+  const [listClients, setListClients] = useState([]); // Clientes disponibles en el sistema
   const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
   const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
   const [title, setTitle] = useState(); // Estado para el título del formulario/modal
@@ -63,8 +63,7 @@ const AdminList = () => {
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
   const { t } = useTranslations(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, clients, userInfo } =
-    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
+  const { accessToken, clients, userInfo } = useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
@@ -78,14 +77,12 @@ const AdminList = () => {
 
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
-
   // Validaciones de la primer vista del modal
   const [clientError, setClientError] = useState(false); // Validación visual si el select de cliente se encuentra vacio al confrmar
   const [formError, setFormError] = useState(false); // Validación visual si formulario se encuentra vacio al confirmar
   const [dateError, setDateError] = useState(false); // Validación visual si no se asignó una fecha de monitorización al confirmar
   const [feedbackError, setFeedbackError] = useState(false);
   const [erroresPorPregunta, setErroresPorPregunta] = useState({});
-
   const [conteoDeAgentes, setConteoDeAgentes] = useState("0");
   useEffect(() => {
     console.log("Nuevo conteo desde useEffect:", conteoDeAgentes);
@@ -94,10 +91,17 @@ const AdminList = () => {
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
-    setFormattedDate(formatDate(new Date())); // Actualizo el estado con la fecha
-    loadAdmins(); // Llamo a la función para obtener los administradores
-    loadClients(); // Llamo a la función para obtener los clientes
-  }, []); // Solo al montar
+    setFormattedDate(formatDate(new Date()));
+
+    if (clients && clients.length > 0) {
+      console.log("✅ Clients listos:", clients);
+      loadAdmins(); // <- solo ahora sí llamamos
+    } else {
+      console.log("⚠️ Clients aún vacíos en el contexto");
+    }
+
+    loadClients(); // esto puede ir siempre
+  }, [clients]);
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
   const config = {
@@ -143,19 +147,27 @@ const AdminList = () => {
     validate: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/,
   });
 
-  //REQUEST//
+  // Función para obtener la lista de clientes registrados
+  const loadClients = async () => {
+    try {
+      const data = await getClients();
+      setListClients(data);
+    } catch (error) {
+      console.error("Error loading clients:", error);
+    }
+  };
+
   // Obtener todos los administradores (agentes) desde el backend
   const loadAdmins = async () => {
     try {
       setLoading(true);
       const data = await getAdmins(clients);
 
-      if (!data && data.length === 0) {
+      if (!data || data.length === 0) {
         setConteoDeAgentes(0);
       } else {
-        const conteo = data.length;
-        setConteoDeAgentes(conteo);
-        console.log("Administradores cargados:", conteoDeAgentes);
+        setConteoDeAgentes(data.length);
+        console.log("Administradores cargados:", data.length);
       }
 
       setAdmins(data);
@@ -167,16 +179,6 @@ const AdminList = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Función para obtener la lista de clientes registrados
-  const loadClients = async () => {
-    try {
-      const data = await getClients();
-      setListClients(data);
-    } catch (error) {
-      console.error("Error loading clients:", error);
     }
   };
 
@@ -224,16 +226,23 @@ const AdminList = () => {
     const forms = await getFormsByClient(numericId);
 
     if (forms && Array.isArray(forms) && forms.length > 0) {
-      setFormOptions(forms); // Cargar los formularios en el estado
+      setFormOptions(forms);
     } else {
       setFormOptions([]);
 
       // Mostrar mensaje informativo al usuario
       if (forms === null) {
-        // Error en la petición - ya se mostró el error
+        // Error en la petición - ya se mostró el error en consola, no mostramos alerta
         return;
+      } else if (
+        forms?.error === "No se encontraron formularios para este cliente"
+      ) {
+        Toast.fire({
+          icon: "info",
+          title: t("monitoringModal.ErrorForms"), // Aquí usas la traducción para ese mensaje
+        });
       } else {
-        // Sin formularios disponibles
+        // Otros casos sin formularios
         Toast.fire({
           icon: "info",
           title: t("monitoringModal.ErrorForms"),
@@ -408,7 +417,7 @@ const AdminList = () => {
     setMonitoringStep(1); // Reinicia a la primera vista del modal
   };
 
-  /* SCORE */
+  // Score
   const calBlocksPercentage = (bloques) => {
     return bloques.map((block) => {
       const initBlockPer = block.percentage;
@@ -488,15 +497,6 @@ const AdminList = () => {
           const preguntaActualizada = { ...preg, [campo]: valor };
 
           const esCorrecta = validarRespuesta(preguntaActualizada);
-
-          // 🔍 ver si respondió bien o no
-          /*console.log(`Pregunta ID: ${preg.id}`);
-          console.log(`Campo actualizado: ${campo}`);
-          console.log(`Valor ingresado:`, valor);
-          console.log(`¿Respuesta correcta?:`, esCorrecta ? "✅ SÍ" : "❌ NO");
-          console.log(`Respuesta esperada:`, preguntaActualizada.selected_answer);
-          console.log(`Respuesta del usuario:`, preguntaActualizada);*/
-
           return {
             ...preguntaActualizada,
             evaluacion: esCorrecta ? "0" : "1",
@@ -524,15 +524,6 @@ const AdminList = () => {
       setClientError(!isClientValid);
       setFormError(!isFormValid);
       setDateError(!isDateValid);
-
-      if (!isClientValid || !isFormValid || !isDateValid) {
-        Toast.fire({
-          icon: "error",
-          title: t("monitoringModal.AlertData"),
-          //'<p style="text-align: center;">Los campos cliente, formulario y fecha son obligatorios para continuar.</p>',
-        });
-        return;
-      }
 
       setMonitoringStep(2);
     } else if (monitoringStep === 2) {
@@ -574,17 +565,6 @@ const AdminList = () => {
       }
       setMonitoringStep(3);
     } else if (monitoringStep === 3) {
-      /*if (!feedback || feedback.trim() === "") {
-        setFeedbackError(true); // activa el borde rojo
-        Toast.fire({
-          icon: "error",
-          title: t("monitoringModal.AlertFeedback") //"El campo de feedback es obligatorio.",
-        });
-        return;
-      } else {
-        setFeedbackError(false); // limpia el error si todo está bien
-      }*/
-
       const payload = {
         monitoringDate,
         id_user_monitor: userInfo.id,
@@ -752,7 +732,11 @@ const AdminList = () => {
           }}
         >
           <Box className="container" mt={0}>
-            {admins.length > 0 ? (
+            {loading ? (
+              <Typography variant="h6" sx={{ textAlign: "center", py: 5 }}>
+                Cargando agentes...
+              </Typography>
+            ) : admins.length > 0 ? (
               <TableAdmin
                 header={selectedKeys}
                 data={admins}

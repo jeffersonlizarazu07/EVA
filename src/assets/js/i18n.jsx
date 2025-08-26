@@ -173,7 +173,7 @@ import { initReactI18next } from "react-i18next";
               "Email":"E-mail",
               "Password":"Contraseña",
               "ConfirmPassword":"Confirmar contraseña",
-              "Type":"Tipo",
+              "Type":"Tipo de rol",
               "SuperAdmin":"Super Administrador",
               "Admin":"Administrador",
               "Editor":"Editor",
@@ -209,7 +209,8 @@ import { initReactI18next } from "react-i18next";
               "SuccessAlert":" se ha desactivado exitosamente.",
               "ErrorAlert":" no ha sido desactivado.",
               "mensaje_desactivar": "se deshabilitara de forma permanente",
-              "error_desactivar_encuesta" : "No se pudo desactivar la encuesta"
+              "error_desactivar_encuesta" : "No se pudo desactivar la encuesta",
+              "CannotActivateYourself": "No puede desactivar su usuario"
             },
             alertActivate:{
               "activar_elemento":"Activar elemento",
@@ -220,7 +221,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel":"Cancelar",
               "SuccessAlert":" se ha activado exitosamente.",
               "ErrorAlert":" no ha sido activado.",
-              "mensaje_activar": "se activara"
+              "mensaje_activar": "se activara",
+              "CannotDeactivateYourself": "No puede activar su usuario"
             },
             alertCreateEdit:{
               "SuccessAlert":" se ha guardado exitosamente.",
@@ -614,7 +616,7 @@ import { initReactI18next } from "react-i18next";
               "Email": "Email",
               "Password": "Password",
               "ConfirmPassword": "Confirm Password",
-              "Type": "Type",
+              "Type": "Role type",
               "SuperAdmin": "Super Admin",
               "Admin": "Admin",
               "Editor": "Editor",
@@ -649,7 +651,8 @@ import { initReactI18next } from "react-i18next";
               "SuccessAlert": " has been successfully deactivated.",
               "ErrorAlert": " has not been deactivated.",
               "mensaje_desactivar": "will be permanently disabled",
-              "error_desactivar_encuesta" : "Could not deactivate the survey"
+              "error_desactivar_encuesta" : "Could not deactivate the survey",
+              "CannotActivateYourself": "You cannot deactivate your user"
             },
             alertActivate: {
               "activar_elemento": "Activate element",
@@ -660,7 +663,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Cancel",
               "SuccessAlert": " has been successfully activated.",
               "ErrorAlert": " has not been activated.",
-              "mensaje_activar": "will be activated"
+              "mensaje_activar": "will be activated",
+              "CannotDeactivateYourself": "You cannot activate your user"
             },
             alertCreateEdit: {
               "SuccessAlert": " has been successfully saved.",
@@ -1069,7 +1073,7 @@ import { initReactI18next } from "react-i18next";
               "Email": "Email",
               "Password": "Password",
               "ConfirmPassword": "Conferma Password",
-              "Type": "Tipo",
+              "Type": "Tipo di ruolo",
               "SuperAdmin": "Super Amministratore",
               "Admin": "Amministratore",
               "Editor": "Editor",
@@ -1104,7 +1108,8 @@ import { initReactI18next } from "react-i18next";
               "SuccessAlert": " è stato disattivato con successo.",
               "ErrorAlert": " non è stato disattivato.",
               "mensaje_desactivar": "sarà disabilitato in modo permanente",
-              "error_desactivar_encuesta" : "Impossibile disattivare il sondaggio"
+              "error_desactivar_encuesta": "Impossibile disattivare il sondaggio",
+              "CannotActivateYourself": "Non puoi disattivare il tuo utente"
             },
             alertActivate: {
               "activar_elemento": "Attiva elemento",
@@ -1115,7 +1120,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Annulla",
               "SuccessAlert": " è stato attivato con successo.",
               "ErrorAlert": " non è stato attivato.",
-              "mensaje_activar": "sarà attivato"
+              "mensaje_activar": "sarà attivato",
+              "CannotDeactivateYourself": "Non puoi attivare il tuo utente"
             },
             alertCreateEdit: {
               "SuccessAlert": " è stato salvato con successo.",
@@ -1504,7 +1510,7 @@ import { initReactI18next } from "react-i18next";
               "Email": "E-mail",
               "Password": "Senha",
               "ConfirmPassword": "Confirmar Senha",
-              "Type": "Tipo",
+              "Type": "Tipo de papel",
               "SuperAdmin": "Super Administrador",
               "Admin": "Administrador",
               "Editor": "Editor",
@@ -1539,7 +1545,8 @@ import { initReactI18next } from "react-i18next";
               "SuccessAlert": " foi desativado com sucesso.",
               "ErrorAlert": " não foi desativado.",
               "mensaje_desactivar": "será desativado permanentemente",
-              "error_desactivar_encuesta" : "Não foi possivel desativar a pesquisa"
+              "error_desactivar_encuesta" : "Não foi possivel desativar a pesquisa",
+              "CannotActivateYourself": "Você não pode desativar seu usuário"
             },
             alertActivate: {
               "activar_elemento": "Ativar elemento",
@@ -1550,7 +1557,8 @@ import { initReactI18next } from "react-i18next";
               "Cancel": "Cancelar",
               "SuccessAlert": " foi ativado com sucesso.",
               "ErrorAlert": " não foi ativado.",
-              "mensaje_activar": "será ativado"
+              "mensaje_activar": "será ativado",
+              "CannotDeactivateYourself": "Você não pode ativar seu usuário"
             },
             alertCreateEdit: {
               "SuccessAlert": " foi salvo com sucesso.",

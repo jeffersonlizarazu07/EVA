@@ -75,6 +75,7 @@ export const getAdmins = async (clients) => {
       { clients: clientsCsv },
       config
     );
+    
     return response.data.data;
   } catch (error) {
     console.error("Error fetching admins:", error.response?.data || error.message);
@@ -151,13 +152,11 @@ export const getAgentById = async (agentId) => {
 // Traer formularios asociados a un cliente seleccionado
 export const getFormsByClient = async (clientId) => {
   try {
-    // Validar que clientId sea válido
     if (!clientId || isNaN(clientId)) {
       console.error("Client ID inválido:", clientId);
       return null;
     }
 
-    // Convertir a número para asegurar el tipo correcto
     const numericClientId = parseInt(clientId, 10);
 
     if (numericClientId <= 0) {
@@ -170,27 +169,18 @@ export const getFormsByClient = async (clientId) => {
       ...config,
     });
     return response.data.data;
+
   } catch (error) {
     console.error("Error completo:", error);
     console.error("Error response:", error.response);
 
-    // Mostrar mensaje más específico según el error
-    let errorMessage =
-      "No se pudo obtener la información de los formularios del cliente seleccionado";
-
-    if (error.response?.status === 400) {
-      errorMessage = error.response.data?.message || "ID de cliente inválido";
-    } else if (error.response?.status === 404) {
-      errorMessage = "No se encontraron formularios para este cliente";
+    // Aquí guardamos el mensaje en una variable para exponerla junto con null
+    if (error.response?.status === 404) {
+      // Retornamos un objeto especial con el error para manejarlo después
+      return { error: "No se encontraron formularios para este cliente" };
     }
 
-    Swal.fire({
-      title: "Error",
-      text: errorMessage,
-      icon: "error",
-      confirmButtonText: "Ok",
-    });
-    return null;
+    return null; // Otros errores
   }
 };
 

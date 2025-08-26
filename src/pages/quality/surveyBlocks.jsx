@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import HeaderLT1 from "../../components/header/headerLT1";
 import { apiClient } from "../../utils/axiosConfig";
@@ -6,24 +7,15 @@ import useInput from "../../components/hooks/useInput";
 import { UserContext } from "../../context/UserContext";
 import { useParams } from "react-router-dom";
 import {
-  Modal,
   Box,
   Paper,
   Typography,
   IconButton,
   Grid,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   TextField,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  FormControlLabel,
   Checkbox,
   CircularProgress,
-  Divider,
   Button,
   Autocomplete,
   Card,
@@ -33,8 +25,6 @@ import {
   Zoom,
   Slide,
   useTheme,
-  alpha,
-  Fab,
   Tooltip,
   Collapse,
   Stack,
@@ -44,54 +34,36 @@ import {
   Add,
   Edit,
   Delete,
-  DragIndicator,
   ExpandMore,
   ExpandLess,
-  TurnLeft,
-  ArrowBack,
   QuestionAnswer,
   Analytics,
   Schedule,
   Info,
-  CheckCircle,
   RadioButtonUnchecked,
   TextFields,
   ToggleOn,
   DragHandle,
-  MoreVert,
   CheckBox,
+  TurnLeft,
   Error as ErrorIcon
 } from '@mui/icons-material';
 import {
   smallAlertDelete,
-  loadingAlert,
-  Toast2,
   Toast,
 } from "../../assets/js/alertConfig";
 import {
-  sendData,
-  deleteQuestion,
-  getSurvey,
   getSurveyQuestions,
 } from "../../services/surveyRequest";
 import "../../assets/css/survey.css";
 import {
-  Yes_no,
-  Textfield_s,
-  SingleChoiceView,
-  MultipleChoiceView,
-} from "../survey/questions";
-import {
   createBlock,
-  getAllBlocks,
-  updateBlock,
   deleteBlock,
   getBlocksByFormId,
   getBlockById,
 } from "../../services/blockService";
 import {
   createQuestions,
-  getQuestionsByBlockId,
   updateQuestions,
 } from "../../services/questionsFormService";
 import AnswersFormService from "../../services/answersFormService";
@@ -104,6 +76,7 @@ import { formatDateTimeShort } from "../../utils/dateUtils";
 import { useTranslations } from "../../components/hooks/useTranslations";
 
 export default function SurveyBlocks({}) {
+  const nav = useNavigate();
   const theme = useTheme();
   const { id_form } = useParams();
   const { userId } = useContext(UserContext);
@@ -1292,6 +1265,7 @@ export default function SurveyBlocks({}) {
     ecc_opt: "ECC - Error crítico de cumplimiento",
     ecuf_opt: "ECUF - Error crítico de usuario final",
     ecn_opt: "ECN - Error crítico de negocio",
+    enc_opt: "ECN - Error no crítico",
   };
 
   // Función para obtener el icono según el tipo de pregunta
@@ -1358,28 +1332,57 @@ export default function SurveyBlocks({}) {
               }}
             >
               <CardContent sx={{ p: 5 }}>
-                <Box textAlign="center" mb={4}>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      fontWeight: 600,
-                      color: '#b62a8b',
-                      mb: 1.5,
-                      letterSpacing: '-0.2px'
-                    }}
-                  >
-                    <Info sx={{ fontSize: 40, mr: 2, verticalAlign: 'middle', color: '#b62a8b' }} />
-                    Información del Formulario
-                  </Typography>
-                  <Box sx={{
-                    width: '80px',
-                    height: '4px',
-                    background: '#b62a8b',
-                    borderRadius: '2px',
-                    margin: '0 auto'
-                  }} />
-                </Box>
                 
+                <Box sx={{ position: "relative", mb: 4 }}>
+                  {/* Botón para volver */}
+                  <Box sx={{ position: "absolute", left: 0, top: 0 }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 0,
+                        width: 30,
+                        height: 30,
+                        padding: 0,
+                        borderRadius: "50%",
+                        color: "#b62a8b",
+                        borderColor: "#b62a8b",
+                        "&:hover": {
+                          borderColor: "#b62a8b",
+                          backgroundColor: "#b62a8b",
+                          color: "white",
+                        },
+                      }}
+                      onClick={() => nav("/forms")}
+                    >
+                      <TurnLeft />
+                    </Button>
+                  </Box>
+
+                  {/* Título centrado */}
+                  <Box textAlign="center">
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 600,
+                        color: '#b62a8b',
+                        mb: 1.5,
+                        letterSpacing: '-0.2px'
+                      }}
+                    >
+                      <Info sx={{ fontSize: 40, mr: 2, verticalAlign: 'middle', color: '#b62a8b' }} />
+                      Información del Formulario
+                    </Typography>
+                    <Box sx={{
+                      width: '80px',
+                      height: '4px',
+                      background: '#b62a8b',
+                      borderRadius: '2px',
+                      margin: '0 auto'
+                    }} />
+                  </Box>
+                </Box>
+
                 {formData ? (
                   <Grid container spacing={4} alignItems="center">
                     <Grid item xs={12} md={8}>
@@ -1450,7 +1453,7 @@ export default function SurveyBlocks({}) {
                             variant="subtitle1" 
                             sx={{
                               fontWeight: 600,
-                              color: '#d63384'
+                              color: '#b62a8b'
                             }}
                           >
                             {formatDateTimeShort(formData.updated_date) || "Sin actualizar"}
@@ -1806,7 +1809,7 @@ export default function SurveyBlocks({}) {
                                                       {/* Contenido expandible de la pregunta */}
                                                       <Collapse in={!isCollapsed} timeout={300}>
                                                         <Box sx={{ mt: 2 }}>
-                                                                                                                    {/* Renderizado de diferentes tipos de preguntas */}
+                                                          {/* Renderizado de diferentes tipos de preguntas */}
                                                           {preg.type === "check_opt" && (
                                                             <Autocomplete
                                                               multiple
@@ -1842,6 +1845,7 @@ export default function SurveyBlocks({}) {
                                                                 />
                                                               )}
                                                               sx={{ mb: 2 }}
+                                                              className="readOnlyField"
                                                             />
                                                           )}
 
@@ -1854,25 +1858,15 @@ export default function SurveyBlocks({}) {
                                                               onChange={(event) => {
                                                                 handleAnswerChange(bloque.id, idx, event.target.value);
                                                               }}
-                                                              sx={{ 
-                                                                mb: 2,
-                                                                '& .MuiOutlinedInput-root': {
-                                                                  borderRadius: '12px',
-                                                                  '&:hover fieldset': {
-                                                                    borderColor: '#b62a8b',
-                                                                  },
-                                                                  '&.Mui-focused fieldset': {
-                                                                    borderColor: '#b62a8b',
-                                                                  }
-                                                                }
-                                                              }}
+                                                              sx={{ mb: 2 }}
+                                                              className="readOnlyField"
                                                             >
                                                               <MenuItem value="">Selecciona una opción</MenuItem>
                                                               {(preg.options || []).map((opt, index) => {
                                                                 const optionText =
                                                                   typeof opt === "string" ? opt : opt.text || "";
                                                                 return (
-                                                                  <MenuItem key={index} value={optionText}>
+                                                                  <MenuItem key={index} value={index}>
                                                                     {optionText}
                                                                   </MenuItem>
                                                                 );
@@ -1889,6 +1883,7 @@ export default function SurveyBlocks({}) {
                                                               onChange={(event) => {
                                                                 handleAnswerChange(bloque.id, idx, event.target.value);
                                                               }}
+                                                              className="readOnlyField"
                                                               sx={{
                                                                 '& .MuiOutlinedInput-root': {
                                                                   borderRadius: '12px',
