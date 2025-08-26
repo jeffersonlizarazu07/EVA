@@ -140,6 +140,13 @@ const TableMonitoringView = ({
     });
   };
 
+  const updateDateCheck = (id, newCheckFormatted) => {
+    setSelectedRow((prev) => {
+      if (prev?.id !== id) return prev;
+      return { ...prev, check_formatted: newCheckFormatted };
+    });
+  };
+
   const ModalMonitoringViewProps = {
     open,
     closeModal,
@@ -148,6 +155,7 @@ const TableMonitoringView = ({
     fetchMonitoring,
     viewType,
     updateSelectedRow,
+    updateDateCheck
   };
 
   console.log("Esta es la data que envía la tabla", data);

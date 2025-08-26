@@ -26,6 +26,7 @@ const ModalMonitoringView = ({
   data,
   fetchMonitoring,
   updateSelectedRow,
+  updateDateCheck,
   viewType,
 }) => {
   const { userInfo, accessToken } = useContext(UserContext); // Contexto del usuario logeado para aplicar en el check
@@ -36,6 +37,8 @@ const ModalMonitoringView = ({
   const { t } = useTranslations(); // Traducción
   const [checked, setChecked] = useState(data.check === 1); //Cuando se aplica el check actualiza el backend 1 = check existente
   const [checkDisabled, setCheckDisabled] = useState(true); //Manejo del botón cuándo check cambia
+  const [checkFormatted, setCheckFormatted] = useState(data.check_formatted);
+  const [monitoringData, setMonitoringData] = useState(data);
 
   // Validar feedback y check al abrir el modal
 
@@ -140,9 +143,25 @@ const ModalMonitoringView = ({
     const checkStatus = !checked;
 
     try {
-      await updateCheck(data.id, checkStatus ? 1 : 0);
+      const response = await updateCheck(data.id, checkStatus ? 1 : 0);
+      console.log("Respuesta de updateCheck:", response);
+
+      // 🔹 Protección extra
+      if (response?.check_formatted) {
+        setCheckFormatted(response.check_formatted);
+        updateDateCheck(data.id, response.check_formatted);
+      } else {
+        // Si no viene la fecha, usa la fecha actual local como fallback
+        const now = new Date().toLocaleString("es-CO");
+        setCheckFormatted(now);
+        updateDateCheck(data.id, now);
+      }
+
       setChecked(true);
       setCheckDisabled(true);
+
+      await fetchMonitoring();
+      buttonsValidationState(feedback, checkStatus ? 1 : 0);
 
       Swal.fire({
         toast: true,
@@ -154,6 +173,7 @@ const ModalMonitoringView = ({
       });
     } catch (error) {
       console.error("Error al actualizar el check:", error);
+
       Swal.fire({
         toast: true,
         position: "top-end",
@@ -164,6 +184,14 @@ const ModalMonitoringView = ({
       });
     }
   };
+
+  // También corregir el useEffect que sincroniza checkFormatted con data.check_formatted
+  useEffect(() => {
+    // Solo actualizar si el valor realmente cambió
+    if (data.check_formatted !== checkFormatted) {
+      setCheckFormatted(data.check_formatted);
+    }
+  }, [data.check_formatted]); // Remover checkFormatted de las dependencias para evitar loops
 
   const header = [
     "id",
@@ -382,7 +410,7 @@ const ModalMonitoringView = ({
             variant="caption"
             sx={{ display: "block", lineHeight: 1.2 }}
           >
-            Enviado acuse de recibo {data.check_formatted}
+            Enviado acuse de recibo {checkFormatted ?? ""}
           </Typography>
         </Box>
 
