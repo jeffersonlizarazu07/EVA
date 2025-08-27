@@ -19,7 +19,7 @@ import {
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, CircularProgress } from "@mui/material";
 
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
@@ -31,6 +31,7 @@ const AdminList = () => {
   const [idToEdit, setidToEdit] = useState(null); // Estado para guardar el id del usuario que voy a editar
   const [formattedDate, setFormattedDate] = useState(""); // Estado para la fecha formateada de hoy (yyyy-mm-dd)
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga (ej: mostrar spinner)
+  const [showSpinner, setShowSpinner] = useState(true); // Controla el spinner extendido
   const [selectedClients, setSelectedClients] = useState([]); // Estado para manejar los clientes seleccionados (checkbox múltiple)
   const [selectedClientId, setSelectedClientId] = useState(""); // Estado para el cliente seleccionado
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
@@ -63,14 +64,35 @@ const AdminList = () => {
     setFormattedDate(formatDate(new Date()));
 
     if (clients && clients.length > 0) {
-      console.log("✅ Clients listos:", clients);
+      console.log("Clients listos:", clients);
       loadAdmins(); // <- solo ahora sí llamamos
     } else {
-      console.log("⚠️ Clients aún vacíos en el contexto");
+      console.log("Clients aún vacíos en el contexto");
     }
 
     loadClients(); // esto puede ir siempre
   }, [clients]);
+
+  useEffect(() => {
+    // Simula fetch
+    const fetchAdmins = async () => {
+      try {
+        const response = await getAdmins(); // tu servicio
+        setAdmins(response);
+      } catch (err) {
+        console.error("Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdmins();
+
+    // Forzamos spinner al menos 3 segundos
+    const timer = setTimeout(() => setShowSpinner(false), 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
   const config = {
@@ -677,12 +699,12 @@ const AdminList = () => {
     t,
   };
 
-  console.log("👀 Estado admins en render:", admins);
+  console.log("Estado admins en render:", admins);
 
   return (
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
-        {loading && <p>Cargando...</p>}
+        {loading && <p></p>}
         {userInfo?.type === 4 || userInfo === 3 ? <HeaderLT2 /> : <HeaderLT1 />}
         <Box
           sx={{
@@ -693,10 +715,14 @@ const AdminList = () => {
           }}
         >
           <Box className="container" mt={0}>
-            {loading ? (
-              <Typography variant="h6" sx={{ textAlign: "center", py: 5 }}>
-                Cargando agentes...
-              </Typography>
+            {showSpinner ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+                <CircularProgress color="primary" />
+              </Box>
+            ) : loading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+                <CircularProgress color="primary" />
+              </Box>
             ) : admins.length > 0 ? (
               <TableAdmin
                 header={selectedKeys}
@@ -706,7 +732,7 @@ const AdminList = () => {
               />
             ) : (
               <Box sx={{ textAlign: "center", py: 5 }}>
-                <Typography variant="h6">No existen agentes registrados</Typography>
+                No existen agentes registrados
               </Box>
             )}
           </Box>
