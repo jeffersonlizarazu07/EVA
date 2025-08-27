@@ -256,7 +256,7 @@ export const updateCheck = async (id, checkValue) => {
       { check: checkValue },
       config
     );
-    return response.data; // aquí ya viene check_formatted
+    return response.data;
   } catch (error) {
     console.error("Error al actualizar el check:", error);
     throw error;
