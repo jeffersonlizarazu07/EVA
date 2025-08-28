@@ -1,7 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { UserContext } from "../../context/UserContext";
 import axios from "axios";
-import "../../assets/css/tabla.css";
 import { useNavigate } from "react-router-dom";
 import { useTranslations } from "../hooks/useTranslations"; 
 import React from "react";
@@ -182,27 +181,32 @@ const TableSurvey = ({
             )}
             <TextField
               size="small"
-              className="inp-search"
               placeholder={t("survey.buscar")}
               value={searchTerm}
               onChange={handleSearch}
               variant="outlined"
+              fullWidth
               sx={{
-                width: "100%",
                 "& .MuiOutlinedInput-root": {
                   height: "4vh",
-                  "&.Mui-focused fieldset": {
-                    borderColor: "transparent",
+                  borderRadius: "6px",
+                  color: "#b62a8b",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
                   },
-                  "&.Mui-focused": {
-                    boxShadow: "none",
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "& input": {
+                    color: "#b62a8b",
+                    fontWeight: "bold",
                   },
                 },
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search sx={{ color: "#888" }} />
+                    <Search sx={{ color: "#b62a8b" }} />
                   </InputAdornment>
                 ),
               }}

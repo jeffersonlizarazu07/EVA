@@ -202,17 +202,28 @@ const TableMonitoringView = ({
               value={searchTerm}
               onChange={handleSearch}
               variant="outlined"
-              className="inp-search"
               sx={{
                 flex: 2,
                 "& .MuiOutlinedInput-root": {
-                  height: "35px",
+                  height: "38px",
+                  borderRadius: "6px",
+                  color: "#b62a8b",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "& input": {
+                    color: "#b62a8b",
+                    fontWeight: "bold",
+                  },
                 },
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search sx={{ color: "#888" }} />
+                    <Search sx={{ color: "#b62a8b" }} />
                   </InputAdornment>
                 ),
               }}

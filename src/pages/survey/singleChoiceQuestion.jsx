@@ -651,127 +651,6 @@ function MultipleChoiceQuestion({ options, correctAnswers, onChange }) {
   );
 }
 
-const SelectorQuestion = ({ options = [], correctAnswers = [], onChange }) => {
-  // Inicializar desde props si están disponibles
-  const [responses, setResponses] = useState(
-    options.map((option) => option.text) || []
-  );
-  const [showFormMultiple, setShowFormMultiple] = useState(false);
-  const [newMultipleAnswer, setNewMultipleAnswer] = useState("");
-
-  // Función para añadir nueva respuesta
-  const handleAddMultipleResponse = () => {
-    if (newMultipleAnswer.trim() === "") return;
-
-    const updatedResponses = [...responses, newMultipleAnswer.trim()];
-    setResponses(updatedResponses);
-    setNewMultipleAnswer("");
-    setShowFormMultiple(false);
-
-    if (onChange) {
-      onChange({
-        options: updatedResponses.map((r) => ({ text: r, checked: false })),
-        correctAnswers: [],
-      });
-    }
-  };
-
-  // Función para eliminar una respuesta
-  const handleRemoveResponse = (index) => {
-    const updated = responses.filter((_, i) => i !== index);
-    setResponses(updated);
-
-    if (onChange) {
-      onChange({
-        options: updated.map((r) => ({ text: r, checked: false })),
-        correctAnswers: [],
-      });
-    }
-  };
-
-  return (
-    <div
-      className="p-4 border rounded shadow-sm"
-      style={{ width: "94%", margin: "auto" }}
-    >
-      {/* Lista de respuestas existentes */}
-      <ul className="list-group">
-        {responses.map((res, index) => (
-          <li
-            key={index}
-            className="list-group-item d-flex justify-content-between align-items-center"
-          >
-            {res}
-            <button
-              className="btn btn-sm btn-danger"
-              onClick={() => handleRemoveResponse(index)}
-            >
-              Eliminar
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {/* Botón para agregar nueva opción */}
-      {!showFormMultiple ? (
-        <button
-          className="btn btn-link text-decoration-none p-0 mt-3"
-          onClick={() => setShowFormMultiple(true)}
-        >
-          + Agregar opción personalizada
-        </button>
-      ) : (
-        <div className="d-flex flex-column gap-2 mt-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Escribe la nueva respuesta"
-            value={newMultipleAnswer}
-            onChange={(e) => setNewMultipleAnswer(e.target.value)}
-          />
-          <div className="d-flex justify-content-center gap-2 mb-4">
-            <button
-              className="btn btn-success"
-              style={{
-                backgroundColor: "rgba(175, 14, 110, 0.717)",
-                color: "white",
-              }}
-              onClick={handleAddMultipleResponse}
-            >
-              Guardar
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                setShowFormMultiple(false);
-                setNewMultipleAnswer("");
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Select con respuestas creadas */}
-      {responses.length > 0 && (
-        <div className="mt-4">
-          <label className="form-label">
-            Selecciona una respuesta guardada:
-          </label>
-          <select className="form-select">
-            {responses.map((res, idx) => (
-              <option key={idx} value={res}>
-                {res}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const SelectorQuestionEdit = ({
   options = [],
   selectedOption = "",
@@ -788,8 +667,9 @@ const SelectorQuestionEdit = ({
     options.map((opt) => (typeof opt === "string" ? opt : opt.text || ""))
   );
   const [currentSelection, setCurrentSelection] = useState(
-    selectedOption || ""
+    selectedOption !== undefined && selectedOption !== null ? selectedOption : null
   );
+
   const [showForm, setShowForm] = useState(false);
   const [newAnswer, setNewAnswer] = useState("");
 
@@ -797,7 +677,9 @@ const SelectorQuestionEdit = ({
     setResponses(
       options.map((opt) => (typeof opt === "string" ? opt : opt.text || ""))
     );
-    setCurrentSelection(selectedOption || "");
+    setCurrentSelection(
+      selectedOption !== undefined && selectedOption !== null ? selectedOption : null
+    );
   }, [options, selectedOption]);
 
   const handleAddResponse = () => {
@@ -828,15 +710,16 @@ const SelectorQuestionEdit = ({
     });
   };
 
-  const handleSelectChange = (e) => {
-    const selected = e.target.value;
-    setCurrentSelection(selected);
+const handleSelectChange = (e) => {
+  const selectedIndex = Number(e.target.value); // convertir string a número
+  setCurrentSelection(selectedIndex);
 
-    onChange?.({
-      options: responses.map((r) => ({ text: r })),
-      selectedOption: selected,
-    });
-  };
+  onChange?.({
+    options: responses.map((r) => ({ text: r })),
+    selectedOption: selectedIndex,
+  });
+};
+
 
   return (
     <Box sx={{ p: 3, borderRadius: 2, boxShadow: 1, width: "94%", mx: "auto" }}>
@@ -930,14 +813,14 @@ const SelectorQuestionEdit = ({
             select
             fullWidth
             label="Respuesta guardada"
-            value={currentSelection}
+            value={currentSelection || ""}
             onChange={handleSelectChange}
             size="small"
             sx={{ mb: 2 }}
             className="readOnlyField"
           >
             {responses.map((res, idx) => (
-              <MenuItem key={idx} value={res}>
+              <MenuItem key={idx} value={idx}>
                 {res}
               </MenuItem>
             ))}
@@ -1070,7 +953,6 @@ export {
   MultipleChoiceQuestion,
   MultipleChoiceQuestionEdit,
   SingleChoiceQuestionEdit,
-  SelectorQuestion,
   SelectorQuestionEdit,
   MultipleChoiceQuestionEditWrapper,
 };

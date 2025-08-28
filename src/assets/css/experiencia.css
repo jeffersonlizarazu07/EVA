@@ -1,71 +1,71 @@
 .card4, .card5, .card6 {
-    background-size: cover;
-    background-repeat: no-repeat;
-    display: flex;
-    flex-direction: column;
-    height: 50vh !important;
-    border-radius: 35px !important;
-    width: 100% !important;
-    color: white !important;
-    border: 2px solid rgb(199, 14, 143) !important;
-    margin-bottom: 5%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: 50vh !important;
+  border-radius: 35px !important;
+  width: 100% !important;
+  color: white !important;
+  border: 2px solid rgb(199, 14, 143) !important;
+  margin-bottom: 5%;
+  transition: all 0.3s ease-in-out;
 }
 
+/* === Background por tarjeta === */
 .card4 {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen8 slide4.jpeg") !important;
-    background-size: 100% 100%;
-    background-size: auto;
-    background-position: center;
-}
-
-.card4:hover {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen8 slide4.jpeg");
-    border: none !important;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), 
+                    url("../img/imagen8 slide4.jpeg") !important;
 }
 
 .card5 {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen9 slide4.jpg")!important;
-    background-size: cover;
-    
-    background-position: center;
-}
-
-.card5:hover {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen9 slide4.jpg");
-    border: none !important;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), 
+                    url("../img/imagen9 slide4.jpg") !important;
 }
 
 .card6 {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen10 slide4.jpeg")!important;
-    background-size: 100% 100%;
-    background-size: cover;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), 
+                    url("../img/imagen10 slide4.jpeg") !important;
+}
+
+
+/* === Hover generalizado para tarjetas (usando background base) === */
+.card4:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), 
+                    url("../img/imagen8 slide4.jpeg") !important;
+}
+
+.card5:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), 
+                    url("../img/imagen9 slide4.jpg") !important;
 }
 
 .card6:hover {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen10 slide4.jpeg");
-    border: none !important;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), 
+                    url("../img/imagen10 slide4.jpeg") !important;
+}
+
+.card4:hover,
+.card5:hover,
+.card6:hover {
+  border: none !important;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
 }
 
 .outstanding-card2 {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url("../img/imagen7 slide4.jpg")!important;
-    background-size: cover;
-    background-repeat: no-repeat;
-    border-radius: 35px !important;
-    margin-top: 15%;
-    margin-left: 15%;
-    width: 20vw !important;
-    height: 60vh !important;
-    color: white !important;
-    border: 2px solid rgb(199, 14, 143) !important;
-    text-align: center !important;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
+    url("/src/assets/img/imagen7 slide4.jpg") !important;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 35px !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  color: white !important;
+  border: 2px solid rgb(199, 14, 143) !important;
 }
 .outstanding-card2:hover{
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), url("../img/imagen7 slide4.jpg");
-    border: none !important;
-    box-shadow: rgba(0, 0, 0, 0.705) 0px 5px 25px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+    url("/src/assets/img/imagen7 slide4.jpg") !important;
+  border: none !important;
+  box-shadow: rgba(255, 255, 255, 0.808) 0px 5px 25px;
 }
 
 

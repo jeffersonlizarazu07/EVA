@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, HashRouter } from "react-router-dom";
 import "./App.css";
+import "./assets/css/tables.css";
 import "./assets/css/alerts.css"; // Asegura z-index de SweetAlert en toda la app
 import { AuthProvider } from './context/AuthContext'; // <- AGREGAR ESTO
 /* catch data */
@@ -19,7 +20,6 @@ import Quality from "./components/Admin/quality";
 import Satisfaction from "./components/Admin/satisfaction";
 import Client_list from "./pages/admin/client_list";
 import AdminList from "./pages/admin/admin_list";
-import Agent_Monitoring from "./pages/admin/agent_monitoring";
 import Forms from "./pages/admin/form_list";
 import SurveyBlocks from "./pages/quality/surveyBlocks";
 import FormReport from "./pages/admin/form_report";
@@ -72,7 +72,6 @@ const App = () => {
             <Route path="/" element={<LogIn />} />
             <Route path="/survey/:link" element={<Survey />} />
             <Route path="/gratitude" element={<Gratitude/>}/>
-            <Route path="/agent_monitoring" element={<Agent_Monitoring />} />
             <Route path="/forms" element={<Forms />} />
 
             <Route
