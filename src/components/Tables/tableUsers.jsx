@@ -32,15 +32,24 @@ const TableUsers = ({
     return text.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-   const filteredData = data.filter((item) =>
-     Object.values(item).some(
-       (val) =>
-         typeof val == "string" &&
-         val.toLowerCase().includes(searchTerm.toLowerCase())
-     )
-   );
+  const filteredData = data.filter((item) =>
+    Object.values(item).some(
+      (val) =>
+        typeof val == "string" &&
+        val.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
-
+  // ⚙️ ESTILOS EN LÍNEA (gris + zebra) — imposibles de ser pisados
+  const rowStyle = (rowIndex) => ({
+    backgroundColor: rowIndex % 2 === 0 ? "#2b2b2b" : "#333", // zebra
+    color: "#fff",
+  });
+  const cellStyle = (rowIndex) => ({
+    backgroundColor: rowIndex % 2 === 0 ? "#2b2b2b" : "#333",
+    color: "#fff",
+    borderColor: "#3a3a3a",
+  });
 
   return (
     <div>
@@ -79,9 +88,9 @@ const TableUsers = ({
           <tbody>
             {currentRecords.map((item, idx) =>
               item.type !== 1 && item.type !== 2 ? (
-                <tr key={idx}>
+                <tr key={idx} style={rowStyle(idx)}>
                   {header.map((key, i) => (
-                    <td key={i}>
+                    <td key={i} style={cellStyle(idx)}>
                       {key == "estado"
                         ? item.estado == 1
                           ? "Activo"
@@ -98,7 +107,7 @@ const TableUsers = ({
                     </td>
                   ))}
                   {item.estado == 1 ? (
-                    <td>
+                    <td style={cellStyle(idx)}>
                       <div className="row">
                         <div className="col">
                           <button
@@ -127,7 +136,7 @@ const TableUsers = ({
                       </div>
                     </td>
                   ) : (
-                    <td>
+                    <td style={cellStyle(idx)}>
                       <div className="row">
                         <div className="col">
                           <button
@@ -214,4 +223,7 @@ const TableUsers = ({
   );
 };
 
+
+
 export default TableUsers;
+

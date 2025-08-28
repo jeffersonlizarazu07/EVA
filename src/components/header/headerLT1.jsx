@@ -27,12 +27,10 @@ import MenuItem from "@mui/material/MenuItem";
 import LanguageIcon from "@mui/icons-material/Language";
 import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
-// Importaciones de Material UI para el layout
 import {
   AppBar,
   Toolbar,
   Box,
-  Container,
   IconButton,
   Drawer,
   List,
@@ -56,7 +54,6 @@ const HeaderLT1 = () => {
     setLanguageUser,
     userType,
   } = useContext(UserContext);
-
   const { logout: authLogout } = useAuth();
   const { t } = useTranslations();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -162,7 +159,7 @@ const HeaderLT1 = () => {
       Cookies.remove("userType");
       Cookies.remove("accessToken");
 
-      // Redirigimos al usuario de todas formas
+      // Redirigir al usuario de todas formas
       nav("/");
     }
   };
@@ -170,10 +167,8 @@ const HeaderLT1 = () => {
   const config = { withCredentials: true };
 
   const themeContext = useContext(ThemeContext);
-  const { theme, toggleTheme } = themeContext || {
-    theme: "light",
-    toggleTheme: () => {},
-  };
+  const { theme, toggleTheme } =
+    themeContext || { theme: "light", toggleTheme: () => {} };
 
   const checkinfo = async () => {
     try {
@@ -278,6 +273,7 @@ const HeaderLT1 = () => {
     };
   }
 
+  // 🔥 Switch ORIGINAL con íconos sol/luna restaurado
   const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     width: 62,
     height: 34,
@@ -321,9 +317,6 @@ const HeaderLT1 = () => {
           "#fff"
         )}" d="M4.2 2.5l-.7 1.8-1.8.7 1.8.7.7 1.8.6-1.8L6.7 5l-1.9-.7-.6-1.8zm15 8.3a6.7 6.7 0 11-6.6-6.6 5.8 5.8 0 006.6 6.6z"/></svg>')`,
       },
-      ...theme.applyStyles("dark", {
-        backgroundColor: "#003892",
-      }),
     },
     "& .MuiSwitch-track": {
       opacity: 1,
@@ -335,15 +328,7 @@ const HeaderLT1 = () => {
     },
   }));
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
   const location = useLocation();
-
   const getButtonColor = (path) => {
     return location.pathname === path
       ? "rgb(199, 14, 143)"
@@ -352,21 +337,17 @@ const HeaderLT1 = () => {
       : "#000";
   };
 
-  const handleLanguageClick = (event) => {
-    setLanguageAnchorEl(event.currentTarget);
-  };
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
-  const handleLanguageClose = () => {
-    setLanguageAnchorEl(null);
-  };
+  const handleLanguageClick = (event) => setLanguageAnchorEl(event.currentTarget);
+  const handleLanguageClose = () => setLanguageAnchorEl(null);
 
   const handleLanguageChange = async (lang) => {
-    language.handleChange(lang);
     i18n.changeLanguage(lang);
     setLanguageUser(lang);
-    const parameters = { language: lang };
     try {
-      await apiClient.patch(`/language/${userId}`, parameters, config);
+      await apiClient.patch(`/language/${userId}`, { language: lang }, config);
     } catch (error) {
       console.error("Error al actualizar el idioma:", error);
     }
@@ -400,7 +381,10 @@ const HeaderLT1 = () => {
           width: "100%",
           display: "flex",
           justifyContent: "center",
-          backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "#fff",
+          // 🔧 Gris más oscuro en modo oscuro
+          backgroundColor: theme === "dark" ? "rgba(39, 38, 38, 0.04)" : "#fff",
+          backdropFilter: theme === "dark" ? "saturate(180%) blur(8px)" : "none",
+          backgroundImage: "none",
         }}
       >
         <Paper
@@ -417,13 +401,12 @@ const HeaderLT1 = () => {
             position="static"
             elevation={0}
             sx={{
-              mt: 0,
-              mx: 0,
-              mb: 0,
               borderRadius: "25px",
               border: "2px solid rgb(199, 14, 143)",
-              backgroundColor: theme === "dark" ? "rgb(33, 37, 41)" : "#fff",
-              position: "relative",
+              backgroundColor:
+                theme === "dark" ? "rgba(255, 255, 255, 0.04)" : "#fff",
+              backdropFilter: theme === "dark" ? "saturate(180%) blur(8px)" : "none",
+              backgroundImage: "none",
             }}
           >
             <Toolbar
@@ -461,7 +444,7 @@ const HeaderLT1 = () => {
                 />
               </Box>
 
-              {/* ✅ Navegación CONDICIONAL - Solo "Inicio" para agentes */}
+              {/* Centro */}
               <Box
                 sx={{
                   display: { xs: "none", md: "flex" },
@@ -834,7 +817,6 @@ const HeaderLT1 = () => {
           )}
         </Paper>
       </Box>
-      {/* Espaciador para evitar que el contenido quede debajo del header fijo */}
       <Box sx={{ height: { xs: 80, md: 96 } }} />
     </>
   );
