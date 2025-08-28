@@ -13,7 +13,7 @@ const IndexEditor = () => {
   const { t } = useTranslations();
   const { languageUser } = useContext(UserContext);
   useEffect(() => {
-    i18n.changeLanguage(languageUser);
+    t;
   }, []);
 
   return (

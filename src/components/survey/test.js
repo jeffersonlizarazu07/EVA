@@ -114,7 +114,7 @@ function searchAccordion() {
 
     function highlightText(element, searchText) {
         if (!element || !searchText) return;
-        const regex = new RegExp((${escapeRegExp(searchText)}), 'gi');
+        const regex = new RegExp((`${escapeRegExp(searchText)}`), 'gi');
         traverseNodes(element, regex);
     }
 
@@ -156,7 +156,7 @@ function searchAccordion() {
             const tabText = tabContent ? tabContent.textContent.toLowerCase() : '';
             if (tabText.includes(searchText)) {
                 const tabId = tabContent.getAttribute('id');
-                const tabTrigger = document.querySelector([data-bs-target="#${tabId}"]);
+                const tabTrigger = document.querySelector(`[data-bs-target="#${tabId}"]`);
                 if (tabTrigger && !tabTrigger.classList.contains('active')) {
                     tabTrigger.click();
                 }
@@ -167,7 +167,7 @@ function searchAccordion() {
     accordionItems.forEach(item => searchElement(item));
     searchTabs(); // Buscar también en los tabs
 
-    wordCountContainer.textContent = Número de coincidencias: ${wordCount};
+    wordCountContainer.textContent = `Número de coincidencias: ${wordCount}`;
 
     if (highlightedElements.length > 1 || matchingTabs.length > 1) {
         nextButton.style.display = 'block';

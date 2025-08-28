@@ -26,10 +26,7 @@ export const getResponseMult = async () => {
 
 export const getClientsAndForms = async () => {
   try {
-    const response = await apiClient.get(
-      `/answersform/clients-forms`,
-      config
-    );
+    const response = await apiClient.get(`/answersform/clients-forms`, config);
     return response.data;
   } catch (error) {
     console.error("Error fetching clients and forms:", error);
@@ -56,11 +53,13 @@ export const getMonitoring = async () => {
 export const getAdmins = async (clients) => {
   try {
     const safeClients = Array.isArray(clients)
-      ? Array.from(new Set(
-          clients
-            .map((c) => (typeof c === 'string' ? parseInt(c, 10) : c))
-            .filter((c) => Number.isFinite(c))
-        ))
+      ? Array.from(
+          new Set(
+            clients
+              .map((c) => (typeof c === "string" ? parseInt(c, 10) : c))
+              .filter((c) => Number.isFinite(c))
+          )
+        )
       : [];
 
     if (safeClients.length === 0) {
@@ -69,16 +68,18 @@ export const getAdmins = async (clients) => {
     }
 
     // Algunos backends esperan 'clients' como texto (CSV)
-    const clientsCsv = safeClients.join(',');
+    const clientsCsv = safeClients.join(",");
     const response = await apiClient.post(
       `/agent`,
       { clients: clientsCsv },
       config
     );
-    
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching admins:", error.response?.data || error.message);
+    console.error(
+      "Error fetching admins:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
@@ -97,10 +98,7 @@ export const getClients = async () => {
 // Función para obtener los clientes asignados a un usuario específico
 export const getUserClients = async (id) => {
   try {
-    const response = await apiClient.get(
-      `/users_client/${id}`,
-      config
-    );
+    const response = await apiClient.get(`/users_client/${id}`, config);
     const responseData = response.data.data;
 
     if (responseData && responseData.length > 0) {
@@ -129,10 +127,7 @@ export const getUserClients = async (id) => {
 // Función para obtener un agente específico por ID
 export const getAgentById = async (agentId) => {
   try {
-    const response = await apiClient.get(
-      `/agent/${agentId}`,
-      config
-    );
+    const response = await apiClient.get(`/agent/${agentId}`, config);
     return response.data.data;
   } catch (error) {
     console.error("Error obteniendo agente:", error);
@@ -169,7 +164,6 @@ export const getFormsByClient = async (clientId) => {
       ...config,
     });
     return response.data.data;
-
   } catch (error) {
     console.error("Error completo:", error);
     console.error("Error response:", error.response);
@@ -187,10 +181,7 @@ export const getFormsByClient = async (clientId) => {
 // Obtener bloques para un formulario específico
 export const getBlocksForIdForm = async (formId) => {
   try {
-    const response = await apiClient.get(
-      `/blocks/form/${formId}`,
-      config
-    );
+    const response = await apiClient.get(`/blocks/form/${formId}`, config);
     console.log("Bloques cargados:", response.data.data);
     console.log(JSON.stringify(response.data.data, null, 2));
     return response.data.data;
@@ -241,10 +232,7 @@ export const getMonitoringByUser = async (id) => {
     throw new Error("userId no proporcionado");
   }
   try {
-    const response = await apiClient.get(
-      `/monitoring/user/${id}`,
-      config
-    );
+    const response = await apiClient.get(`/monitoring/user/${id}`, config);
     console.log("Respuesta de la API:", response.data);
     return response.data;
   } catch (error) {
@@ -256,10 +244,7 @@ export const getMonitoringByUser = async (id) => {
 // Traer las monitorizaciones estructuradas
 export const getMonitorinStructure = async (id) => {
   try {
-    const response = await apiClient.get(
-      `/monitoring/${id}/details`,
-      config
-    );
+    const response = await apiClient.get(`/monitoring/${id}/details`, config);
     console.log("Estructura del monitoreo actual", response.data);
     return response.data;
   } catch (error) {
@@ -284,14 +269,11 @@ export const saveFeedback = async (id, feedback) => {
 };
 
 // Actualizar check
-export const updateCheck = async (id, checkValue, check_date) => {
-  console.log("Enviando data:", { id, checkValue, check_date });
+export const updateCheck = async (id, checkValue) => {
   try {
     const response = await apiClient.put(
       `/monitoring/${id}/check`,
-      {
-        check: checkValue,
-      },
+      { check: checkValue },
       config
     );
     return response.data;
