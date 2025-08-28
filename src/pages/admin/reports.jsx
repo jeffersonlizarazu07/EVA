@@ -759,7 +759,6 @@ const Reports = () => {
                   mt: 2,
                   border: "1px solid #ccc",
                   width: "100%",
-                  tableLayout: "fixed",
                   fontSize: "0.85rem",
                 }}
               >

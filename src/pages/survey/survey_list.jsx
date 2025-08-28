@@ -635,7 +635,7 @@ const SurveyList = () => {
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
-                 <Box m={0} sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex", mt: 3 }}>
+                 <Box m={0} sx={{ alignItems: "stretch", flexWrap: "nowrap", padding: 0, display : "flex"}}>
           {/* <Box div className="col-1 d-flex  align-items-center mx-auto p-0">
           {/* {userType == "1" || userType == "2" ? <SidebarLT1 /> : <SidebarLT2 />} 
           </div> */}

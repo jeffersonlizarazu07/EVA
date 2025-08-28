@@ -4,7 +4,6 @@ import {
   MultipleChoiceQuestion,
   MultipleChoiceQuestionEdit,
   SingleChoiceQuestionEdit,
-  SelectorQuestion,
   SelectorQuestionEdit,
   MultipleChoiceQuestionEditWrapper,
 } from "../../pages/survey/singleChoiceQuestion";
@@ -317,33 +316,69 @@ return (
                     {(operation === 1 || operation === 2) && (
                       <>
                         {q.type === "selector_opt" && (
-                           <Box>
-                            <SelectorQuestionEdit
-                              options={q.selectorOptions || q.options || []}
-                              onChange={(data) => {
-                                handleInputChange(index, "selectorOptions", data.options);
-                                handleInputChange(index, "selectorSelectedOption", data.selectedOption);
-                              }}
-                            />
+                          <Box>
+  <SelectorQuestionEdit
+    options={q.selectorOptions || q.options || []}
+    selectedOption={q.selectorSelectedOption ?? q.selected_answer}
+    onChange={(data) => {
+      handleInputChange(index, "selectorOptions", data.options);
+      handleInputChange(index, "selectorSelectedOption", data.selectedOption);
+    }}
+  />
 
-                            {(q.selectorSelectedOption || q.selected_answer) && (
-                              <Box sx={{ mt: 3, p: 3, bgcolor: "background.paper", border: "1px solid", borderColor: "grey.300", borderRadius: 1 }}>
-                                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                  Respuesta seleccionada:
-                                </Typography>
-                                <Box sx={{ display: "flex", alignItems: "center", color: "success.main" }}>
-                                  <i className="fa-solid fa-check-circle" style={{ marginRight: 8 }}></i>
-                                  <Typography component="strong">
-                                   {(() => { //para poner el indice de selected_answer en el texto de selectorOptions
-                                    const opts = Array.isArray(q.selectorOptions) ? q.selectorOptions : typeof q.options === "string" ? q.options.split(",") : [];
-                                    const idx = q.selectorSelectedOption ?? q.selected_answer;
-                                    return opts[idx] || "";
-                                  })()}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            )}
-                          </Box>
+  {(() => {
+    const opts = Array.isArray(q.selectorOptions)
+      ? q.selectorOptions
+      : typeof q.options === "string"
+      ? q.options.split(",")
+      : [];
+
+    const idx =
+      q.selectorSelectedOption !== undefined && q.selectorSelectedOption !== null
+        ? Number(q.selectorSelectedOption)
+        : q.selected_answer;
+
+    const isValidIndex = idx !== undefined && idx !== null && idx >= 0 && idx < opts.length;
+
+    if (isValidIndex) {
+      const option = opts[idx];
+      const text =
+        typeof option === "string"
+          ? option
+          : typeof option === "object" && option.text
+          ? option.text
+          : "";
+
+      return (
+        <Box
+          sx={{
+            mt: 3,
+            p: 3,
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "grey.300",
+            borderRadius: 1,
+          }}
+        >
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            Respuesta seleccionada:
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", color: "success.main" }}>
+            <i className="fa-solid fa-check-circle" style={{ marginRight: 8 }}></i>
+            <Typography component="strong">{text}</Typography>
+          </Box>
+        </Box>
+      );
+    } else {
+      return (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+          No hay respuestas seleccionadas.
+        </Typography>
+      );
+    }
+  })()}
+</Box>
+
                         )}
 
                         {q.type === "check_opt" && (
@@ -358,16 +393,16 @@ return (
                               }}
                             />
 
-                            {( (q.checkboxCorrectAnswers && q.checkboxCorrectAnswers.length > 0) || (q.selected_answer && q.selected_answer.length > 0) ) ? (
+                            {( (q.checkboxCorrectAnswers && q.checkboxCorrectAnswers.length > 0) || (q.selected_answer) ) ? (
                               <Box sx={{ mt: 3, p: 3, bgcolor: "background.paper", border: "1px solid", borderColor: "grey.300", borderRadius: 1 }}>
                                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                                   Respuestas seleccionadas:
                                 </Typography>
-                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, }}>
+                                <Box sx={{ display: "flex", alignItems: "center", color: "success.main" }}>
                                   {(q.checkboxCorrectAnswers && q.checkboxCorrectAnswers.length > 0 ? q.checkboxCorrectAnswers : q.selected_answer).map((answer, i) => (
-                                    <Box key={i} sx={{ display: "flex", alignItems: "center", color: "success.main" }}>
-                                      <i className="fa-solid fa-check-circle" style={{ marginRight: 6 }}></i>
-                                      <Typography component="span" variant="body2" fontWeight="bold">
+                                    <Box key={i} sx={{ display: "flex", alignItems: "center", color: "success.main", marginRight: 2 }}>
+                                      <i className="fa-solid fa-check-circle" style={{ marginRight: 8 }}></i>
+                                      <Typography component="strong">
                                         {answer}
                                       </Typography>
                                     </Box>

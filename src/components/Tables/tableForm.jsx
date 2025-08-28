@@ -157,22 +157,22 @@ const TableForms = ({
         {/* Botón crear formulario */}
         <Grid item xs={12} sm={6}>
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button
-              variant="outlined"
+            <Button variant="h5"
               size="small"
               sx={{
                 borderRadius: "18px",
-                border: "2px solid #b62a8b",
-                color: "#b62a8b",
-                fontWeight: "bold",
+                border: "1px solid #b62a8b",
+                color: " #b62a8b",
+                borderColor: "#b62a8b",
                 "&:hover": {
+                  borderColor: "#b62a8b",
                   backgroundColor: "#b62a8b",
                   color: "white",
                 },
               }}
               onClick={onCreate}
             >
-              <Add sx={{ fontSize: "18px", mr: 0.5 }} />
+              <Add sx={{ fontSize: "18px" }} />
               {t("formTable.newForm")}
             </Button>
           </Box>

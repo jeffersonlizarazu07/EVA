@@ -179,7 +179,7 @@ const MiPerfil = () => {
                             </Typography>
                           </Box>
                           <Typography variant="body1" sx={{ fontWeight: "bold", pl: 3 }}>
-                            {userInfo?.email}
+                            {userInfo?.user_red}@nlsa.teleperformance.com
                           </Typography>
                         </Grid>
 

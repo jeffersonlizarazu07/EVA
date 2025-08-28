@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslations } from "../hooks/useTranslations";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/tabla.css";
 import {
   Table,
   TableBody,
@@ -106,24 +105,29 @@ const TableDetalle = ({
               placeholder={t("clientTable.Search")}
               value={searchTerm}
               onChange={handleSearch}
-              className="inp-search"
               variant="outlined"
-              sx={{ width: '100%',                 
-                 '& .MuiOutlinedInput-root': {
-                  height: '4vh',
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'transparent', 
-                  },          
-                  '&.Mui-focused': {
-                    boxShadow: 'none',
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  height: "4vh",
+                  borderRadius: "6px",
+                  color: "#b62a8b",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#b62a8b",
+                  },
+                  "& input": {
+                    color: "#b62a8b",
+                    fontWeight: "bold",
                   },
                 },
-                
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#888' }} />
+                    <Search sx={{ color: "#b62a8b" }} />
                   </InputAdornment>
                 ),
               }}
