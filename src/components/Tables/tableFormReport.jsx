@@ -19,7 +19,8 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  Button
+  Button,
+  Divider
 } from "@mui/material";
 import {
   Search
@@ -28,11 +29,16 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 
-const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, table3 }) => {
+const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, table3,table4,table5,totalForms }) => {
   const { t } = useTranslations();
+
+  // encabezados tablas
   const heders2 = [t("clientTable.preguntas"),t("clientTable.tipo_de_error"), t("clientTable.monitoreos"),t("clientTable.respuestas_Erróneas"),  t("clientTable.porcentaje")];
-  //const heders4 = ["Tipo de error","Porcentaje"];
-  const heders4 = [t("clientTable.tipo_de_error"), t("clientTable.porcentaje")];
+  const heders4 = [t("clientTable.tipo_de_error"),t("clientTable.monitoreos"),t("clientTable.respuestas_Erróneas"), t("clientTable.porcentaje")];
+  const heders5 = ["Identificador del empleado","Nombre","Estado","Identificador del monitoreo", "Formulario","Creado","Puntuacón","Evaluador","Feedback creado","Feedback"];
+  const heders6 = ["Identificador","Nombre","Recuento","Feedback", "No feedback","Acuse de recibo","Sin acuse de recibo"];
+
+  // Estados para selección de filas
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedTable, setSelectedTable] = useState("table1"); // controlar qué tabla mostrar
 
@@ -40,6 +46,7 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
     onSelectionChange(selectedRows);
   }, [selectedRows]);
 
+  // Manejar selección de filas
   const handleCheckboxChange = (item) => {
     setSelectedRows((prev) => {
       const alreadySelected = prev.find((i) => i.id_monitoreo === item.id_monitoreo);
@@ -89,6 +96,14 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
   const [page3, setPage3] = useState(0);
   const [rowsPerPage3, setRowsPerPage3] = useState(5);
 
+  // Estados de paginación para tabla 4
+  const [page4, setPage4] = useState(0);
+  const [rowsPerPage4, setRowsPerPage4] = useState(5);
+
+  // Estados de paginación para tabla 5
+  const [page5, setPage5] = useState(0);
+  const [rowsPerPage5, setRowsPerPage5] = useState(5);
+
   // Handlers tabla 1
   const handleChangePage1 = (event, newPage) => {
     setPage1(newPage);
@@ -114,6 +129,24 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
   const handleChangeRowsPerPage3 = (event) => {
     setRowsPerPage3(parseInt(event.target.value, 10));
     setPage3(0);
+  };
+
+  // Handlers tabla 4
+  const handleChangePage4 = (event, newPage) => {
+    setPage4(newPage);
+  };
+  const handleChangeRowsPerPage4 = (event) => {
+    setRowsPerPage4(parseInt(event.target.value, 10));
+    setPage4(0);
+  };
+
+  // Handlers tabla 5
+  const handleChangePage5 = (event, newPage) => {
+    setPage5(newPage);
+  };
+  const handleChangeRowsPerPage5 = (event) => {
+    setRowsPerPage5(parseInt(event.target.value, 10));
+    setPage5(0);
   };
 
   return (
@@ -170,7 +203,25 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
         >
           {t("clientTable.tabla_de_errores_Totales")}
         </Button>
+
+        
+        <Button 
+          variant={selectedTable === "table4" ? "contained" : "outlined"} 
+          onClick={() => setSelectedTable("table4")}
+          sx={{
+            borderColor: "#c65297",
+            color: selectedTable === "table4" ? "#fff" : "#c65297",
+            backgroundColor: selectedTable === "table4" ? "#c65297" : "transparent",
+            "&:hover": {
+              borderColor: "#c65297", 
+              backgroundColor: selectedTable === "table4" ? "#a13f7e" : "rgba(198,82,151,0.1)",
+            }
+          }}
+        >
+          {("Tabla 4-5")}
+        </Button>
       </Box>
+      
     
       <Box className="table-container" mb={6}>
         
@@ -430,8 +481,10 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
                 .slice(page3 * rowsPerPage3, page3 * rowsPerPage3 + rowsPerPage3)
                 .map((row, idx) => (
                   <TableRow key={idx}>
-                    {["tipo_error", "porcentaje"].map((key) => (
-                      <TableCell key={key} align="center">{row[key]}</TableCell>
+                    {["tipo_error","total_preguntas","cantidad_malas", "porcentaje"].map((key) => (
+                      <TableCell key={key} align="center">
+                        {row[key]} 
+                      </TableCell>
                     ))}
                   </TableRow>
                 ))}
@@ -475,6 +528,171 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
           
           </>
         )}
+        {/* --- TABLA 4 --- */}
+        {selectedTable === "table4" && (
+
+          <>
+          <TableContainer component={Paper} elevation={0}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  {heders5.map((item, i) => (
+                    <TableCell key={i} align="center" sx={{ fontWeight: "bold" }}>
+                      {item}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {table4
+                .slice(page4 * rowsPerPage4, page4 * rowsPerPage4 + rowsPerPage4)
+                .map((row, idx) => (
+                  <TableRow key={idx}>
+                    {["id_user_agent","agent_name","state","id","form_title","monitoring_date","score","evaluator_name","check_FORMATted","feedback"].map((key) => (
+                      <TableCell key={key} align="center">
+                        {row[key]} 
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={table4.length}
+              rowsPerPage={rowsPerPage4}
+              page={page4}
+              onPageChange={handleChangePage4}
+              onRowsPerPageChange={handleChangeRowsPerPage4}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                ".MuiTablePagination-toolbar": {
+                  alignItems: "center",
+                },
+                ".MuiTablePagination-selectLabel": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiTablePagination-displayedRows": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiInputBase-root": {
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                  borderRadius: "4px",
+                },
+              }}
+            />
+          </Box>
+
+          
+          
+          </>
+        )}
+        <Divider sx={{ my: 2 }} />
+        {/* --- TABLA 5 --- */}
+        {selectedTable === "table4" && (
+
+          <>
+          <TableContainer component={Paper} elevation={0}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  {heders6.map((item, i) => (
+                    <TableCell key={i} align="center" sx={{ fontWeight: "bold" }}>
+                      {item}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {table5
+                .slice(page5 * rowsPerPage5, page5 * rowsPerPage5 + rowsPerPage5)
+                .map((row, idx) => (
+                  <TableRow key={idx}>
+                    {["id_form","form_title","recuento","feedback","no_feedback","acuse_de_recibo","sin_acuse_de_recibo"].map((key) => (
+                      <TableCell key={key} align="center">
+                        {row[key]} 
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  {heders6.map((col, idx) => (
+                    <TableCell
+                      key={idx}
+                      align="center"
+                      sx={{
+                        backgroundColor: "#f5f5f5",
+                        color: "#c70e8f",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {col === "Recuento"
+                        ? `${totalForms[0]?.total_recuento || 0}`
+                        : col === "Feedback"
+                        ? `${totalForms[0]?.total_feedback || 0}`
+                        : col === "No feedback"
+                        ? `${totalForms[0]?.total_no_feedback || 0}`
+                        : col === "Acuse de recibo"
+                        ? `${totalForms[0]?.total_acuse_de_recibo || 0}`
+                        : col === "Sin acuse de recibo"
+                        ? `${totalForms[0]?.total_sin_acuse_de_recibo || 0}`
+                        : ""}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </TableContainer>
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={table5.length}
+              rowsPerPage={rowsPerPage5}
+              page={page5}
+              onPageChange={handleChangePage5}
+              onRowsPerPageChange={handleChangeRowsPerPage5}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                ".MuiTablePagination-toolbar": {
+                  alignItems: "center",
+                },
+                ".MuiTablePagination-selectLabel": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiTablePagination-displayedRows": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiInputBase-root": {
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                  borderRadius: "4px",
+                },
+              }}
+            />
+          </Box>
+
+          
+          
+          </>
+        )}
+
       </Box>
     </Box>
   );

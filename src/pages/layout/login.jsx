@@ -15,10 +15,24 @@ const Login = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('jwt_token');
-    if (isAuthenticated && token) {
-      navigate("/admin"); // <- CAMBIAR /dashboard por /admin
+     // Solo redirigir si hay token, usuario y está autenticado
+  if (isAuthenticated && token && user?.backendData) {
+    const userRole = user.backendData.rl; // Obtener rol
+
+    switch (userRole) {
+      case 1:
+        navigate("/admin");
+        break;
+      case 2:
+        navigate("/");
+        break;
+      case 3:
+        navigate("/satisfaction");
+        break;
+        break;
     }
-  }, [isAuthenticated, user, navigate]);
+  }
+}, [isAuthenticated, user, navigate]);
 
   const handleMicrosoftLogin = async (event) => {
     event.preventDefault();

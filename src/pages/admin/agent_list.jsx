@@ -19,7 +19,34 @@ import {
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
-import { Box, Typography } from "@mui/material";
+import { Box,
+  Modal,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  Paper,
+  Grid,
+  Divider,
+  Chip,
+  Stack,
+  Snackbar,
+  Alert,
+  CircularProgress,
+
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  
+  Card,
+  CardContent, 
+  Fade,
+  
+  } from "@mui/material";
+  import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+  import { keyframes } from "@emotion/react";
 
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
@@ -31,6 +58,7 @@ const AdminList = () => {
   const [idToEdit, setidToEdit] = useState(null); // Estado para guardar el id del usuario que voy a editar
   const [formattedDate, setFormattedDate] = useState(""); // Estado para la fecha formateada de hoy (yyyy-mm-dd)
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga (ej: mostrar spinner)
+  const [showSpinner, setShowSpinner] = useState(true); // Controla el spinner extendido
   const [selectedClients, setSelectedClients] = useState([]); // Estado para manejar los clientes seleccionados (checkbox múltiple)
   const [selectedClientId, setSelectedClientId] = useState(""); // Estado para el cliente seleccionado
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
@@ -45,6 +73,9 @@ const AdminList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
   const [feedback, setFeedback] = React.useState("");
   const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
+
+ 
+
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
   // Validaciones de la primer vista del modal
@@ -57,20 +88,42 @@ const AdminList = () => {
   useEffect(() => {
     console.log("Nuevo conteo desde useEffect:", conteoDeAgentes);
   }, [conteoDeAgentes]);
+ 
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
     setFormattedDate(formatDate(new Date()));
 
     if (clients && clients.length > 0) {
-      console.log("✅ Clients listos:", clients);
+      console.log("Clients listos:", clients);
       loadAdmins(); // <- solo ahora sí llamamos
     } else {
-      console.log("⚠️ Clients aún vacíos en el contexto");
+      console.log("Clients aún vacíos en el contexto");
     }
 
     loadClients(); // esto puede ir siempre
   }, [clients]);
+
+  useEffect(() => {
+    // Simula fetch
+    const fetchAdmins = async () => {
+      try {
+        const response = await getAdmins(); // tu servicio
+        setAdmins(response);
+      } catch (err) {
+        console.error("Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdmins();
+
+    // Forzamos spinner al menos 3 segundos
+    const timer = setTimeout(() => setShowSpinner(false), 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Configuración para hacer peticiones que incluyan credenciales (cookies)
   const config = {
@@ -676,13 +729,22 @@ const AdminList = () => {
     userClients,
     t,
   };
-
-  console.log("👀 Estado admins en render:", admins);
+  
+   // animacion alerta
+        const shake = keyframes`
+                      0% { transform: translateX(0); }
+                      20% { transform: translateX(-6px); }
+                      40% { transform: translateX(6px); }
+                      60% { transform: translateX(-4px); }
+                      80% { transform: translateX(4px); }
+                      100% { transform: translateX(0); }
+                    `;
 
   return (
+    <>
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
-        {loading && <p>Cargando...</p>}
+        {loading && <p></p>}
         {userInfo?.type === 4 || userInfo === 3 ? <HeaderLT2 /> : <HeaderLT1 />}
         <Box
           sx={{
@@ -693,10 +755,14 @@ const AdminList = () => {
           }}
         >
           <Box className="container" mt={0}>
-            {loading ? (
-              <Typography variant="h6" sx={{ textAlign: "center", py: 5 }}>
-                Cargando agentes...
-              </Typography>
+            {showSpinner ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+                <CircularProgress color="primary" />
+              </Box>
+            ) : loading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+                <CircularProgress color="primary" />
+              </Box>
             ) : admins.length > 0 ? (
               <TableAdmin
                 header={selectedKeys}
@@ -705,9 +771,54 @@ const AdminList = () => {
                 onView={(payload) => openModalCont(payload)}
               />
             ) : (
-              <Box sx={{ textAlign: "center", py: 5 }}>
-                <Typography variant="h6">No existen agentes registrados</Typography>
-              </Box>
+              <>
+                <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  justifyContent: "center",
+                                                  alignItems: "center",
+                                                  m: 10,
+                                                  mt: 2,
+                                                  mb:0,
+                                                  borderRadius: "12px",
+                                      
+                                                  border: "1px dashed #b0bec5",
+                                                  minHeight: "150px",
+                                                  position: "relative",
+                                                }}
+                                              >
+                                                
+                                                  <Fade in={true} timeout={500}>
+                                                    <Box
+                                                      sx={{
+                                                        animation: `${shake} 0.5s`,
+                                                        
+                                                        
+                                                      }}
+                                                    >
+                                                      <Alert
+                                                        icon={<InfoOutlinedIcon fontSize="large" />}
+                                                        severity="info"
+                                                        color="#c70e8f"
+                                                        sx={{
+                                                          
+                                                          textAlign: "center",
+                                                          fontSize: "1.5rem",
+                                                          backgroundColor: "transparent",
+                                                          border: "1px solid #c70e8f",
+                                                          color: "#c70e8f",
+                                                          borderRadius: "8px",
+                                                        }}
+                                                      >
+                                                        {("No existen agentes registrados.")}
+                                                      </Alert>
+                                                    </Box>
+                                                  </Fade>
+                                                
+                                              </Box>
+              
+              
+              </>
             )}
           </Box>
         </Box>
@@ -715,6 +826,10 @@ const AdminList = () => {
       <ModalAdmin {...modalAdminProps} />
       <ModalViewAdmin {...modalViewAdminProps} />
     </Box>
+      
+    
+          
+    </>
   );
 };
 

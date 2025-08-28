@@ -41,6 +41,8 @@ import {
   getMonitoring,
   getClientsAndForms,
   getResponseMult,
+  getMonitoringByUser,
+  getByUserGeneral,
 } from "../../services/agent_listService";
 
 /* transformar a exel  */
@@ -95,6 +97,12 @@ const FormReport = () => {
   const [errorConteo, setErrorConteo] = useState([]);
   //cantidad de errores general
   const [errorGeneral, setErrorGeneral] = useState([]);
+  // monitoreo de agentes tabla
+  const [monitoringAgentTable, setMonitoringAgentTable] = useState([]);
+  // monitoreo de formularios tabla
+  const [monitoringFormTable, setMonitoringFormTable] = useState([]);
+  // totales de formularios
+  const [totalForms, setTotalForms] = useState([]);
   
 
   
@@ -143,6 +151,7 @@ const FormReport = () => {
 
   // cambio de lenguaje y clientes en el filtro
   useEffect(() => {
+    dataMonitoringAgent();
     getClientsAndFormsFuncion();
   }, []);  // <-- array vacío para que corra solo una vez al montar
 
@@ -169,6 +178,8 @@ const FormReport = () => {
       setMonitoringAgente(agente)
       setMonitoringEvaluador(evaluador)
     }
+    dataMonitoringAgent();
+    dataMonitoringForms();
     getFullMonitorySinFiltre();
     getResponseMultFuncion();
     getClientsAndFormsFuncion();
@@ -191,7 +202,104 @@ const FormReport = () => {
     }
   }, [reportesFiltrados]);
 
+
+  // obtener los monitoreos detallados de los formularios
   
+  const dataMonitoringForms = async () =>{
+    try {
+      const agenteParam = String(agenteFilter || '').trim() || "null";
+      const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
+
+      const agrupado = {};
+      const result = await getByUserGeneral(agenteParam, evaluadorParam);
+      //
+      result.data.forEach((i)=>{
+        if (!agrupado[i.id_form]) {
+            agrupado[i.id_form]={
+            id_form: i.id_form,
+            form_title: i.form_title,
+            recuento: 0,
+            feedback: 0,
+            no_feedback: 0,
+            acuse_de_recibo: 0,
+            sin_acuse_de_recibo: 0,
+            
+          }
+        }
+        agrupado[i.id_form].feedback += i.feedback === "" ? 0 : 1; 
+        agrupado[i.id_form].no_feedback += i.feedback === "" ? 1 : 0; 
+        agrupado[i.id_form].acuse_de_recibo += i.check === 1 ? 1 : 0;
+        agrupado[i.id_form].sin_acuse_de_recibo += i.check === 0 ? 1 : 0;
+        
+      });
+      Object.values(agrupado).forEach((i)=>{
+        i.recuento = i.feedback + i.no_feedback;
+        
+      });
+
+      const total_recuento = Object.values(agrupado).reduce((a, b)=> a + b.recuento, 0);
+      const total_feedback = Object.values(agrupado).reduce((a, b)=> a + b.feedback, 0);
+      const total_no_feedback = Object.values(agrupado).reduce((a, b)=> a + b.no_feedback, 0);
+      const total_acuse_de_recibo = Object.values(agrupado).reduce((a, b)=> a + b.acuse_de_recibo, 0);
+      const total_sin_acuse_de_recibo = Object.values(agrupado).reduce((a, b)=> a + b.sin_acuse_de_recibo, 0);
+
+      const total = [{
+        total_recuento: total_recuento,
+        total_feedback: total_feedback,
+        total_no_feedback: total_no_feedback,
+        total_acuse_de_recibo: total_acuse_de_recibo,
+        total_sin_acuse_de_recibo: total_sin_acuse_de_recibo,
+      }]
+
+      
+      setTotalForms(total);
+      setMonitoringFormTable(Object.values(agrupado));
+      //
+
+      
+
+      
+    } catch (error) {
+      console.error("Error al cargar dataMonitoringForms:", error);
+    }
+
+  }
+
+  // obtener los monitoreos detallados de los agentes
+
+  const dataMonitoringAgent = async () => {
+    try {
+      const agenteParam = String(agenteFilter || '').trim() || "null";
+      const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
+
+
+      const agrupado = {};
+      const result = await getByUserGeneral(agenteParam, evaluadorParam);
+      result.data.forEach((i)=>{
+        agrupado[i.id] = {
+          
+          id_user_agent: i.id_user_agent,
+          agent_name: i.agent_name,
+          state: "activo",
+          id: i.id,
+          form_title:i.form_title,
+          monitoring_date: i.monitoring_date,
+          score: i.score,
+          evaluator_name: i.evaluator_name,
+          check_FORMATted: i.check_FORMATted,
+          feedback: i.feedback,
+          //check: i.check === 1? "si": "no",
+        }
+      })
+      console.log("data monitores:", agrupado);
+      setMonitoringAgentTable(Object.values(agrupado));
+      return result.data;
+
+    } catch (error) {
+      console.error("Error al cargar monitoreos:", error);
+      return [];
+    }
+  }
 
   //contar los errores individual 
 
@@ -283,8 +391,8 @@ const FormReport = () => {
     return Object.values(conteo).map(item => ({
       ...item,
       porcentaje: item.total_preguntas
-        ? parseFloat((100-(item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
-        : 0
+        ? `${parseFloat((100-(item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))} %`
+        : `${0} %`
     }));
   };
 
@@ -299,15 +407,15 @@ const FormReport = () => {
           tipo_error: i.tipo_error,
           cantidad_malas: 0,
           total_preguntas: 0,
-          porcentajeAcumulado: 0,
-          monitoreo: i.total_preguntas
+          //porcentajeAcumulado: 0,
+          //monitoreo: i.total_preguntas
         }
       }
 
       // acumular totales
       datos[key].cantidad_malas += i.cantidad_malas
       datos[key].total_preguntas += i.total_preguntas
-      datos[key].porcentajeAcumulado += i.porcentaje
+      //datos[key].porcentajeAcumulado += i.porcentaje
     })
 
     // calcular porcentaje
@@ -316,8 +424,8 @@ const FormReport = () => {
       porcentaje: item.total_preguntas > 0 
         // ? parseFloat(((item.cantidad_malas * 100) / item.total_preguntas).toFixed(2))
         //parseFloat(((item.cantidad_malas / item.total_preguntas) * 100).toFixed(2))  
-        ? parseFloat(((item.cantidad_malas / item.total_preguntas) * 100).toFixed(2)) 
-        : 0
+        ? `${parseFloat(((item.cantidad_malas / item.total_preguntas) * 100).toFixed(2))} % `
+        : `${0} %`
     }))
   }
 
@@ -464,47 +572,49 @@ const FormReport = () => {
   // tarer reportes filtrados
 
   const getFilterReports = async () => {
-    try {
-      const agenteParam = String(agenteFilter || '').trim() || "null";
-      const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
-      // formateo de fecha sin horas
-      const formattedStartDate = startDate
-        ? dayjs(startDate).format("YYYY-MM-DD")
-        : "";
-      const formattedEndDate = endDate
-        ? dayjs(endDate).format("YYYY-MM-DD")
-        : "";
+      try {
+        const agenteParam = String(agenteFilter || '').trim() || "null";
+        const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
+        // formateo de fecha sin horas
+        const formattedStartDate = startDate
+          ? dayjs(startDate).format("YYYY-MM-DD")
+          : "";
+        const formattedEndDate = endDate
+          ? dayjs(endDate).format("YYYY-MM-DD")
+          : "";
 
-      const filtro = await axios.get(
-        `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}/${agenteParam}/${evaluadorParam}`,
-        config
-      );
+        const filtro = await axios.get(
+          `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}/${agenteParam}/${evaluadorParam}`,
+          config
+        );
 
-      if (!filtro.data || filtro.data.length === 0) {
-        Swal.fire({
-          title: t("reports.sin_datos"),
-          text: t("reports.texto_sin_datos"),
-          icon: "info",
-          confirmButtonText: t("buttons.aceptar"),
-          confirmButtonColor: "#FF66B2",
-        });
+        if (!filtro.data || filtro.data.length === 0) {
+          Swal.fire({
+            title: t("reports.sin_datos"),
+            text: t("reports.texto_sin_datos"),
+            icon: "info",
+            confirmButtonText: t("buttons.aceptar"),
+            confirmButtonColor: "#FF66B2",
+          });
+        }
+        //console.log("aki:",filtro.data)
+
+        setReportesFiltrados(filtro.data);
+        dataMonitoringAgent();
+        dataMonitoringForms();
+      } catch (error) {
+        console.log("Error al consumir la api", error);
       }
-      //console.log("aki:",filtro.data)
-      setReportesFiltrados(filtro.data);
-    } catch (error) {
-      console.log("Error al consumir la api", error);
-    }
-  };
+    };
 
-  // descargar lo filtrado en exel
+    // descargar lo filtrado en exel
 
-  const exportExel = () => {
+    const exportExel = () => {
     // filtro entre exportacion total y seleccionados
     const dataCargada = seleccionados.length ? seleccionados : formatExel;
 
     if (
       !dataCargada ||
-      dataCargada.length === 0 ||
       Object.keys(dataCargada).length === 0
     ) {
       Swal.fire({
@@ -519,50 +629,54 @@ const FormReport = () => {
       return;
     }
 
-    // para todos con formatExel
-
+    // 1. Hoja principal: Monitoreos agrupados
     const data = Object.values(dataCargada).map((item) => {
-      // Se convierten las preguntas (que son un array de objetos) en un solo objeto plano
-      // donde cada clave es el texto de la pregunta y el valor es la respuesta
-      const preguntasPlanas = item.preguntas?.reduce((acc, p, i) => {
+      const preguntasPlanas = item.preguntas?.reduce((acc, p) => {
         acc[` ${p.texto}`] = p.respuesta;
         return acc;
       }, {});
-
-      // Se devuelve un objeto que representa una fila del Excel,
-      // incluyendo campos generales + preguntas planas + feedback
       return {
         Agente: item.nombre_agente,
         Evaluador: item.nombre_monitor,
         Fecha_de_Monitoreo: item.fecha_monitoreo,
         Score: item.score,
         Formulario: item.nombre_form,
-        ...preguntasPlanas, // Se agregan dinámicamente todas las preguntas y respuestas
+        ...preguntasPlanas,
         Feedback: item.feedback,
       };
     });
+    const worksheet1 = XLSX.utils.json_to_sheet(data);
 
-    // Se convierte el array de objetos en una hoja de cálculo de Excel
-    const worksheet = XLSX.utils.json_to_sheet(data);
+    // 2. Hoja de errores por pregunta
+    const worksheet2 = XLSX.utils.json_to_sheet(errorConteo);
 
-    // Se crea un nuevo libro de Excel
+    // 3. Hoja de errores generales
+    const worksheet3 = XLSX.utils.json_to_sheet(errorGeneral);
+
+    // 4. hoja de monitoreo por agente
+    const worksheet4 = XLSX.utils.json_to_sheet(monitoringAgentTable);
+
+    // 5. hoja de monitoreo por formulario
+    const worksheet5 = XLSX.utils.json_to_sheet(monitoringFormTable);
+
+    // Crear libro y agregar hojas
     const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet1, "Reportes");
+    XLSX.utils.book_append_sheet(workbook, worksheet2, "Errores por Pregunta");
+    XLSX.utils.book_append_sheet(workbook, worksheet3, "Errores Generales");
+    XLSX.utils.book_append_sheet(workbook, worksheet4, "Monitoreo por Agente");
+    XLSX.utils.book_append_sheet(workbook, worksheet5, "Monitoreo por Formulario");
 
-    // Se agrega la hoja al libro con el nombre "Reportes"
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Reportes");
-
-    // Se genera el archivo Excel en un formato binario (array buffer)
+    // Exportar
     const exelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
       type: "array",
     });
 
-    // Se crea un objeto Blob con el contenido del archivo Excel
     const blob = new Blob([exelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
     });
 
-    // Se dispara la descarga del archivo Excel en el navegador con nombre "reportes_filtrados.xlsx"
     saveAs(blob, "reportes_filtrados.xlsx");
   };
 
@@ -843,6 +957,9 @@ const FormReport = () => {
                 footerData={footerDatas}
                 table2={errorConteo}
                 table3={errorGeneral}
+                table4={monitoringAgentTable}
+                table5={monitoringFormTable}
+                totalForms={totalForms}
               />
             )}
           </Box>
