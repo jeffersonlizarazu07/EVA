@@ -1,55 +1,50 @@
-import React, { createContext, useState, useEffect } from 'react';
-
-import { ThemeProvider as MuiThemeProvider, CssBaseline, createTheme } from "@mui/material";
+import React, { createContext, useState, useEffect } from "react";
+import {
+  ThemeProvider as MuiThemeProvider,
+  CssBaseline,
+  createTheme,
+} from "@mui/material";
 import { lightTheme, darkTheme } from "../../components/Admin/index.styles";
 
-
 export const ThemeContext = createContext({
-  theme: 'light',
-  toggleTheme: () => {}
+  theme: "light",
+  toggleTheme: () => {},
 });
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState("light");
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('app-theme');
-    if (storedTheme) {
-      setTheme(storedTheme);
-      //document.body.className = storedTheme;
-    }
+    const storedTheme = localStorage.getItem("app-theme");
+    if (storedTheme) setTheme(storedTheme);
   }, []);
 
+  useEffect(() => {
+    // Marcar el tema en el DOM para que el CSS lo detecte
+    document.documentElement.setAttribute("data-theme", theme);
+    document.body.setAttribute("data-theme", theme);
+  }, [theme]);
+
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('app-theme', newTheme);
-    //document.body.className = newTheme;
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+    localStorage.setItem("app-theme", next);
   };
 
   let muiTheme;
   try {
     muiTheme = theme === "light" ? lightTheme : darkTheme;
   } catch (error) {
-    console.error('[ThemeProvider] Error creating theme:', error);
-    // Fallback a un tema básico si hay error
-    muiTheme = createTheme({
-      palette: {
-        mode: theme,
-      },
-    });
+    console.error("[ThemeProvider] Error creating theme:", error);
+    muiTheme = createTheme({ palette: { mode: theme } });
   }
-
-
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       <MuiThemeProvider theme={muiTheme}>
-        <CssBaseline/>
-          {children}
-        
+        <CssBaseline />
+        {children}
       </MuiThemeProvider>
-      
     </ThemeContext.Provider>
   );
 };
