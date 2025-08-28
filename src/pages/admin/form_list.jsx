@@ -15,7 +15,18 @@ import {
   MenuItem,
   IconButton,
   CircularProgress,
+
+  
+  
+  
+  DialogContentText,
+  Fade,
+  Alert,
+  
 } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { keyframes } from "@emotion/react";
+
 import { Close } from "@mui/icons-material";
 import HeaderLT1 from "../../components/header/headerLT1";
 import HeaderLT2 from "../../components/header/headerLT2";
@@ -70,6 +81,7 @@ const FormList = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [idToEdit, setIdToEdit] = useState(null);
   const [clients, setClients] = useState([]);
+  
 
   const title = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -80,6 +92,7 @@ const FormList = () => {
     getForms();
     getClients();
   }, []);
+  
 
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -222,6 +235,15 @@ const FormList = () => {
       Toast.fire({ icon: "error", title: t("alertCreateEdit.ErrorAlert") });
     }
   };
+  // animacion alerta
+      const shake = keyframes`
+                    0% { transform: translateX(0); }
+                    20% { transform: translateX(-6px); }
+                    40% { transform: translateX(6px); }
+                    60% { transform: translateX(-4px); }
+                    80% { transform: translateX(4px); }
+                    100% { transform: translateX(0); }
+                  `;
   return (
     <>
       <Box className="App" sx={{ overflow: "hidden" }}>
@@ -432,6 +454,8 @@ const FormList = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      
+          
     </>
   );
 };

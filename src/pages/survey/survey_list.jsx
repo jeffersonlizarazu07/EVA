@@ -25,7 +25,16 @@ import {
   Grid,
   Divider,
   Chip,
-  Stack
+  Stack,
+
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Fade,
+  Alert,
+    
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -34,11 +43,15 @@ import {
   Add as AddIcon
 } from '@mui/icons-material';
 import { useTranslations } from "../../components/hooks/useTranslations.jsx";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { keyframes } from "@emotion/react";
+
 
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
   const [modalOpen, setModalOpen] = useState(false); //estado del modal mui
+  
 
   // En el estado del componente añade:
   const [showEnvioModal, setShowEnvioModal] = useState(false);
@@ -116,6 +129,7 @@ const SurveyList = () => {
       getClients(userId);
     }
   }, [userId, accessToken]); 
+  
 
   const config = {
     headers: {
@@ -631,7 +645,17 @@ const SurveyList = () => {
   console.log("encuestas a mostrar:", survey);
   console.log("Valor de start_date.input en el render:", start_date.input);
 
+  // animacion alerta
+      const shake = keyframes`
+                    0% { transform: translateX(0); }
+                    20% { transform: translateX(-6px); }
+                    40% { transform: translateX(6px); }
+                    60% { transform: translateX(-4px); }
+                    80% { transform: translateX(4px); }
+                    100% { transform: translateX(0); }
+                  `;
   return (
+    <>
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
@@ -657,26 +681,83 @@ const SurveyList = () => {
                 onBulkEmail={(payload)=> openModalBulk(payload)}
               />
             ) : (
-              <Box sx={{ textAlign: 'center', py: 5,}}>
-                <Typography>{t("survey.no_hay_encuestas_disponibles")}</Typography>
+              <>
+                                          
+                                            <Box
+                                              sx={{
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                alignItems: "center",
+                                                m: 10,
+                                                mt: 2,
+                                                mb:0,
+                                                borderRadius: "12px",
+                                    
+                                                border: "1px dashed #b0bec5",
+                                                minHeight: "150px",
+                                                position: "relative",
+                                              }}
+                                            >
+                                              
+                                                <Fade in={true} timeout={500}>
+                                                  <Box
+                                                    sx={{
+                                                      animation: `${shake} 0.5s`,
+                                                      
+                                                      
+                                                    }}
+                                                  >
+                                                    <Alert
+                                                      icon={<InfoOutlinedIcon fontSize="large" />}
+                                                      severity="info"
+                                                      color="#c70e8f"
+                                                      sx={{
+                                                        
+                                                        textAlign: "center",
+                                                        fontSize: "1.5rem",
+                                                        backgroundColor: "transparent",
+                                                        border: "1px solid #c70e8f",
+                                                        color: "#c70e8f",
+                                                        borderRadius: "8px",
+                                                      }}
+                                                    >
+                                                      {("Aún no has creado encuestas.")}
+                                                    </Alert>
+                                                  </Box>
+                                                </Fade>
+                                              
+                                            </Box>
+              <Box sx={{
+                  
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  m: 10,
+                  mt: 2,
+                  
+                  minHeight: "150px",
+                  position: "relative",
+                }}
+              >
+                
                   <Button
-                  sx={{
-                    color: 'white',
-                    backgroundColor: '#b62a8b', // Color morado estándar de MUI
-                    '&:hover': {
-                      backgroundColor: '#581244', // Morado más oscuro al hover
-                    }
-                  }}         
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalSurvey"
-                    className="btn btn-primary mt-3"
-                    onClick={() => openModal(1)}
-                  >
-                    {t("survey.crear_encuesta")}
-                  </Button>
+                           
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalSurvey"
+                      //className="btn btn-primary mt-3"
+                      onClick={() => openModal(1)}
+
+                      sx={{mt:3,color:"#b62a8b", border:"1px solid #b62a8b ",borderRadius: "12px", backgroundColor:"transparent", "&:hover":{color:"#fff", backgroundColor:" #b62a8b ",}}}
+                    >
+                      {t("survey.crear_encuesta")}
+                    </Button>
               </Box>
+              </>
             )}
+            
           </Box>
+          
           
         </Box>
       </Box>
@@ -1037,6 +1118,8 @@ const SurveyList = () => {
         </Box>
       </Modal>
     </Box>
+    
+    </>
   );
 };
 
