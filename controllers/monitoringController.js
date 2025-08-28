@@ -56,6 +56,42 @@ exports.getById = async (req, res) => {
   }
 };
 
+
+//
+exports.getByUserGeneral = async (req, res) => {
+  console.log("🚀 Entró al controlador getByUserGeneral");
+  
+  const { agenteParam, evaluadorParam } = req.params;
+  console.log("📥 Backend recibió agenteParam:", agenteParam);
+  console.log("📥 Backend recibió evaluadorParam:", evaluadorParam);
+
+  try {
+    const result = await Monitoring.getByUserGeneral(agenteParam, evaluadorParam);
+
+    console.log("📊 Resultado completo de getByUserId:", result);
+
+    const monitorings = result?.monitorings || [];
+    const stats = result?.stats || {};
+
+    const total_monitorings = stats?.total_monitorings ?? 0;
+    const average_score = Number(stats?.average_score ?? 0);
+
+    return res.status(200).json({
+      data: monitorings,
+      stats: {
+        total_monitorings,
+        average_score,
+      },
+    });
+  } catch (error) {
+    console.error("Error al obtener monitorizaciones del agente:", error);
+    return res.status(500).json({
+      message: "Error interno del servidor",
+    });
+  }
+};
+
+//
 exports.getByUserId = async (req, res) => {
   console.log("🚀 Entró al controlador getByUserId");
   const { userId } = req.params;
