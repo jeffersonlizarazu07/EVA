@@ -90,7 +90,7 @@ const App = () => {
             {/*error views*/}
             <Route path="/auth/inactive" element={<Inactive />} />
              <Route
-              element={<ProtectedRoute redirectPath="/" allowedUserTypes={[1]} />}
+              element={<ProtectedRoute redirectPath="/" allowedUserTypes={[1, 2]} />}
             > 
               <Route path="/client_list" element={<Client_list />} />
             </Route> 

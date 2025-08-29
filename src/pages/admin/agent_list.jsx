@@ -9,6 +9,7 @@ import { Toast, smallAlertDelete } from "../../assets/js/alertConfig";
 import { useTranslations } from "../../components/hooks/useTranslations";
 import {
   getAdmins,
+  getAgents,
   getClients,
   getUserClients,
   getAgentById,
@@ -24,6 +25,7 @@ import { Box, Typography, CircularProgress } from "@mui/material";
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
   const [admins, setAdmins] = useState([]); // Guarda todos los administradores
+  const [agents, setAgents] = useState([]); // Trae los agentes asociados a un admin con rol 2
   const [listClients, setListClients] = useState([]); // Clientes disponibles en el sistema
   const [userClients, setUserClients] = useState([]); // Clientes asociados a un usuario específico
   const [operation, setOperation] = useState([1]); // Estado para manejar la operación actual (ej: crear, editar, etc.)
@@ -37,7 +39,8 @@ const AdminList = () => {
   const [formOptions, setFormOptions] = useState([]); // Estado para manejar las opciones de formularios disponibles
   const [selectedFormId, setSelectedFormId] = useState(""); //Estado para manejar el formulario seleccionado
   const { t } = useTranslations(); // Hook para traducciones y cambio de idioma dinámico
-  const { accessToken, clients, userInfo } = useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
+  const { accessToken, clients, userInfo, userType, userId } =
+    useContext(UserContext); // Accedo al contexto de usuario para obtener el token y el idioma actual del usuario
   const [userName, setUserName] = useState(""); // Estado para guardar el nombre del usuario que se está creando o editando
   const [monitoringStep, setMonitoringStep] = useState(1); // Manejo la vista actual dentro del modal de monitorización
   const [blocksForForm, setBlocksForForm] = useState([]); // Estado para menjar los bloques de un formulario
@@ -173,6 +176,33 @@ const AdminList = () => {
     }
   };
 
+useEffect(() => {
+  const fetchAgents = async () => {
+    try {
+      console.log("👉 userType:", userType);
+      console.log("👉 userId:", userId);
+
+      if (userType == 2 || userType == "2") {
+        const response = await getAgents(userType, userId);
+        console.log("👉 Respuesta cruda getAgents:", response);
+
+        if (response?.data?.data) {
+          setAgents(response.data.data);
+          console.log("Agentes asociados:", response.data.data);
+        } else {
+          console.warn("Respuesta inesperada de getAgents:", response);
+        }
+      } else {
+        console.warn("No se cumplen condiciones para traer agentes");
+      }
+    } catch (error) {
+      console.error("Error obteniendo agentes:", error);
+    }
+  };
+
+  fetchAgents();
+}, [userType, userId]);
+
   // Obtener los clientes asignados a un usuario específico
   const loadUserClients = async (id) => {
     try {
@@ -180,6 +210,7 @@ const AdminList = () => {
         await getUserClients(id);
       setSelectedClients(clients); // Clientes seleccionados actualmente (asignados)
       setUserClients(users); // Clientes asociados al usuario
+      console.log("Clientes asociados al susuario", setUserClients);
     } catch (error) {
       console.error("Error loading user clients:", error);
       setSelectedClients([]); // Limpiar en caso de error

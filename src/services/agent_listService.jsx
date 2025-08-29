@@ -144,6 +144,12 @@ export const getAgentById = async (agentId) => {
   }
 };
 
+export const getAgents = (userType, userId) => {
+  if (userType == 2 || userType == "2") {
+    return apiClient.get("/users/agents/admin");
+  }
+};
+
 // Traer formularios asociados a un cliente seleccionado
 export const getFormsByClient = async (clientId) => {
   try {

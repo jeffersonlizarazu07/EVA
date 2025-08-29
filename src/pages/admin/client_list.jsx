@@ -28,6 +28,7 @@ import {
   Edit as EditIcon,
   Add as AddIcon,
 } from "@mui/icons-material";
+import { apiClient } from "../../utils/axiosConfig";
 
 export default function Client_list() {
   const [operation, setOperation] = useState([1]); // Estado para saber si estoy creando (1) o editando (2)
@@ -46,6 +47,7 @@ export default function Client_list() {
   const { t } = useTranslations(); // Hook para traducciones
   const url = "http://localhost:3000/api/clients"; // URL base de la API para clientes
   const CLIENTS_BASE_URL = "http://localhost:3000/clientes";
+  const [clients, setClients] = useState([]);
 
   // Estados para los modales MUI
   const [openCreateModal, setOpenCreateModal] = useState(false);
@@ -65,7 +67,7 @@ export default function Client_list() {
   const handleOpenColor2 = () => setOpenColorModal2(true);
   const handleCloseColor2 = () => setOpenColorModal2(false);
 
-  const { accessToken } = useContext(UserContext); // Trae el token y el idioma desde el contexto del usuario logueado
+  const { accessToken, userType, userId } = useContext(UserContext); // Trae el token y el idioma desde el contexto del usuario logueado
 
   useEffect(() => {
     fetchData(); // Trae todos los clientes una sola vez
@@ -98,6 +100,33 @@ export default function Client_list() {
       console.error("Error fetching data:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        let response;
+
+        if (userType == 2 || userType == "2") {
+          // Nuevo endpoint solo para admins
+          response = await apiClient.get(
+            "http://localhost:3000/api/users_client/admin"
+          );
+        } else {
+          // Endpoint original (general o por id)
+          response = await apiClient.get(
+            `http://localhost:3000/api/users_client/${userId}`
+          );
+        }
+
+        setClients(response.data.data);
+        console.log("Clientes asociados:", response.data.data);
+      } catch (error) {
+        console.error("Error obteniendo clientes:", error);
+      }
+    };
+
+    fetchClients();
+  }, [userType, userId]);
 
   // Abre el modal y carga los datos del cliente seleccionado
   const openModalCont = (clientData) => {
@@ -530,10 +559,10 @@ export default function Client_list() {
         >
           {/* <SidebarLT1 /> */}
           <Box className="container" mt={0}>
-            {data.length > 0 && (
+            {(userType == 2 ? clients : data).length > 0 && (
               <TableDetalle
                 header={selectedKeys}
-                data={data}
+                data={userType == 2 ? clients : data}
                 onCreate={() => openModal(1)}
                 onRemove={(item) => deactivation(item)}
                 onUpdate={(payload) => openModal(2, payload)}
@@ -595,20 +624,20 @@ export default function Client_list() {
             <Box sx={{ px: 3, pb: 3 }}>
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} sm={4}>
-                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                      <Box
-                        component="img"
-                        src={`${CLIENTS_BASE_URL}/${logo.input || ''}`}
-                        alt="Logo"
-                        onError={handleImgError}
-                        sx={{
-                          width: 100,
-                          height: 100,
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          borderRadius: 1
-                        }}
-                      />
+                  <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Box
+                      component="img"
+                      src={`${CLIENTS_BASE_URL}/${logo.input || ""}`}
+                      alt="Logo"
+                      onError={handleImgError}
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        border: "1px solid",
+                        borderColor: "divider",
+                        borderRadius: 1,
+                      }}
+                    />
                   </Box>
                 </Grid>
 
@@ -751,7 +780,7 @@ export default function Client_list() {
                     {logoEdit && operation === 2 && !selectedFile ? (
                       <Box
                         component="img"
-                        src={`${CLIENTS_BASE_URL}/${logoEdit || ''}`}
+                        src={`${CLIENTS_BASE_URL}/${logoEdit || ""}`}
                         alt="Logo"
                         onError={handleImgError}
                         sx={{
