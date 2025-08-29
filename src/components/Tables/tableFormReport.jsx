@@ -35,7 +35,7 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
   // encabezados tablas
   const heders2 = [t("clientTable.preguntas"),t("clientTable.tipo_de_error"), t("clientTable.monitoreos"),t("clientTable.respuestas_Erróneas"),  t("clientTable.porcentaje")];
   const heders4 = [t("clientTable.tipo_de_error"),t("clientTable.monitoreos"),t("clientTable.respuestas_Erróneas"), t("clientTable.porcentaje")];
-  const heders5 = ["Identificador del empleado","Nombre","Estado","Identificador del monitoreo", "Formulario","Creado","Puntuacón","Evaluador","Feedback creado","Feedback"];
+  const heders5 = [t("clientTable.identificador_del_empleado"),t("clientTable.nombre"),t("clientTable.estado"),t("clientTable.identificador_del_monitoreo"), t("clientTable.Formulario"),t("clientTable.creado"),t("clientTable.puntuacion"),t("clientTable.evaluador"),t("clientTable.feedback_creado"),t("clientTable.feedback"),t("clientTable.acuse_creado")];
   const heders6 = ["Identificador","Nombre","Recuento","Feedback", "No feedback","Acuse de recibo","Sin acuse de recibo"];
 
   // Estados para selección de filas
@@ -173,22 +173,6 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
         </Button>
 
         <Button 
-          variant={selectedTable === "table2" ? "contained" : "outlined"} 
-          onClick={() => setSelectedTable("table2")}
-          sx={{
-            borderColor: "#c65297",
-            color: selectedTable === "table2" ? "#fff" : "#c65297",
-            backgroundColor: selectedTable === "table2" ? "#c65297" : "transparent",
-            "&:hover": {
-              borderColor: "#c65297", 
-              backgroundColor: selectedTable === "table2" ? "#a13f7e" : "rgba(198,82,151,0.1)",
-            }
-          }}
-        >
-          {t("clientTable.tabla_de_errores")}
-        </Button>
-
-        <Button 
           variant={selectedTable === "table3" ? "contained" : "outlined"} 
           onClick={() => setSelectedTable("table3")}
           sx={{
@@ -204,6 +188,24 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
           {t("clientTable.tabla_de_errores_Totales")}
         </Button>
 
+
+        <Button 
+          variant={selectedTable === "table2" ? "contained" : "outlined"} 
+          onClick={() => setSelectedTable("table2")}
+          sx={{
+            borderColor: "#c65297",
+            color: selectedTable === "table2" ? "#fff" : "#c65297",
+            backgroundColor: selectedTable === "table2" ? "#c65297" : "transparent",
+            "&:hover": {
+              borderColor: "#c65297", 
+              backgroundColor: selectedTable === "table2" ? "#a13f7e" : "rgba(198,82,151,0.1)",
+            }
+          }}
+        >
+          {t("clientTable.tabla_de_errores")}
+        </Button>
+
+        
         
         <Button 
           variant={selectedTable === "table4" ? "contained" : "outlined"} 
@@ -218,7 +220,7 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
             }
           }}
         >
-          {("Tabla 4-5")}
+          {("Tabla De Feedback")}
         </Button>
       </Box>
       
@@ -528,75 +530,8 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
           
           </>
         )}
-        {/* --- TABLA 4 --- */}
-        {selectedTable === "table4" && (
 
-          <>
-          <TableContainer component={Paper} elevation={0}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  {heders5.map((item, i) => (
-                    <TableCell key={i} align="center" sx={{ fontWeight: "bold" }}>
-                      {item}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {table4
-                .slice(page4 * rowsPerPage4, page4 * rowsPerPage4 + rowsPerPage4)
-                .map((row, idx) => (
-                  <TableRow key={idx}>
-                    {["id_user_agent","agent_name","state","id","form_title","monitoring_date","score","evaluator_name","check_FORMATted","feedback"].map((key) => (
-                      <TableCell key={key} align="center">
-                        {row[key]} 
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={table4.length}
-              rowsPerPage={rowsPerPage4}
-              page={page4}
-              onPageChange={handleChangePage4}
-              onRowsPerPageChange={handleChangeRowsPerPage4}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                ".MuiTablePagination-toolbar": {
-                  alignItems: "center",
-                },
-                ".MuiTablePagination-selectLabel": {
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: 0,
-                },
-                ".MuiTablePagination-displayedRows": {
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: 0,
-                },
-                ".MuiInputBase-root": {
-                  backgroundColor: "#b62a8b",
-                  color: "white",
-                  borderRadius: "4px",
-                },
-              }}
-            />
-          </Box>
-
-          
-          
-          </>
-        )}
-        <Divider sx={{ my: 2 }} />
+        
         {/* --- TABLA 5 --- */}
         {selectedTable === "table4" && (
 
@@ -692,6 +627,77 @@ const TableFormReport = ({ header, data, onSelectionChange, footerData, table2, 
           
           </>
         )}
+
+        <Divider sx={{ my: 2 }} />
+        {/* --- TABLA 4 --- */}
+        {selectedTable === "table4" && (
+
+          <>
+          <TableContainer component={Paper} elevation={0}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  {heders5.map((item, i) => (
+                    <TableCell key={i} align="center" sx={{ fontWeight: "bold" }}>
+                      {item}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {table4
+                .slice(page4 * rowsPerPage4, page4 * rowsPerPage4 + rowsPerPage4)
+                .map((row, idx) => (
+                  <TableRow key={idx}>
+                    {["id_user_agent","agent_name","state","id","form_title","monitoring_date","score","evaluator_name","feedbackDate","feedback","acuseDate"].map((key) => (
+                      <TableCell key={key} align="center">
+                        {row[key]} 
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2, alignItems: "center" }}>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={table4.length}
+              rowsPerPage={rowsPerPage4}
+              page={page4}
+              onPageChange={handleChangePage4}
+              onRowsPerPageChange={handleChangeRowsPerPage4}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                ".MuiTablePagination-toolbar": {
+                  alignItems: "center",
+                },
+                ".MuiTablePagination-selectLabel": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiTablePagination-displayedRows": {
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 0,
+                },
+                ".MuiInputBase-root": {
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                  borderRadius: "4px",
+                },
+              }}
+            />
+          </Box>
+
+          
+          
+          </>
+        )}
+        
 
       </Box>
     </Box>

@@ -207,11 +207,20 @@ const FormReport = () => {
   
   const dataMonitoringForms = async () =>{
     try {
+      const formularioParam = String(filtroSeleccionado || '').trim() || "null";
       const agenteParam = String(agenteFilter || '').trim() || "null";
       const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
 
+      // formateo de fecha sin horas
+        const formattedStartDate = startDate
+          ? dayjs(startDate).format("YYYY-MM-DD")
+          : "";
+        const formattedEndDate = endDate
+          ? dayjs(endDate).format("YYYY-MM-DD")
+          : "";
+
       const agrupado = {};
-      const result = await getByUserGeneral(agenteParam, evaluadorParam);
+      const result = await getByUserGeneral(formularioParam,agenteParam, evaluadorParam, formattedStartDate,formattedEndDate);
       //
       result.data.forEach((i)=>{
         if (!agrupado[i.id_form]) {
@@ -269,12 +278,21 @@ const FormReport = () => {
 
   const dataMonitoringAgent = async () => {
     try {
+      const formularioParam = String(filtroSeleccionado || '').trim() || "null";
       const agenteParam = String(agenteFilter || '').trim() || "null";
       const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
 
+      // formateo de fecha sin horas
+        const formattedStartDate = startDate
+          ? dayjs(startDate).format("YYYY-MM-DD")
+          : "";
+        const formattedEndDate = endDate
+          ? dayjs(endDate).format("YYYY-MM-DD")
+          : "";
+
 
       const agrupado = {};
-      const result = await getByUserGeneral(agenteParam, evaluadorParam);
+      const result = await getByUserGeneral(formularioParam,agenteParam, evaluadorParam,formattedStartDate,formattedEndDate);
       result.data.forEach((i)=>{
         agrupado[i.id] = {
           
@@ -286,9 +304,10 @@ const FormReport = () => {
           monitoring_date: i.monitoring_date,
           score: i.score,
           evaluator_name: i.evaluator_name,
-          check_FORMATted: i.check_FORMATted,
+          feedbackDate: i.monitoring_date,
           feedback: i.feedback,
-          //check: i.check === 1? "si": "no",
+          acuseDate: i.check_FORMATted,
+          
         }
       })
       console.log("data monitores:", agrupado);
@@ -555,24 +574,25 @@ const FormReport = () => {
 
   // Datos para el footer de la table 
 
- const footerData = (data) => {
-  // Promedio de score
-  const suma = data.reduce((acc, item) => acc + Number(item.score || 0), 0);
-  const promedioGeneral = suma / data.length;
+  const footerData = (data) => {
+    // Promedio de score
+    const suma = data.reduce((acc, item) => acc + Number(item.score || 0), 0);
+    const promedioGeneral = suma / data.length;
 
-  // Total de preguntas
-  const totalPreguntas = data.reduce((acc, item) => acc + (data?.length || 0), 0);
+    // Total de preguntas
+    const totalPreguntas = data.reduce((acc, item) => acc + (data?.length || 0), 0);
 
-  setFooterDatas([{
-    promedio: promedioGeneral,
-    preguntas: data.length
-  }]);
-};
+    setFooterDatas([{
+      promedio: promedioGeneral,
+      preguntas: data.length
+    }]);
+  };
 
   // tarer reportes filtrados
 
   const getFilterReports = async () => {
       try {
+        const formularioParam = String(filtroSeleccionado || '').trim() || "null";
         const agenteParam = String(agenteFilter || '').trim() || "null";
         const evaluadorParam = String(evaluadorFilter || '').trim() || "null";
         // formateo de fecha sin horas
@@ -584,7 +604,7 @@ const FormReport = () => {
           : "";
 
         const filtro = await axios.get(
-          `http://localhost:3000/api/answersform/filter/${filtroSeleccionado}/${formattedStartDate}/${formattedEndDate}/${agenteParam}/${evaluadorParam}`,
+          `http://localhost:3000/api/answersform/filter/${formularioParam}/${formattedStartDate}/${formattedEndDate}/${agenteParam}/${evaluadorParam}`,
           config
         );
 
@@ -653,8 +673,29 @@ const FormReport = () => {
     // 3. Hoja de errores generales
     const worksheet3 = XLSX.utils.json_to_sheet(errorGeneral);
 
+    // logica de seleccion para exportar
+    const dataAgrupasda = {};
+    if (seleccionados.length > 0) {
+      const dataCargada2 = seleccionados.length ? seleccionados : formatExel;
+      const dataArray = Array.isArray(dataCargada2) ? dataCargada2 : Object.values(dataCargada2);
+
+      const agentMap = new Map(
+        Object.values(monitoringAgentTable).map(y => [y.id, y])
+      );
+     
+      dataArray.forEach((x) => {
+        const y = agentMap.get(x.id_monitoreo);
+        if (y) dataAgrupasda[y.id] = { ...y };
+      });
+
+    }else{
+      Object.values(monitoringAgentTable).forEach((y)=>{
+        dataAgrupasda[y.id]={...y};
+      })
+    }
+    
     // 4. hoja de monitoreo por agente
-    const worksheet4 = XLSX.utils.json_to_sheet(monitoringAgentTable);
+    const worksheet4 = XLSX.utils.json_to_sheet(Object.values(dataAgrupasda));
 
     // 5. hoja de monitoreo por formulario
     const worksheet5 = XLSX.utils.json_to_sheet(monitoringFormTable);
@@ -808,7 +849,7 @@ const FormReport = () => {
 
                     {/* vista formularios */}
                     <FormControl
-                      required
+                      
                       sx={{ minWidth: "16%" }}
                       className="readOnlyField"
                     >
@@ -818,10 +859,12 @@ const FormReport = () => {
                         id="survey-select"
                         value={filtroSeleccionado}
                         onChange={(e) => {
+                          if (e.target.value === "") {
+                            setFiltroSeleccionado("");
+                            return;
+                          }
                           const response = parseInt(e.target.value);
-                          const infoCapturado = formsInfo.find(
-                            (i) => i.id === response
-                          );
+                          const infoCapturado = formsInfo.find((i) => i.id === response);
                           setFiltroSeleccionado(Number(infoCapturado.id));
                         }}
                         input={<OutlinedInput label="Formulario" />}
@@ -840,7 +883,7 @@ const FormReport = () => {
                     </FormControl>
                     {/* Agente*/}
                     <FormControl
-                      required
+                      
                       sx={{ minWidth: "10%" }}
                       className="readOnlyField"
                     >
@@ -871,7 +914,7 @@ const FormReport = () => {
 
                     {/* Evaluador */}
                     <FormControl
-                      required
+                      
                       sx={{ minWidth: "10%" }}
                       className="readOnlyField"
                     >
@@ -903,14 +946,14 @@ const FormReport = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         className="readOnlyField"
-                        label={t("reports.fecha_inicio")}
+                        label={`${t("reports.fecha_inicio")} *`} 
                         value={startDate}
                         onChange={handleStartDateChange}
                         sx={{ width: "19%" }}
                       />
                       <DatePicker
                         className="readOnlyField"
-                        label={t("reports.fecha_fin")}
+                        label={`${t("reports.fecha_fin")} *`}
                         value={endDate}
                         onChange={handleEndDateChange}
                         sx={{ width: "19%" }}
@@ -921,14 +964,14 @@ const FormReport = () => {
                       <IconButton
                         color="secondary"
                         onClick={getFilterReports}
-                        disabled={!(filtroSeleccionado && startDate && endDate)}
+                        disabled={!( startDate && endDate)}
                       >
                         <SearchIcon />
                       </IconButton>
                       <IconButton
                         color="secondary"
                         onClick={exportExel}
-                        disabled={!(filtroSeleccionado && startDate && endDate)}
+                        disabled={!( startDate && endDate)}
                       >
                         <FileDownloadIcon />
                       </IconButton>
