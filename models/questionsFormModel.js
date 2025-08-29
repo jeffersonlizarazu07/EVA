@@ -22,20 +22,11 @@ class questionsFormModel {
             ? q.select_option.split(",").map((opt) => opt.trim())
             : [];
 
-        const selected = q.selected_answer;
         let selectedAnswerIndex = "";
-
-        if (Array.isArray(selected)) {
-          selectedAnswerIndex = selected
-            .map((ans) => options.indexOf(ans))
-            .filter((idx) => idx !== -1)
-            .join(",");
-        } else if (typeof selected === "string") {
-          const selectedArray = selected.split(",").map((s) => s.trim());
-          selectedAnswerIndex = selectedArray
-            .map((ans) => options.indexOf(ans))
-            .filter((idx) => idx !== -1)
-            .join(",");
+        if (typeof q.selected_answer === "string" || typeof q.selected_answer === "number") {
+          selectedAnswerIndex = String(q.selected_answer);
+        } else if (Array.isArray(q.selected_answer)) {
+          selectedAnswerIndex = q.selected_answer.map(String).join(",");
         }
 
         return {
@@ -93,23 +84,12 @@ class questionsFormModel {
       };
 
       for (const q of questions) {
-        // --- selected_answer en índice(s) respecto a select_option ---
-        const options = typeof q.select_option === "string" ? q.select_option.split(",") : [];
-        const selected = q.selected_answer ?? "";
+        
         let selectedAnswerIndex = "";
-
-        if (Array.isArray(selected)) {
-          selectedAnswerIndex = selected
-            .map(ans => options.indexOf(ans))
-            .filter(i => i !== -1)
-            .join(",");
-        } else if (typeof selected === "string" && selected.length) {
-          selectedAnswerIndex = selected
-            .split(",")
-            .map(s => s.trim())
-            .map(ans => options.indexOf(ans))
-            .filter(i => i !== -1)
-            .join(",");
+        if (typeof q.selected_answer === "string" || typeof q.selected_answer === "number") {
+          selectedAnswerIndex = String(q.selected_answer);
+        } else if (Array.isArray(q.selected_answer)) {
+          selectedAnswerIndex = q.selected_answer.map(String).join(",");
         }
 
         // --- resolver id_type_question ---
