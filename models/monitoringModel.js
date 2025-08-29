@@ -105,7 +105,7 @@ const MonitoringModel = {
           "FORMAT(monitoring.date, 'yyyy-MM-dd HH:mm:ss') as monitoring_date"
         ),
         knex.raw(
-          "FORMAT(monitoring.check_date, 'yyyy-MM-dd HH:mm:ss') as check_FORMATted"
+          "FORMAT(monitoring.check_date, 'yyyy-MM-dd HH:mm:ss') as check_formatted"
         ),
         "monitoring.*",
         "form_set.title as form_title",
