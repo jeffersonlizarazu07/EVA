@@ -67,6 +67,10 @@ const HeaderLT1 = () => {
     t;
   });
 
+  useEffect(() => {
+  console.log("userType en HeaderLT1:", userType, typeof userType);
+}, [userType]);
+
   const [userLanguage, setUserLanguaje] = useState({ language: "" });
   const [userInfo, setUserInfo] = useState({
     firstname: "",

@@ -69,7 +69,7 @@ const FormList = () => {
     "state",
   ];
 
-  const { userType } = useContext(UserContext);
+  const { userType, userInfo } = useContext(UserContext);
   const { t } = useTranslations();
   const navigate = useNavigate();
   const accessToken = Cookies.get("accessToken");
@@ -89,10 +89,11 @@ const FormList = () => {
   const idClient = useInput({ defaultValue: "", validate: /^[0-9]+$/ });
 
   useEffect(() => {
+  if (userInfo?.type && userInfo?.id) {
     getForms();
-    getClients();
-  }, []);
-  
+    getClients(userInfo.type, userInfo.id); 
+  }
+}, [userInfo]);
 
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -114,9 +115,12 @@ const FormList = () => {
     }
   };
 
-  const getClients = async () => {
+  const getClients = async (userType, userId) => {
     try {
-      const res = await axios.get("http://localhost:3000/api/clients", config);
+      const res = await axios.get("http://localhost:3000/api/clients", {
+        params: { userType, userId }, // 👈 se mandan como query params
+        ...config,
+      });
       setClients(res.data.data || []);
     } catch (err) {
       console.error("Error cargando clientes", err);
@@ -210,6 +214,7 @@ const FormList = () => {
       description: description.input,
       state: parseInt(state.input),
       idClient: parseInt(idClient.input),
+      userType,
       ...(idToEdit
         ? { updated_date: now, updated_by: userId }
         : { creation_date: now, created_by: userId }),

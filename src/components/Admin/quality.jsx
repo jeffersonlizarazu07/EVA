@@ -207,7 +207,13 @@ const Quality = () => {
   return (
     <Box sx={{ position: "relative" }}>
       <Box sx={{ position: "relative", zIndex: 1 }}>
-        {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
+        {userType == "1" ||
+        (userType == 1 && userType == "2") ||
+        userType == 2 ? (
+          <HeaderLT1 />
+        ) : (
+          <HeaderLT2 />
+        )}
         <section>
           <Grid
             container

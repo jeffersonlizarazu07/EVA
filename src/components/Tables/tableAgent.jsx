@@ -31,7 +31,7 @@ const TableAdmin = ({
   modalId2,
   userId,
 }) => {
-  const { userInfo } = useContext(UserContext);
+  const { userInfo, userType } = useContext(UserContext);
   const { t } = useTranslations();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -204,6 +204,8 @@ const TableAdmin = ({
                         : t("userTable.Inactive")
                       : key === "type"
                       ? getUserType(item.type)
+                      : key === "clientNames" && userType == 2
+                      ? item.clientNames || "Sin clientes"
                       : item[key]}
                   </TableCell>
                 ))}
@@ -215,21 +217,21 @@ const TableAdmin = ({
                       gap={1}
                     >
                       {userInfo?.type !== 4 && (
-                          <IconButton
-                            onClick={() => onUpdate(item)}
-                            size="small"
-                            title="Crear monitorización"
-                            sx={{
-                              color: "#b62a8b",
-                              "&:hover": {
-                                backgroundColor: "#b62a8b",
-                                color: "#fff",
-                              },
-                            }}
-                          >
-                            <FactCheckRoundedIcon />
-                          </IconButton>
-                        )}
+                        <IconButton
+                          onClick={() => onUpdate(item)}
+                          size="small"
+                          title="Crear monitorización"
+                          sx={{
+                            color: "#b62a8b",
+                            "&:hover": {
+                              backgroundColor: "#b62a8b",
+                              color: "#fff",
+                            },
+                          }}
+                        >
+                          <FactCheckRoundedIcon />
+                        </IconButton>
+                      )}
                       <IconButton
                         onClick={() => onView(item)}
                         size="small"

@@ -62,8 +62,15 @@ const AdminList = () => {
 
   // Traducción e idioma desde el contexto global del usuario
   const { t } = useTranslations();
-  const { accessToken, setClients, userId, clients, languageUser } =
-    useContext(UserContext);
+  const {
+    accessToken,
+    setClients,
+    userId,
+    clients,
+    languageUser,
+    userType,
+    userInfo,
+  } = useContext(UserContext);
 
   // Se ejecuta cuando cambia el idioma del usuario o se monta el componente
 
@@ -119,12 +126,23 @@ const AdminList = () => {
   // Obtener todos los admins
   const getAdmins = async () => {
     try {
+      // Obtener userType del contexto
+      const currentUserType = userInfo?.type; // o como tengas estructurado tu contexto
+
       const response = await axios.get("http://localhost:3000/api/users", {
+        params: {
+          userType: currentUserType,
+          userId: userId,
+        },
         withCredentials: true,
       });
       setAdmins(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+      // Manejar el caso donde no hay usuarios compartidos
+      if (error.response?.status === 404) {
+        setAdmins([]); // Lista vacía si no hay usuarios compartidos
+      }
     }
   };
 
@@ -320,7 +338,7 @@ const AdminList = () => {
     const id = admin.id;
     const name = admin.firstname;
 
-    // ❌ Evitar activar tu propio usuario
+    // Evitar activar tu propio usuario
     if (String(id) === String(userId)) {
       Toast.fire({
         icon: "warning",
@@ -800,9 +818,9 @@ const AdminList = () => {
                       </li>
                     )}
                     renderInput={(params) => (
-                      <TextField 
-                        {...params} 
-                        label={t("viewUserModal.Clients")} 
+                      <TextField
+                        {...params}
+                        label={t("viewUserModal.Clients")}
                         placeholder={t("viewUserModal.Clients")}
                         error={!!errors.clients}
                         helperText={errors.clients}

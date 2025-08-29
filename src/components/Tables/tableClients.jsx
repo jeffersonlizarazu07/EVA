@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { UserContext } from "../../context/UserContext";
 import { useTranslations } from "../hooks/useTranslations";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,17 +14,19 @@ import {
   IconButton,
   Paper,
   Box,
-  Grid,InputAdornment} from '@mui/material';
+  Grid,
+  InputAdornment,
+} from "@mui/material";
 import {
   TurnLeft,
   Add,
   Edit,
   PowerSettingsNew,
   Search,
-} from '@mui/icons-material';
-import TablePagination from '@mui/material/TablePagination';
+} from "@mui/icons-material";
+import TablePagination from "@mui/material/TablePagination";
 
-import SearchIcon from '@mui/icons-material/Search';
+import SearchIcon from "@mui/icons-material/Search";
 
 const TableDetalle = ({
   header,
@@ -34,12 +37,12 @@ const TableDetalle = ({
   onActive,
   onView,
   modalId,
-  modalId2
+  modalId2,
 }) => {
-  const nav = useNavigate()
+  const nav = useNavigate();
   const { t } = useTranslations();
   const [searchTerm, setSearchTerm] = useState("");
-
+  const { userType, clients } = useContext(UserContext);
   // Cambios para MUI Pagination - usar page (base 0) en lugar de currentPage (base 1)
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -79,26 +82,28 @@ const TableDetalle = ({
     <Box className="table-container">
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={6} md={6} lg={6}>
-           <Box display="flex" alignItems="center" gap={1}>
-            <Button 
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
               variant="outlined"
               size="small"
-             sx={{  
-              minWidth: 0,       
-              width: 30,
-              height: 30,
-              padding: 0,
-              borderRadius: '50%',        
-              color: '#b62a8b',
-              borderColor: '#b62a8b',    
-              '&:hover': {
-                borderColor: '#b62a8b',
-                backgroundColor: '#b62a8b',
-                color: 'white'
-              }
-            }} 
-              onClick={() => nav("/admin")}              
-            > <TurnLeft /> 
+              sx={{
+                minWidth: 0,
+                width: 30,
+                height: 30,
+                padding: 0,
+                borderRadius: "50%",
+                color: "#b62a8b",
+                borderColor: "#b62a8b",
+                "&:hover": {
+                  borderColor: "#b62a8b",
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                },
+              }}
+              onClick={() => nav("/admin")}
+            >
+              {" "}
+              <TurnLeft />
             </Button>
             <TextField
               size="small"
@@ -135,41 +140,61 @@ const TableDetalle = ({
           </Box>
         </Grid>
         <Grid item xs={12} sm={6} md={6} lg={6}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button variant="h5"
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="h5"
               size="small"
               sx={{
-                borderRadius: '18px',
-                border: '1px solid #b62a8b',
-                color: '#b62a8b',
-                borderColor: '#b62a8b',    
-                '&:hover': {
-                  borderColor: '#b62a8b',
-                  backgroundColor: '#b62a8b',
-                  color: 'white'
-                }
+                borderRadius: "18px",
+                border: "1px solid #b62a8b",
+                color: "#b62a8b",
+                borderColor: "#b62a8b",
+                "&:hover": {
+                  borderColor: "#b62a8b",
+                  backgroundColor: "#b62a8b",
+                  color: "white",
+                },
               }}
               //data-bs-target={`#${modalId}`}
               onClick={onCreate}
+              disabled={userType == 2}
             >
-              <Add sx={{ fontSize: '18px' }} /> {t("clientTable.newClient")}
+              <Add sx={{ fontSize: "18px" }} /> {t("clientTable.newClient")}
             </Button>
           </Box>
         </Grid>
       </Grid>
 
       {/* tabla  */}
-      <TableContainer component={Paper} elevation={0}  sx={{ maxHeight: 450, overflowY: "auto" }} > 
-        <Table size="small" > 
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{ maxHeight: 450, overflowY: "auto" }}
+      >
+        <Table size="small">
           <TableHead>
             <TableRow>
               {header.map((item, i) => (
-                <TableCell key={i} sx={{ fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}>
+                <TableCell
+                  key={i}
+                  sx={{
+                    fontSize: "1rem",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                  }}
+                >
                   {t(`clientTable.${item}`)}
                 </TableCell>
-                
               ))}
-              <TableCell sx={{ fontSize: '1rem', textAlign: 'center', fontWeight: 'bold' }}>{t("clientTable.Actions")}</TableCell>
+              <TableCell
+                sx={{
+                  fontSize: "1rem",
+                  textAlign: "center",
+                  fontWeight: "bold",
+                }}
+              >
+                {t("clientTable.Actions")}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -177,12 +202,21 @@ const TableDetalle = ({
               <TableRow key={idx}>
                 {header.map((itemkey, i) => (
                   <TableCell key={i} align="center">
-                    {itemkey=="state"? (item.state==1? `${t("clientTable.Active")}`:`${t("clientTable.Inactive")}`): (itemkey=="logo"? null:item[itemkey])}
+                    {itemkey == "state"
+                      ? item.state == 1
+                        ? `${t("clientTable.Active")}`
+                        : `${t("clientTable.Inactive")}`
+                      : itemkey == "logo"
+                      ? null
+                      : item[itemkey]}
                   </TableCell>
                 ))}
                 {item.state != 1 ? (
                   <TableCell align="center">
-                    <Box sx={{ display: 'flex', justifyContent: 'center'}} gap={1}>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center" }}
+                      gap={1}
+                    >
                       <IconButton
                         className="btn btn-rect"
                         onClick={() => onActive(item)}
@@ -190,52 +224,60 @@ const TableDetalle = ({
                       >
                         <PowerSettingsNew />
                       </IconButton>
-                      <IconButton
-                        onClick={() => onView(item)}
-                        size="small"
-                      >
+                      <IconButton onClick={() => onView(item)} size="small">
                         <Search />
                       </IconButton>
                     </Box>
                   </TableCell>
                 ) : (
-                  <TableCell sx={{ textAlign: 'center' }}>
-                    <Box gap={1} sx={{ display: 'flex', justifyContent: 'center'}}>
-                      <IconButton                        
-                        onClick={() => onUpdate(item)}
-                        size="small"
-                        sx={{                          
-                          color: '#b62a8b',
-                          '&:hover': {
-                            backgroundColor: '#b62a8b',
-                            color: '#fff',
-                          }
-                        }}
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => onRemove(item)}
-                        size="small"
-                        sx={{                          
-                          color: '#b62a8b',
-                          '&:hover': {
-                            backgroundColor: '#b62a8b',
-                            color: '#fff',
-                          }
-                        }}
-                      >
-                        <PowerSettingsNew />
-                      </IconButton>
+                  <TableCell sx={{ textAlign: "center" }}>
+                    <Box
+                      gap={1}
+                      sx={{ display: "flex", justifyContent: "center" }}
+                    >
+                      {userType == 2 ? (
+                        ""
+                      ) : (
+                        <IconButton
+                          onClick={() => onUpdate(item)}
+                          size="small"
+                          sx={{
+                            color: "#b62a8b",
+                            "&:hover": {
+                              backgroundColor: "#b62a8b",
+                              color: "#fff",
+                            },
+                          }}
+                        >
+                          <Edit />
+                        </IconButton>
+                      )}
+                      {userType == 2 ? (
+                        ""
+                      ) : (
+                        <IconButton
+                          onClick={() => onRemove(item)}
+                          size="small"
+                          sx={{
+                            color: "#b62a8b",
+                            "&:hover": {
+                              backgroundColor: "#b62a8b",
+                              color: "#fff",
+                            },
+                          }}
+                        >
+                          <PowerSettingsNew />
+                        </IconButton>
+                      )}
                       <IconButton
                         onClick={() => onView(item)}
                         size="small"
-                        sx={{                          
-                          color: '#b62a8b',
-                          '&:hover': {
-                            backgroundColor: '#b62a8b',
-                            color: '#fff',
-                          }
+                        sx={{
+                          color: "#b62a8b",
+                          "&:hover": {
+                            backgroundColor: "#b62a8b",
+                            color: "#fff",
+                          },
                         }}
                       >
                         <Search />
@@ -246,10 +288,17 @@ const TableDetalle = ({
               </TableRow>
             ))}
           </TableBody>
-        </Table>    
+        </Table>
       </TableContainer>
-      
-      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2, alignItems: 'center',  }}>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-start",
+          mt: 2,
+          alignItems: "center",
+        }}
+      >
         <TablePagination
           rowsPerPageOptions={[10, 25, 50]}
           component="div"
@@ -259,35 +308,36 @@ const TableDetalle = ({
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage={t("clientTable.fila_pagina")}
-          labelDisplayedRows={({ from, to, count }) => 
-            `${from}-${to} ${t("clientTable.de")} ${count !== -1 ? count : `more than ${to}`}`
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}-${to} ${t("clientTable.de")} ${
+              count !== -1 ? count : `more than ${to}`
+            }`
           }
-         sx={{
+          sx={{
             // Estilos personalizados para alinear verticalmente
-            display: 'flex',
-            alignItems: 'center',
-            '.MuiTablePagination-toolbar': {
-              alignItems: 'center', // Alinea todos los hijos verticalmente
+            display: "flex",
+            alignItems: "center",
+            ".MuiTablePagination-toolbar": {
+              alignItems: "center", // Alinea todos los hijos verticalmente
             },
-            '.MuiTablePagination-selectLabel': {
-              display: 'flex',
-              alignItems: 'center',
+            ".MuiTablePagination-selectLabel": {
+              display: "flex",
+              alignItems: "center",
               marginBottom: 0,
             },
-             '.MuiTablePagination-displayedRows': {
-              display: 'flex',
-              alignItems: 'center',
+            ".MuiTablePagination-displayedRows": {
+              display: "flex",
+              alignItems: "center",
               marginBottom: 0,
-             },
-            '.MuiInputBase-root': {
-              backgroundColor: '#b62a8b',
-              color: 'white',
-              borderRadius: '4px',
-              
-            }
+            },
+            ".MuiInputBase-root": {
+              backgroundColor: "#b62a8b",
+              color: "white",
+              borderRadius: "4px",
+            },
           }}
         />
-      </Box>   
+      </Box>
     </Box>
   );
 };

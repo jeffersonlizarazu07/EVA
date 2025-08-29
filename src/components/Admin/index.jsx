@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import "../../assets/css/index.css";
-import HeaderLT2 from "../header/headerLT2.jsx"
+import HeaderLT2 from "../header/headerLT2.jsx";
 import HeaderLT1 from "../header/headerLT1";
 import i18n from "../../assets/js/i18n.jsx";
 import { useEffect, useContext, useState } from "react";
@@ -21,7 +21,7 @@ const Index = () => {
   const { t, i18n } = useTranslation();
   const { userType, languageUser, userId } = useContext(UserContext);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     i18n.changeLanguage(languageUser);
   }, []);
@@ -30,8 +30,9 @@ const Index = () => {
   const handleQualityClick = () => {
     console.log("Este es el user", userType);
     console.log("Este es el userId", userId);
-    
-    if (userType == 4) {  // ✅ CAMBIADO A ==
+
+    if (userType == 4) {
+      // ✅ CAMBIADO A ==
       const targetUrl = `/monitoring_view/${userId}`;
       console.log("Navegando a:", targetUrl);
       navigate(targetUrl);
@@ -44,8 +45,9 @@ const Index = () => {
   const handleSatisfactionClick = () => {
     console.log("Este es el user", userType);
     console.log("Este es el userId", userId);
-    
-    if (userType == 4) {  // ✅ CAMBIADO A ==
+
+    if (userType == 4) {
+      // ✅ CAMBIADO A ==
       console.log("Navegando a: /survey_list");
       navigate("/survey_list");
     } else {
@@ -56,7 +58,7 @@ const Index = () => {
 
   return (
     <Box>
-      {userType == 2 || userType == 4 ? <HeaderLT2 /> : <HeaderLT1 />} {/* ✅ CAMBIADO A == */}
+      {userType == 4 ? <HeaderLT2 /> : <HeaderLT1 />}
       <Box>
         <Box sx={{ marginTop: 12 }}>
           <Grid size={12}>
@@ -69,7 +71,13 @@ const Index = () => {
               }}
             >
               <Grid container spacing={6} justifyContent="center">
-                <Grid item xs={12} md={6} display="flex" justifyContent="center">
+                <Grid
+                  item
+                  xs={12}
+                  md={6}
+                  display="flex"
+                  justifyContent="center"
+                >
                   <Card
                     id="card1"
                     sx={{
@@ -79,7 +87,7 @@ const Index = () => {
                       justifyContent: "center",
                       minHeight: 300,
                       textAlign: "center",
-                      width: { xs: '90vw', md: 600 },
+                      width: { xs: "90vw", md: 600 },
                       cursor: "pointer",
                     }}
                     onClick={handleQualityClick}
@@ -87,9 +95,7 @@ const Index = () => {
                     <CardContent>
                       <AccountCircleIcon style={{ fontSize: "100px" }} />
                       <br />
-                      <Typography variant="h5">
-                        {t("quality.title")}
-                      </Typography>
+                      <Typography variant="h5">{t("quality.title")}</Typography>
                       <Typography variant="body1">
                         {t("quality.description")}
                       </Typography>
@@ -97,7 +103,13 @@ const Index = () => {
                   </Card>
                 </Grid>
 
-                <Grid item xs={12} md={6} display="flex" justifyContent="center">
+                <Grid
+                  item
+                  xs={12}
+                  md={6}
+                  display="flex"
+                  justifyContent="center"
+                >
                   <Card
                     id="card2"
                     sx={{
@@ -107,7 +119,7 @@ const Index = () => {
                       justifyContent: "center",
                       minHeight: 300,
                       textAlign: "center",
-                      width: { xs: '90vw', md: 600 },
+                      width: { xs: "90vw", md: 600 },
                       cursor: "pointer",
                     }}
                     onClick={handleSatisfactionClick}
