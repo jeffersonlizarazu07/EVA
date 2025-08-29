@@ -65,7 +65,7 @@ const HeaderLT1 = () => {
   useEffect(() => {
     checkinfo();
     t;
-  });
+  },[]);
 
   const [userLanguage, setUserLanguaje] = useState({ language: "" });
   const [userInfo, setUserInfo] = useState({

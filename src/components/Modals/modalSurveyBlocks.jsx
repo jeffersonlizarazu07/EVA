@@ -317,68 +317,70 @@ return (
                       <>
                         {q.type === "selector_opt" && (
                           <Box>
-  <SelectorQuestionEdit
-    options={q.selectorOptions || q.options || []}
-    selectedOption={q.selectorSelectedOption ?? q.selected_answer}
-    onChange={(data) => {
-      handleInputChange(index, "selectorOptions", data.options);
-      handleInputChange(index, "selectorSelectedOption", data.selectedOption);
-    }}
-  />
+                            <SelectorQuestionEdit
+                              options={q.selectorOptions || q.options || []}
+                              selectedOption={q.selectorSelectedOption ?? q.selected_answer}
+                              onChange={(data) => {
+                                handleInputChange(index, "selectorOptions", data.options);
+                                handleInputChange(index, "selectorSelectedOption", data.selectedOption);
+                              }}
+                            />
 
-  {(() => {
-    const opts = Array.isArray(q.selectorOptions)
-      ? q.selectorOptions
-      : typeof q.options === "string"
-      ? q.options.split(",")
-      : [];
+                            {(() => {
+                              const opts = Array.isArray(q.selectorOptions)
+                                ? q.selectorOptions
+                                : typeof q.options === "string"
+                                ? q.options.split(",")
+                                : [];
+                            
+                              const parseIndex = (val) => {
+                                if (val === undefined || val === null || val === "") return -1;
+                                const n = Number(val);
+                                return isNaN(n) ? -1 : n; //indicar -1 para que se sepa que no hay respuesta seleccionada y tampoco guardada en la base de datos
+                              };
 
-    const idx =
-      q.selectorSelectedOption !== undefined && q.selectorSelectedOption !== null
-        ? Number(q.selectorSelectedOption)
-        : q.selected_answer;
+                              const idx = parseIndex(q.selectorSelectedOption ?? q.selected_answer);
 
-    const isValidIndex = idx !== undefined && idx !== null && idx >= 0 && idx < opts.length;
+                              const isValidIndex = idx >= 0 && idx < opts.length;
+                              if (isValidIndex) {
+                                const option = opts[idx];
+                                const text =
+                                  typeof option === "string"
+                                    ? option
+                                    : typeof option === "object" && option.text
+                                    ? option.text
+                                    : "";
 
-    if (isValidIndex) {
-      const option = opts[idx];
-      const text =
-        typeof option === "string"
-          ? option
-          : typeof option === "object" && option.text
-          ? option.text
-          : "";
+                                return (
+                                  <Box
+                                    sx={{
+                                      mt: 3,
+                                      p: 3,
+                                      bgcolor: "background.paper",
+                                      border: "1px solid",
+                                      borderColor: "grey.300",
+                                      borderRadius: 1,
+                                    }}
+                                  >
+                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                      Respuesta seleccionada:
+                                    </Typography>
+                                    <Box sx={{ display: "flex", alignItems: "center", color: "success.main" }}>
+                                      <i className="fa-solid fa-check-circle" style={{ marginRight: 8 }}></i>
+                                      <Typography component="strong">{text}</Typography>
+                                    </Box>
+                                  </Box>
+                                );
+                              } else {
+                                return (
+                                  <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+                                    No hay respuestas seleccionadas.
+                                  </Typography>
+                                );
+                              }
 
-      return (
-        <Box
-          sx={{
-            mt: 3,
-            p: 3,
-            bgcolor: "background.paper",
-            border: "1px solid",
-            borderColor: "grey.300",
-            borderRadius: 1,
-          }}
-        >
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-            Respuesta seleccionada:
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", color: "success.main" }}>
-            <i className="fa-solid fa-check-circle" style={{ marginRight: 8 }}></i>
-            <Typography component="strong">{text}</Typography>
-          </Box>
-        </Box>
-      );
-    } else {
-      return (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
-          No hay respuestas seleccionadas.
-        </Typography>
-      );
-    }
-  })()}
-</Box>
-
+                            })()}
+                          </Box>
                         )}
 
                         {q.type === "check_opt" && (
