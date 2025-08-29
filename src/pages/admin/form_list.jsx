@@ -15,14 +15,9 @@ import {
   MenuItem,
   IconButton,
   CircularProgress,
-
-  
-  
-  
   DialogContentText,
   Fade,
   Alert,
-  
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { keyframes } from "@emotion/react";
@@ -81,7 +76,6 @@ const FormList = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [idToEdit, setIdToEdit] = useState(null);
   const [clients, setClients] = useState([]);
-  
 
   const title = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
   const description = useInput({ defaultValue: "", validate: /^[A-Za-z ]*$/ });
@@ -89,11 +83,11 @@ const FormList = () => {
   const idClient = useInput({ defaultValue: "", validate: /^[0-9]+$/ });
 
   useEffect(() => {
-  if (userInfo?.type && userInfo?.id) {
-    getForms();
-    getClients(userInfo.type, userInfo.id); 
-  }
-}, [userInfo]);
+    if (userInfo?.type && userInfo?.id) {
+      getForms();
+      getClients(userInfo.type, userInfo.id);
+    }
+  }, [userInfo]);
 
   const config = {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -101,24 +95,27 @@ const FormList = () => {
   };
 
   const getForms = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        "http://localhost:3000/api/forms",
-        config
-      );
-      setForms(Array.isArray(response.data.data) ? response.data.data : []);
-    } catch (error) {
-      console.error("Error al obtener formularios:", error);
-    } finally {
-      setLoading(false);
+  try {
+    const response = await axios.get("http://localhost:3000/api/forms", {
+      params: {
+        userType: userInfo?.type,  // Consistente con userInfo
+        userId: userInfo?.id,      // Consistente con userInfo  
+      },
+      withCredentials: true,
+    });
+    setForms(response.data.data);
+  } catch (error) {
+    console.error("Error:", error);
+    if (error.response?.status === 404) {
+      setForms([]);
     }
-  };
+  }
+};
 
   const getClients = async (userType, userId) => {
     try {
       const res = await axios.get("http://localhost:3000/api/clients", {
-        params: { userType, userId }, // 👈 se mandan como query params
+        params: { userType, userId }, // se envía como query params
         ...config,
       });
       setClients(res.data.data || []);
@@ -241,7 +238,7 @@ const FormList = () => {
     }
   };
   // animacion alerta
-      const shake = keyframes`
+  const shake = keyframes`
                     0% { transform: translateX(0); }
                     20% { transform: translateX(-6px); }
                     40% { transform: translateX(6px); }
@@ -459,8 +456,6 @@ const FormList = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      
-          
     </>
   );
 };
