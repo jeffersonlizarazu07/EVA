@@ -61,14 +61,17 @@ exports.getById = async (req, res) => {
 exports.getByUserGeneral = async (req, res) => {
   console.log("🚀 Entró al controlador getByUserGeneral");
   
-  const { agenteParam, evaluadorParam } = req.params;
+  const { formularioParam,agenteParam, evaluadorParam, formattedStartDate,formattedEndDate } = req.params;
   console.log("📥 Backend recibió agenteParam:", agenteParam);
   console.log("📥 Backend recibió evaluadorParam:", evaluadorParam);
+  console.log("📥 Backend recibió formularioParam:", formularioParam);
+  console.log("📥 Backend recibió formattedStartDate:", formattedStartDate);
+  console.log("📥 Backend recibió formattedEndDate:", formattedEndDate);
 
   try {
-    const result = await Monitoring.getByUserGeneral(agenteParam, evaluadorParam);
+    const result = await Monitoring.getByUserGeneral(formularioParam,agenteParam, evaluadorParam,formattedStartDate,formattedEndDate);
 
-    console.log("📊 Resultado completo de getByUserId:", result);
+    console.log("📊 Resultado completo de getByUserGeneral:", result);
 
     const monitorings = result?.monitorings || [];
     const stats = result?.stats || {};

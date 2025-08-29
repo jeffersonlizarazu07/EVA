@@ -57,6 +57,7 @@ class AnswersFormModel {
 
   async getReportFilter(fromId, starDate, endDate, agente, evaluador){
     try {
+        if(fromId === 'null') fromId = '';
         if (agente === 'null') agente = '';
         if (evaluador === 'null') evaluador = '';
         const query =  this.knex(`${this.table_} as m`)
@@ -82,7 +83,7 @@ class AnswersFormModel {
         .where('a.type', 4)
         .andWhere('mo.type', 1)
         // 
-        .andWhere('f.id', '=' , fromId)
+        
         
         .andWhereRaw('m.date  = af.date')
         .andWhere(this.knex.raw('CAST(m.date AS DATE) >=?' , [starDate] ))
@@ -91,6 +92,9 @@ class AnswersFormModel {
         // ...
 
         // Agregar filtro de agente solo si no está vacío
+        if(fromId && fromId.trim() !== '' && fromId !== '""'){
+          query.andWhere('f.id', '=' , fromId)
+        }
         if (agente && agente.trim() !== '' && agente !== '""') {
           query.andWhere(this.knex.raw(`(a.firstname + ' ' + a.lastname) = ?`, [agente]));
         }
