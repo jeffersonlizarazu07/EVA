@@ -24,6 +24,9 @@ router.delete('/users/:id?', authMiddleware, userController.deleteUser);
 //ruta para obtener los clientes asociados a un usuario
 router.get('/users/:id/clients', authMiddleware, userController.getClientByUserId);
 
+// Trae los usuarios con clientes asociados al admin (userType 2)
+router.get('/users/:id/clients/admin', authMiddleware, userController.getUsersByAdmin);
+
 //ruta para actualizar el idioma de un usuario
 router.patch('/language/:idUser?', authMiddleware, userController.updateLanguage)
 module.exports = router;

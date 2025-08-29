@@ -48,6 +48,38 @@ const userClientController = {
     }
   },
 
+  async userClientsByAdmin(req, res) {
+  try {
+    // Verificar que sea admin
+    if (req.user.rl !== 2) {
+      return res.status(403).json({
+        status: "403",
+        message: "No autorizado. Solo admins pueden acceder a este endpoint",
+      });
+    }
+
+    const { id } = req.user;
+    const userClient = await UserClient.getClientsByAdmin(id);
+    
+    if (userClient.length === 0) {
+      return res
+        .status(404)
+        .json({ status: "404", message: "No se encontraron asociaciones" });
+    }
+    
+    res.json({
+      status: "200",
+      message: "Asociaciones obtenidas correctamente",
+      data: userClient,
+    });
+  } catch (error) {
+    console.error("Error en userClientsByAdmin:", error);
+    res
+      .status(500)
+      .json({ status: "500", message: "Error interno del servidor", error });
+  }
+},
+
   async postUserClient(req, res) {
     try {
       const validaUserClient = await UserClientDTO.validateUserClient(req.body);
@@ -63,13 +95,11 @@ const userClientController = {
         .status(201)
         .json({ status: "201", message: "Asociaciones creadas correctamente" });
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "500",
-          message: "Error al crear la asociación",
-          error,
-        });
+      res.status(500).json({
+        status: "500",
+        message: "Error al crear la asociación",
+        error,
+      });
     }
   },
 
@@ -99,13 +129,11 @@ const userClientController = {
         message: "Asociaciones actualizadas correctamente",
       });
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "500",
-          message: "Error al actualizar la asociación",
-          error,
-        });
+      res.status(500).json({
+        status: "500",
+        message: "Error al actualizar la asociación",
+        error,
+      });
     }
   },
 
@@ -123,13 +151,11 @@ const userClientController = {
         message: "Asociación eliminada correctamente",
       });
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "500",
-          message: "Error al eliminar la asociación",
-          error,
-        });
+      res.status(500).json({
+        status: "500",
+        message: "Error al eliminar la asociación",
+        error,
+      });
     }
   },
 };

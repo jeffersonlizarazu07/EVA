@@ -40,6 +40,17 @@ async create(data) {
         }
     }
 
+    async getByUserId(userId) {
+    try {
+        return await this.knex(this.table)
+            .join('user_clients', `${this.table}.id`, 'user_clients.idClient')
+            .where('user_clients.idUser', userId)
+            .select(`${this.table}.*`);
+    } catch (error) {
+        throw new Error(`Error al obtener los clientes por usuario: ${error.message}`);
+    }
+}
+
     // Método para obtener un cliente por su ID
     async getById(id) {
         try {

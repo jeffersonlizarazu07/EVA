@@ -68,6 +68,21 @@ const User = {
     return usersWithFormattedDate; // Retorno los usuarios con la fecha formateada
   },
 
+  async getUsersByClientsAdmin(userId) {
+    try {
+      return await this.knex(this.table)
+        .join("user_clients as uc1", `${this.table}.id`, "uc1.idUser")
+        .join("user_clients as uc2", "uc1.idClient", "uc2.idClient")
+        .where("uc2.idUser", userId)
+        .distinct(`${this.table}.*`)
+        .select(`${this.table}.*`);
+    } catch (error) {
+      throw new Error(
+        `Error al obtener usuarios con clientes compartidos: ${error.message}`
+      );
+    }
+  },
+
   // Crear nuevo usuario
   createUser: async (userData) => {
     // Inserta el nuevo usuario
@@ -133,18 +148,16 @@ const User = {
   },
 
   // Actualizar auth_provider para usuarios MSAL
-  updateAuthProvider: async (id, provider = 'microsoft') => {
+  updateAuthProvider: async (id, provider = "microsoft") => {
     try {
-        const update = await db("users")
-            .where({ id })
-            .update({ 
-                auth_provider: provider,
-                updated_at: getDateTimeForSQL()
-            });
-        return update;
+      const update = await db("users").where({ id }).update({
+        auth_provider: provider,
+        updated_at: getDateTimeForSQL(),
+      });
+      return update;
     } catch (error) {
-        console.error("Error actualizando auth_provider:", error);
-        throw error;
+      console.error("Error actualizando auth_provider:", error);
+      throw error;
     }
   },
 
@@ -164,7 +177,6 @@ const User = {
         )
         .first();
   },*/
-
 };
 
 module.exports = User;

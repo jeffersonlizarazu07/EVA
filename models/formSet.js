@@ -94,9 +94,22 @@ const FormSet = {
   },
   // create: (data) => db("form_set").insert(data),
 
+  getFormsByAdmin: () => {
+  return db("form_set")
+    .select("*")
+    .then((results) => {
+      return results;
+    })
+    .catch((error) => {
+      console.error("Error en getAll:", error);
+      throw error;
+    });
+},
+
   create: async (data) => {
     try {
-      const date = getDateTimeForSQL(); // Genera la fecha actual
+      const date = getDateTimeForSQL();
+
       const [id] = await db("form_set").insert({
         title: data.title,
         description: data.description,
@@ -105,9 +118,10 @@ const FormSet = {
         state: 1,
         idClient: data.idClient,
       });
+
       return { id, ...data };
     } catch (error) {
-      console.error("Error al insertar datos");
+      console.error("Error al insertar datos:", error);
       throw error;
     }
   },

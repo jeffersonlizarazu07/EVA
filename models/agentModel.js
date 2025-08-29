@@ -22,11 +22,11 @@ const Agent = {
         "u.last_visit_date",
         "u.language",
         "u.registration_date"
-      )
+      );
 
-    return agentes.map(agent => ({
+    return agentes.map((agent) => ({
       ...agent,
-      registration_date: new Date(agent.registration_date).toLocaleDateString()  // "YYYY-MM-DD" Formateo la fecha de registro a un formato legible
+      registration_date: new Date(agent.registration_date).toLocaleDateString(), // "YYYY-MM-DD" Formateo la fecha de registro a un formato legible
     }));
   },
 
@@ -35,6 +35,40 @@ const Agent = {
     return await db("users")
       .where({ id, type: 4 }) // Valido que sea agente
       .first();
+  },
+
+  getAgentsByAdmin: async (adminId) => {
+    // Paso 1: Obtener agentes únicos
+    const agents = await db("users")
+      .where("users.type", 4)
+      .join("user_clients as uc_agents", "users.id", "uc_agents.idUser")
+      .whereIn("uc_agents.idClient", function () {
+        this.select("idClient").from("user_clients").where("idUser", adminId);
+      })
+      .distinct()
+      .select(
+        "users.id",
+        "users.firstname",
+        "users.lastname",
+        "users.type",
+        "users.state",
+        "users.user_red"
+      );
+
+    // Paso 2: Para cada agente, obtener sus clientes
+    for (let agent of agents) {
+      const clients = await db("user_clients")
+        .join("clients", "user_clients.idClient", "clients.id")
+        .where("user_clients.idUser", agent.id)
+        .whereIn("user_clients.idClient", function () {
+          this.select("idClient").from("user_clients").where("idUser", adminId);
+        })
+        .select("clients.client");
+
+      agent.clientNames = clients.map((c) => c.client).join(", ");
+    }
+
+    return agents;
   },
 };
 
