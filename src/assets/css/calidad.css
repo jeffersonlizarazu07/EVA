@@ -26,6 +26,7 @@ section .container {
   border: 2px solid rgb(199, 14, 143);
   border-radius: 35px;
 }
+/* === Estilos generales para todas las tarjetas === */
 .card1,
 .card2,
 .card3 {
@@ -37,46 +38,48 @@ section .container {
   color: white !important;
   border: 2px solid rgb(199, 14, 143) !important;
   margin-bottom: 5%;
+  transition: all 0.3s ease-in-out;
 }
-.card-blackshadow:hover {
-  box-shadow: rgba(255, 255, 255, 0.808) 0px 5px 25px;
-}
+
+/* === Background por tarjeta === */
 .card1 {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
-    url("../img/imagen4slide3.jpg") !important;
-  background-size: 100% 100%;
-  background-size: cover;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), 
+                    url("../img/imagen4slide3.jpg") !important;
 }
-.card1:hover {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("../img/imagen4slide3.jpg") !important;
-  border: none !important;
-  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
-}
+
 .card2 {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
-    url("../img/imagen5 slide 3.jpg") !important;
-  background-size: 100% 100%;
-  background-size: cover;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), 
+                    url("../img/imagen5 slide 3.jpg") !important;
 }
-.card2:hover {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("../img/imagen5 slide 3.jpg") !important;
-  border: none !important;
-  box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
-}
+
 .card3 {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
-    url("../img/imagen6 slide 3.jpg") !important;
-  background-size: 100% 100%;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), 
+                    url("../img/imagen6 slide 3.jpg") !important;
 }
+
+/* === Hover generalizado para tarjetas (usando background base) === */
+.card1:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), 
+                    url("../img/imagen4slide3.jpg") !important;
+}
+
+.card2:hover {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), 
+                    url("../img/imagen5 slide 3.jpg") !important;
+}
+
 .card3:hover {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("../img/imagen6 slide 3.jpg") !important;
-  background-size: 100% 100%;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)), 
+                    url("../img/imagen6 slide 3.jpg") !important;
+}
+
+.card1:hover,
+.card2:hover,
+.card3:hover {
   border: none !important;
   box-shadow: rgba(255, 255, 255, 0.808) 0px 0px 5px;
 }
+
 .outstanding-card,
 .outstanding-card-black {
   background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)),
@@ -99,19 +102,11 @@ section .container {
   background-size: cover;
   background-repeat: no-repeat;
   border-radius: 35px !important;
-  
- width: 100% !important;
+  width: 100% !important;
   margin-left: 0 !important;
   height: 35vh !important;
   color: white !important;
   border: 2px solid rgb(199, 14, 143) !important;
-}
-
-.outstanding-card77:hover {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
-    url("/src/assets/img/imagen7 slide4.jpg") !important;
-  border: none !important;
-  box-shadow: rgba(0, 0, 0, 0.705) 0px 5px 25px;
 }
 
 .outstanding-card77:hover {

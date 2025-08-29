@@ -778,7 +778,7 @@ const FormReport = () => {
                     {/* clientes*/}
                     <FormControl
                       required
-                      sx={{ minWidth: "10%" }}
+                      sx={{ minWidth: "16%" }}
                       className="readOnlyField"
                     >
                       <InputLabel id="demo-simple-select-label">
@@ -809,7 +809,7 @@ const FormReport = () => {
                     {/* vista formularios */}
                     <FormControl
                       required
-                      sx={{ minWidth: "15%" }}
+                      sx={{ minWidth: "16%" }}
                       className="readOnlyField"
                     >
                       <InputLabel>{t("survey.form")}</InputLabel>
@@ -906,14 +906,14 @@ const FormReport = () => {
                         label={t("reports.fecha_inicio")}
                         value={startDate}
                         onChange={handleStartDateChange}
-                        sx={{ width: "15%" }}
+                        sx={{ width: "19%" }}
                       />
                       <DatePicker
                         className="readOnlyField"
                         label={t("reports.fecha_fin")}
                         value={endDate}
                         onChange={handleEndDateChange}
-                        sx={{ width: "15%" }}
+                        sx={{ width: "19%" }}
                       />
                     </LocalizationProvider>
 

@@ -12,16 +12,18 @@ import { getSurveys } from "../../services/surveyRequest";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
-  Box,
   Container,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
   List,
   ListItem,
   Link,
+
+    Box,
+    MenuItem,
+    Button,
+    Typography,
+    Card,
+    CardContent,
+    Grid,
 } from "@mui/material";
 
 const Satisfaction = () => {
@@ -33,6 +35,7 @@ const Satisfaction = () => {
   const [surveys, setSurveys] = useState("");
   const [topSurveys, setTopSurveys] = useState([]);
   const [topForm, setTopForm] = useState([]);
+   const [viewMode, setViewMode] = useState("grid");
 
   useEffect(() => {
     const fetchTopSurveys = async () => {
@@ -110,488 +113,514 @@ const Satisfaction = () => {
   const currentDate = new Date();
 
   return (
-    <Box sx={{ overflow: "hidden" }}>
-      <Box>
+    <Box sx={{ position: "relative" }}>
+      <Box sx={{ position: "relative", zIndex: 1 }}>
         {userType == "1" || userType == 1 ? <HeaderLT1 /> : <HeaderLT2 />}
-        <Box>
-          <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
-            <Grid container sx={{ mt: 6 }} justifyContent="center">
+        <section>
+          <Grid
+            container
+            sx={{
+              mt: { xs: 5, sm: 6, md: 7, lg: 8 },  // margen arriba reducido (antes 10,12,14,16)
+              ml: { xs: 0, sm: 0, md: 1, lg: 4 },  // margen izquierda reducido (antes 2,8)
+              px: { xs: 0.25, sm: 1, md: 1, lg: 4 }, // padding horizontal reducido (antes 0.5,2,8)
+              justifyContent: "center",
+            }}
+          >
+            <Grid container spacing={2}>
               {/* <!-- OPCION  MODO GRID  --> */}
-              <Box
-                className="cards-group text-center"
+              {viewMode === "grid" && (
+              <Grid
+                item
+                xs={12}
+                md={9}
+                lg={9}
+                className="cards-group "
                 id="grid-mode"
-                style={{ display: "block" }}
-                sx={{ width: { xs: "100%", md: "70%", lg: "60%" } }}
+                sx={{ padding: 2 }}
               >
-                <Grid margin={3}>
-                  <Typography
-                    variant="h4"
-                    sx={{ textAlign: "left", fontWeight: "bold", mb: 1 }}
-                  >
-                    {t("satisfactionSite.Survey_system")}
-                  </Typography>
-                  <Grid
-                    container
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <Grid item>
-                      <Typography variant="h6">{surveys}</Typography>
-                    </Grid>
-                    <Grid item>
-                      <Typography variant="h5">
-                        {formatDate(currentDate)}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                  <Grid
-                    container
-                    justifyContent="space-between"
-                    sx={{ mb: 0, display: { lg: "flex" } }}
-                  >
-                    <Grid item>
-                      <Typography variant="h6" className="cardElement">
-                        {t("satisfactionSite.Total_Surveys")}
-                      </Typography>
-                    </Grid>
-                    <Grid item>
-                      <Box sx={{ display: "flex" }}>
-                        <Button
-                          className="btn btn-option-view"
-                          onClick={toggleListMode}
+                <Grid spacing={1} m={3}>
+                  <Grid container spacing={2}>
+                    {/* Encabezado con título a la izquierda y fecha a la derecha */}
+                    <Grid item xs={12}>
+                      <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        sx={{ width: "100%" }}
+                      >
+                        {/* Título */}
+                        <Typography
                           sx={{
-                            width: 40,
-                            height: 40,
-                            minWidth: 0,
-                            padding: 0,
-                            borderRadius: "8px",
-                            color: "#000000",
+                            fontWeight: "bold",
+                            fontSize: {
+                              xs: "1.5rem",
+                              md: "1.8rem",
+                              lg: "2rem",
+                            },
                           }}
+                          className="tituloCardGroup"
                         >
-                          <i className="fa-solid fa-list" id="lista"></i>
-                        </Button>
-                        <Button
-                          className="btn btn-option-view"
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            minWidth: 0,
-                            padding: 0,
-                            borderRadius: "8px",
-                            color: "#000000",
-                          }}
+                          {t("satisfactionSite.Survey_system")}
+                        </Typography>
+                        {/* Fecha */}
+                        <Box
+                          display="flex"
+                          flexDirection="column"
+                          alignItems="flex-end"
                         >
-                          <i className="fa-solid fa-border-all" id="grid"></i>
-                        </Button>
+                          <Typography
+                            className="date fechaCardGroup"
+                            variant="h5"
+                            sx={{
+                              mt: { xs: 0, md: 0, lg: 1 }, // Ajusta según tu necesidad
+                            }}
+                          >
+                            {formatDate(currentDate)}
+                          </Typography>
+
+                          {/* Botones debajo de la fecha */}
+                          <Box mt={1}>
+                            <Button
+                              className={`btn btn-option-view${
+                                viewMode === "list" ? " active" : ""
+                              }`}
+                              onClick={() => setViewMode("list")}
+                              sx={{ color: "#000" }}
+                            >
+                              <i className="fa-solid fa-list" />
+                            </Button>
+                            <Button
+                              className={`btn btn-option-view${
+                                viewMode === "grid" ? " active" : ""
+                              }`}
+                              onClick={() => setViewMode("grid")}
+                              sx={{ color: "#000" }}
+                            >
+                              <i className="fa-solid fa-border-all" />
+                            </Button>
+                          </Box>
+                        </Box>
                       </Box>
                     </Grid>
                   </Grid>
+
+                  <Grid container spacing={2} sx={{ flexWrap: "nowrap" }}>
+                    {/* Encuestas de satisfacción */}
+                    <Grid item sx={{ textAlign: "center", whiteSpace: "nowrap", flexShrink: 0 }}>
+                      <Typography variant="h6" sx={{ color: "#666", display: "inline" }}>
+                        {t("satisfactionSite.Total_Surveys")}:{" "}
+                        <Box
+                          component="span"
+                          sx={{ color: "#b62a8b", fontWeight: "bold", fontSize: "1.5rem" }}
+                        >
+                          {surveys || 0}
+                        </Box>
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
                 </Grid>
 
                 <Grid
                   container
-                  sx={{ textAlign: "center" }}
-                  spacing={3}
-                  justifyContent="center"
+                  spacing={2}
+                  sx={{
+                    textAlign: "center",
+                    display: "flex",
+                    justifyContent: "center",
+                    p: 2,
+                  }}
                 >
-                  <Grid item xs={12} md={5} lg={5}>
+                  {/* Card 4 */}
+                  <Grid item xs lg>
                     <Card className="card card4">
-                      <CardContent sx={{ display: "grid" }}>
-                        <Grid container>
-                          <Grid item xs={12} mt={2}>
-                            <Typography>
-                              {t("satisfactionSite.FinalUserSurveys")}
-                            </Typography>
+                      <CardContent
+                        sx={{ display: "grid" }}
+                        className="card-body "
+                      >
+                        <Grid container spacing={2}>
+                          <Grid
+                            item
+                            xs={12}
+                            md={12}
+                            lg={12}
+                            className="card-title"
+                          >
+                            <span>{t("satisfactionSite.FinalUserSurveys")}</span>
                           </Grid>
                         </Grid>
-                        <Grid container>
-                          <Grid item xs={12} mt={8}>
-                            <Typography variant="h5" className="card-text">
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={12} lg={12}>
+                            <Typography className="card-text" variant="h4">
                               {t("satisfactionSite.Surveys")}
                             </Typography>
                           </Grid>
                         </Grid>
                         <Grid
                           container
-                          mt={6}
+                          spacing={2}
                           sx={{
+                            display: "flex",
                             alignItems: "flex-start",
-                            justifyContent: "center",
+                            justifyContent: "flex-start",
+                            mb: 2,
+                            mt: 3
                           }}
                         >
-                          <Grid item className="card-second-text">
-                            <Typography>
-                              {t("satisfaction.gestionar_encuestas")}
-                            </Typography>
+                          <Grid item xs className="card-second-text">
+                            <span>{t("satisfaction.gestionar_encuestas")}</span>
                           </Grid>
                         </Grid>
-                        <Grid container justifyContent="center" mt={8}>
-                          <Grid item>
-                            <Link href="/survey_list" underline="none">
-                              <Button
-                                sx={{
-                                  color: "#fff",
-                                  height: 30, // más delgado
-                                  minWidth: 250, // texto blanco
-                                  border: "1px solid #fff", // borde blanco
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  display: "flex",
-                                  textAlign: "center",
-                                  fontSize: 12,
-                                }}
-                              >
-                                {t("satisfactionSite.visualizar_encuestas")}
-                              </Button>
-                            </Link>
+                        <Grid container spacing={2} className="button-container">
+                          <Grid item xs={12} md={12} lg={12}>
+                            <Button
+                              className="card-btn check"
+                              sx={{
+                                color: "#ffffff",
+                                border: "1px solid #ffffff",
+                                borderRadius: "15px",
+                              }}
+                              onClick={() => navigate("/survey_list")}
+                            >
+                              {t("satisfactionSite.visualizar_encuestas")}
+                            </Button>
                           </Grid>
                         </Grid>
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={12} md={5} lg={5}>
+                  {/* Card 5 */}
+                  <Grid item xs lg>
                     <Card className="card card5">
-                      <CardContent sx={{ display: "grid" }}>
-                        <Grid container>
-                          <Grid item xs={12} mt={2}>
-                            <Typography>
-                              {t(
-                                "satisfactionSite.GenerateGraphsAndSurveyReport"
-                              )}
-                            </Typography>
+                      <CardContent
+                        sx={{ display: "grid" }}
+                        className="card-body"
+                      >
+                        <Grid container spacing={2}>
+                          <Grid
+                            item
+                            xs={12}
+                            md={12}
+                            lg={12}
+                            className="card-title"
+                          >
+                            <span>
+                              {t("satisfactionSite.GenerateGraphsAndSurveyReport")}
+                            </span>
                           </Grid>
                         </Grid>
-                        <Grid container>
-                          <Grid item xs={12} mt={8}>
-                            <Typography
-                              variant="h5"
-                              className="card-text w-100 m-0 p-0"
-                              sx={{ width: "100%", margin: 0, padding: 0 }}
-                            >
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={12} lg={12}>
+                            <Typography className="card-text" variant="h4">
                               {t("satisfactionSite.SurveyReport")}
                             </Typography>
                           </Grid>
                         </Grid>
                         <Grid
                           container
-                          mt={6}
+                          spacing={2}
                           sx={{
+                            display: "flex",
                             alignItems: "flex-start",
-                            justifyContent: "center",
+                            justifyContent: "flex-start",
+                            mb: 2,
                           }}
                         >
-                          <Grid item className="card-second-text">
-                            <Typography>
-                              {t("satisfactionSite.Generate_report")}
-                            </Typography>
+                          <Grid item xs className="card-second-text">
+                            <span>{t("satisfactionSite.Generate_report")}</span>
                           </Grid>
                         </Grid>
-                        <Grid container justifyContent="center" mt={8}>
-                          <Grid item>
-                            <Link href="./reports" underline="none">
-                              <Button
-                                sx={{
-                                  color: "#fff",
-                                  height: 30, // más delgado
-                                  minWidth: 250, // texto blanco
-                                  border: "1px solid #fff", // borde blanco
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  display: "flex",
-                                  textAlign: "center",
-                                  fontSize: 12,
-                                }}
-                              >
-                                {t("satisfactionSite.GenerateGraphs")}
-                              </Button>
-                            </Link>
+                        <Grid container spacing={2} className="button-container">
+                          <Grid item xs={12} md={12} lg={12}>
+                            <Button
+                              className="card-btn check"
+                              sx={{
+                                color: "#ffffff",
+                                border: "1px solid #ffffff",
+                                borderRadius: "15px",
+                              }}
+                              onClick={() => navigate("/reports")}
+                            >
+                              {t("satisfactionSite.GenerateGraphs")}
+                            </Button>
                           </Grid>
                         </Grid>
                       </CardContent>
                     </Card>
                   </Grid>
                 </Grid>
-              </Box>
-              {/* <!-- OPCION  MODO GRID  --> */}
+              </Grid>
+              )}
 
-              {/* <!-- OPCION MODO LISTA --> */}
-              <Box
-                className="cards-group text-center"
-                id="list-mode"
-                style={{ display: "none" }}
-                sx={{ width: { xs: "100%", md: "70%", lg: "60%" } }}
-              >
-                <Grid margin={3}>
-                  <Typography
-                    variant="h4"
-                    sx={{ textAlign: "left", fontWeight: "bold", mb: 1 }}
-                  >
-                    {t("satisfactionSite.Survey_system")}
-                  </Typography>
-                  <Grid
-                    container
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <Grid item>
-                      <Typography variant="h6">{surveys}</Typography>
-                    </Grid>
-                    <Grid item>
-                      <Typography variant="h5">
-                        {formatDate(currentDate)}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                  <Grid
-                    container
-                    justifyContent="space-between"
-                    sx={{ mb: 0, display: { lg: "flex" } }}
-                  >
-                    <Grid item>
-                      <Typography variant="h6" className="cardElement">
-                        {t("satisfactionSite.Total_Surveys")}
-                      </Typography>
-                    </Grid>
-                    <Grid item>
-                      <Box sx={{ display: "flex" }}>
-                        <Button
-                          className="btn btn-option-view active"
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            minWidth: 0, // evita que MUI le dé un ancho mínimo por defecto
-                            padding: 0,
-                            borderRadius: "8px", // o '50%' si lo quieres circular
-                            color: "#000000",
-                            mr: 1,
-                          }}
-                        >
-                          <i className="fa-solid fa-list" id="lista"></i>
-                        </Button>
-                        <Button
-                          className="btn btn-option-view"
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            minWidth: 0, // evita que MUI le dé un ancho mínimo por defecto
-                            padding: 0,
-                            borderRadius: "8px", // o '50%' si lo quieres circular
-                            color: "#000000",
-                          }}
-                          onClick={toggleGridMode}
-                        >
-                          <i className="fa-solid fa-border-all" id="grid"></i>
-                        </Button>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Grid>
-                {/* contenido */}
-                <Grid container>
-                  <Grid item xs={11} md={12}>
-                    <List sx={{ width: "96%", gap: 8 }}>
-                      <ListItem
-                        className="list-item item-4 listCards"
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Box sx={{ width: { xs: "50%", lg: "41.666667%" } }}>
-                          <Typography
-                            variant="h6"
-                            sx={{ color: "white", fontWeight: "bold" }}
-                          >
-                            {t("satisfactionSite.FinalUserSurveys")}
-                          </Typography>
-                        </Box>
+
+              {/* OPCION MODO LISTA */}
+              {viewMode === "list" && (
+                <Grid
+                  item
+                  xs={12}
+                  md={9}
+                  lg={9}
+                  className="cards-group"
+                  id="list-mode"
+                  sx={{ padding: 2 }}
+                >
+                  <Grid spacing={2} m={3}>
+                    <Grid container spacing={2}>
+                      {/* Encabezado con título a la izquierda y fecha + botones a la derecha */}
+                      <Grid item xs={12}>
                         <Box
-                          sx={{
-                            width: "16.666667%",
-                            marginLeft: 3,
-                            display: { xs: "none", lg: "block" },
-                          }}
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          sx={{ width: "100%" }}
                         >
+                          {/* Título */}
                           <Typography
-                            sx={{ color: "white", textAlign: "left" }}
-                          >
-                            {t("satisfaction.gestionar_encuestas")}
-                          </Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            width: "25%",
-                            display: "flex",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Button
                             sx={{
-                              color: "#fff",
-                              height: 30, // más delgado
-                              minWidth: 180, // texto blanco
-                              border: "1px solid #fff", // borde blanco
-                              alignItems: "center",
-                              justifyContent: "center",
-                              display: "flex",
-                              textAlign: "center",
-                              fontSize: 12,
+                              fontWeight: "bold",
+                              fontSize: {
+                                xs: "1.5rem",
+                                md: "1.8rem",
+                                lg: "2rem",
+                              },
                             }}
-                            onClick={() => navigate("/survey_list")}
+                            className="tituloCardGroup"
                           >
-                            {t("satisfactionSite.visualizar_encuestas")}
-                          </Button>
-                        </Box>
-                        <Box
-                          sx={{
-                            width: "8.333333%",
-                            display: { xs: "none", lg: "block" },
-                          }}
-                        ></Box>
-                      </ListItem>
-
-                      <ListItem
-                        className="list-item item-5 listCards"
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <Box sx={{ width: { xs: "50%", lg: "41.666667%" } }}>
-                          <Typography
-                            variant="h6"
-                            sx={{ color: "white", fontWeight: "bold" }}
-                          >
-                            {t(
-                              "satisfactionSite.GenerateGraphsAndSurveyReport"
-                            )}
+                            {t("satisfactionSite.Survey_system")}
                           </Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            width: "16.666667%",
-                            marginLeft: 3,
-                            display: { xs: "none", lg: "block" },
-                          }}
-                        >
-                          <Typography
-                            sx={{ color: "white", textAlign: "left" }}
-                          >
-                            {t("satisfactionSite.Generate_report")}
-                          </Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            width: "25%",
-                            display: "flex",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Button
-                            sx={{
-                              color: "#fff",
-                              height: 30, // más delgado
-                              minWidth: 180, // texto blanco
-                              border: "1px solid #fff", // borde blanco
-                              alignItems: "center",
-                              justifyContent: "center",
-                              display: "flex",
-                              textAlign: "center",
-                              fontSize: 12,
-                            }}
-                            onClick={() => navigate("/reports")}
-                          >
-                            {t("satisfactionSite.Generate_report")}
-                          </Button>
-                        </Box>
-                        <Box
-                          sx={{
-                            width: "8.333333%",
-                            display: { xs: "none", lg: "block" },
-                          }}
-                        ></Box>
-                      </ListItem>
-                    </List>
-                  </Grid>
-                </Grid>
-              </Box>
 
-              {/* <!-- OPCION MODO LISTA  --> */}
-              <Grid item xs={12} md={4} lg={3}>
-                <Card className="outstanding-card2 extern">
-                  <CardContent className="div-title">
-                    <Typography variant="h6" mt={3}>
-                      {t("satisfactionSite.encuestas_frecuentes")}
-                    </Typography>
-
-                    <Box sx={{ padding: 4 }}>
-                      {topSurveys.length === 0 ? (
-                        <Typography
-                          sx={{
-                            textAlign: "center",
-                            fontSize: "100%",
-                            padding: "30%",
-                          }}
-                        >
-                          Aún no hay encuestas contestadas
-                        </Typography>
-                      ) : (
-                        <List
-                          sx={{
-                            listStyle: "none",
-                            padding: 0,
-                            display: "flex",
-                            margin: 0,
-                            justifyContent: "center",
-                            flexDirection: "column",
-                            gap: 2,
-                          }}
-                        >
-                          {topSurveys.map((survey, index) => (
-                            <ListItem
-                              key={survey.survey_id || `survey-${index}`}
+                          {/* Fecha + botones */}
+                          <Box
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="flex-end"
+                          >
+                            <Typography
+                              className="date fechaCardGroup"
+                              variant="h5"
                               sx={{
-                                display: "inline-block",
-                                textAlign: "center",
-                                padding: 0,
+                                mt: { xs: 0, md: 0, lg: 1 },
                               }}
                             >
-                              <Link
-                                href={survey.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              {formatDate(currentDate)}
+                            </Typography>
+
+                            {/* Botones debajo de la fecha */}
+                            <Box mt={1}>
+                              <Button
+                                className={`btn btn-option-view${viewMode === "list" ? " active" : ""}`}
+                                onClick={() => setViewMode("list")}
+                                sx={{ color: "#000" }}
+                              >
+                                <i className="fa-solid fa-list" />
+                              </Button>
+                              <Button
+                                className={`btn btn-option-view${viewMode === "grid" ? " active" : ""}`}
+                                onClick={() => setViewMode("grid")}
+                                sx={{ color: "#000" }}
+                              >
+                                <i className="fa-solid fa-border-all" />
+                              </Button>
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    {/* Contenido */}
+                    <Grid container spacing={2} sx={{ flexWrap: "nowrap" }}>
+                      <Grid item sx={{ textAlign: "center", whiteSpace: "nowrap", flexShrink: 0 }}>
+                        <Typography variant="h6" sx={{ color: "#666", display: "inline" }}>
+                          {t("satisfactionSite.Total_Surveys")}:{" "}
+                          <Box
+                            component="span"
+                            sx={{ color: "#b62a8b", fontWeight: "bold", fontSize: "1.5rem" }}
+                          >
+                            {surveys || 0}
+                          </Box>
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+
+                  <Grid
+                    container
+                    spacing={2}
+                    className="list"
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      p: 2,
+                    }}
+                  >
+                    <Grid item xs={12}>
+                      <List sx={{ padding: 0, margin: 0, mb:18 }}>
+                        {/* List Item 1 */}
+                        <ListItem sx={{ padding: 3, mb: 5 }} className="list-item item-4">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              width: "100%",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <Box sx={{ flex: 1 }}>
+                              <Typography sx={{ color: "white", fontWeight: "bold" }} variant="h6">
+                                {t("satisfactionSite.FinalUserSurveys")}
+                              </Typography>
+                            </Box>
+
+                            <Box sx={{ display: { xs: "none", lg: "block" }, color: "white", mx: 2 }}>
+                              {t("satisfaction.gestionar_encuestas")}
+                            </Box>
+
+                            <Box>
+                              <Button
+                                className="card-btn"
+                                sx={{ color: "#ffffff", border: "1px solid #ffffff", borderRadius: "15px" }}
+                                onClick={() => navigate("/survey_list")}
+                              >
+                                {t("satisfactionSite.visualizar_encuestas")}
+                              </Button>
+                            </Box>
+                          </Box>
+                        </ListItem>
+
+                        {/* List Item 2 */}
+                        <ListItem sx={{ padding: 3, mb: 5 }} className="list-item item-5">
+                           <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                width: "100%",
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <Box sx={{ flex: 1 }}>
+                                <Typography sx={{ color: "white", fontWeight: "bold" }} variant="h6">
+                                  {t("satisfactionSite.GenerateGraphsAndSurveyReport")}
+                                </Typography>
+                              </Box>
+
+                              <Box sx={{ display: { xs: "none", lg: "block" }, color: "white", mx: 2 }}>
+                                {t("satisfactionSite.Generate_report")}
+                              </Box>
+
+                              <Box>
+                                <Button
+                                  className="card-btn"
+                                  sx={{ color: "#ffffff", border: "1px solid #ffffff", borderRadius: "15px" }}
+                                  onClick={() => navigate("/reports")}
+                                >
+                                  {t("satisfactionSite.Generate_report")}
+                                </Button>
+                              </Box>
+                            </Box>
+                        </ListItem>
+
+                      </List>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              )}
+
+
+
+
+              {/* <!-- OPCION MODO LISTA  --> */}
+              <Grid item xs={12} md={3} lg={3} sx={{ height: "100%" }}>
+                <Box
+                  sx={{
+                    pr: { xs: 1, md: 1 },
+                    pl: { xs: 2, md: 4 },
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: { xs: 2, md: 2 },
+                    height: "100%",
+                  }}
+                >
+
+                  <Card
+                    className="outstanding-card2 extern"
+                    sx={{ mb: 2, overflowX: "hidden", height: "100%", display: "flex", flexDirection: "column" }}
+                  >
+                    <CardContent
+                      className="card-body div-title"
+                      sx={{ flex: 1, display: "flex", flexDirection: "column", height: "100%" }}
+                    >
+                      <Typography
+                        variant="h7"
+                        sx={{
+                          textAlign: "left",
+                          fontWeight: "bold",
+                          marginRight: 3
+                        }}
+                      >
+                        {t("satisfactionSite.encuestas_frecuentes")}
+                      </Typography>
+
+                      <Grid spacing={2} sx={{ flex: 1, overflowY: "auto", mt:2 }}>
+                        <Box sx={{ width: "100%" }}>
+                          {topSurveys.length > 0 ? (
+                            topSurveys.map((survey, index) => (
+                              <Box
+                                key={survey.survey_id || `survey-${index}`}
                                 sx={{
-                                  textDecoration: "none",
-                                  color: "inherit",
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  mt: 1,
+                                  fontSize: 13,
+                                  paddingY: 0.5,
+                                  border: "1px solid #c4c4c4",
+                                  borderRadius: "10px",
+                                  p: 1,
                                 }}
                               >
-                                <Typography
-                                  component="strong"
-                                  sx={{ fontSize: "90%" }}
+                                <Link
+                                  href={survey.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    textDecoration: "none",
+                                    color: "inherit",
+                                    flexGrow: 1,
+                                  }}
                                 >
-                                  {survey.title}{" "}
-                                  {/* : {survey.encuestas_enviadas} */}
-                                </Typography>
-                              </Link>
-                            </ListItem>
-                          ))}
-                        </List>
-                      )}
-                    </Box>
+                                  <Typography component="strong" sx={{ fontSize: "90%" }}>
+                                    {survey.title}
+                                  </Typography>
+                                </Link>
+                              </Box>
+                            ))
+                          ) : (
+                            <MenuItem disabled sx={{ justifyContent: "center" }}>
+                              Aún no hay encuestas contestadas
+                            </MenuItem>
+                          )}
+                        </Box>
+                      </Grid>
 
-                    <Grid container>
-                      <Typography sx={{ textAlign: "left", fontSize: "120%" }}>
-                        {t(
-                          "satisfactionSite.Rate_the_quality_of_customer_service_being_provided_by_the_agent"
-                        )}
-                      </Typography>
-                    </Grid>
-                  </CardContent>
-                </Card>
+                      <Grid container>
+                        <Typography sx={{ textAlign: "left", fontSize: "120%", mt: 2 }}>
+                          {t(
+                            "satisfactionSite.Rate_the_quality_of_customer_service_being_provided_by_the_agent"
+                          )}
+                        </Typography>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Box>
               </Grid>
+
+
+
             </Grid>
-          </Container>
-        </Box>
+          </Grid>
+        </section>
       </Box>
     </Box>
   );
