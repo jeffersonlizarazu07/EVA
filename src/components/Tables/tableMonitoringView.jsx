@@ -59,7 +59,7 @@ const TableMonitoringView = ({
   // Filtro de clientes
   // Filtra por los formularios de clientes existentes en las monitorizaciones
   const clients = [...new Set(data.map((item) => item.client_name))];
-  const [selectedClient, setSelectedClient] = useState(""); // Cliente seleccionado en el filtro
+  const [selectedEvaluator, setSelectedEvaluator] = useState(""); // Evaluador seleccionado en el filtro
   //Modal
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -84,6 +84,8 @@ const TableMonitoringView = ({
     setPage(newPage);
   };
 
+  const evaluators = [...new Set(data.map((item) => item.evaluator_name))];
+
   const filteredData = Array.isArray(data)
     ? data.filter((item) => {
         const matchesSearch = Object.values(item).some(
@@ -92,12 +94,13 @@ const TableMonitoringView = ({
             val.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
-        const matchesClient =
-          !selectedClient || selectedClient === "none"
+        const matchesEvaluator =
+          !selectedEvaluator || selectedEvaluator === "none"
             ? true
-            : item.client_name?.toLowerCase() === selectedClient.toLowerCase();
+            : item.evaluator_name?.toLowerCase() ===
+              selectedEvaluator.toLowerCase();
 
-        return matchesSearch && matchesClient;
+        return matchesSearch && matchesEvaluator;
       })
     : [];
 
@@ -157,7 +160,7 @@ const TableMonitoringView = ({
     fetchMonitoring,
     viewType,
     updateSelectedRow,
-    updateDateCheck
+    updateDateCheck,
   };
 
   console.log("Esta es la data que envía la tabla", data);
@@ -167,8 +170,11 @@ const TableMonitoringView = ({
       {/* Buscador */}
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12}>
-          <Box display="flex" alignItems="center" gap={2}
-            sx={{ width: '100%', flexWrap: 'nowrap', mb: 2 }}
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={2}
+            sx={{ width: "100%", flexWrap: "nowrap", mb: 2 }}
           >
             {/* Botón volver */}
             {userInfo?.type !== 4 && (
@@ -244,13 +250,13 @@ const TableMonitoringView = ({
                 Seleccione un evaluador
               </InputLabel>
               <Select
-                value={selectedClient}
-                onChange={(e) => setSelectedClient(e.target.value)}
+                value={selectedEvaluator}
+                onChange={(e) => setSelectedEvaluator(e.target.value)}
               >
                 <MenuItem value=""></MenuItem>
-                {clients.map((client, index) => (
-                  <MenuItem key={index} value={client}>
-                    {client}
+                {evaluators.map((evaluator, index) => (
+                  <MenuItem key={index} value={evaluator}>
+                    {evaluator}
                   </MenuItem>
                 ))}
               </Select>
@@ -298,7 +304,6 @@ const TableMonitoringView = ({
           </Box>
         </Grid>
       </Grid>
-
 
       {/* Traer el nombre del agente al que pertenecen las monitorizaciones */}
       {data.length > 0 && (
