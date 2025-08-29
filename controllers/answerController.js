@@ -1,486 +1,722 @@
-
-const AnswersDTO = require('../dtos/answersDTO');
-const AnswerModel = require('../models/answerModel');
-const { createAnswer } =  require('../models/answerModel')
-const answerModel = new AnswerModel();  // Importamos el modelo
-const db = require('../config/db');
+const AnswersDTO = require("../dtos/answersDTO");
+const AnswerModel = require("../models/answerModel");
+const { createAnswer } = require("../models/answerModel");
+const answerModel = new AnswerModel(); // Importamos el modelo
+const db = require("../config/db");
 //const { check, validationResult } = require('express-validator');
-const { body, validationResult } = require('express-validator');
-const { check } = require('express-validator');
-
+const { body, validationResult } = require("express-validator");
+const { check } = require("express-validator");
 
 class AnswerController {
-
-    // Obtiene todas las respuestas
-    async  getAllAnswers(req, res) {
-        try {
-            // Llamamos al método getAll del modelo para obtener todas las respuestas
-            const answers = await answerModel.getAll();
-            // Enviamos la respuesta con los datos obtenidos
-            res.status(200).json({
-                success: true,
-                data: answers
-            });
-        } catch (error) {
-            console.error('Error al obtener respuestas:', error.message);
-            res.status(500).json({
-                success: false,
-                message: 'Hubo un error al obtener las respuestas'
-            });
-        }
+  // Obtiene todas las respuestas
+  async getAllAnswers(req, res) {
+    try {
+      // Llamamos al método getAll del modelo para obtener todas las respuestas
+      const answers = await answerModel.getAll();
+      // Enviamos la respuesta con los datos obtenidos
+      res.status(200).json({
+        success: true,
+        data: answers,
+      });
+    } catch (error) {
+      console.error("Error al obtener respuestas:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "Hubo un error al obtener las respuestas",
+      });
     }
-    
+  }
 
+  // Función para calcular el porcentaje
+  calculatePercentage(collection, total) {
+    return total > 0 ? (collection.length / total) * 100 : 0;
+  }
 
-    // Función para calcular el porcentaje
-    calculatePercentage(collection, total) {
-        return total > 0 ? (collection.length / total) * 100 : 0;
+  // Función para agrupar las respuestas por tipo de pregunta
+  groupAnswersByType(answers, type) {
+    const groupAnswers = answers.filter((answer) => answer.type === type);
+    const total = groupAnswers.length;
+
+    // Agrupar las respuestas por cada tipo de respuesta y calcular el porcentaje
+    const groupedPercentages = groupAnswers.reduce((acc, answer) => {
+      const key = answer.answer;
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Convertir los conteos a porcentajes
+    for (const key in groupedPercentages) {
+      groupedPercentages[key] = this.calculatePercentage(
+        [groupedPercentages[key]],
+        total
+      ); // Usamos `this` para acceder a calculatePercentage
     }
 
-    // Función para agrupar las respuestas por tipo de pregunta
-    groupAnswersByType(answers, type) {
-        const groupAnswers = answers.filter(answer => answer.type === type);
-        const total = groupAnswers.length;
+    return groupedPercentages;
+  }
 
-        // Agrupar las respuestas por cada tipo de respuesta y calcular el porcentaje
-        const groupedPercentages = groupAnswers.reduce((acc, answer) => {
-            const key = answer.answer;
-            acc[key] = (acc[key] || 0) + 1;
-            return acc;
+  // Controlador para obtener los porcentajes de respuestas
+  async percentageAnswer(req, res) {
+    try {
+      const answers = await AnswerModel.getAnswersWithQuestions(); /// AQUIIII models
+
+      // Calcular porcentajes por tipo de pregunta
+      const percentageZeroToTen = this.groupAnswersByType(
+        answers,
+        "range_zerototen"
+      );
+      const percentageYesNo = this.groupAnswersByType(answers, "yes_no");
+      const percentageRangeDifficulty = this.groupAnswersByType(
+        answers,
+        "range_difficulty"
+      );
+      const percentageOneToFive = this.groupAnswersByType(
+        answers,
+        "range_onetofive"
+      );
+
+      const response = {
+        status: 200,
+        message: "Porcentaje de respuestas obtenido correctamente.",
+        data: {},
+      };
+
+      if (Object.keys(percentageZeroToTen).length > 0) {
+        response.data.range_zerototen = percentageZeroToTen;
+      }
+      if (Object.keys(percentageYesNo).length > 0) {
+        response.data.yes_no = percentageYesNo;
+      }
+      if (Object.keys(percentageRangeDifficulty).length > 0) {
+        response.data.range_difficulty = percentageRangeDifficulty;
+      }
+      if (Object.keys(percentageOneToFive).length > 0) {
+        response.data.range_onetofive = percentageOneToFive;
+      }
+
+      res.status(200).json(response);
+    } catch (error) {
+      console.error(
+        "Error al obtener los porcentajes de las respuestas:",
+        error.message
+      );
+      res.status(500).json({
+        status: 500,
+        message: "Hubo un error al obtener los porcentajes de las respuestas.",
+      });
+    }
+  }
+
+  // Obtiene una respuesta por ID
+  async getAnswerById(req, res) {
+    const validarId = AnswersDTO.validarId(req.params.id);
+
+    if (!validarId.status) {
+      return res.status(400).json(validarId);
+    }
+
+    const { id } = req.params;
+    console.log(`id recibido: ${id}`);
+    try {
+      const answer = await answerModel.getById(id);
+      if (!answer) {
+        console.log("respuest encontrada", answer);
+        return res.status(404).json({
+          status: 404,
+          message: `La respuesta con el ID: ${id} no fue encontrada.`,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "Respuesta obtenida correctamente.",
+        data: answer,
+      });
+    } catch (error) {
+      console.error(`Error en getAnswerById: ${error.message}`);
+      return res
+        .status(500)
+        .json({ status: 500, message: "Error al obtener la respuesta." });
+    }
+  }
+
+  // Método para obtener respuestas por ID de pregunta
+  async answersByQuestion(req, res) {
+    const validarId = AnswersDTO.validarId(req.params.id);
+
+    if (!validarId.status) {
+      return res.status(400).json(validarId);
+    }
+
+    const { id } = req.params; // Obtiene el 'id' de la URL
+    console.log(
+      `ID recibido del front: ${id}. Se hará la consulta para question_id.`
+    );
+
+    // Validar si el ID es un número válido
+    if (isNaN(id)) {
+      return res.status(400).json({
+        status: 400,
+        message: "El ID de la pregunta debe ser un número válido.",
+      });
+    }
+
+    try {
+      // Llama al modelo para obtener las respuestas relacionadas con la pregunta
+      const answers = await AnswerModel.getAnswersByQuestionId(id);
+      console.log("Respuestas obtenidas:", answers);
+
+      if (!answers || answers.length === 0) {
+        return res.status(404).json({
+          status: 404,
+          message: `No hay respuestas para la pregunta con ID: ${id}.`,
+        });
+      }
+
+      return res.status(200).json({
+        status: 200,
+        message: "Respuestas obtenidas correctamente.",
+        data: answers,
+      });
+    } catch (error) {
+      console.error(
+        `Error al obtener respuestas para la pregunta con ID ${id}: ${error.message}`
+      );
+
+      return res.status(500).json({
+        status: 500,
+        message: "Error al obtener las respuestas.",
+        error: error.message,
+      });
+    }
+  }
+
+  // Método para obtener los porcentajes de respuestas por tipo de pregunta
+  async answersByQuestionPercentage(req, res) {
+    const validarId = AnswersDTO.validarId(req.params.id);
+
+    if (!validarId.status) {
+      return res.status(400).json(validarId);
+    }
+
+    const { id } = req.params; // Obtiene el ID de la pregunta desde los parámetros de la URL
+    console.log(`ID de la pregunta recibido: ${id}`); // Log del ID recibido
+
+    try {
+      // Obtiene las respuestas para la pregunta con el ID proporcionado
+      console.log("Obteniendo respuestas para la pregunta...");
+      const answers = await AnswerModel.getAnswersWithQuestionDetails(id);
+      console.log(`Respuestas obtenidas: ${JSON.stringify(answers)}`); // Log de las respuestas obtenidas
+
+      // Si no se encuentran respuestas, devuelve un mensaje de error
+      if (answers.length === 0) {
+        console.log(
+          `No se encontraron respuestas para la pregunta con ID: ${id}`
+        ); // Log si no hay respuestas
+        return res.status(404).json({
+          status: 404,
+          message: `No hay respuestas para la pregunta con el ID: ${id}.`,
+        });
+      }
+
+      // Función para calcular el porcentaje de un conjunto de respuestas
+      const calculatePercentage = (collection, total) => {
+        const percentage = total > 0 ? (collection.length / total) * 100 : 0; // Evita dividir por cero
+        console.log(
+          `Porcentaje calculado: ${percentage}% para ${collection.length} respuestas de ${total} total`
+        ); // Log del porcentaje
+        return percentage;
+      };
+
+      // Función para agrupar las respuestas por tipo y calcular el porcentaje para cada tipo
+      const groupAnswersByType = (type) => {
+        // Filtra las respuestas por el tipo de pregunta
+        const groupedAnswers = answers.filter((answer) => answer.type === type);
+        const total = groupedAnswers.length;
+
+        console.log(`Agrupando respuestas de tipo ${type}...`); // Log de agrupación
+        console.log(`Total de respuestas para el tipo ${type}: ${total}`); // Log del total por tipo
+
+        // Agrupa las respuestas por el valor de 'answer' y calcula el porcentaje
+        const result = groupedAnswers.reduce((acc, answer) => {
+          acc[answer.answer] = (acc[answer.answer] || 0) + 1; // Contar las respuestas por cada valor
+          return acc;
         }, {});
 
-        // Convertir los conteos a porcentajes
-        for (const key in groupedPercentages) {
-            groupedPercentages[key] = this.calculatePercentage([groupedPercentages[key]], total); // Usamos `this` para acceder a calculatePercentage
+        // Calcula el porcentaje para cada valor de respuesta
+        for (const key in result) {
+          result[key] = calculatePercentage([result[key]], total); // Llama a la función para calcular el porcentaje
         }
 
-        return groupedPercentages;
+        console.log(
+          `Resultado agrupado para el tipo ${type}: ${JSON.stringify(result)}`
+        ); // Log de las respuestas agrupadas
+        return result;
+      };
+
+      // Calcula los porcentajes para diferentes tipos de preguntas
+      console.log("Calculando porcentajes para los tipos de preguntas...");
+      const percentageZeroToTen = groupAnswersByType("range_zerototen");
+      const percentageYesNo = groupAnswersByType("yes_no");
+      const percentageRangeDifficulty = groupAnswersByType("range_difficulty");
+      const percentageOneToFive = groupAnswersByType("range_onetofive");
+
+      // Prepara la respuesta final
+      let response = {
+        status: 200,
+        message: "Porcentaje de respuestas obtenido correctamente.",
+        data: {},
+      };
+
+      let percentages = {};
+
+      if (Object.keys(percentageZeroToTen).length > 0) {
+        percentages["range_zerototen"] = percentageZeroToTen;
+        console.log(
+          `Porcentaje para 'range_zerototen': ${JSON.stringify(
+            percentageZeroToTen
+          )}`
+        ); // Log de 'range_zerototen'
+      }
+      if (Object.keys(percentageYesNo).length > 0) {
+        percentages["yes_no"] = percentageYesNo;
+        console.log(
+          `Porcentaje para 'yes_no': ${JSON.stringify(percentageYesNo)}`
+        ); // Log de 'yes_no'
+      }
+      if (Object.keys(percentageRangeDifficulty).length > 0) {
+        percentages["range_difficulty"] = percentageRangeDifficulty;
+        console.log(
+          `Porcentaje para 'range_difficulty': ${JSON.stringify(
+            percentageRangeDifficulty
+          )}`
+        ); // Log de 'range_difficulty'
+      }
+      if (Object.keys(percentageOneToFive).length > 0) {
+        percentages["range_onetofive"] = percentageOneToFive;
+        console.log(
+          `Porcentaje para 'range_onetofive': ${JSON.stringify(
+            percentageOneToFive
+          )}`
+        ); // Log de 'range_onetofive'
+      }
+
+      if (Object.keys(percentages).length > 0) {
+        response.data = {
+          question: answers[0].question, // Agrega la pregunta
+          percentages: percentages, // Agrega los porcentajes calculados
+        };
+        console.log("Datos de respuesta preparados para la respuesta final"); // Log antes de devolver la respuesta
+      } else {
+        response = {
+          status: 404,
+          message: "No hay respuestas asociadas a la pregunta consultada",
+        };
+        console.log("No se encontraron respuestas con porcentajes."); // Log si no hay respuestas con porcentajes
+      }
+
+      // Devuelve la respuesta en formato JSON
+      return res.status(200).json(response);
+    } catch (error) {
+      console.error(
+        `Error al obtener los porcentajes de respuestas para la pregunta con ID ${id}: ${error.message}`
+      );
+      return res.status(500).json({
+        status: 500,
+        message: "Error al obtener los porcentajes de las respuestas.",
+      });
     }
+  }
 
-    // Controlador para obtener los porcentajes de respuestas
-    async percentageAnswer(req, res) {
-        try {
-            const answers = await AnswerModel.getAnswersWithQuestions(); /// AQUIIII models
+  //  Función para calcular puntaje por pregunta
 
-            // Calcular porcentajes por tipo de pregunta
-            const percentageZeroToTen = this.groupAnswersByType(answers, 'range_zerototen');
-            const percentageYesNo = this.groupAnswersByType(answers, 'yes_no');
-            const percentageRangeDifficulty = this.groupAnswersByType(answers, 'range_difficulty');
-            const percentageOneToFive = this.groupAnswersByType(answers, 'range_onetofive');
+  //  Controlador principal
+  async scoreXSurvey(req, res) {
+    function calcularPuntaje(type, answer, option, selected_answer) {
+      if (!answer || answer.trim() === "") return 0;
 
-            const response = {
-                status: 200,
-                message: 'Porcentaje de respuestas obtenido correctamente.',
-                data: {}
-            };
+      answer = answer.trim();
+      option = option ? option.trim() : "";
+      selected_answer = selected_answer ? selected_answer.trim() : "";
 
-            if (Object.keys(percentageZeroToTen).length > 0) {
-                response.data.range_zerototen = percentageZeroToTen;
-            }
-            if (Object.keys(percentageYesNo).length > 0) {
-                response.data.yes_no = percentageYesNo;
-            }
-            if (Object.keys(percentageRangeDifficulty).length > 0) {
-                response.data.range_difficulty = percentageRangeDifficulty;
-            }
-            if (Object.keys(percentageOneToFive).length > 0) {
-                response.data.range_onetofive = percentageOneToFive;
-            }
-
-            res.status(200).json(response);
-        } catch (error) {
-            console.error('Error al obtener los porcentajes de las respuestas:', error.message);
-            res.status(500).json({
-                status: 500,
-                message: 'Hubo un error al obtener los porcentajes de las respuestas.'
-            });
+      if (type === "yes_no") {
+        if (answer === "0") {
+          return 0;
         }
+
+        if (
+          option === "" ||
+          selected_answer === "" ||
+          selected_answer === " "
+        ) {
+          return 100;
+        }
+        const opciones = option.split(",").map((o) => o.trim());
+        const correctIndex = selected_answer
+          .split(",")
+          .map((i) => parseInt(i.trim(), 10));
+        const correctAnswers = correctIndex.map((idx) => opciones[idx]);
+        return correctAnswers.includes(answer) ? 100 : 0;
+      }
+
+      if (option === "" || selected_answer === "" || selected_answer === " ") {
+        return 100;
+      }
+
+      if (type === "check_opt" || type === "radio_opt") {
+        const opciones = option.split(",").map((o) => o.trim());
+        const correctIndex = selected_answer
+          .split(",")
+          .map((i) => parseInt(i.trim(), 10));
+        const correctAnswers = correctIndex.map((idx) => opciones[idx]);
+        const respuestasUsuario = answer.split(",").map((a) => a.trim());
+        let aciertos = 0;
+        respuestasUsuario.forEach((r) => {
+          if (correctAnswers.includes(r)) aciertos++;
+        });
+        return (aciertos / correctAnswers.length) * 100;
+      }
+
+      return 100;
     }
+    try {
+      const answers = await answerModel.getAnswersBySurveyScore();
+      const agrupado = {};
 
-    // Obtiene una respuesta por ID
-    async getAnswerById(req, res) {
-        const validarId = AnswersDTO.validarId(req.params.id);
-
-        if(!validarId.status){
-            return res.status(400).json(validarId);
+      answers.forEach((i) => {
+        const key = i.survey_id;
+        if (!agrupado[key]) {
+          agrupado[key] = {
+            survey_id: i.survey_id,
+            title: i.title,
+            link: i.link,
+            questions: [],
+          };
         }
 
-        const { id } = req.params;
-        console.log(`id recibido: ${id}`);
-        try {
-            const answer = await answerModel.getById(id);
-            if (!answer) {
-                console.log('respuest encontrada', answer)
-                return res.status(404).json({ status: 404, message: `La respuesta con el ID: ${id} no fue encontrada.` });
-            }
-            return res.status(200).json({ status: 200, message: "Respuesta obtenida correctamente.", data: answer });
-        } catch (error) {
-            console.error(`Error en getAnswerById: ${error.message}`);
-            return res.status(500).json({ status: 500, message: "Error al obtener la respuesta." });
-        }
-    }
+        agrupado[key].questions.push({
+          question_id: i.question_id,
+          type: i.type,
+          answer: i.answer,
+          question: i.question,
+          option: i.select_option,
+          selected_answer: i.selected_answer,
 
-    // Método para obtener respuestas por ID de pregunta
-        async answersByQuestion(req, res) {
-            const validarId = AnswersDTO.validarId(req.params.id);
+          score: calcularPuntaje(
+            i.type,
+            i.answer,
+            i.select_option,
+            i.selected_answer
+          ),
+        });
+      });
 
-            if(!validarId.status){
-                return res.status(400).json(validarId);
-            }
+      Object.values(agrupado).forEach((survey) => {
+        //  Agrupar por question_id
+        const preguntasAgrupadas = {};
+        survey.questions.forEach((q) => {
+          if (!preguntasAgrupadas[q.question_id]) {
+            preguntasAgrupadas[q.question_id] = [];
+          }
+          preguntasAgrupadas[q.question_id].push(q.score);
+        });
 
-            const { id } = req.params;  // Obtiene el 'id' de la URL
-            console.log(`ID recibido del front: ${id}. Se hará la consulta para question_id.`);
+        //  Calcular promedio por question_id
+        const promediosPorPregunta = Object.values(preguntasAgrupadas).map(
+          (scores) => {
+            const suma = scores.reduce((a, b) => a + b, 0);
+            return suma / scores.length;
+          }
+        );
 
-            // Validar si el ID es un número válido
-            if (isNaN(id)) {
-                return res.status(400).json({
-                    status: 400,
-                    message: "El ID de la pregunta debe ser un número válido."
-                });
-            }
+        //  Final score como promedio de promedios
+        const totalScore = promediosPorPregunta.reduce((a, b) => a + b, 0);
+        survey.final_score =
+          promediosPorPregunta.length > 0
+            ? parseFloat((totalScore / promediosPorPregunta.length).toFixed(2))
+            : 0;
+      });
 
-            try {
-                // Llama al modelo para obtener las respuestas relacionadas con la pregunta
-                const answers = await AnswerModel.getAnswersByQuestionId(id);
-                console.log('Respuestas obtenidas:', answers);
+      const resultado = Object.values(agrupado).map((x) => {
+        // Agrupar datos para mostrar solo una entrada por question_id
+        const preguntasUnicas = Object.values(
+          x.questions.reduce((acc, q) => {
+            if (!acc[q.question_id]) {
+              acc[q.question_id] = {
+                question_id: q.question_id,
+                type: q.type,
+                answer: q.answer,
+                question: q.question,
+                option: q.option,
+                selected_answer: q.selected_answer,
 
-                if (!answers || answers.length === 0) {
-                    return res.status(404).json({
-                        status: 404,
-                        message: `No hay respuestas para la pregunta con ID: ${id}.`
-                    });
-                }
-
-                return res.status(200).json({
-                    status: 200,
-                    message: "Respuestas obtenidas correctamente.",
-                    data: answers
-                });
-            } catch (error) {
-                console.error(`Error al obtener respuestas para la pregunta con ID ${id}: ${error.message}`);
-
-                return res.status(500).json({
-                    status: 500,
-                    message: "Error al obtener las respuestas.",
-                    error: error.message
-                });
-            }
-        }
-
-        // Método para obtener los porcentajes de respuestas por tipo de pregunta
-    async answersByQuestionPercentage(req, res) {
-        const validarId = AnswersDTO.validarId(req.params.id);
-
-        if(!validarId.status){
-            return res.status(400).json(validarId);
-        }
-
-        const { id } = req.params;  // Obtiene el ID de la pregunta desde los parámetros de la URL
-        console.log(`ID de la pregunta recibido: ${id}`); // Log del ID recibido
-
-        try {
-            // Obtiene las respuestas para la pregunta con el ID proporcionado
-            console.log('Obteniendo respuestas para la pregunta...');
-            const answers = await AnswerModel.getAnswersWithQuestionDetails(id);
-            console.log(`Respuestas obtenidas: ${JSON.stringify(answers)}`); // Log de las respuestas obtenidas
-
-            // Si no se encuentran respuestas, devuelve un mensaje de error
-            if (answers.length === 0) {
-                console.log(`No se encontraron respuestas para la pregunta con ID: ${id}`); // Log si no hay respuestas
-                return res.status(404).json({
-                    status: 404,
-                    message: `No hay respuestas para la pregunta con el ID: ${id}.`
-                });
-            }
-
-            // Función para calcular el porcentaje de un conjunto de respuestas
-            const calculatePercentage = (collection, total) => {
-                const percentage = total > 0 ? (collection.length / total) * 100 : 0;  // Evita dividir por cero
-                console.log(`Porcentaje calculado: ${percentage}% para ${collection.length} respuestas de ${total} total`); // Log del porcentaje
-                return percentage;
-            };
-
-            // Función para agrupar las respuestas por tipo y calcular el porcentaje para cada tipo
-            const groupAnswersByType = (type) => {
-                // Filtra las respuestas por el tipo de pregunta
-                const groupedAnswers = answers.filter(answer => answer.type === type);
-                const total = groupedAnswers.length;
-
-                console.log(`Agrupando respuestas de tipo ${type}...`); // Log de agrupación
-                console.log(`Total de respuestas para el tipo ${type}: ${total}`); // Log del total por tipo
-
-                // Agrupa las respuestas por el valor de 'answer' y calcula el porcentaje
-                const result = groupedAnswers.reduce((acc, answer) => {
-                    acc[answer.answer] = (acc[answer.answer] || 0) + 1;  // Contar las respuestas por cada valor
-                    return acc;
-                }, {});
-
-                // Calcula el porcentaje para cada valor de respuesta
-                for (const key in result) {
-                    result[key] = calculatePercentage([result[key]], total); // Llama a la función para calcular el porcentaje
-                }
-
-                console.log(`Resultado agrupado para el tipo ${type}: ${JSON.stringify(result)}`); // Log de las respuestas agrupadas
-                return result;
-            };
-
-            // Calcula los porcentajes para diferentes tipos de preguntas
-            console.log('Calculando porcentajes para los tipos de preguntas...');
-            const percentageZeroToTen = groupAnswersByType('range_zerototen');
-            const percentageYesNo = groupAnswersByType('yes_no');
-            const percentageRangeDifficulty = groupAnswersByType('range_difficulty');
-            const percentageOneToFive = groupAnswersByType('range_onetofive');
-
-            // Prepara la respuesta final
-            let response = {
-                status: 200,
-                message: 'Porcentaje de respuestas obtenido correctamente.',
-                data: {}
-            };
-
-            let percentages = {};
-
-            if (Object.keys(percentageZeroToTen).length > 0) {
-                percentages['range_zerototen'] = percentageZeroToTen;
-                console.log(`Porcentaje para 'range_zerototen': ${JSON.stringify(percentageZeroToTen)}`); // Log de 'range_zerototen'
-            }
-            if (Object.keys(percentageYesNo).length > 0) {
-                percentages['yes_no'] = percentageYesNo;
-                console.log(`Porcentaje para 'yes_no': ${JSON.stringify(percentageYesNo)}`); // Log de 'yes_no'
-            }
-            if (Object.keys(percentageRangeDifficulty).length > 0) {
-                percentages['range_difficulty'] = percentageRangeDifficulty;
-                console.log(`Porcentaje para 'range_difficulty': ${JSON.stringify(percentageRangeDifficulty)}`); // Log de 'range_difficulty'
-            }
-            if (Object.keys(percentageOneToFive).length > 0) {
-                percentages['range_onetofive'] = percentageOneToFive;
-                console.log(`Porcentaje para 'range_onetofive': ${JSON.stringify(percentageOneToFive)}`); // Log de 'range_onetofive'
-            }
-
-            if (Object.keys(percentages).length > 0) {
-                response.data = {
-                    question: answers[0].question,  // Agrega la pregunta
-                    percentages: percentages  // Agrega los porcentajes calculados
-                };
-                console.log('Datos de respuesta preparados para la respuesta final'); // Log antes de devolver la respuesta
+                p: q.score,
+              };
             } else {
-                response = {
-                    status: 404,
-                    message: "No hay respuestas asociadas a la pregunta consultada"
-                };
-                console.log('No se encontraron respuestas con porcentajes.'); // Log si no hay respuestas con porcentajes
+              // Si hay varias, actualizar p como el promedio
+              acc[q.question_id].p = (acc[q.question_id].p + q.score) / 2;
             }
+            return acc;
+          }, {})
+        );
 
-            // Devuelve la respuesta en formato JSON
-            return res.status(200).json(response);
+        return {
+          title: x.title,
+          score_questions: preguntasUnicas,
 
-        } catch (error) {
-            console.error(`Error al obtener los porcentajes de respuestas para la pregunta con ID ${id}: ${error.message}`);
-            return res.status(500).json({
-                status: 500,
-                message: "Error al obtener los porcentajes de las respuestas."
-            });
-        }
+          final_score: x.final_score,
+          link: x.link,
+        };
+      });
+
+      res.json(resultado);
+    } catch (error) {
+      console.error("Error en scoreXSurvey:", error.message);
+      throw error;
+    }
+  }
+
+  // Controlador para obtener los porcentajes de respuestas por encuesta
+  async percentagesXSurvey(req, res) {
+    const validarId = AnswersDTO.validarId(req.params.id);
+
+    if (!validarId.status) {
+      return res.status(400).json(validarId);
     }
 
+    const validarFecha = AnswersDTO.validateDates(req.query);
+    if (!validarFecha.status) {
+      return res.status(400).json(validarFecha);
+    }
 
-        // Controlador para obtener los porcentajes de respuestas por encuesta
-        async percentagesXSurvey(req, res) {
-            const validarId = AnswersDTO.validarId(req.params.id);
+    const { id } = req.params;
+    const { startDate, endDate } = req.query; // Obtenemos las fechas del query params
 
-            if(!validarId.status){
-                return res.status(400).json(validarId);
-            }
+    try {
+      console.log(
+        `Iniciando cálculo de porcentajes para la encuesta con ID: ${id}`
+      );
+      console.log(`Rango de fechas: Desde ${startDate} hasta ${endDate}`);
 
-            const validarFecha = AnswersDTO.validateDates(req.query);
-            if(!validarFecha.status){
-                return res.status(400).json(validarFecha);
-            }
+      const answerModel = new AnswerModel(); // Instanciamos el modelo
+      const answers = await answerModel.getAnswersBySurvey(
+        id,
+        startDate,
+        endDate
+      ); // Obtenemos las respuestas
 
-            const { id } = req.params;
-            const { startDate, endDate } = req.query; // Obtenemos las fechas del query params
-        
-            try {
-                console.log(`Iniciando cálculo de porcentajes para la encuesta con ID: ${id}`);
-                console.log(`Rango de fechas: Desde ${startDate} hasta ${endDate}`);
-                
-                const answerModel = new AnswerModel();  // Instanciamos el modelo
-                const answers = await answerModel.getAnswersBySurvey(id, startDate, endDate); // Obtenemos las respuestas
-        
-                if (answers.length === 0) {
-                    console.log('No se encontraron respuestas para la encuesta con ID:', id);
-                    return res.status(404).json({
-                        status: 404,
-                        message: "No hay respuestas asociadas a la encuesta consultada"
-                    });
-                }
-        
-                console.log(`Total de respuestas obtenidas: ${answers.length}`);
-        
-                // Filtramos para obtener solo preguntas válidas basándonos en 'question_id'
-                const questions = [...new Set(answers.filter(answer => answer.question_id).map(answer => answer.question_id))];
-                console.log('Preguntas encontradas:', questions);
-        
-                if (questions.length === 0) {
-                    console.log('No se encontraron preguntas válidas');
-                    return res.status(404).json({
-                        status: 404,
-                        message: "No hay preguntas válidas asociadas a las respuestas"
-                    });
-                }
-        
-                const groupedResults = {};
-        
-                // Aquí, suponiendo que tienes una tabla de preguntas, buscamos los detalles de la pregunta
-               // Consulta para obtener los detalles de las preguntas
-                const questionDetails = await db('questions').whereIn('id', questions).select('id', 'question', 'type');
+      if (answers.length === 0) {
+        console.log(
+          "No se encontraron respuestas para la encuesta con ID:",
+          id
+        );
+        return res.status(404).json({
+          status: 404,
+          message: "No hay respuestas asociadas a la encuesta consultada",
+        });
+      }
 
-        
-                // Convertimos el array de detalles de preguntas en un objeto para acceso rápido
-                const questionDetailsMap = questionDetails.reduce((acc, question) => {
-                    acc[question.id] = question;
-                    return acc;
-                }, {});
-        
-                console.log('-- de preguntas obtenidos:', questionDetailsMap);
-                // Agrupamos y calculamos los porcentajes por tipo de respuesta
-                for (const question_id of questions) {
-                    console.log(`Procesando la pregunta con ID: ${question_id}`);
-                    const questionDetail = questionDetailsMap[question_id];
-                    if (!questionDetail) continue;
+      console.log(`Total de respuestas obtenidas: ${answers.length}`);
 
-                    const { type, question } = questionDetail;
+      // Filtramos para obtener solo preguntas válidas basándonos en 'question_id'
+      const questions = [
+        ...new Set(
+          answers
+            .filter((answer) => answer.question_id)
+            .map((answer) => answer.question_id)
+        ),
+      ];
+      console.log("Preguntas encontradas:", questions);
 
-                    let data = [];
-                    let labels = [];
+      if (questions.length === 0) {
+        console.log("No se encontraron preguntas válidas");
+        return res.status(404).json({
+          status: 404,
+          message: "No hay preguntas válidas asociadas a las respuestas",
+        });
+      }
 
-                    // Agrupar según el tipo de la pregunta
-                    let result = {};
-                    switch (type) {
-                        case 'range_zerototen':
-                            result = answerModel.groupAnswersByType(answers, 'range_zerototen', question_id);
-                            break;
-                        case 'yes_no':
-                            result = answerModel.groupAnswersByType(answers, 'yes_no', question_id);
-                            break;
-                        case 'range_difficulty':
-                            result = answerModel.groupAnswersByType(answers, 'range_difficulty', question_id);
-                            break;
-                        case 'range_onetofive':
-                            result = answerModel.groupAnswersByType(answers, 'range_onetofive', question_id);
-                            break;
-                        case 'textfield_s':
-                            result = answerModel.groupAnswersByType(answers, 'textfield_s', question_id);
-                            break;
-                        case 'radio_opt':
-                            result = answerModel.groupAnswersByType(answers, 'radio_opt', question_id);
-                            break;
-                        case 'check_opt':
-                            result = answerModel.groupAnswersByType(answers, 'check_opt', question_id);
-                            break;
-                        case 'range_emoji':
-                            result = answerModel.groupAnswersByType(answers, 'range_emoji', question_id);
-                            break;
-                        default:
-                            console.log(`Tipo no soportado: ${type}`);
-                            continue;
-                    }
+      const groupedResults = {};
 
-                    if (Object.keys(result).length > 0) {
-                        data.push(result);
-                        labels = Object.keys(result);
-                    }
+      // Aquí, suponiendo que tienes una tabla de preguntas, buscamos los detalles de la pregunta
+      // Consulta para obtener los detalles de las preguntas
+      const questionDetails = await db("questions")
+        .whereIn("id", questions)
+        .select("id", "question", "type");
 
-                    groupedResults[question_id] = {
-                        type: type,
-                        name: question,
-                        data: data,
-                        labels: labels
-                    };
-                }
+      // Convertimos el array de detalles de preguntas en un objeto para acceso rápido
+      const questionDetailsMap = questionDetails.reduce((acc, question) => {
+        acc[question.id] = question;
+        return acc;
+      }, {});
 
-                return res.status(200).json({
-                    status: 200,
-                    message: "Porcentaje de respuestas obtenido correctamente.",
-                    data: groupedResults
-                });
-            } catch (error) {
-                console.error('Error al calcular los porcentajes de la encuesta:', error.message);
-                return res.status(500).json({
-                    status: 500,
-                    message: "Error al obtener los porcentajes de las respuestas."
-                });
-            }
+      console.log("-- de preguntas obtenidos:", questionDetailsMap);
+      // Agrupamos y calculamos los porcentajes por tipo de respuesta
+      for (const question_id of questions) {
+        console.log(`Procesando la pregunta con ID: ${question_id}`);
+        const questionDetail = questionDetailsMap[question_id];
+        if (!questionDetail) continue;
+
+        const { type, question } = questionDetail;
+
+        let data = [];
+        let labels = [];
+
+        // Agrupar según el tipo de la pregunta
+        let result = {};
+        switch (type) {
+          case "range_zerototen":
+            result = answerModel.groupAnswersByType(
+              answers,
+              "range_zerototen",
+              question_id
+            );
+            break;
+          case "yes_no":
+            result = answerModel.groupAnswersByType(
+              answers,
+              "yes_no",
+              question_id
+            );
+            break;
+          case "range_difficulty":
+            result = answerModel.groupAnswersByType(
+              answers,
+              "range_difficulty",
+              question_id
+            );
+            break;
+          case "range_onetofive":
+            result = answerModel.groupAnswersByType(
+              answers,
+              "range_onetofive",
+              question_id
+            );
+            break;
+          case "textfield_s":
+            result = answerModel.groupAnswersByType(
+              answers,
+              "textfield_s",
+              question_id
+            );
+            break;
+          case "radio_opt":
+            result = answerModel.groupAnswersByType(
+              answers,
+              "radio_opt",
+              question_id
+            );
+            break;
+          case "check_opt":
+            result = answerModel.groupAnswersByType(
+              answers,
+              "check_opt",
+              question_id
+            );
+            break;
+          case "range_emoji":
+            result = answerModel.groupAnswersByType(
+              answers,
+              "range_emoji",
+              question_id
+            );
+            break;
+          default:
+            console.log(`Tipo no soportado: ${type}`);
+            continue;
         }
 
-
-    
-        // Controlador para manejar el post de respuestas
-        async postAnswer(req, res) {
-            try {
-                //console.log("Datos recibidos en req.body:", req.body);
-        
-                // Validación combinada (array y no vacío)
-                // if (!Array.isArray(req.body) || req.body.length === 0) {
-                //     return res.status(400).json({
-                //         status: 400,
-                //         message: 'El campo answer es requerido'
-                //     });
-                // }      
-
-                const validarAnswer = await AnswersDTO.validateAnswers(req.body);
-                if(!validarAnswer.status){
-                    return res.status(400).json(validarAnswer);
-                }
-        
-                console.log("---respuesta hacia el modeleo", req.body);
-                // Crear una nueva respuesta
-                const result = await answerModel.createAnswer(req.body);
-                
-                //console.log("Resultado de la inserción:", result);
-                
-                if (!result.success) {
-                    throw new Error(result.message);
-                }
-                // const date = req.body.date || new Date().toISOString();
-                
-                // const newAnswer = {
-                //     id: result,
-                //     survey_id: req.body.survey_id,
-                //     answer: req.body.answer,
-                //     question_id: req.body.question_id,
-                //     date: date
-                // };
-                
-                const newAnswers = result.insertedAnswers;
-
-                console.log("Respuesta creada exitosamente:", newAnswers);
-        
-                res.status(201).json({
-                status: 201,
-                message: 'Respuestas creadas exitosamente',
-                answers: newAnswers
-            });
-                            // res.status(201).json({
-                //     status: 201,
-                //     message: 'Respuesta creada exitosamente',
-                //     answer: newAnswer
-                // });
-            } catch (error) {
-                console.error("Error al crear la respuesta:", error);
-                res.status(500).json({
-                    status: 500,
-                    message: 'Error al crear la respuesta',
-                    error: error.message
-                });
-            }
+        if (Object.keys(result).length > 0) {
+          data.push(result);
+          labels = Object.keys(result);
         }
 
+        groupedResults[question_id] = {
+          type: type,
+          name: question,
+          data: data,
+          labels: labels,
+        };
+      }
 
+      return res.status(200).json({
+        status: 200,
+        message: "Porcentaje de respuestas obtenido correctamente.",
+        data: groupedResults,
+      });
+    } catch (error) {
+      console.error(
+        "Error al calcular los porcentajes de la encuesta:",
+        error.message
+      );
+      return res.status(500).json({
+        status: 500,
+        message: "Error al obtener los porcentajes de las respuestas.",
+      });
+    }
+  }
 
+  // Controlador para manejar el post de respuestas
+  async postAnswer(req, res) {
+    try {
+      //console.log("Datos recibidos en req.body:", req.body);
 
-        
-    /*async putAnswer(req, res) {
+      // Validación combinada (array y no vacío)
+      // if (!Array.isArray(req.body) || req.body.length === 0) {
+      //     return res.status(400).json({
+      //         status: 400,
+      //         message: 'El campo answer es requerido'
+      //     });
+      // }
+
+      const validarAnswer = await AnswersDTO.validateAnswers(req.body);
+      if (!validarAnswer.status) {
+        return res.status(400).json(validarAnswer);
+      }
+
+      console.log("---respuesta hacia el modeleo", req.body);
+      // Crear una nueva respuesta
+      const result = await answerModel.createAnswer(req.body);
+
+      //console.log("Resultado de la inserción:", result);
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      // const date = req.body.date || new Date().toISOString();
+
+      // const newAnswer = {
+      //     id: result,
+      //     survey_id: req.body.survey_id,
+      //     answer: req.body.answer,
+      //     question_id: req.body.question_id,
+      //     date: date
+      // };
+
+      const newAnswers = result.insertedAnswers;
+
+      console.log("Respuesta creada exitosamente:", newAnswers);
+
+      res.status(201).json({
+        status: 201,
+        message: "Respuestas creadas exitosamente",
+        answers: newAnswers,
+      });
+      // res.status(201).json({
+      //     status: 201,
+      //     message: 'Respuesta creada exitosamente',
+      //     answer: newAnswer
+      // });
+    } catch (error) {
+      console.error("Error al crear la respuesta:", error);
+      res.status(500).json({
+        status: 500,
+        message: "Error al crear la respuesta",
+        error: error.message,
+      });
+    }
+  }
+
+  /*async putAnswer(req, res) {
         const id = req.params.id; // Obtenemos el ID desde los parámetros de la URL
         const { answer, question_id } = req.body;
 
@@ -521,50 +757,76 @@ class AnswerController {
             });
         }
     }*/
-        async updateAnswer(req, res) {
-            const validarId = AnswersDTO.validarId(req.params.id);
+  async updateAnswer(req, res) {
+    const validarId = AnswersDTO.validarId(req.params.id);
 
-            if(!validarId.status){
-                return res.status(400).json(validarId);
-            }
-
-            const { id } = req.params; // Asumiendo que el id se pasa en los parámetros de la URL
-            const data = req.body; // Los nuevos datos que se deben actualizar
-        
-            try {
-                const result = await answerModel.update(id, data);
-                
-                if (result === 0) { // Si no se actualizó ninguna fila
-                    return res.status(404).json({ message: 'error al actualizar' });
-                }
-        
-                return res.status(200).json({ message: 'actualizada con exito' });
-            } catch (error) {
-                return res.status(500).json({ message: error.message });
-            }
-        }
-
-    // Elimina una respuesta
-    async deleteAnswer(req, res) {
-        const validarId = AnswerModel.validarId(req.params.id);
-
-        if(!validarId.status){
-            return res.status(400).json(validarId);
-        }
-        
-        const { id } = req.params;
-        try {
-            const deleted = await answerModel.delete(id);
-            if (deleted === 0) {
-                return res.status(404).json({ status: 404, message: `La respuesta con el ID: ${id} no fue encontrada.` });
-            }
-            return res.status(200).json({ status: 200, message: "Respuesta eliminada correctamente." });
-        } catch (error) {
-            console.error(`Error en deleteAnswer: ${error.message}`);
-            return res.status(500).json({ status: 500, message: "Error al eliminar la respuesta." });
-        }
+    if (!validarId.status) {
+      return res.status(400).json(validarId);
     }
 
+    const { id } = req.params; // Asumiendo que el id se pasa en los parámetros de la URL
+    const data = req.body; // Los nuevos datos que se deben actualizar
+
+    try {
+      const result = await answerModel.update(id, data);
+
+      if (result === 0) {
+        // Si no se actualizó ninguna fila
+        return res.status(404).json({ message: "error al actualizar" });
+      }
+
+      return res.status(200).json({ message: "actualizada con exito" });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  // Elimina una respuesta
+  async deleteAnswer(req, res) {
+    const validarId = AnswerModel.validarId(req.params.id);
+
+    if (!validarId.status) {
+      return res.status(400).json(validarId);
+    }
+
+    const { id } = req.params;
+    try {
+      const deleted = await answerModel.delete(id);
+      if (deleted === 0) {
+        return res.status(404).json({
+          status: 404,
+          message: `La respuesta con el ID: ${id} no fue encontrada.`,
+        });
+      }
+      return res
+        .status(200)
+        .json({ status: 200, message: "Respuesta eliminada correctamente." });
+    } catch (error) {
+      console.error(`Error en deleteAnswer: ${error.message}`);
+      return res
+        .status(500)
+        .json({ status: 500, message: "Error al eliminar la respuesta." });
+    }
+  }
+
+  async getAnswersByRangesController(req, res) {
+  try {
+    console.log("🚀 Consultando respuestas globales por rangos...");
+    const results = await answerModel.getAnswersByRanges();
+
+    return res.json({
+      status: true,
+      data: results,
+    });
+  } catch (error) {
+    console.error("❌ Error al obtener respuestas por rangos:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Error interno del servidor",
+      error: error.message, // 🔥 log más explícito
+    });
+  }
+}
 }
 
 module.exports = new AnswerController();

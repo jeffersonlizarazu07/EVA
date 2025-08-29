@@ -6,7 +6,7 @@ class BlockModel {
     this.table = "blocks"; // Nombre de la tabla en la base de datos
   }
 
-  async createBlock(data) {
+async createBlock(data) {
   if (
     data.form_id == null ||
     data.nombreBloque == null ||
@@ -15,7 +15,6 @@ class BlockModel {
     throw new Error("Faltan campos obligatorios");
   }
 
-  // Calcular la posición automáticamente si no viene
   if (data.position == null || data.position === '' || data.position === 0) {
     const maxPos = await this.knex(this.table)
       .where({ form_id: data.form_id })
@@ -26,14 +25,18 @@ class BlockModel {
   }
 
   try {
-    const [id] = await this.knex(this.table).insert({
-      form_id: data.form_id,
-      block_name: data.nombreBloque,
-      percentage: data.ponderacion,
-      block_location: data.position,
-    });
+    const [id] = await this.knex(this.table)
+      .insert({
+        form_id: data.form_id,
+        block_name: data.nombreBloque,
+        percentage: data.ponderacion,
+        block_location: data.position,
+      })
+      .returning('id');
 
-    return { id, ...data };
+    const blockId = typeof id === 'object' && id !== null && 'id' in id ? id.id : id;
+
+    return { id: blockId, ...data };
   } catch (error) {
     throw new Error(`Error al crear el bloque: ${error.message}`);
   }

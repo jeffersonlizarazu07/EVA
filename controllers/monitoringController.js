@@ -56,21 +56,68 @@ exports.getById = async (req, res) => {
   }
 };
 
+
+//
+exports.getByUserGeneral = async (req, res) => {
+  console.log("🚀 Entró al controlador getByUserGeneral");
+  
+  const { formularioParam,agenteParam, evaluadorParam, formattedStartDate,formattedEndDate } = req.params;
+  console.log("📥 Backend recibió agenteParam:", agenteParam);
+  console.log("📥 Backend recibió evaluadorParam:", evaluadorParam);
+  console.log("📥 Backend recibió formularioParam:", formularioParam);
+  console.log("📥 Backend recibió formattedStartDate:", formattedStartDate);
+  console.log("📥 Backend recibió formattedEndDate:", formattedEndDate);
+
+  try {
+    const result = await Monitoring.getByUserGeneral(formularioParam,agenteParam, evaluadorParam,formattedStartDate,formattedEndDate);
+
+    console.log("📊 Resultado completo de getByUserGeneral:", result);
+
+    const monitorings = result?.monitorings || [];
+    const stats = result?.stats || {};
+
+    const total_monitorings = stats?.total_monitorings ?? 0;
+    const average_score = Number(stats?.average_score ?? 0);
+
+    return res.status(200).json({
+      data: monitorings,
+      stats: {
+        total_monitorings,
+        average_score,
+      },
+    });
+  } catch (error) {
+    console.error("Error al obtener monitorizaciones del agente:", error);
+    return res.status(500).json({
+      message: "Error interno del servidor",
+    });
+  }
+};
+
+//
 exports.getByUserId = async (req, res) => {
-  const { userId } = req.params; // Obtener el userId desde la URL
+  console.log("🚀 Entró al controlador getByUserId");
+  const { userId } = req.params;
   console.log("📥 Backend recibió userId:", userId);
 
   try {
-    // Llamar al servicio que consulta las monitorizaciones
-    const data = await Monitoring.getByUserId(userId);
+    const result = await Monitoring.getByUserId(userId);
 
-    if (!data || data.length === 0) {
-      // Si no hay monitorizaciones asociadas al usuario
-      return res.status(200).json([]);
-    }
+    console.log("📊 Resultado completo de getByUserId:", result);
 
-    // Devolver las monitorizaciones
-    return res.status(200).json(data);
+    const monitorings = result?.monitorings || [];
+    const stats = result?.stats || {};
+
+    const total_monitorings = stats?.total_monitorings ?? 0;
+    const average_score = Number(stats?.average_score ?? 0);
+
+    return res.status(200).json({
+      data: monitorings,
+      stats: {
+        total_monitorings,
+        average_score,
+      },
+    });
   } catch (error) {
     console.error("Error al obtener monitorizaciones del agente:", error);
     return res.status(500).json({

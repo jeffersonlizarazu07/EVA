@@ -209,6 +209,24 @@ const SurveySet = {
         }            
     },
 
+    // Contar cuántas veces se ha respondido una encuesta (envíos únicos del formulario)
+    // Se considera un envío único por marca de tiempo EXACTA registrada en 'answers.date'
+    // porque todas las respuestas de una misma persona se insertan en la misma transacción con el mismo timestamp
+    getResponseCount: async (surveyId) => {
+        try {
+            const [row] = await db('answers as a')
+                .join('questions as q', 'a.question_id', 'q.id')
+                .where('q.survey_id', surveyId)
+                .countDistinct({ submission_count: 'a.date' });
+
+            const submissionCount = Number(row?.submission_count ?? 0);
+            return submissionCount;
+        } catch (error) {
+            console.error('Error al contar envíos de la encuesta:', error);
+            throw error;
+        }
+    },
+
     //lo de chezet
     copySurvey: async (idOriginalSurvey, link) => {
         if (!idOriginalSurvey || !link) { 

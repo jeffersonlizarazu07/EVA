@@ -104,9 +104,9 @@ exports.getResponseMult = async (req, res)=>{
 // obtener los reportes filtrados 
 
 exports.getReportFilter= async(req,res)=>{
-  const {fromId, starDate, endDate} = req.params
+  const {fromId, starDate, endDate, agente, evaluador} = req.params
   try {
-    const response = await AnswersFormModel.getReportFilter(fromId, starDate, endDate);
+    const response = await AnswersFormModel.getReportFilter(fromId, starDate, endDate, agente, evaluador);
     if(!response){
       return res.status(404).json({message:'Reporte no encontrada'})
     }

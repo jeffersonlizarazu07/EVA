@@ -6,15 +6,13 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 router.get('/surveys',authMiddleware, surveySetController.surveys);
 router.get('/survey/:id',authMiddleware, surveySetController.surveyByID);
-router.get('/clients/surveys', surveySetController.surveysxClients);
+router.get('/clients/surveys',authMiddleware, surveySetController.surveysxClients);
 router.post('/surveys',authMiddleware, surveySetController.postSurvey);
 router.put('/survey/:id?', authMiddleware,surveySetController.putSurvey);
 router.patch('/survey/:id?', authMiddleware,surveySetController.patchSurvey);
 router.delete('/survey/:id?',authMiddleware, surveySetController.deleteSurvey);
-router.get('/surveyByLink', authMiddleware, surveySetController.surveyByLink);
-
-//ruta para obtener las preguntas de una encuesta y responder
-router.get('/surveyByLink', authMiddleware, surveySetController.surveyByLink)
+//ruta para obtener las preguntas de una encuesta y responder (sin autenticación para encuestas públicas)
+router.get('/surveyByLink', surveySetController.surveyByLink)
 
 //ruta para obtener las encuestas asociadas a un usuario
 router.get('/surveys-user/:id?', authMiddleware, surveySetController.surveysByUser); 

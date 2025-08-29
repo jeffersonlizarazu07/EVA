@@ -3,7 +3,7 @@ const { getDateTimeForSQL } = require("../helpers/dateHelper");
 
 const User = {
   // Buscar usuario por su correo electrónico
-  findByEmail: async (email) => {
+  /*findByEmail: async (email) => {
     return await db("users")
       .where({ email })
       .select(
@@ -11,13 +11,12 @@ const User = {
         "firstname",
         "middlename",
         "lastname",
-        "email",
-        "password",
         "state",
-        "type"
+        "type",
+        "user_red"
       )
       .first(); // Solo el primero que coincida
-  },
+  },*/
 
   // Obtener los IDs de los clientes asociados a un usuario
   getClientIds: async (userId) => {
@@ -36,29 +35,28 @@ const User = {
         "firstname",
         "middlename",
         "lastname",
-        "email",
-        "password",
         "state",
         "type",
-        "language"
+        "language",
+        "user_red"
       )
       .first();
   },
 
   // Obtener todos los usuarios del sistema
   getAllUsers: async () => {
-    // return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'email', 'state', 'type', 'created_at', 'last_visit_date', 'language');
+    // return await db('users').select('id', 'firstname', 'middlename', 'lastname', 'state', 'type', 'created_at', 'last_visit_date', 'language');
     const users = await db("users").select(
       "id",
       "firstname",
       "middlename",
       "lastname",
-      "email",
       "state",
       "type",
       "last_visit_date",
       "language",
-      "registration_date"
+      "registration_date",
+      "user_red"
     );
     const usersWithFormattedDate = users.map((user) => ({
       ...user,
@@ -70,10 +68,31 @@ const User = {
     return usersWithFormattedDate; // Retorno los usuarios con la fecha formateada
   },
 
+  async getUsersByClientsAdmin(userId) {
+    try {
+      return await this.knex(this.table)
+        .join("user_clients as uc1", `${this.table}.id`, "uc1.idUser")
+        .join("user_clients as uc2", "uc1.idClient", "uc2.idClient")
+        .where("uc2.idUser", userId)
+        .distinct(`${this.table}.*`)
+        .select(`${this.table}.*`);
+    } catch (error) {
+      throw new Error(
+        `Error al obtener usuarios con clientes compartidos: ${error.message}`
+      );
+    }
+  },
+
   // Crear nuevo usuario
   createUser: async (userData) => {
-    const [newUserId] = await db("users").insert(userData); // Inserto y obtengo el ID del nuevo usuario
-    const newUser = await db("users").where({ id: newUserId }).first(); // Busco y retorno el nuevo usuario
+    // Inserta el nuevo usuario
+    await db("users").insert(userData);
+
+    // Recupera el usuario recién creado usando un campo único (user_red)
+    const newUser = await db("users")
+      .where({ user_red: userData.user_red })
+      .first();
+
     return newUser;
   },
 
@@ -127,6 +146,37 @@ const User = {
       throw error; // Lo relanzas para que el controlador lo capture
     }
   },
+
+  // Actualizar auth_provider para usuarios MSAL
+  updateAuthProvider: async (id, provider = "microsoft") => {
+    try {
+      const update = await db("users").where({ id }).update({
+        auth_provider: provider,
+        updated_at: getDateTimeForSQL(),
+      });
+      return update;
+    } catch (error) {
+      console.error("Error actualizando auth_provider:", error);
+      throw error;
+    }
+  },
+
+  // Buscar usuario por email y provider
+  /*findByEmailAndProvider: async (email, provider = 'local') => {
+    return await db("users")
+        .where({ email, auth_provider: provider })
+        .select(
+            "id",
+            "firstname", 
+            "middlename",
+            "lastname",
+            "state",
+            "type",
+            "auth_provider",
+            "user_red"
+        )
+        .first();
+  },*/
 };
 
 module.exports = User;

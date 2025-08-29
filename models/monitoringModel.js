@@ -44,27 +44,88 @@ const MonitoringModel = {
       .first();
   },
 
-  // Obtener monitorizaciones por agente
-  getByUserId: (userId) => {
-    return knex("monitoring")
+  // Obtener monitorizaciones general del  agente
+  getByUserGeneral: async (formularioParam,agenteParam, evaluadorParam,formattedStartDate,formattedEndDate) => {
+    // Parametros opcionales 
+    if (agenteParam === 'null') agenteParam = "";
+    if (evaluadorParam === 'null') evaluadorParam = "";
+    if (formularioParam === 'null') formularioParam = "";
+
+    let query = knex("monitoring")
       .join("form_set", "monitoring.id_form", "form_set.id")
       .join("clients", "form_set.idClient", "clients.id")
       .join("users", "monitoring.id_user_monitor", "users.id")
       .join("users as agent", "monitoring.id_user_agent", "agent.id")
       .select(
-        knex.raw("DATE_FORMAT(monitoring.date, '%d/%m/%Y %H:%i:%s') as monitoring_date"),
+        knex.raw("FORMAT(monitoring.date, 'yyyy-MM-dd HH:mm:ss') as monitoring_date"),
+        knex.raw("FORMAT(monitoring.check_date, 'yyyy-MM-dd HH:mm:ss') as check_FORMATted"),
+        "monitoring.*",
+        "form_set.title as form_title",
+        "clients.client as client_name",
+        knex.raw("(users.firstname + ' ' + users.lastname) as evaluator_name"),
+        knex.raw("(agent.firstname + ' ' + agent.lastname) as agent_name")
+      );
+
+
+      if (formularioParam && formularioParam.trim() !== '' && formularioParam !== '""') {
+          query = query.where("monitoring.id_form", formularioParam);
+      }
+      if (agenteParam && agenteParam.trim() !== '' && agenteParam !== '""') {
+          query = query.andWhere(knex.raw(`(agent.firstname + ' ' + agent.lastname)= ?`, [agenteParam]));
+      }
+      if (evaluadorParam && evaluadorParam.trim() !== '' && evaluadorParam !== '""') {
+          query = query.andWhere(knex.raw(`(users.firstname + ' ' + users.lastname)= ?`, [evaluadorParam]));
+      }
+          query = query.andWhereBetween('monitoring.date', [formattedStartDate, formattedEndDate]);
+
+    const monitorings = await query;
+
+    const stats = await knex("monitoring")
+      .select(
+        knex.raw("CAST(COUNT(*) AS INT) as total_monitorings"),
+        knex.raw("CAST(ISNULL(ROUND(AVG(score), 2), 0) AS FLOAT) as average_score")
+      )
+      .first();
+
+    return { monitorings, stats };
+  },
+
+  //
+
+
+  // Obtener monitorizaciones por agente
+  getByUserId: async (userId) => {
+    const monitorings = await knex("monitoring")
+      .join("form_set", "monitoring.id_form", "form_set.id")
+      .join("clients", "form_set.idClient", "clients.id")
+      .join("users", "monitoring.id_user_monitor", "users.id")
+      .join("users as agent", "monitoring.id_user_agent", "agent.id")
+      .select(
         knex.raw(
-          "DATE_FORMAT(monitoring.check_date, '%d/%m/%Y %H:%i:%s') as check_date_formatted"
+          "FORMAT(monitoring.date, 'yyyy-MM-dd HH:mm:ss') as monitoring_date"
+        ),
+        knex.raw(
+          "FORMAT(monitoring.check_date, 'yyyy-MM-dd HH:mm:ss') as check_formatted"
         ),
         "monitoring.*",
         "form_set.title as form_title",
         "clients.client as client_name",
-        knex.raw(
-          "CONCAT(users.firstname, ' ', users.lastname) as evaluator_name"
-        ),
-        knex.raw("CONCAT(agent.firstname, ' ', agent.lastname) as agent_name")
+        knex.raw("(users.firstname + ' ' + users.lastname) as evaluator_name"),
+        knex.raw("(agent.firstname + ' ' + agent.lastname) as agent_name")
       )
       .where("monitoring.id_user_agent", userId);
+
+    const stats = await knex("monitoring")
+      .where("id_user_agent", userId)
+      .select(
+        knex.raw("CAST(COUNT(*) AS INT) as total_monitorings"),
+        knex.raw(
+          "CAST(ISNULL(ROUND(AVG(score), 2), 0) AS FLOAT) as average_score"
+        )
+      )
+      .first();
+
+    return { monitorings, stats };
   },
 
   // Obtener monitorización estructurada por agente

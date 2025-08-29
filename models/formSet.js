@@ -5,39 +5,53 @@ const FormSet = {
   getAll: () => {
     try {
       return db("form_set")
-        .join("clients", "form_set.idClient", "=", "clients.id") // Relacionamos con la tabla de clientes
-        .join("users as creator", "form_set.created_by", "=", "creator.id") // Relacionamos con el creador
-        .leftJoin("users as updater", "form_set.updated_by", "=", "updater.id") // Relacionamos con el editor
-        .leftJoin("monitoring", "monitoring.id_form", "=", "form_set.id")
-        .groupBy("form_set.id")
+        .join("clients", "form_set.idClient", "clients.id")
+        .join("users as creator", "form_set.created_by", "creator.id")
+        .leftJoin("users as updater", "form_set.updated_by", "updater.id")
+        .leftJoin("monitoring", "monitoring.id_form", "form_set.id")
+        .groupBy(
+          "form_set.id",
+          "form_set.idClient",
+          "form_set.title",
+          "form_set.description",
+          "form_set.creation_date",
+          "form_set.updated_date",
+          "form_set.state",
+          "clients.client",
+          "creator.firstname",
+          "creator.lastname",
+          "updater.firstname",
+          "updater.lastname"
+        )
         .select(
-          "form_set.id", // Usamos 'id' en lugar de 'form_id'
-          "form_set.idClient", // Usamos 'idClient' en lugar de 'client_id'
-          "form_set.title", // Usamos 'title' en lugar de 'form_name'
-          "form_set.description", // Usamos 'description'
-          "form_set.creation_date", // Usamos 'creation_date'
-          "form_set.updated_date", // Usamos 'updated_date'
-          // Usamos la expresión CASE para transformar el valor de 'state' en texto
+          "form_set.id",
+          "form_set.idClient",
+          "form_set.title",
+          "form_set.description",
+          "form_set.creation_date",
+          "form_set.updated_date",
+          db.raw(`CASE 
+                  WHEN form_set.state = 1 THEN 'Activo' 
+                  WHEN form_set.state = 0 THEN 'Inactivo' 
+                  ELSE 'Desconocido' 
+                END as state`),
+          "clients.client as client_name",
           db.raw(
-            `CASE WHEN form_set.state = 1 THEN 'Activo' WHEN form_set.state = 0 THEN 'Inactivo' ELSE 'Desconocido' END as state`
-          ),
-          "clients.client as client_name", // Nombre del cliente
-          // Concatenamos el primer nombre y apellido del creador
-          db.raw(
-            'CONCAT(creator.firstname, " ", creator.lastname) as created_by_name'
-          ),
-          // Concatenamos el primer nombre y apellido del editor si existe
-          db.raw(
-            'IFNULL(DATE_FORMAT(updated_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as updated_date'
+            `(creator.firstname + ' ' + creator.lastname) as created_by_name`
           ),
           db.raw(
-            'IFNULL(DATE_FORMAT(creation_date, "%Y-%m-%d %H:%i:%s"), "No actualizada") as creation_date'
+            `ISNULL(FORMAT(form_set.updated_date, 'yyyy-MM-dd HH:mm:ss'), 'No actualizada') as formatted_updated_date`
           ),
-          // Concatenamos el primer nombre y apellido del editor si existe
           db.raw(
-            `IFNULL(CONCAT(updater.firstname, " ", updater.lastname), "No actualizada") as updated_by_name`
+            `ISNULL(FORMAT(form_set.creation_date, 'yyyy-MM-dd HH:mm:ss'), 'No actualizada') as formatted_creation_date`
           ),
-          db.raw(`COUNT(monitoring.id) as monitorings_number`)
+          db.raw(
+            `ISNULL((updater.firstname + ' ' + updater.lastname), 'No actualizada') as updated_by_name`
+          ),
+          db.raw(`COUNT(monitoring.id) as monitorings_number`),
+          db.raw(
+            `ISNULL(CAST(AVG(monitoring.score) AS DECIMAL(10,2)), 0.00) as average_score`
+          )
         );
     } catch (error) {
       console.error("Error al crear la respuesta:", error);
@@ -80,9 +94,22 @@ const FormSet = {
   },
   // create: (data) => db("form_set").insert(data),
 
+  getFormsByAdmin: () => {
+  return db("form_set")
+    .select("*")
+    .then((results) => {
+      return results;
+    })
+    .catch((error) => {
+      console.error("Error en getAll:", error);
+      throw error;
+    });
+},
+
   create: async (data) => {
     try {
-      const date = getDateTimeForSQL(); // Genera la fecha actual
+      const date = getDateTimeForSQL();
+
       const [id] = await db("form_set").insert({
         title: data.title,
         description: data.description,
@@ -91,9 +118,10 @@ const FormSet = {
         state: 1,
         idClient: data.idClient,
       });
+
       return { id, ...data };
     } catch (error) {
-      console.error("Error al insertar datos");
+      console.error("Error al insertar datos:", error);
       throw error;
     }
   },

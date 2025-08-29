@@ -2,12 +2,11 @@
 class UserDTO {
     
     static validateCreateUser(data) {
-        const { firstname, lastname, email, type, language, password } = data;
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const { firstname, lastname, type, language, user_red } = data;
         const allowedTypes = [1, 2, 3, 4];
 
         // Verifico que todos los campos obligatorios estén presentes
-        if (!firstname || !lastname || !email || !type || !language || !password) {
+        if (!firstname || !lastname || !type || !language) {
             return {status : false, message : "Todos los campos son obligatorios"};
         }
         
@@ -20,10 +19,6 @@ class UserDTO {
 
         if(typeof lastname !== 'string'){
             return {status : false, message : "El apellido debe ser un texto"};
-        }
-
-        if (typeof email !== 'string' || !emailRegex.test(email.trim()) ) {
-            return {status : false, message : "Debes ingresar un correo valido"};
         }
         
         if(isNaN(numType) || !Number.isInteger(numType)){
@@ -38,8 +33,11 @@ class UserDTO {
             return {status : false, message : "Debe ingresar un idioma valido"};
         }
 
-        if(typeof password !== 'string'){
-            return {status : false, message : "La contraseña tiene un formato invalido"};
+        // Validar user_red si está presente
+        if (user_red !== undefined && user_red !== null && user_red !== '') {
+            if(typeof user_red !== 'string'){
+                return {status : false, message : "El usuario de red debe ser un texto"};
+            }
         }
 
         return {status : true}
