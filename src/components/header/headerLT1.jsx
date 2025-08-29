@@ -65,7 +65,7 @@ const HeaderLT1 = () => {
   useEffect(() => {
     checkinfo();
     t;
-  });
+  },[]);
 
   useEffect(() => {
   console.log("userType en HeaderLT1:", userType, typeof userType);

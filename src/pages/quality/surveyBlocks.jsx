@@ -435,6 +435,7 @@ export default function SurveyBlocks({}) {
     setModalOpen(false);
   };
 
+  //Validar, crear o editar bloques y sus preguntas
   const validar = async (idToEdit, id_form) => {
     try {
       setError("");
