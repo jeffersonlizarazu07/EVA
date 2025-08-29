@@ -207,11 +207,11 @@ export const saveMonitoringAndAnswers = async (payload) => {
 
 // traer monitorizacion general de los agentes
 
-  export const getByUserGeneral = async (agenteParam, evaluadorParam) => {
+  export const getByUserGeneral = async (formularioParam,agenteParam, evaluadorParam, formattedStartDate,formattedEndDate) => {
   
   try {
     const response = await apiClient.get(
-      `/monitoring/users/general/${agenteParam}/${evaluadorParam}`,
+      `/monitoring/users/general/${formularioParam}/${agenteParam}/${evaluadorParam}/${formattedStartDate}/${formattedEndDate}`,
       config
     );
     console.log("Respuesta de la API:", response.data);
