@@ -26,6 +26,17 @@ import {
   Divider,
   Chip,
   Stack,
+
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Fade,
+  Alert,
+    
+} from '@mui/material';
+  Stack,
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -34,11 +45,15 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "../../components/hooks/useTranslations.jsx";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { keyframes } from "@emotion/react";
+
 
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
   const [modalOpen, setModalOpen] = useState(false); //estado del modal mui
+  
 
   // En el estado del componente añade:
   const [showEnvioModal, setShowEnvioModal] = useState(false);
@@ -113,6 +128,8 @@ const SurveyList = () => {
     if (userId && accessToken) {
       getClients(userId);
     }
+  }, [userId, accessToken]); 
+  
   }, [userId, accessToken]);
 
   const config = {
@@ -675,7 +692,17 @@ const SurveyList = () => {
   console.log("encuestas a mostrar:", survey);
   console.log("Valor de start_date.input en el render:", start_date.input);
 
+  // animacion alerta
+      const shake = keyframes`
+                    0% { transform: translateX(0); }
+                    20% { transform: translateX(-6px); }
+                    40% { transform: translateX(6px); }
+                    60% { transform: translateX(-4px); }
+                    80% { transform: translateX(4px); }
+                    100% { transform: translateX(0); }
+                  `;
   return (
+    <>
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {userType == "1" ||
@@ -737,7 +764,9 @@ const SurveyList = () => {
                   {t("survey.crear_encuesta")}
                 </Button>
               </Box>
+              </>
             )}
+            
           </Box>
         </Box>
       </Box>
@@ -1103,6 +1132,8 @@ const SurveyList = () => {
         </Box>
       </Modal>
     </Box>
+    
+    </>
   );
 };
 

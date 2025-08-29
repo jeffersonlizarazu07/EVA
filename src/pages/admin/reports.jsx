@@ -37,7 +37,16 @@ import {
   Select,
   Typography,
   Alert,
+  List,
+  ListItem,
+  ListItemText,
+  
+  
+  
+  Fade,
 } from "@mui/material";
+import { keyframes } from "@emotion/react";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
@@ -72,6 +81,15 @@ const Reports = () => {
   const config = {
     withCredentials: true,
   };
+  // animacion alerta
+    const shake = keyframes`
+                  0% { transform: translateX(0); }
+                  20% { transform: translateX(-6px); }
+                  40% { transform: translateX(6px); }
+                  60% { transform: translateX(-4px); }
+                  80% { transform: translateX(4px); }
+                  100% { transform: translateX(0); }
+                `;
 
   const getPercentages = async () => {
     if (!surveyId) {
@@ -759,7 +777,7 @@ const Reports = () => {
                   mt: 2,
                   border: "1px solid #ccc",
                   width: "100%",
-                  tableLayout: "fixed",
+                  //tableLayout: "fixed",
                   fontSize: "0.85rem",
                 }}
               >
@@ -1167,14 +1185,15 @@ const Reports = () => {
                           </IconButton>
                         </ButtonGroup>
                       </Box>
-
+                      
+                      {/* 
                       {!loading && allResponses.length === 0 && (
                         <Box mt={3}>
                           <Alert severity="info" sx={{ textAlign: "center" }}>
                             {t("reports.mensaje_reporte")}
                           </Alert>
                         </Box>
-                      )}
+                      )}*/}
                     </CardContent>
                   </Card>
                 </Grid>
@@ -1219,6 +1238,49 @@ const Reports = () => {
           </Grid>
         </Box>
       </Box>
+      {allResponses.length === 0 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  m: 10,
+                  mt: 2,
+                  borderRadius: "12px",
+      
+                  border: "1px dashed #b0bec5",
+                  minHeight: "150px",
+                  position: "relative",
+                }}
+              >
+                {allResponses.length === 0 && (
+                  <Fade in={true} timeout={500}>
+                    <Box
+                      sx={{
+                        animation: `${shake} 0.5s`,
+                        minWidth: "60%",
+                      }}
+                    >
+                      <Alert
+                        icon={<InfoOutlinedIcon fontSize="large" />}
+                        severity="info"
+                        color="#c70e8f"
+                        sx={{
+                          textAlign: "center",
+                          fontSize: "1.5rem",
+                          backgroundColor: "transparent",
+                          border: "1px solid #c70e8f",
+                          color: "#c70e8f",
+                          borderRadius: "8px",
+                        }}
+                      >
+                        {("Llena los datos de la consulta para generar las Graficas.")}
+                      </Alert>
+                    </Box>
+                  </Fade>
+                )}
+              </Box>
+            )}
     </Box>
   );
 };

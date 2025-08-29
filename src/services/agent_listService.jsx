@@ -211,6 +211,26 @@ export const saveMonitoringAndAnswers = async (payload) => {
   }
 };
 
+// traer monitorizacion general de los agentes
+
+  export const getByUserGeneral = async (agenteParam, evaluadorParam) => {
+  
+  try {
+    const response = await apiClient.get(
+      `/monitoring/users/general/${agenteParam}/${evaluadorParam}`,
+      config
+    );
+    console.log("Respuesta de la API:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener monitoreos del agente:", error);
+    throw error;
+  }
+};
+
+
+
+//
 // Traer monitorizaciones por agente
 export const getMonitoringByUser = async (id) => {
   if (!id) {

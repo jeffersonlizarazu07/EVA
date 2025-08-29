@@ -20,7 +20,34 @@ import {
 import { formatDate, formatDateTimeShort } from "../../utils/dateUtils"; // Formatear fechas de la vista
 import ModalAdmin from "../../components/Modals/modalAdminAgent_list";
 import ModalViewAdmin from "../../components/Modals/modalViewAdminAgent_list";
-import { Box, Typography, CircularProgress } from "@mui/material";
+import { Box,
+  Modal,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  Paper,
+  Grid,
+  Divider,
+  Chip,
+  Stack,
+  Snackbar,
+  Alert,
+  CircularProgress,
+
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  
+  Card,
+  CardContent, 
+  Fade,
+  
+  } from "@mui/material";
+  import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+  import { keyframes } from "@emotion/react";
 
 const AdminList = () => {
   // Estados para guardar los datos de admins, clientes y clientes seleccionados
@@ -49,6 +76,9 @@ const AdminList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Maneja el abrir/cerrar del modal
   const [feedback, setFeedback] = React.useState("");
   const [selectedBlockId, setSelectedBlockId] = useState(null); // Bloque seleccionado para calificar
+
+ 
+
   const [openViewModal, setOpenViewModal] = React.useState(false);
   const [viewAdminData, setViewAdminData] = React.useState(null);
   // Validaciones de la primer vista del modal
@@ -61,6 +91,7 @@ const AdminList = () => {
   useEffect(() => {
     console.log("Nuevo conteo desde useEffect:", conteoDeAgentes);
   }, [conteoDeAgentes]);
+ 
 
   // Hooks que se ejecutan al montar el componente o si cambia el idioma
   useEffect(() => {
@@ -729,10 +760,19 @@ useEffect(() => {
     userClients,
     t,
   };
-
-  console.log("Estado admins en render:", admins);
+  
+   // animacion alerta
+        const shake = keyframes`
+                      0% { transform: translateX(0); }
+                      20% { transform: translateX(-6px); }
+                      40% { transform: translateX(6px); }
+                      60% { transform: translateX(-4px); }
+                      80% { transform: translateX(4px); }
+                      100% { transform: translateX(0); }
+                    `;
 
   return (
+    <>
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         {loading && <p></p>}
@@ -762,9 +802,54 @@ useEffect(() => {
                 onView={(payload) => openModalCont(payload)}
               />
             ) : (
-              <Box sx={{ textAlign: "center", py: 5 }}>
-                No existen agentes registrados
-              </Box>
+              <>
+                <Box
+                                                sx={{
+                                                  display: "flex",
+                                                  justifyContent: "center",
+                                                  alignItems: "center",
+                                                  m: 10,
+                                                  mt: 2,
+                                                  mb:0,
+                                                  borderRadius: "12px",
+                                      
+                                                  border: "1px dashed #b0bec5",
+                                                  minHeight: "150px",
+                                                  position: "relative",
+                                                }}
+                                              >
+                                                
+                                                  <Fade in={true} timeout={500}>
+                                                    <Box
+                                                      sx={{
+                                                        animation: `${shake} 0.5s`,
+                                                        
+                                                        
+                                                      }}
+                                                    >
+                                                      <Alert
+                                                        icon={<InfoOutlinedIcon fontSize="large" />}
+                                                        severity="info"
+                                                        color="#c70e8f"
+                                                        sx={{
+                                                          
+                                                          textAlign: "center",
+                                                          fontSize: "1.5rem",
+                                                          backgroundColor: "transparent",
+                                                          border: "1px solid #c70e8f",
+                                                          color: "#c70e8f",
+                                                          borderRadius: "8px",
+                                                        }}
+                                                      >
+                                                        {("No existen agentes registrados.")}
+                                                      </Alert>
+                                                    </Box>
+                                                  </Fade>
+                                                
+                                              </Box>
+              
+              
+              </>
             )}
           </Box>
         </Box>
@@ -772,6 +857,10 @@ useEffect(() => {
       <ModalAdmin {...modalAdminProps} />
       <ModalViewAdmin {...modalViewAdminProps} />
     </Box>
+      
+    
+          
+    </>
   );
 };
 

@@ -21,6 +21,26 @@ import {
   Divider,
   Chip,
   Stack,
+  Snackbar,
+  Alert,
+
+
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  
+  Card,
+  CardContent,
+
+  MenuItem,
+  FormControl,
+  Select,
+  
+  Fade,
+  
+  
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -28,6 +48,8 @@ import {
   Edit as EditIcon,
   Add as AddIcon,
 } from "@mui/icons-material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { keyframes } from "@emotion/react";
 import { apiClient } from "../../utils/axiosConfig";
 
 export default function Client_list() {
@@ -61,6 +83,8 @@ export default function Client_list() {
   const [openColorModal, setOpenColorModal] = useState(false);
   const [openColorModal2, setOpenColorModal2] = useState(false);
 
+  //const [open, setOpen] = useState(false); // pop
+
   const handleOpenColor1 = () => setOpenColorModal(true);
   const handleCloseColor1 = () => setOpenColorModal(false);
 
@@ -70,8 +94,17 @@ export default function Client_list() {
   const { accessToken, userType, userId } = useContext(UserContext); // Trae el token y el idioma desde el contexto del usuario logueado
 
   useEffect(() => {
-    fetchData(); // Trae todos los clientes una sola vez
-  }, []); // <-- arreglo vacío para que se ejecute solo una vez
+    // Efecto que se ejecuta al montar o cuando cambia el idioma del usuario
+    fetchData(); // Trae todos los clientes
+  },[]);
+
+  {/* useEffect(() => {
+    if (!data || data.length === 0) {
+      setOpen(true); // muestra pop apenas entra
+    }
+  }, [data]);
+  const handleClosePop = () => setOpen(false);*/}
+  
 
   // Función para manejar el cierre del modal MUI
   const handleModalClose = () => {
@@ -545,7 +578,18 @@ export default function Client_list() {
       left: "0px",
     },
   };
+
+   // animacion alerta
+    const shake = keyframes`
+                  0% { transform: translateX(0); }
+                  20% { transform: translateX(-6px); }
+                  40% { transform: translateX(6px); }
+                  60% { transform: translateX(-4px); }
+                  80% { transform: translateX(4px); }
+                  100% { transform: translateX(0); }
+                `;
   return (
+    <>
     <Box className="App" sx={{ overflow: "hidden" }}>
       <Box id="body">
         <HeaderLT1 />
@@ -720,14 +764,93 @@ export default function Client_list() {
           </Paper>
         </Box>
       </Modal>
-
-      {/* Modal de Crear/Editar con MUI */}
-      <Modal
-        open={openCreateModal}
-        onClose={handleModalClose}
-        aria-labelledby="create-client-modal-title"
-      >
+      {/* alerta */}
+              {data.length === 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    m: 10,
+                    mt: 2,
+                    mb:0,
+                    borderRadius: "12px",
+        
+                    border: "1px dashed #b0bec5",
+                    minHeight: "150px",
+                    position: "relative",
+                  }}
+                >
+                  {data.length === 0 && (
+                    <Fade in={true} timeout={500}>
+                      <Box
+                        sx={{
+                          animation: `${shake} 0.5s`,
+                          
+                          
+                        }}
+                      >
+                        <Alert
+                          icon={<InfoOutlinedIcon fontSize="large" />}
+                          severity="info"
+                          color="#c70e8f"
+                          sx={{
+                            
+                            textAlign: "center",
+                            fontSize: "1.5rem",
+                            backgroundColor: "transparent",
+                            border: "1px solid #c70e8f",
+                            color: "#c70e8f",
+                            borderRadius: "8px",
+                          }}
+                        >
+                          {("No hay clientes registrados. Crea uno para continuar.")}
+                        </Alert>
+                      </Box>
+                    </Fade>
+                  )}
+                </Box>
+    )}
+      {/* cuando no hay clientes */}
+      {data.length === 0 ? (
         <Box
+          
+          sx={{
+            
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            m:10,
+            mt: 2,
+            
+            //borderRadius: "12px",
+
+            //border: "1px dashed #b0bec5",
+            minHeight: "150px",
+            //position: "relative",
+          }}
+        >
+          
+          <Button
+            variant="contained"
+            onClick={() => {
+              setOperation(1);        // modo crear
+              setTitle("Crear cliente");
+              setOpenCreateModal(true); // abre el modal
+            }}
+            sx={{color:"#b62a8b", border:"1px solid #b62a8b ",borderRadius: "12px", backgroundColor:"transparent", "&:hover":{color:"#fff", backgroundColor:" #b62a8b ",}}}
+          >
+            Crear cliente
+          </Button>
+
+          {/* Modal también se renderiza aquí, igual que abajo */}
+          <Modal
+            open={openCreateModal}
+            onClose={handleModalClose}
+            aria-labelledby="create-client-modal-title"
+          >
+            <Box
           sx={{
             position: "absolute",
             top: "50%",
@@ -1002,7 +1125,575 @@ export default function Client_list() {
             </Box>
           </Paper>
         </Box>
+          </Modal>
+        </Box>
+      ) : (
+        <Modal
+          open={openCreateModal}
+          onClose={handleModalClose}
+          aria-labelledby="create-client-modal-title"
+        >
+          <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 650 },
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 0,
+            outline: "none",
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}
+        >
+          <Paper elevation={0} sx={{ borderRadius: 2 }}>
+            {/* Header */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                p: 3,
+                pb: 2,
+              }}
+            >
+              <Typography variant="h5" component="h2" fontWeight="bold">
+                {title}
+              </Typography>
+              <IconButton onClick={handleModalClose} size="small">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            {/* Body */}
+            <Box sx={{ px: 3, pb: 3 }}>
+              <Grid container spacing={3}>
+                {/* Sección de Logo */}
+                <Grid item xs={12} sm={5}>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minHeight: 250,
+                    }}
+                  >
+                    {logoEdit && operation === 2 && !selectedFile ? (
+                      <Box
+                        component="img"
+                        src={`${CLIENTS_BASE_URL}/${logoEdit || ''}`}
+                        alt="Logo"
+                        onError={handleImgError}
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          border: "2px dashed",
+                          borderColor: "divider",
+                          borderRadius: 2,
+                          mb: 2,
+                        }}
+                      />
+                    ) : null}
+
+                    {selectedFile && previewUrl ? (
+                      <Box
+                        component="img"
+                        src={previewUrl}
+                        alt="Logo Preview"
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          objectFit: "contain",
+                          border: "2px solid",
+                          borderColor: "primary.main",
+                          borderRadius: 2,
+                          mb: 2,
+                        }}
+                      />
+                    ) : null}
+
+                    {!selectedFile && !logoEdit && (
+                      <Box
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          border: "2px dashed",
+                          borderColor: "divider",
+                          borderRadius: 2,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          mb: 2,
+                          backgroundColor: "grey.50",
+                        }}
+                      >
+                        <CloudUploadIcon
+                          sx={{ fontSize: 40, color: "grey.400" }}
+                        />
+                      </Box>
+                    )}
+
+                    <Button
+                      variant="contained"
+                      startIcon={<CloudUploadIcon />}
+                      onClick={triggerFileInput}
+                      // sx={{ mb: 1 }}
+                      sx={{
+                        mb: 1,
+                        backgroundColor: "#b62a8b", // Color morado estándar de MUI
+                        "&:hover": {
+                          backgroundColor: "#581244", // Morado más oscuro al hover
+                        },
+                      }}
+                    >
+                      {operation === 2
+                        ? t("clientModal.editLogo")
+                        : t("clientModal.newLogo")}
+                    </Button>
+
+                    <input
+                      type="file"
+                      id="imagenLogo"
+                      accept=".jpg, .jpeg, .png"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Sección de Datos */}
+                <Grid item xs={12} sm={7}>
+                  <TextField
+                    fullWidth
+                    label={t("clientModal.ClientName")}
+                    variant="outlined"
+                    value={client.input}
+                    className="readOnlyField"
+                    onChange={(e) => client.handleChange(e.target.value)}
+                    sx={{ mb: 3 }}
+                    error={!!error && error.includes("nombre")}
+                  />
+
+                  <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                    {t("clientModal.selectColor")}
+                  </Typography>
+
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={6}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography variant="body2">
+                          {t("clientModal.color1")}
+                        </Typography>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 24,
+                            backgroundColor: colors1,
+                            border: "1px solid",
+                            borderColor: "divider",
+                            borderRadius: 0.5,
+                            cursor: "pointer",
+                          }}
+                          //onClick={handleClick}
+                          onClick={handleOpenColor1}
+                        />
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography variant="body2">
+                          {t("clientModal.color2")}
+                        </Typography>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 24,
+                            backgroundColor: colors2,
+                            border: "1px solid",
+                            borderColor: "divider",
+                            borderRadius: 0.5,
+                            cursor: "pointer",
+                          }}
+                          onClick={handleOpenColor2}
+                          //onClick={handle2Click}
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {displayColorPicker && (
+                <Box sx={{ position: "relative", mt: 2 }}>
+                  <Box sx={styles.cover} onClick={handleClose} />
+                  <Box sx={{ position: "absolute", zIndex: 1000 }}>
+                    <SketchPicker
+                      color={colors1}
+                      onChange={handleColor1Change}
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {displayColorPicker2 && (
+                <Box sx={{ position: "relative", mt: 2 }}>
+                  <Box sx={styles2.cover} onClick={handle2Close} />
+                  <Box sx={{ position: "absolute", zIndex: 1000 }}>
+                    <SketchPicker
+                      color={colors2}
+                      onChange={handleColor2Change}
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {error && (
+                <Typography
+                  color="error"
+                  variant="body2"
+                  textAlign="center"
+                  sx={{ mt: 2 }}
+                >
+                  {error}
+                </Typography>
+              )}
+            </Box>
+
+            {/* Footer */}
+            <Divider />
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                p: 3,
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleModalClose}
+                sx={{
+                  color: "#b62a8b", // Texto morado
+                  borderColor: "#b62a8b", // Borde morado
+                  "&:hover": {
+                    borderColor: "#b62a8b", // Borde morado oscuro al hover
+                    backgroundColor: "rgba(156, 39, 176, 0.04)", // Fondo muy transparente al hover
+                  },
+                }}
+              >
+                {t("clientModal.Close")}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={validar}
+                sx={{
+                  backgroundColor: "#b62a8b", // Color morado estándar de MUI
+                  "&:hover": {
+                    backgroundColor: "#581244", // Morado más oscuro al hover
+                  },
+                }}
+              >
+                {t("clientModal.Save")}
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+        </Modal>
+      )}
+      {/* 
+       //Modal de Crear/Editar con MUI *
+      <Modal
+        open={openCreateModal}
+        onClose={handleModalClose}
+        aria-labelledby="create-client-modal-title"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 650 },
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            borderRadius: 2,
+            p: 0,
+            outline: "none",
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}
+        >
+          <Paper elevation={0} sx={{ borderRadius: 2 }}>
+            // Header 
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                p: 3,
+                pb: 2,
+              }}
+            >
+              <Typography variant="h5" component="h2" fontWeight="bold">
+                {title}
+              </Typography>
+              <IconButton onClick={handleModalClose} size="small">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            // Body 
+            <Box sx={{ px: 3, pb: 3 }}>
+              <Grid container spacing={3}>
+                // Sección de Logo 
+                <Grid item xs={12} sm={5}>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minHeight: 250,
+                    }}
+                  >
+                    {logoEdit && operation === 2 && !selectedFile ? (
+                      <Box
+                        component="img"
+                        src={`${CLIENTS_BASE_URL}/${logoEdit || ''}`}
+                        alt="Logo"
+                        onError={handleImgError}
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          border: "2px dashed",
+                          borderColor: "divider",
+                          borderRadius: 2,
+                          mb: 2,
+                        }}
+                      />
+                    ) : null}
+
+                    {selectedFile && previewUrl ? (
+                      <Box
+                        component="img"
+                        src={previewUrl}
+                        alt="Logo Preview"
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          objectFit: "contain",
+                          border: "2px solid",
+                          borderColor: "primary.main",
+                          borderRadius: 2,
+                          mb: 2,
+                        }}
+                      />
+                    ) : null}
+
+                    {!selectedFile && !logoEdit && (
+                      <Box
+                        sx={{
+                          width: 150,
+                          height: 150,
+                          border: "2px dashed",
+                          borderColor: "divider",
+                          borderRadius: 2,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          mb: 2,
+                          backgroundColor: "grey.50",
+                        }}
+                      >
+                        <CloudUploadIcon
+                          sx={{ fontSize: 40, color: "grey.400" }}
+                        />
+                      </Box>
+                    )}
+
+                    <Button
+                      variant="contained"
+                      startIcon={<CloudUploadIcon />}
+                      onClick={triggerFileInput}
+                      // sx={{ mb: 1 }}
+                      sx={{
+                        mb: 1,
+                        backgroundColor: "#b62a8b", // Color morado estándar de MUI
+                        "&:hover": {
+                          backgroundColor: "#581244", // Morado más oscuro al hover
+                        },
+                      }}
+                    >
+                      {operation === 2
+                        ? t("clientModal.editLogo")
+                        : t("clientModal.newLogo")}
+                    </Button>
+
+                    <input
+                      type="file"
+                      id="imagenLogo"
+                      accept=".jpg, .jpeg, .png"
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                    />
+                  </Box>
+                </Grid>
+
+                // Sección de Datos 
+                <Grid item xs={12} sm={7}>
+                  <TextField
+                    fullWidth
+                    label={t("clientModal.ClientName")}
+                    variant="outlined"
+                    value={client.input}
+                    className="readOnlyField"
+                    onChange={(e) => client.handleChange(e.target.value)}
+                    sx={{ mb: 3 }}
+                    error={!!error && error.includes("nombre")}
+                  />
+
+                  <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                    {t("clientModal.selectColor")}
+                  </Typography>
+
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={6}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography variant="body2">
+                          {t("clientModal.color1")}
+                        </Typography>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 24,
+                            backgroundColor: colors1,
+                            border: "1px solid",
+                            borderColor: "divider",
+                            borderRadius: 0.5,
+                            cursor: "pointer",
+                          }}
+                          //onClick={handleClick}
+                          onClick={handleOpenColor1}
+                        />
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography variant="body2">
+                          {t("clientModal.color2")}
+                        </Typography>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 24,
+                            backgroundColor: colors2,
+                            border: "1px solid",
+                            borderColor: "divider",
+                            borderRadius: 0.5,
+                            cursor: "pointer",
+                          }}
+                          onClick={handleOpenColor2}
+                          //onClick={handle2Click}
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {displayColorPicker && (
+                <Box sx={{ position: "relative", mt: 2 }}>
+                  <Box sx={styles.cover} onClick={handleClose} />
+                  <Box sx={{ position: "absolute", zIndex: 1000 }}>
+                    <SketchPicker
+                      color={colors1}
+                      onChange={handleColor1Change}
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {displayColorPicker2 && (
+                <Box sx={{ position: "relative", mt: 2 }}>
+                  <Box sx={styles2.cover} onClick={handle2Close} />
+                  <Box sx={{ position: "absolute", zIndex: 1000 }}>
+                    <SketchPicker
+                      color={colors2}
+                      onChange={handleColor2Change}
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {error && (
+                <Typography
+                  color="error"
+                  variant="body2"
+                  textAlign="center"
+                  sx={{ mt: 2 }}
+                >
+                  {error}
+                </Typography>
+              )}
+            </Box>
+
+            // Footer 
+            <Divider />
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                p: 3,
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleModalClose}
+                sx={{
+                  color: "#b62a8b", // Texto morado
+                  borderColor: "#b62a8b", // Borde morado
+                  "&:hover": {
+                    borderColor: "#b62a8b", // Borde morado oscuro al hover
+                    backgroundColor: "rgba(156, 39, 176, 0.04)", // Fondo muy transparente al hover
+                  },
+                }}
+              >
+                {t("clientModal.Close")}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={validar}
+                sx={{
+                  backgroundColor: "#b62a8b", // Color morado estándar de MUI
+                  "&:hover": {
+                    backgroundColor: "#581244", // Morado más oscuro al hover
+                  },
+                }}
+              >
+                {t("clientModal.Save")}
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
       </Modal>
+      */}
       {/* modal para color 1 */}
       <Modal
         open={openColorModal}
@@ -1045,7 +1736,45 @@ export default function Client_list() {
         >
           <SketchPicker color={colors2} onChange={handleColor2Change} />
         </Box>
+        
       </Modal>
+      
     </Box>
+      {/* Modal de alerta */}
+      {/* 
+      {data.length === 0 &&(
+        <Dialog
+          open={open}
+          onClose={handleClosePop}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          PaperProps={{
+            sx: {
+              border: "1px solid #c70e8f",
+              borderRadius: "12px", 
+            },
+          }}
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"No hay clientes registrados"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Actualmente no tienes clientes registrados en el sistema.  <br />
+              Por favor ingresa uno para continuar.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions >
+            <Button sx={{color:"#b62a8b", border:"1px solid #b62a8b ",borderRadius: "12px", "&:hover":{color:"#fff", backgroundColor:" #b62a8b ",}}} onClick={handleClosePop} autoFocus>
+              Entendido
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+      */}
+      
+
+      
+    </>
   );
 }
