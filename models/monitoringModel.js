@@ -45,9 +45,12 @@ const MonitoringModel = {
   },
 
   // Obtener monitorizaciones general del  agente
-  getByUserGeneral: async (agenteParam, evaluadorParam) => {
+  getByUserGeneral: async (formularioParam,agenteParam, evaluadorParam,formattedStartDate,formattedEndDate) => {
+    // Parametros opcionales 
     if (agenteParam === 'null') agenteParam = "";
     if (evaluadorParam === 'null') evaluadorParam = "";
+    if (formularioParam === 'null') formularioParam = "";
+
     let query = knex("monitoring")
       .join("form_set", "monitoring.id_form", "form_set.id")
       .join("clients", "form_set.idClient", "clients.id")
@@ -63,12 +66,17 @@ const MonitoringModel = {
         knex.raw("(agent.firstname + ' ' + agent.lastname) as agent_name")
       );
 
-    if (agenteParam && agenteParam.trim() !== '' && agenteParam !== '""') {
-        query = query.andWhere(knex.raw(`(agent.firstname + ' ' + agent.lastname)= ?`, [agenteParam]));
-    }
-    if (evaluadorParam && evaluadorParam.trim() !== '' && evaluadorParam !== '""') {
-        query = query.andWhere(knex.raw(`(users.firstname + ' ' + users.lastname)= ?`, [evaluadorParam]));
-    }
+
+      if (formularioParam && formularioParam.trim() !== '' && formularioParam !== '""') {
+          query = query.where("monitoring.id_form", formularioParam);
+      }
+      if (agenteParam && agenteParam.trim() !== '' && agenteParam !== '""') {
+          query = query.andWhere(knex.raw(`(agent.firstname + ' ' + agent.lastname)= ?`, [agenteParam]));
+      }
+      if (evaluadorParam && evaluadorParam.trim() !== '' && evaluadorParam !== '""') {
+          query = query.andWhere(knex.raw(`(users.firstname + ' ' + users.lastname)= ?`, [evaluadorParam]));
+      }
+          query = query.andWhereBetween('monitoring.date', [formattedStartDate, formattedEndDate]);
 
     const monitorings = await query;
 

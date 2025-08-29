@@ -8,7 +8,7 @@ router.get('/monitoring/', authMiddleware, monitoringController.getAll); // Obte
 router.get('/monitoring/user/:userId/form/:formId', authMiddleware, monitoringController.getMonitoringByUserAndForm); //Obtener monitorización del formulario en caso de que exista
 router.get('/monitoring/user/:userId', authMiddleware, monitoringController.getByUserId); // Obtener monitorizaciones por usuario
 
-router.get('/monitoring/users/general/:agenteParam/:evaluadorParam', authMiddleware,  monitoringController.getByUserGeneral); // Obtener monitorizaciones generales por usuario
+router.get('/monitoring/users/general/:formularioParam/:agenteParam/:evaluadorParam/:formattedStartDate/:formattedEndDate', authMiddleware,  monitoringController.getByUserGeneral); // Obtener monitorizaciones generales por usuario
 
 router.get('/monitoring/:monitoringId/details', authMiddleware, monitoringController.getMonitoringDetails); //Obtener monitorización detallada
 router.get('/monitoring/:id', authMiddleware, monitoringController.getById); // Obtener monitorizaciones por ID
