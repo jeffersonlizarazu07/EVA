@@ -903,7 +903,7 @@ export default function Client_list() {
                     {logoEdit && operation === 2 && !selectedFile ? (
                       <Box
                         component="img"
-                        src={`${CLIENTS_BASE_URL}/${logoEdit || ""}`}
+                        src={`${CLIENTS_BASE_URL}/${logoEdit || ''}`}
                         alt="Logo"
                         onError={handleImgError}
                         sx={{

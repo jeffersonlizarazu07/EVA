@@ -26,7 +26,6 @@ import {
   Divider,
   Chip,
   Stack,
-
   Dialog,
   DialogTitle,
   DialogContent,
@@ -34,8 +33,6 @@ import {
   DialogActions,
   Fade,
   Alert,
-    
-} from '@mui/material';
   Stack,
 } from "@mui/material";
 import {
@@ -48,12 +45,10 @@ import { useTranslations } from "../../components/hooks/useTranslations.jsx";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { keyframes } from "@emotion/react";
 
-
 const SurveyList = () => {
   // //todo Poner Tokens const {accessToken, RefreshToken} = useAuth(AuthContext)
 
   const [modalOpen, setModalOpen] = useState(false); //estado del modal mui
-  
 
   // En el estado del componente añade:
   const [showEnvioModal, setShowEnvioModal] = useState(false);
@@ -128,8 +123,6 @@ const SurveyList = () => {
     if (userId && accessToken) {
       getClients(userId);
     }
-  }, [userId, accessToken]); 
-  
   }, [userId, accessToken]);
 
   const config = {
@@ -693,7 +686,7 @@ const SurveyList = () => {
   console.log("Valor de start_date.input en el render:", start_date.input);
 
   // animacion alerta
-      const shake = keyframes`
+  const shake = keyframes`
                     0% { transform: translateX(0); }
                     20% { transform: translateX(-6px); }
                     40% { transform: translateX(6px); }
@@ -703,436 +696,436 @@ const SurveyList = () => {
                   `;
   return (
     <>
-    <Box className="App" sx={{ overflow: "hidden" }}>
-      <Box id="body">
-        {userType == "1" ||
-        userType == 1 ||
-        userType == "2" ||
-        userType == 2 ? (
-          <HeaderLT1 />
-        ) : (
-          <HeaderLT2 />
-        )}
-        <Box
-          m={0}
-          sx={{
-            alignItems: "stretch",
-            flexWrap: "nowrap",
-            padding: 0,
-            display: "flex",
-            mt: 3,
-          }}
-        >
-          {/* <Box div className="col-1 d-flex  align-items-center mx-auto p-0">
+      <Box className="App" sx={{ overflow: "hidden" }}>
+        <Box id="body">
+          {userType == "1" ||
+          userType == 1 ||
+          userType == "2" ||
+          userType == 2 ? (
+            <HeaderLT1 />
+          ) : (
+            <HeaderLT2 />
+          )}
+          <Box
+            m={0}
+            sx={{
+              alignItems: "stretch",
+              flexWrap: "nowrap",
+              padding: 0,
+              display: "flex",
+              mt: 3,
+            }}
+          >
+            {/* <Box div className="col-1 d-flex  align-items-center mx-auto p-0">
 
           </div> */}
-          <Box className="container" mt={0} sx={{ maxWidth: "97%" }}>
-            {survey.length > 0 ? (
-              <TableSurvey
-                header={headers}
-                data={survey}
-                onCreate={() => openModal(1)}
-                onUpdate={(payload) => openModal(2, payload)}
-                modalId={"modalSurvey"}
-                modalId2={"modalViewSurvey"}
-                onView={(payload) => openModalCont(payload)}
-                onCheck={(payload) => openSurvey(payload)}
-                onRemove={(item) => deactivateSurvey(item)}
-                onActive={(payload) => activeSurvey(payload)}
-                onDuplicate={(item) => duplicateSurvey(item)}
-                onCopyLink={(item) => copyLink(item)}
-                onBulkEmail={(payload) => openModalBulk(payload)}
-              />
-            ) : (
-              <Box sx={{ textAlign: "center", py: 5 }}>
-                <Typography>
-                  {t("survey.no_hay_encuestas_disponibles")}
-                </Typography>
-                <Button
-                  sx={{
-                    color: "white",
-                    backgroundColor: "#b62a8b", // Color morado estándar de MUI
-                    "&:hover": {
-                      backgroundColor: "#581244", // Morado más oscuro al hover
-                    },
-                  }}
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalSurvey"
-                  className="btn btn-primary mt-3"
-                  onClick={() => openModal(1)}
-                >
-                  {t("survey.crear_encuesta")}
-                </Button>
-              </Box>
-              </>
-            )}
-            
+            <Box className="container" mt={0} sx={{ maxWidth: "97%" }}>
+              {survey.length > 0 ? (
+                <TableSurvey
+                  header={headers}
+                  data={survey}
+                  onCreate={() => openModal(1)}
+                  onUpdate={(payload) => openModal(2, payload)}
+                  modalId={"modalSurvey"}
+                  modalId2={"modalViewSurvey"}
+                  onView={(payload) => openModalCont(payload)}
+                  onCheck={(payload) => openSurvey(payload)}
+                  onRemove={(item) => deactivateSurvey(item)}
+                  onActive={(payload) => activeSurvey(payload)}
+                  onDuplicate={(item) => duplicateSurvey(item)}
+                  onCopyLink={(item) => copyLink(item)}
+                  onBulkEmail={(payload) => openModalBulk(payload)}
+                />
+              ) : (
+                <Box sx={{ textAlign: "center", py: 5 }}>
+                  <Typography>
+                    {t("survey.no_hay_encuestas_disponibles")}
+                  </Typography>
+                  <Button
+                    sx={{
+                      color: "white",
+                      backgroundColor: "#b62a8b", // Color morado estándar de MUI
+                      "&:hover": {
+                        backgroundColor: "#581244", // Morado más oscuro al hover
+                      },
+                    }}
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalSurvey"
+                    className="btn btn-primary mt-3"
+                    onClick={() => openModal(1)}
+                  >
+                    {t("survey.crear_encuesta")}
+                  </Button>
+                </Box>
+              )}
+            </Box>
           </Box>
         </Box>
-      </Box>
 
-      <Modal
-        open={viewModalOpen}
-        onClose={handleCloseViewModal}
-        aria-labelledby="view-modal-title"
-        aria-describedby="view-modal-description"
-        sx={{
-          zIndex: 5,
-        }}
-      >
-        <Box
+        <Modal
+          open={viewModalOpen}
+          onClose={handleCloseViewModal}
+          aria-labelledby="view-modal-title"
+          aria-describedby="view-modal-description"
           sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 600, md: 800 },
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 0,
-            maxHeight: "90vh",
-            overflow: "auto",
+            zIndex: 5,
           }}
         >
-          <Paper elevation={3}>
-            {/* Header */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                p: 2,
-                borderBottom: "1px solid #e0e0e0",
-              }}
-            >
-              <Typography variant="h6" component="h2" id="view-modal-title">
-                {modalTitle}
-              </Typography>
-              <IconButton
-                onClick={handleCloseViewModal}
-                sx={{ color: "grey.500" }}
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: { xs: "90%", sm: 600, md: 800 },
+              bgcolor: "background.paper",
+              borderRadius: 2,
+              boxShadow: 24,
+              p: 0,
+              maxHeight: "90vh",
+              overflow: "auto",
+            }}
+          >
+            <Paper elevation={3}>
+              {/* Header */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 2,
+                  borderBottom: "1px solid #e0e0e0",
+                }}
               >
-                <CloseIcon />
-              </IconButton>
-            </Box>
+                <Typography variant="h6" component="h2" id="view-modal-title">
+                  {modalTitle}
+                </Typography>
+                <IconButton
+                  onClick={handleCloseViewModal}
+                  sx={{ color: "grey.500" }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
 
-            {/* Body */}
-            <Box sx={{ p: 3 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={8}>
-                  <TextField
-                    className="readOnlyField"
-                    fullWidth
-                    label={t("survey.titulo")}
-                    value={title.input}
-                    variant="outlined"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
+              {/* Body */}
+              <Box sx={{ p: 3 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={8}>
+                    <TextField
+                      className="readOnlyField"
+                      fullWidth
+                      label={t("survey.titulo")}
+                      value={title.input}
+                      variant="outlined"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      className="readOnlyField"
+                      fullWidth
+                      select
+                      label={t("survey.cliente")}
+                      value={idClient.input}
+                      variant="outlined"
+                      SelectProps={{
+                        native: true,
+                      }}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                    >
+                      <option value="" disabled>
+                        {t("survey.selecciona_cliente")}
+                      </option>
+                      {clients.length > 0 ? (
+                        clients.map((client) => (
+                          <option value={client.idClient} key={client.id}>
+                            {client.clientName}
+                          </option>
+                        ))
+                      ) : (
+                        <option disabled>Cargando clientes...</option>
+                      )}
+                    </TextField>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    className="readOnlyField"
-                    fullWidth
-                    select
-                    label={t("survey.cliente")}
-                    value={idClient.input}
-                    variant="outlined"
-                    SelectProps={{
-                      native: true,
-                    }}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  >
-                    <option value="" disabled>
-                      {t("survey.selecciona_cliente")}
-                    </option>
-                    {clients.length > 0 ? (
-                      clients.map((client) => (
+
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      className="readOnlyField"
+                      fullWidth
+                      label={t("survey.fecha_inicio")}
+                      type="date"
+                      value={start_date.input}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      variant="outlined"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      className="readOnlyField"
+                      fullWidth
+                      label={t("survey.fecha_fin")}
+                      type="date"
+                      value={end_date.input}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      variant="outlined"
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+
+                <TextField
+                  className="readOnlyField"
+                  fullWidth
+                  label={t("survey.descripcion")}
+                  multiline
+                  rows={4}
+                  value={description.input}
+                  variant="outlined"
+                  sx={{
+                    mt: 2,
+                  }}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              </Box>
+
+              {/* Footer */}
+              <Divider />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 2,
+                  p: 2,
+                }}
+              >
+                <Button
+                  onClick={handleCloseViewModal}
+                  sx={{
+                    color: "white",
+                    backgroundColor: "#b62a8b",
+                    "&:hover": {
+                      backgroundColor: "#581244",
+                    },
+                  }}
+                >
+                  {t("buttons.cerrar")}
+                </Button>
+              </Box>
+            </Paper>
+          </Box>
+        </Modal>
+        {showEnvioModal && (
+          <ModalEnvioMasivo
+            survey={selectedSurvey}
+            onClose={() => setShowEnvioModal(false)}
+          />
+        )}
+        <Modal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+          sx={{
+            zIndex: 5,
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: { xs: "90%", sm: 600, md: 800 },
+              bgcolor: "background.paper",
+              borderRadius: 2,
+              boxShadow: 24,
+              p: 0,
+              maxHeight: "90vh",
+              overflow: "auto",
+            }}
+          >
+            <Paper elevation={3}>
+              {/* Header */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 2,
+                  borderBottom: "1px solid #e0e0e0",
+                }}
+              >
+                <Typography variant="h6" component="h2" id="modal-title">
+                  {modalTitle}
+                </Typography>
+                <IconButton
+                  onClick={handleCloseModal}
+                  sx={{ color: "grey.500" }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+
+              {/* Body */}
+              <Box sx={{ p: 3 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={8}>
+                    <TextField
+                      className="readOnlyField"
+                      fullWidth
+                      label={t("survey.titulo")}
+                      value={title.input}
+                      onChange={(e) => title.handleChange(e.target.value)}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      className="readOnlyField"
+                      fullWidth
+                      select
+                      label={t("survey.cliente")}
+                      value={idClient.input}
+                      onChange={(e) => idClient.handleChange(e.target.value)}
+                      variant="outlined"
+                      SelectProps={{
+                        native: true,
+                      }}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    >
+                      <option value="" disabled>
+                        {t("survey.selecciona_cliente")}
+                      </option>
+                      {clients.map((client) => (
                         <option value={client.idClient} key={client.id}>
                           {client.clientName}
                         </option>
-                      ))
-                    ) : (
-                      <option disabled>Cargando clientes...</option>
-                    )}
-                  </TextField>
+                      ))}
+                    </TextField>
+                  </Grid>
                 </Grid>
-              </Grid>
 
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    className="readOnlyField"
-                    fullWidth
-                    label={t("survey.fecha_inicio")}
-                    type="date"
-                    value={start_date.input}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    variant="outlined"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      className="readOnlyField"
+                      fullWidth
+                      label={t("survey.fecha_inicio")}
+                      type="date"
+                      value={start_date.input}
+                      onChange={(e) => {
+                        start_date.handleChange(e.target.value);
+                        validateDates(e.target.value, end_date.input);
+                      }}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      className="readOnlyField"
+                      fullWidth
+                      label={t("survey.fecha_fin")}
+                      type="date"
+                      value={end_date.input}
+                      onChange={(e) => {
+                        end_date.handleChange(e.target.value);
+                        validateDates(start_date.input, e.target.value);
+                      }}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      variant="outlined"
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    className="readOnlyField"
-                    fullWidth
-                    label={t("survey.fecha_fin")}
-                    type="date"
-                    value={end_date.input}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    variant="outlined"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
-                </Grid>
-              </Grid>
 
-              <TextField
-                className="readOnlyField"
-                fullWidth
-                label={t("survey.descripcion")}
-                multiline
-                rows={4}
-                value={description.input}
-                variant="outlined"
+                {errorFechas && (
+                  <Typography color="error" sx={{ mt: 1 }}>
+                    {errorFechasMessage}
+                  </Typography>
+                )}
+
+                <TextField
+                  className="readOnlyField"
+                  fullWidth
+                  label={t("survey.descripcion")}
+                  multiline
+                  rows={4}
+                  value={description.input}
+                  onChange={(e) => description.handleChange(e.target.value)}
+                  variant="outlined"
+                  sx={{ mt: 2 }}
+                />
+              </Box>
+
+              {/* Footer */}
+              <Divider />
+              <Box
                 sx={{
-                  mt: 2,
-                }}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Box>
-
-            {/* Footer */}
-            <Divider />
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 2,
-                p: 2,
-              }}
-            >
-              <Button
-                onClick={handleCloseViewModal}
-                sx={{
-                  color: "white",
-                  backgroundColor: "#b62a8b",
-                  "&:hover": {
-                    backgroundColor: "#581244",
-                  },
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 2,
+                  p: 2,
                 }}
               >
-                {t("buttons.cerrar")}
-              </Button>
-            </Box>
-          </Paper>
-        </Box>
-      </Modal>
-      {showEnvioModal && (
-        <ModalEnvioMasivo
-          survey={selectedSurvey}
-          onClose={() => setShowEnvioModal(false)}
-        />
-      )}
-      <Modal
-        open={modalOpen}
-        onClose={handleCloseModal}
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-        sx={{
-          zIndex: 5,
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 600, md: 800 },
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 0,
-            maxHeight: "90vh",
-            overflow: "auto",
-          }}
-        >
-          <Paper elevation={3}>
-            {/* Header */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                p: 2,
-                borderBottom: "1px solid #e0e0e0",
-              }}
-            >
-              <Typography variant="h6" component="h2" id="modal-title">
-                {modalTitle}
-              </Typography>
-              <IconButton onClick={handleCloseModal} sx={{ color: "grey.500" }}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-
-            {/* Body */}
-            <Box sx={{ p: 3 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={8}>
-                  <TextField
-                    className="readOnlyField"
-                    fullWidth
-                    label={t("survey.titulo")}
-                    value={title.input}
-                    onChange={(e) => title.handleChange(e.target.value)}
-                    variant="outlined"
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    className="readOnlyField"
-                    fullWidth
-                    select
-                    label={t("survey.cliente")}
-                    value={idClient.input}
-                    onChange={(e) => idClient.handleChange(e.target.value)}
-                    variant="outlined"
-                    SelectProps={{
-                      native: true,
-                    }}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  >
-                    <option value="" disabled>
-                      {t("survey.selecciona_cliente")}
-                    </option>
-                    {clients.map((client) => (
-                      <option value={client.idClient} key={client.id}>
-                        {client.clientName}
-                      </option>
-                    ))}
-                  </TextField>
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    className="readOnlyField"
-                    fullWidth
-                    label={t("survey.fecha_inicio")}
-                    type="date"
-                    value={start_date.input}
-                    onChange={(e) => {
-                      start_date.handleChange(e.target.value);
-                      validateDates(e.target.value, end_date.input);
-                    }}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    variant="outlined"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    className="readOnlyField"
-                    fullWidth
-                    label={t("survey.fecha_fin")}
-                    type="date"
-                    value={end_date.input}
-                    onChange={(e) => {
-                      end_date.handleChange(e.target.value);
-                      validateDates(start_date.input, e.target.value);
-                    }}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    variant="outlined"
-                  />
-                </Grid>
-              </Grid>
-
-              {errorFechas && (
-                <Typography color="error" sx={{ mt: 1 }}>
-                  {errorFechasMessage}
-                </Typography>
-              )}
-
-              <TextField
-                className="readOnlyField"
-                fullWidth
-                label={t("survey.descripcion")}
-                multiline
-                rows={4}
-                value={description.input}
-                onChange={(e) => description.handleChange(e.target.value)}
-                variant="outlined"
-                sx={{ mt: 2 }}
-              />
-            </Box>
-
-            {/* Footer */}
-            <Divider />
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 2,
-                p: 2,
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={handleCloseModal}
-                sx={{
-                  color: "#b62a8b", // Texto morado
-                  borderColor: "#b62a8b", // Borde morado
-                  "&:hover": {
-                    borderColor: "#b62a8b", // Borde morado oscuro al hover
-                    backgroundColor: "rgba(156, 39, 176, 0.04)", // Fondo muy transparente al hover
-                  },
-                }}
-              >
-                {t("buttons.cerrar")}
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => validar(idToEdit)}
-                disabled={errorFechas || !isFormValid}
-                sx={{
-                  backgroundColor: "#b62a8b",
-                  "&:hover": {
-                    backgroundColor: "#581244",
-                  },
-                }}
-              >
-                {t("buttons.guardar")}
-              </Button>
-            </Box>
-          </Paper>
-        </Box>
-      </Modal>
-    </Box>
-    
+                <Button
+                  variant="outlined"
+                  onClick={handleCloseModal}
+                  sx={{
+                    color: "#b62a8b", // Texto morado
+                    borderColor: "#b62a8b", // Borde morado
+                    "&:hover": {
+                      borderColor: "#b62a8b", // Borde morado oscuro al hover
+                      backgroundColor: "rgba(156, 39, 176, 0.04)", // Fondo muy transparente al hover
+                    },
+                  }}
+                >
+                  {t("buttons.cerrar")}
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => validar(idToEdit)}
+                  disabled={errorFechas || !isFormValid}
+                  sx={{
+                    backgroundColor: "#b62a8b",
+                    "&:hover": {
+                      backgroundColor: "#581244",
+                    },
+                  }}
+                >
+                  {t("buttons.guardar")}
+                </Button>
+              </Box>
+            </Paper>
+          </Box>
+        </Modal>
+      </Box>
     </>
   );
 };
