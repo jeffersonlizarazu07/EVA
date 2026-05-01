@@ -66,6 +66,6 @@
     "vite": "^6.3.5"
   },
   "optionalDependencies": {
-    "@teleperformance/tpco_cryptojs": "^1.0.9"
+
   }
 }
