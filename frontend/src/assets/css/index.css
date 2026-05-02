@@ -1,0 +1,166 @@
+nav {
+  background-color: white;
+  border: 2px solid rgb(199, 14, 143);
+  border-radius: 25px;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1;
+}
+.tooltip-container:hover {
+  visibility: visible;
+  opacity: 1;
+}
+button {
+  border: 0;
+  background-color: azure;
+}
+/* section {
+  height: 75vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-top: 25px;
+} */
+#navbarNav {
+  min-width: 50px;
+  max-width: 100px;
+  border-right: 2px solid rgb(199, 14, 143);
+  border-top: 2px solid rgb(199, 14, 143);
+  border-bottom: 2px solid rgb(199, 14, 143);
+}
+
+
+#navbarNar ul{
+  display: flex;
+  border: 1px solid red !important;
+}
+
+/* #div_ul {
+  align-items: baseline;
+  min-width: 50px;
+  max-width: 100px;
+} */
+ul {
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#card1 {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen1 slide 2.png");
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 3px solid rgb(199, 14, 143);
+  border-radius: 35px;
+  width: 25vw;
+  height: 60vh;
+}
+
+#card1:hover {
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+    url("../img/imagen1 slide 2.png");
+}
+
+#card1 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#card1 a:hover {
+  text-decoration: none; /* Para evitar que se subraye el texto en hover */
+}
+#card2 {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("../img/imagen2 slide 2.png") !important;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 3px solid rgb(199, 14, 143);
+  border-radius: 25px;
+  width: 25vw;
+  height: 60vh;
+}
+/* .modal-backdrop{
+  position: relative !important; 
+ } */
+#card2:hover {
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+  url("../img/imagen2 slide 2.png") !important;
+}
+
+#card2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#card2 a:hover {
+  text-decoration: none; /* Para evitar que se subraye el texto en hover */
+}
+.index {
+  align-content: center;
+}
+#iconoDegradado {
+  font-size: 25px;
+  cursor: pointer;
+  background: -moz-linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  background: -webkit-linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  background: linear-gradient(
+    129deg,
+    rgba(199, 14, 143, 1) 37%,
+    rgba(95, 9, 121, 1) 69%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#icono {
+  font-size: 25px;
+  color: rgb(199, 14, 143);
+  cursor: pointer;
+}
+
+#aside{
+  margin: 0;  
+  padding: 0;
+
+}
+
+@media (max-width: 767px) {
+  body {
+    background-image: none;
+    background-color: rgb(253, 253, 253);
+  }
+
+  #container {
+    padding: 10px;
+  }
+
+  #card1,
+  #card2 {
+    margin-bottom: 10px;
+    width: 50vw !important;
+    height: 40vh !important;
+  }
+}
+
+/* Estilos modo oscuro */
+
+/* body {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("../img/fondo\ slide\ 2.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+} */

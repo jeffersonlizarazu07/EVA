@@ -1,0 +1,19 @@
+
+@font-face{
+    font-family: SancoaleSoftened;
+    src: url('../font/Sancoale_Softened_Medium.ttf')
+}
+
+.cont-inactive{
+    font-family: SancoaleSoftened;
+    background-color: rgb(236, 235, 233);
+    padding-top: 0%;
+    padding-bottom: 1%;
+    width: 30%;
+    border-radius: 10px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+.logoError{
+    width: 10%;
+    margin: 2% 0;
+}

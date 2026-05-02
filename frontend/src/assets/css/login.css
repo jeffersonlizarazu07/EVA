@@ -1,0 +1,174 @@
+@font-face{
+  font-family: SancoaleSoftened;
+  src: url('../font/Sancoale_Softened_Medium.ttf')
+}
+/* // cuadrar fondo de pantalla
+cuadrar barra index */
+.bodyLogin {
+    margin:0;
+    padding:0;
+    font-family: sans-serif;
+    background-image: url("../img/GifE.gif");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    height: 100vh;
+    align-content: space-around;
+  }
+.login-container {
+    border-radius: 10px !important; 
+    margin-top: 10% !important;
+    margin-left: 15% !important;
+    width: 30vw !important;
+  }
+  
+.login-container h2 {
+    margin-left: 2%;
+    margin-bottom: 13%;
+    color: rgb(0, 0, 0);
+    font-weight: 500;
+    font-family: SancoaleSoftened;
+    font-size: 3em;
+  }
+  
+.login-container .input-container {
+    position: relative;
+  }
+  
+.login-container .input-container input {
+    width: 100%;
+    padding: 3% 0;
+    font-size: 1rem;
+    color: #949292;
+    margin-bottom: 30px;
+    background-color: rgb(233, 233, 233);
+    border-bottom: 2px solid rgb(171, 171, 171) !important;
+    outline: none;
+    padding-left: 2%;
+    
+  }
+.login-container .input-container label {
+    position: absolute;
+    top:0;
+    font-size: 1.2rem;
+    color: rgb(0, 0, 0);
+    pointer-events: none;
+    transition: 1s;
+    margin-left: 12%;
+    transform: translateY(-5%);
+    
+  }
+.login-container .input-container p {
+    position: absolute;
+    top:0;
+    font-size: 0.8rem;
+    color: rgb(110, 110, 110);
+    pointer-events: none;
+    transition: 0.5s;
+    margin-left: 12%;
+    margin-top: 5.5%;
+    
+  }
+
+.login-container .input-container  i{
+    position: absolute;
+    top:0;
+    font-size: 1.5rem;
+    color: gray;
+    pointer-events: none;
+    transition: 1s;
+    margin-left: 3%;
+    margin-top: 2.5%;
+    transform: translateY(2%);
+  }
+
+.form-control:focus{
+    box-shadow: 0 0 0 0.2rem rgba(112, 9, 71, 0.487);
+}
+
+.login-container .input-container input:focus ~ label,
+.login-container .input-container input:focus ~ i,
+.login-container .input-container input:focus ~ p{
+    top:-90%;
+    left:0px;
+    color: transparent;
+}
+
+
+.login-container .input-container input:valid ~ label,
+.login-container .input-container input:valid ~ i,
+.login-container .input-container input:valid ~ p{
+    display: none;
+  }
+    
+.pass-recover{
+    text-decoration: none;
+    color: black;
+    margin-left: 0%;
+    margin-top: 0%;
+}
+
+.login-container a:hover{
+    color: rgba(175, 14, 110, 0.717);
+    text-decoration:solid;
+}
+
+.access-button{
+    background: linear-gradient(90deg, rgba(137,5,140,1) 4%, rgb(152, 37, 154) 44%, rgb(209, 53, 154) 86%);
+    color: white;
+    font-size: 1.5em;
+    width: 65%;
+    border-radius: 15px;
+    border: none;
+}
+
+.access-button:hover{
+    color: white;
+}
+  
+@media (max-width: 575.98px) {
+  body {
+    padding:0;
+    background-image: url("../img/fondo slide 1.png");
+    background-size: 200vh;
+  }
+  .container-img{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10%;
+  }
+  .login-container {
+    border-radius: 10px;
+    margin-top: 15%;
+    margin-left: 15%;
+    width: 70vw;
+  }
+  .pass-recover {
+   margin-left: 17%;
+  }
+  .access-button{
+    font-size: 1.5em;
+    border-radius: 5px;
+    margin-left: 15%;
+    margin-top: 10%;
+  }
+  .access-button:hover{
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  }
+  
+  .login-container .input-container label {
+       margin-left: 15%;
+  }  
+  .login-container .input-container p {
+    font-size: 0.8rem;
+    margin-left: 15%;
+    margin-top: 7%;
+  }
+
+  .login-container h2{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+   }
